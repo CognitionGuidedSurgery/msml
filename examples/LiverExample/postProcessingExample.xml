@@ -1,8 +1,0 @@
-<MSMLScene directory="LiverExamplePostProcessingResults" >
-
- <triangularMesh name="coloredMesh1" filename="@colorMeshOperator1" >
-     <colorMeshOperator name="colorMeshOperator1" coloredMesh="liverTet10ColoredIni.vtk" mesh="LiverXSTet10.vtk" />
- </triangularMesh>
-
-                
-</MSMLScene>
