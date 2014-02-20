@@ -42,7 +42,7 @@ Options:
  --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
  -a, --alphabet=FILE        loads a precalculated alphabet dump [default: alphabet.cache]
  -x, --xsd-file=FILE        xsd-file
- -S                         SKIP-loading alphabet dump, refresh alphabet on each start [default: True]
+ -S                         SKIP-loading alphabet dump, refresh alphabet on each start
  -e VALUE, --exporter=VALUE    set the exporter (base, sofa, abaqus) [default: base]
 
 """
@@ -121,7 +121,7 @@ def alphabet(options):
             xsd.write(alphabet._xsd())
 
     # save the alphabet dump (always set)
-    if options['--alphabet'] and options['-S']:
+    if not options['-S'] and options['--alphabet']:
         alphabet.save(options['--alphabet'])
 
     return alphabet
@@ -132,14 +132,9 @@ COMMANDS = OrderedDict({'show': show, 'alphabet': alphabet, 'exec': execution})
 
 def main():
     args = docopt(OPTIONS, version=msml.__version__)
-    args['-S'] = True
     print(args)
 
     msml.env.load_user_file()
-
-    the_path = os.path.abspath(args['<file>'][0])
-    msml.env.msml_file_path = os.path.dirname(the_path)
-
 
     if not args['-S']:
         msml.env.load_alphabet(args['--alphabet'])

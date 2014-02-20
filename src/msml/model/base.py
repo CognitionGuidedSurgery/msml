@@ -60,12 +60,15 @@ class MSMLFile(object):
     """
 
     def __init__(self, variables=None, workflow=None, scene=None, env=None, output=None):
-        self._variables = {v.name: v for v in variables}
-        self._workflow = workflow
-        self._scene = scene
-        self._env = env
-        self._output = output
+        if variables:
+            self._variables = {v.name: v for v in variables}
+        else:
+            self._variables = []
 
+        self._workflow = workflow if workflow else Workflow()
+        self._scene = scene if scene else []
+        self._env = env  if env else {}
+        self._output = output if output else []
         self._exporter = None
 
     @property
@@ -145,6 +148,16 @@ class MSMLFile(object):
 
     def add_variable(self, var):
         self._variables[var.name] = var;
+
+    def find_simulation_step(self, name):
+        name = name.strip("{$}")
+        for env in self.env['environment']:
+            if 'simulation' in env:
+                for sstep in env['simulation']:
+                    if sstep['@name'] == name:
+                        return sstep
+        #TODO WARNING! sim step not found
+        return None
 
 
 class Workflow(object):
@@ -523,6 +536,12 @@ class ObjectConstraints(object):
         self._name = name
         self._forStep = forStep
         self._constraints = []
+
+    @property
+    def index_group(self):
+        for c in self._constraints:
+            if c.attributes['__tag__'] == 'indexgroup': return c
+        return None
 
     @property
     def name(self): return self._name

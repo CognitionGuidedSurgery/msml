@@ -50,6 +50,12 @@ class Alphabet(object):
 
         self.append(elements)
 
+    @property
+    def operators(self): return self._operators
+
+    @property
+    def object_attributes(self): return self._object_attributes
+
     def append(self, elements):
         for e in elements:
             if isinstance(e, Operator):
@@ -264,37 +270,9 @@ class PythonOperator(Operator):
 
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
-#        from itertools import starmap
-        values = [kwargs.get(x, None) for x in self.input_names()]
-#        converters = [x.sort for x in self.input.values() + self.parameters.values() ]
-#        args = starmap(lambda conv, val: conv(val), zip(converters.values))
-
-        #hack (einfache sortenlogik) for bool and float parameters
-
-        values = []
-        for x in self.input_names():
-            current_value = kwargs[x]
-            if current_value is not None:
-               currentInput = self.input.get(x, None)
-               if currentInput is None:
-                   currentInput = self.parameters.get(x, None)
-
-               if currentInput.format == 'bool':
-                   current_value = bool(current_value)
-
-               if (currentInput.format == 'float') or (currentInput.format == 'double'):
-                   current_value = float(current_value)
-
-               if currentInput.format == 'int':
-                   current_value = int(current_value)
-
-               values.append(current_value)
 
 
-
-
-
-        args = values
+        args = [kwargs.get(x, None) for x in self.input_names()]
         r = self.__function(*args)
 
         if not isinstance(r, tuple):
