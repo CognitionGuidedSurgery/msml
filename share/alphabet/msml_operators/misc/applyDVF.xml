@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="apply-dvf">
+
+	<runtime>
+		<python module="msml.ext.misc" function="ApplyDVF" />
+	</runtime>
+
+	<input>
+		<arg name="ApplyDVF" type="image" format="file.vtk" />
+	</input>
+
+	<output>
+		<arg name="outputDefImage" type="image" format="file.vti" />
+	</output>
+
+
+	<parameters>
+		<arg name="dvf" type="file.vtk" />
+		<arg name="multipleDVF" type="bool" />
+		<arg name="reverseDirection" type="bool" />
+	</parameters>
+</msml:operator>
+

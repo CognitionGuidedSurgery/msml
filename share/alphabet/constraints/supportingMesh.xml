@@ -1,0 +1,28 @@
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="supportingMesh" category="constraint"
+              quantity="single">
+
+
+    <description>
+        Add a secondary mesh to support to main mesh. Usable for vessels or bones.
+    </description>
+
+
+    <parameters>
+        <arg name="youngModulus">
+            <meta key="doc" value="        homogenous youngModulus  "/>
+        </arg>
+
+        <arg name="poissonRatio">
+            <meta key="doc" value="             homogenous poissonRatio  "/>
+        </arg>
+
+        <arg name="filename">
+            <meta key="doc" value=" filename (TODO: allow @ operator with use data objects)."/>
+        </arg>
+
+    </parameters>
+
+</msml:element>
+

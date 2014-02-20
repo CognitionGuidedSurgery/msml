@@ -1,0 +1,13 @@
+
+
+.idea/
+.project
+dist
+build/
+cbuild/
+*.pyc
+*.pyo
+alphabet.xml
+*.so
+Config.xml
+envconfg.py

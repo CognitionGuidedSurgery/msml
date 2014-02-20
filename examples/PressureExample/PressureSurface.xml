@@ -1,0 +1,83 @@
+<MSMLScene gravity="0 0 0">
+	<object name="bunny">
+		<physicsElements>
+			<materialRegion name="bunnyMaterial">
+				<indexGroup indices="@bodyRegion" />
+				<linearElastic youngModulus="100" poissonRatio="0.25" />
+				<mass density="0.001" />
+			</materialRegion>
+
+
+			<mesh>
+				<linearTetMesh name="VolumeMesh" filename="@SurfaceExtractor">
+					<surfaceExtract name="SurfaceExtractor" meshIn="@PureVolumeMesh"
+						meshOut="3Dircadb0101Labeled_low_and_surfaces.vtk" />
+
+				</linearTetMesh>
+				<linearTetMesh name="PureVolumeMesh" filename="@VolumeMesher">
+					<mesherCGALi2v name="VolumeMesher" mesh="3Dircadb0101Labeled_low.vtk"
+						image="3Dircadb0101Labeled_low.vti" facet_angle="20" facet_size="12"
+						facet_distance="12" cell_radius_edge_ratio="3" cell_size="30" odt="false"
+						llyod="false" pertube="false" exude="false" />
+				</linearTetMesh>
+			</mesh>
+
+			<indexGroup name="bodyRegion" indices="@bodyToIndexGroup">
+				<boxROIToIndexOperator name="bodyToIndexGroup"
+					box="-10 -10 -10 300 300 300" mesh="@VolumeMesh" select="elements" />
+			</indexGroup>
+
+			<indexGroup name="constraintRegion" indices="@bottomToIndexGroup">
+				<boxROIToIndexOperator name="bottomToIndexGroup"
+					box="-10 250 -10 300 300 300" mesh="@VolumeMesh" select="points" />
+			</indexGroup>
+
+
+			<indexGroup name="pressureFaces" indices="@pressureIndexGroup">
+				<MaterialIdToIndexOperator name="pressureIndexGroup"
+					id="193" mesh="@VolumeMesh" select="faces" />
+			</indexGroup>
+
+		</physicsElements>
+
+		<simulationSteps>
+			<step name="initial" dt="0.05" timesteps="24">
+				<constraintRegion name="bunnyConstraints">
+					<indexGroup indices="@constraintRegion" />
+					<fixedConstraints name="bunnyBottom" />
+				</constraintRegion>
+				<constraintRegion name="bunnyConstraints">
+					<indexGroup indices="@pressureFaces" />
+					<surfacePressure name="bunnyBottom" pressure="-400" />
+				</constraintRegion>
+			</step>
+		</simulationSteps>
+
+		<postProcessing>
+			<displacementOutputRequest name="dispOutput"
+				timestep="1" />
+		</postProcessing>
+
+	</object>
+
+	<solver>
+		<timeIntegration>dynamicImplicitEuler</timeIntegration>
+		<linearSolver>iterativeCG</linearSolver>
+		<processingUnit>GPU</processingUnit>
+	</solver>
+	
+	<postProcessing>
+		<image name="outputDVF" filename="@dvf1">
+			<generateDVF name="dvf1" RefMesh="@dispOutput"
+				DeformedMesh="@PureVolumeMesh" DVF="dvf.vtk" multipleReferenceGrids="true" />
+		</image>
+		<image name="outputImageDeformed" filename="@imgdef">
+			<applyDVF name="imgdef" refImage="3Dircadb0101Patient.vti"
+				outputDefImage="defImage.vti" dvf="@outputDVF" multipleDVF="true"
+				reverseDirection="true" />
+		</image>
+	</postProcessing>
+
+
+
+</MSMLScene>

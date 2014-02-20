@@ -1,0 +1,22 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="vtk-mesh-to-abaqus-mesh-str">
+	<runtime>
+		<python module="msml.ext.misc" function="convertVTKMeshToAbaqusMeshString" />
+	</runtime>
+
+	<input>
+		<arg name="inputMesh" type="linearTetMesh+quadraticTetMesh"
+			format="file.vtk" />
+	</input>
+
+	<output>
+		<arg name="mesh" type="linearTetMesh+quadraticTetMesh" format="string" />
+	</output>
+
+	<parameters>
+		<arg name="partName" type="string" />
+		<arg name="materialName" type="string" />
+	</parameters>
+
+</msml:operator>

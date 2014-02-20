@@ -1,0 +1,22 @@
+<cmakeGeneratedConfig>
+	<operatorDirectories  >
+	<directory path="${CMAKE_OPERATOR_DIRECTORY}"/> 
+	<directory path="${CMAKE_OPERATOR_DIRECTORY}/Release"/> 
+	<directory path="${CMAKE_OPERATOR_DIRECTORY}/Debug"/> 
+	</operatorDirectories  > 
+
+
+	<dataDirectories  >
+	<directory path="${CMAKE_TESTDATA_PATH}"/> 
+	</dataDirectories  > 
+
+	<pythonDirectories  >
+	<directory path="${CMAKE_PYTHON_DIRECTORY}"/> 
+	</pythonDirectories  >
+
+	<runSofaExecutable>
+		<file path="${SOFA_BIN_DIRECTORY}/sofaBatch" />
+	</runSofaExecutable>
+</cmakeGeneratedConfig>
+
+

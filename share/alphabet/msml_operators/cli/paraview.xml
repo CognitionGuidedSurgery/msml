@@ -1,0 +1,16 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="paraview">
+
+	<runtime>
+        <sh file="paraview" wd="" template="paraview --data={data}"/>
+	</runtime>
+
+	<input>
+		<arg name="data" type="mesh" format="file.vtk" />
+	</input>
+
+    <output>
+
+    </output>
+</msml:operator>

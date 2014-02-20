@@ -1,0 +1,34 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="mesherCGALs2v">
+
+    <runtime>
+        <python module="msml.ext.cgal" function="CreateVolumeMeshs2v"/>
+    </runtime>
+
+    <input>
+        <arg name="surfaceMesh" type="triangularMesh" format="file.vtk"/>  
+    </input>
+
+    <output>
+        <arg name="mesh" type="linearTetMesh" format="file.vtk"/>
+    </output>
+
+    <parameters>
+        <arg name="meshFilename" type="filename" optional="1">
+            <meta key="doc">
+                Optional input filename for the output.
+            </meta>
+        </arg>
+        <arg name="preserveFeatures" type="bool"/>
+        <arg name="facet_angle" type="float"/>
+        <arg name="facet_size" type="float"/>
+        <arg name="facet_distance" type="float"/>
+        <arg name="cell_radius_edge_ratio" type="float"/>
+        <arg name="cell_size" type="float"/>
+        <arg name="odt" type="bool"/>
+        <arg name="lloyd" type="bool"/>
+        <arg name="pertube" type="bool"/>
+        <arg name="exude" type="bool"/>        
+    </parameters>
+</msml:operator>

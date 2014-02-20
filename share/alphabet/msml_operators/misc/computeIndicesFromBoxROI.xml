@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="boxROIToIndexOperator">
+
+    <runtime>
+        <python module="msml.ext.misc"
+                function="computeIndicesFromBoxROI"/>
+    </runtime>
+
+    <input>
+        <arg name="mesh"
+             type="linearTetMesh, quadraticTetMesh"
+             format="file.vtk"/>
+        <!--
+        <arg name="meshB"
+             type="linearTetMesh, quadraticTetMesh"
+             format="file.vtk"/>
+             -->
+    </input>
+
+    <output>
+        <arg name="indices"
+             type="indexgroup"
+             format="vector.int"/>
+    </output>
+
+    <parameters>
+        <arg name="box" format="vector.float"/>
+        <arg name="select" format="string"/>
+    </parameters>
+
+
+</msml:operator>

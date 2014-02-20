@@ -1,0 +1,23 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="generateDVF">
+
+	<runtime>
+		<python module="msml.ext.misc" function="GenerateDVF" />
+	</runtime>
+
+	<input>
+		<arg name="RefMesh" type="linearTetMesh+displacementOutputRequest"
+			format="file.vtk+file.vtu" />
+	</input>
+
+	<output>
+		<arg name="DVF" type="image" format="file.vtk" />
+	</output>
+
+	<parameters>
+		<arg name="DeformedMesh" type="file.vtu" />
+		<arg name="multipleReferenceGrids" type="bool" />
+	</parameters>
+
+</msml:operator>

@@ -1,0 +1,10 @@
+lxml
+path.py
+networkx
+simplegeneric
+docopt
+pyparsing
+pydot
+numpy
+matplotlib
+dateutil

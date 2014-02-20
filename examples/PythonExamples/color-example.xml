@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:msml xmlns:p="http://sfb125.de/msml">
+
+    <variables>
+
+    </variables>
+
+    <workflow>
+        <colormesh id="clrmesh" coloredMesh="Colored/liverTet4ColoredIni.vtk" mesh="ToColor/LiverXSTet4.vtk"/>
+        <paraview id="pv" data="${clrmesh}"/>
+        <!-- <triangularMesh id="trimesh" filename="${clrmesh}"/> -->
+    </workflow>
+</p:msml>

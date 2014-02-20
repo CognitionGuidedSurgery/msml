@@ -1,0 +1,15 @@
+<!-- This physical element sets moving points -->
+<physicsElement name="movingPoints" type="basicElement" quantity="single">
+
+    <description>
+        Set moving points
+    </description>
+    
+    <parameter>
+        <childElement source="xml_data/msml_elements/constraints/child_elements/timestamp.xml"/>
+    </parameter>
+
+</physicsElement>
+
+
+

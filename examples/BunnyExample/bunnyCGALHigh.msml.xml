@@ -1,0 +1,72 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="input_vol_mesh" value="bunnyVolumeMeshHigh.vtk" type="linearMesh"
+             format="file.vtk"/>
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" type="linearMesh"
+             format="file.vtk"/>
+    </variables>
+
+    <scene>
+        <object id="bunny">
+            <mesh>
+                <linearTet id="bunnyMesh" mesh="${bunnyVolumeMesher}"/>
+            </mesh>
+
+            <sets>
+                <nodes>
+                    <indexgroup id="constraintRegion" indices="${bottomToIndexGroup}"/>
+                </nodes>
+                <elements>
+                    <indexgroup id="bodyRegion" indices="${bodyToIndexGroup}"/>
+                </elements>
+                <surfaces>
+                    <indexgroup id="constraintRegionSurfaces" indices="${bottomToIndexGroup}"/>
+                </surfaces>
+            </sets>
+
+            <material>
+                <region id="bunnyMaterial">
+                    <!--<materialRegion name=""> -->
+                    <indexgroup indices="${bodyToIndexGroup}"/>
+                    <linearElastic youngModulus="80000" poissonRatio="0.49"/>
+                    <mass density="1000"/>
+                </region>
+            </material>
+
+            <constraints>
+		<fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}" />               
+            </constraints>
+
+            <output>
+                <displacement id="liver" timestep="1"/>
+            </output>
+        </object>
+    </scene>
+
+    <workflow>    
+                      
+         <mesherCGALs2v id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}" 
+					preserve_features="false" facet_angle="20" facet_size="0.002" facet_distance="0.001" cell_radius_edge_ratio="3" cell_size="0.01" odt="false" lloyd="false"  pertube="false" exude="false" />
+
+        <boxROIToIndexOperator id="bodyToIndexGroup"
+                               box="-0.1 -0.03  -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"
+                               select="elements"/>
+
+        <boxROIToIndexOperator id="bottomToIndexGroup"
+                               box="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
+                               select="points"/>
+    </workflow>
+
+
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="100"/>
+        </simulation>
+    </environment>
+
+</msml:msml>

@@ -1,0 +1,27 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="mesherTetgen">
+
+    <runtime>
+        <python module="msml.ext.tetgen" function="createVolumeMeshTetgen"/>
+    </runtime>
+
+    <input>
+        <arg name="surfaceMesh" type="triangularMesh" format="file.vtk"/>
+    </input>
+
+    <output>
+        <arg name="mesh" type="linearTetMesh" format="file.vtk"/>
+    </output>
+
+    <parameters>
+        <arg name="preserveBoundary" type="bool"/>
+
+        <arg name="meshFilename" type="filename" optional="1">
+            <meta key="doc">
+                Optional input filename for the output.
+            </meta>
+        </arg>
+
+    </parameters>
+</msml:operator>
