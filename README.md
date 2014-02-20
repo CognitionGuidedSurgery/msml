@@ -10,7 +10,7 @@
       Authors: Sebastian Schalck
                Nicolai Schoch
                Markus Stoll
-	       Stefan Suwelack
+               Stefan Suwelack
                Alexander Weigl
       Version: 0.1alpha
          Date: 2014-01-25
