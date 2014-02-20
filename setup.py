@@ -89,17 +89,17 @@ setup(
     maintainer_email="Alexander.Weigl@student.kit.edu",
 
 
-    packages=['msml', 'msml.ext', 'msml.exporter_old'],
+    packages=['msml', 'msml.ext', 'msml.exporter_old', 'msml.exporter', 'msml.run', 'msml.model'],
     package_dir={'': 'src'},
 
-    scripts=["src/run-msml"],
+    scripts=["src/msml.py"],
     #		ext_modules     = [ tetgen_ext ]
 
     platforms="linux",
     long_description=msml.__doc__,
 
     keywords='', #TODO
-    license='AGPL3',
+    license='GPL3',
 
     classifiers=[
         'License :: OSI Approved :: GNU Affero General Public License v3',

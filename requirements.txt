@@ -5,6 +5,12 @@ simplegeneric
 docopt
 pyparsing
 pydot
-numpy
-matplotlib
-dateutil
+#numpy      
+#matplotlib
+#dateutil
+
+
+# sphinx
+
+sphinxcontrib-napoleon 
+
