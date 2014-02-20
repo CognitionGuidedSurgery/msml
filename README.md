@@ -15,7 +15,7 @@
       Version: 0.1alpha
          Date: 2014-01-25
    
-Documentation: http://rtfd.org/msml
+Documentation: http://msml.rtfd.org/
 
 
 # About
