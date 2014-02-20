@@ -8,3 +8,9 @@ pydot
 #numpy      
 #matplotlib
 #dateutil
+
+
+# sphinx
+
+sphinxcontrib-napoleon 
+
