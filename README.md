@@ -7,27 +7,55 @@
                                    
 
       License: GPLv3
-      Authors: Sebastian Schalck
-               Nicolai Schoch
-               Markus Stoll
+      Authors: Markus Stoll
                Stefan Suwelack
                Alexander Weigl
       Version: 0.1alpha
-         Date: 2014-01-25
+         Date: 2014-02-20
    
-Documentation: http://msml.rtfd.org/
-
 
 # About
 
+The medical simulation markup language (MSML) is a flexible XML-based description for the biomechanical modeling workflow and finite-element based biomechanical models.
+
+MSML helps you to create biomechanical models from tomographic data, export them to FE solvers and analyze the results. It is very flexible as already existing components (e.g. segmentation algorithms, meshers) can usually be integrated into the framework by providing a single additional XML-file.
+
+The main library is written in Python, but we also provide a large collection of useful C++ operators (e.g. linear tetrahedral and quadratic tetrahedral meshing, mesh size reduction, error analysis etc.).
+
+Additional information can also be found in the paper:
+S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel, The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow, Medicine Meets Virtual Reality (MMVR) 2014
+
+If you like MSML and use it in academic work, please cite the paper above.
+
+# Mailing list
+Join the mailing list: https://www.lists.kit.edu/wws/info/msml
+and post to msml@lists.kit.edu
+
+Please feel free to ask if you have any problems installing, running or extending MSML.
+
 # Getting Started
 
-# How to extend 
+## Installation:
+
+You need Python, Boost and the visualization toolkit (VTK) in order to run MSML. Additional components need Tetgen, CGAL and VCG. Please refer to our detailed installation guides for Linux and Windows in the Github-Wiki.
+
+## First steps
+
+Run the src/msml.py file with the -h option for help.
+
+MSML contains several simple scenarios to get you started quickly. Here are some examples
+1. In order to generate a volume mesh of the Stanford bunny using Tetgen and export the simulation to the SOFA framework type:
+   ./msml.py exec -e sofa ../../msml/examples/BunnyExample/bunny.msml.xml 
+2. In order to generate a volume mesh of the Stanford bunny using CGAL and export the simulation to the Abaqus FE solver type:
+   ./msml.py exec -e abaqus ../../msml/examples/BunnyExample/bunnyCGAL.msml.xml 
+
+Please refer to the Github wiki for further examples.
 
 # Contribute
 
-Please follow the [google style guide](http://google-styleguide.googlecode.com/svn/trunk/pyguide.html)
-for python in your contributions:
+You have some code/algorithms that might be good fit for the MSML framework? Then we are looking forward to your contribution. Just issue a pull request or contact Stefan Suwelack (suwelack@kit.edu).
 
- 
-Have a lot of fun.
+# Further questions?
+Please contact Stefan Suwelack (suwelack@kit.edu)
+
+
