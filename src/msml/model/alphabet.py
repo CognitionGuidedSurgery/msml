@@ -214,7 +214,13 @@ class Operator(object):
         return self.output.keys()
 
     def input_names(self):
-        return self.input.keys() + self.parameters.keys()
+        return self.input.keys()
+
+    def parameter_names(self):
+        return self.parameters.keys()
+
+    def acceptable_names(self):
+        return self.input_names() + self.parameter_names()
 
     def __contains__(self, attrib):
         return attrib in self.input or attrib in self.parameters
@@ -272,7 +278,7 @@ class PythonOperator(Operator):
         # r = self.__function(**kwargs)
 
 
-        args = [kwargs.get(x, None) for x in self.input_names()]
+        args = [kwargs.get(x, None) for x in self.acceptable_names()]
         r = self.__function(*args)
 
         if not isinstance(r, tuple):
