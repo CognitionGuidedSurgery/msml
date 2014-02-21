@@ -37,7 +37,7 @@ Please feel free to ask if you have any problems installing, running or extendin
 
 ## Installation:
 
-You need Python, Boost and the visualization toolkit (VTK) in order to run MSML. Additional components need Tetgen, CGAL and VCG. Please refer to our detailed installation guides for Linux and Windows in the Github-Wiki.
+You need Python, Boost and the visualization toolkit (VTK) in order to run MSML. Additional components need Tetgen, CGAL and VCG. Please refer to our detailed installation guides for [Linux](https://github.com/CognitionGuidedSurgery/msml/wiki/Installation-Linux) and [Windows](https://github.com/CognitionGuidedSurgery/msml/wiki/Installation-Windows) in the Github-Wiki.
 
 ## First steps
 
