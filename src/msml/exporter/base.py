@@ -96,7 +96,7 @@ class Exporter(object):
                         t = str(self.name)
                         i = key
                         op = str(self.operator)
-                        inputs = ",".join(map(str, self.operator.input_names()))
+                        inputs = ",".join(map(str, self.operator.acceptable_names()))
 
                         raise BindError(
                             "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
@@ -119,7 +119,7 @@ class Exporter(object):
                     t = str(self.name)
                     i = key
                     op = str(self.operator)
-                    inputs = ",".join(map(str, self.operator.input_names()))
+                    inputs = ",".join(map(str, self.operator.acceptable_names()))
 
                     raise BindError(
                         "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
