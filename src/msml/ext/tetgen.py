@@ -49,5 +49,5 @@ def createVolumeMeshTetgen(surfaceMesh, preserveBoundary=True, meshFilename=None
     '''
 
     '''
-    #preserveBoundary = bool(preserveBoundary)
+    preserveBoundary = bool(preserveBoundary)
     return cpp.createVolumeMeshTetgen(surfaceMesh, meshFilename, preserveBoundary)

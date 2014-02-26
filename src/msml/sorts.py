@@ -105,6 +105,8 @@ class SortsDefinition(object):
         self.sort_cache = {}
 
     def get_sort(self, tp, fmt = None):
+        return None
+
         if type(tp) is str:
             tp = self._find_type(tp)
 

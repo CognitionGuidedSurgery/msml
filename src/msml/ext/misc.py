@@ -41,9 +41,11 @@ from msml.model.exceptions import MSMLUnknownModuleWarning
 try:
     import MiscMeshOperatorsPython as cpp
 except ImportError, e:
+    import sys
     warn("Could not import MiscMeshOperatorsPython. "
-         "This is the C++-Modul. Have you successfully compiled and installed it? "
-         "Error is %s" % e,
+         "This is a C++-Modul. "
+         "Have you successfully compiled and installed it? "
+         "Error is %s, Current sys.path: %s" % (e, sys.path),
          MSMLUnknownModuleWarning, 0)
 
 

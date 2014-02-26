@@ -88,7 +88,7 @@ class MSMLFile(object):
         if variables:
             self._variables = {v.name: v for v in variables}
         else:
-            self._variables = []
+            self._variables = dict()
 
         self._workflow = workflow if workflow else Workflow()
         self._scene = scene if scene else []
