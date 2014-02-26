@@ -1,3 +1,4 @@
+# region gplv3preamble
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
@@ -23,7 +24,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+# endregion
 
 """
 MSML -- Meta model.
