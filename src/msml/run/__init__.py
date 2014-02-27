@@ -99,6 +99,7 @@ class LinearSequenceExecuter(Executer):
         """
         self._exporter.init_exec(self)
         self._exporter.render()
+        self._exporter.execute()
 
 
     def _execute_variable(self, node):

@@ -55,7 +55,7 @@ msml_file_path = None
 def load_user_file(loc = "~/.config/msmlrc.py"):
         global alphabet_search_paths
         loc = path(loc).expanduser()
-        if loc.exists():
+        if loc.exists() and False:
             execfile(loc, {"alphabet_search_path" : alphabet_search_paths})
         else:
             env_path = path(__file__)
