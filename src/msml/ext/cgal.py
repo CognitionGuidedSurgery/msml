@@ -35,22 +35,30 @@ try:
     import CGALOperatorsPython as cpp
 
 except ImportError, e:
-    warn("Could not import CGALOperatorsPython"
-         "This is the C++-Modul. Have you successfully compiled and installed it? "
-         "Error is %s" % e,
+    import sys
+    warn("Could not import CGALOperatorsPython\n"
+         "This is the C++-Modul. Have you successfully compiled and installed it?\n"
+         "Error is %s\n"
+         "sys.path is %s" % (e, sys.path),
          MSMLUnknownModuleWarning, 0)
 
 
+def _bool(s):
+    return s in ("on", "True", "true", "yes")
+
+
+def __convert(converters, values):
+    from itertools import starmap
+    args = list(starmap(lambda conv, val: conv(val), zip(converters,values)))
+    return args
 
 def CreateVolumeMeshi2v(*values):
-    #converters = [str, str, bool, float, float, float, float, float, bool, bool, bool, bool]
-    #from itertools import starmap
-    #args = list(starmap(lambda conv, val: conv(val), zip(converters,values)))
+    converters = 2*[str] + 5 *[float] + 4 *[_bool]
+    values = __convert(converters, values)
     return cpp.CreateVolumeMeshi2v(*values)
 
 def CreateVolumeMeshs2v(*values):
-    #converters = [str, str, bool, float, float, float, float, float, bool, bool, bool, bool]
-    #from itertools import starmap
-    #args = list(starmap(lambda conv, val: conv(val), zip(converters,values)))
+    converters = 2*[str] + [_bool] + 5 *[float] + 4 *[_bool]
+    values = __convert(converters, values)
     return cpp.CreateVolumeMeshs2v(*values)
 

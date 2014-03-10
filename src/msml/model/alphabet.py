@@ -305,7 +305,6 @@ class PythonOperator(Operator):
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
 
-
         args = [kwargs.get(x, None) for x in self.acceptable_names()]
         r = self.__function(*args)
 
