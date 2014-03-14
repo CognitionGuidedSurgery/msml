@@ -599,7 +599,7 @@ class ObjectConstraints(object):
 
 
 class SceneSets(object):
-    def __init__(self, nodes=None, surfaces=None, elements=None):
+    def __init__(self, nodes=list(), surfaces=list(), elements=list()):
         self.nodes = nodes
         self.surfaces = surfaces
         self.elements = elements

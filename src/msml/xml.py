@@ -303,14 +303,15 @@ def msml_file_factory(msml_node):
         mesh = _parse_mesh(mesh_node)
 
         sets_node = object_node.find('sets')
-        element_sets = sets_node.find('elements')
-        nodes_sets = sets_node.find('nodes')
-        surfaces_sets = sets_node.find('surfaces')
-
         sets = SceneSets()
-        sets.nodes = _parse_indexgroup_list(nodes_sets)
-        sets.surfaces = _parse_indexgroup_list(surfaces_sets)
-        sets.elements = _parse_indexgroup_list(element_sets)
+        if (sets_node is not None):
+            element_sets = sets_node.find('elements')
+            nodes_sets = sets_node.find('nodes')
+            surfaces_sets = sets_node.find('surfaces')
+
+            sets.nodes = _parse_indexgroup_list(nodes_sets)
+            sets.surfaces = _parse_indexgroup_list(surfaces_sets)
+            sets.elements = _parse_indexgroup_list(element_sets)    
 
         constraints_node = object_node.find('constraints')
         constraints = _parse_constraints(constraints_node)
