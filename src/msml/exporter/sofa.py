@@ -27,12 +27,13 @@
 # endregion
 
 
-__authors__ = 'Stefan Suwelack'
+__authors__ = 'Stefan Suwelack, Markus Stoll'
 __license__ = 'GPLv3'
 
 from warnings import warn
 import os
 import math
+import string
 
 import lxml.etree as etree
 
@@ -255,13 +256,9 @@ class SofaExporter(XMLExporter):
 
         keylist = density.keys()
         keylist.sort();
-        density_str = ""
-        youngs_str = ""
-        poissons_str = ""
-        for i in keylist:
-            density_str = density_str + density[i] + " "
-            youngs_str = youngs_str + youngs[i] + " "
-            poissons_str = poissons_str + poissons[i] + " "
+        density_str = " ".join(str(v) for v in density) 
+        youngs_str = " ".join(str(v) for v in youngs) 
+        poissons_str = " ".join(str(v) for v in poissons) 
 
         #merge all different materials to single forcefield/density entries.
         if currentSofaNode.find("MeshTopology") is not None:
@@ -393,7 +390,7 @@ class SofaExporter(XMLExporter):
 
     def createPostProcessingRequests(self, currentSofaNode, currentMsmlNode, rootMSMLNode):
         for request in currentMsmlNode.iterchildren():
-            if (request.tag == "displacementOutputRequest"):
+            if (request.tag == "displacement"):
                 if (currentSofaNode.find("MeshTopology") is not None):
                     #dispOutputNode = etree.SubElement(currentSofaNode, "ExtendedVTKExporter" )
                     dispOutputNode = etree.SubElement(currentSofaNode, "VTKExporter")
@@ -417,10 +414,10 @@ class SofaExporter(XMLExporter):
                     if (exportEveryNumberOfSteps == 0):
                         lastNumber = 1
                     else:
-
                         lastNumber = int(math.floor(timeSteps / ( int(exportEveryNumberOfSteps) + 1)))
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     request.set("filename", filenameLastOutput)
+                    
                 elif (currentSofaNode.find("QuadraticMeshTopology") is not None):
                     dispOutputNode = etree.SubElement(currentSofaNode, "ExtendedVTKExporter")
                     filename = self.working_dir / request.get("id")

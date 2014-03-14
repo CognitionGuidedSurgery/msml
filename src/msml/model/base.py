@@ -435,10 +435,12 @@ class Task(object):
                         if key in self.operator.input:
                             value.link_to_task(self, self.operator.input[key])
                         else:
+                            print self
+                            print self.operator.parameters[key]
                             value.link_to_task(self, self.operator.parameters[key])
                     except KeyError, e:
 
-                        f = str(var)
+                        f = str(a)
                         t = str(self.name)
                         i = key
                         op = str(self.operator)
@@ -470,7 +472,7 @@ class Task(object):
                         ref.link_to_task(self, self.operator.input[key])
                     else:
                         ref.link_to_task(self, self.operator.parameters[key])
-                except ImportError, e:
+                except KeyError, e:
                     f = str(var)
                     t = str(self.name)
                     i = key
@@ -649,7 +651,7 @@ class ObjectConstraints(object):
 
 
 class SceneSets(object):
-    def __init__(self, nodes=None, surfaces=None, elements=None):
+    def __init__(self, nodes=list(), surfaces=list(), elements=list()):
         self.nodes = nodes
         self.surfaces = surfaces
         self.elements = elements

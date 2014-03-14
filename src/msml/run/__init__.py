@@ -111,7 +111,9 @@ class LinearSequenceExecuter(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
+        print '--Executing operator of task {} with arguments {}'.format(task, kwargs)
         result = task.operator(**kwargs)
+        print '--Executing operator of task {} done'.format(task)
         self._memory[task.id] = result
 
 

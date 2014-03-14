@@ -77,9 +77,11 @@ __all__ = ['colorMeshFromComparison',
            'GenerateDVF']
 
 ApplyDVF = cpp.ApplyDVF
-ExtractAllSurfacesByMaterial = cpp.ExtractAllSurfacesByMaterial
+
 GenerateDVF = cpp.GenerateDVF
 
+def _bool(s):
+    return s in ("on", "True", "true", "yes")
 
 def colorMeshFromComparison(*args):
     return cpp.colorMeshFromComparison(*args )
@@ -118,8 +120,8 @@ def computeIndicesFromBoxROI(mesh, box, select):
     return cpp.computeIndicesFromBoxROI(mesh, vd, select)
 
 
-def computeIndicesFromMaterialId(*args ):
-    return cpp.computeIndicesFromMaterialId(*args )
+def computeIndicesFromMaterialId(mesh, num, type):
+    return cpp.computeIndicesFromMaterialId(mesh, int(num), type)
 
 
 def convertSTLToVTK(*args ):
@@ -148,6 +150,9 @@ def extractPointPositions(*args ):
 
 def extractSurfaceMesh(*args ):
     return cpp.extractSurfaceMesh(*args )
+
+def ExtractAllSurfacesByMaterial(meshin, meshout, cut):
+    return cpp.ExtractAllSurfacesByMaterial(meshin, meshout, _bool(cut) )
 
 
 def projectSurfaceMesh(*args ):
