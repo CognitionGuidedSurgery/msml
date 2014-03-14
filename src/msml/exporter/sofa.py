@@ -33,6 +33,7 @@ __license__ = 'GPLv3'
 from warnings import warn
 import os
 import math
+import string
 
 import lxml.etree as etree
 
@@ -255,13 +256,9 @@ class SofaExporter(XMLExporter):
 
         keylist = density.keys()
         keylist.sort();
-        density_str = ""
-        youngs_str = ""
-        poissons_str = ""
-        for i in keylist:
-            density_str = density_str + density[i] + " "
-            youngs_str = youngs_str + youngs[i] + " "
-            poissons_str = poissons_str + poissons[i] + " "
+        density_str = " ".join(str(v) for v in density) 
+        youngs_str = " ".join(str(v) for v in youngs) 
+        poissons_str = " ".join(str(v) for v in poissons) 
 
         #merge all different materials to single forcefield/density entries.
         if currentSofaNode.find("MeshTopology") is not None:
