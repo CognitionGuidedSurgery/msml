@@ -45,11 +45,11 @@ from .base import *
 from .sofa import SofaExporter
 from .abaqus import AbaqusExporter
 from .abaqusnew import  AbaqusExporter as NAbaqusExporter
-
+from .sofanew import SofaExporter as NSofaExporter
 
 # Register for common Exporters
 __REGISTER = {'base': Exporter, 'sofa': SofaExporter, 'abaqus': AbaqusExporter,
-              "nabaqus": NAbaqusExporter }
+              "nabaqus": NAbaqusExporter, 'nsofa' : NSofaExporter}
 
 
 def register_exporter(name, clazz):

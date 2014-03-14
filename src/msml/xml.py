@@ -340,7 +340,21 @@ def msml_file_factory(msml_node):
             return list()
 
     def _parse_environment(env_node):
-        return etree_to_dict(env_node)
+        env = MSMLEnvironment()
+
+        solver_node = env_node.find('solver')
+        env.solver.timeIntegration = solver_node.get('timeIntegration')
+        env.solver.linearSolver =  solver_node.get('linearSolver')
+        env.solver.processingUnit =  solver_node.get('processingUnit')
+
+
+        simulation_node = env_node.find('simulation')
+        for s in simulation_node.iterchildren():
+            env.simulation.add_step(name=s.get('name'),
+                                    dt=s.get('dt'),
+                                    iterations=s.get('iterations'))
+
+        return env
 
     n_variables = msml_node.find('variables')
     n_workflow = msml_node.find('workflow')

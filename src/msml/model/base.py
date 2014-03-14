@@ -32,15 +32,14 @@
 
 """
 
-
-
 from collections import namedtuple
 import re
 import warnings
 
 from path import path
-
 from .exceptions import *
+
+
 
 
 
@@ -92,9 +91,11 @@ class MSMLFile(object):
 
         self._workflow = workflow if workflow else Workflow()
         self._scene = scene if scene else []
-        self._env = env  if env else {}
+        self._env = env if env else MSMLEnvironment
         self._output = output if output else []
         self._exporter = None
+
+        assert isinstance(self._env, MSMLEnvironment)
 
     @property
     def variables(self):
@@ -206,6 +207,38 @@ class Workflow(object):
     def check_arguments(self):
         "checks if all tasks match the operator definition"
         return all(map(lambda x: x.validate(), self._tasks.values()))
+
+
+class MSMLEnvironment(object):
+    """<solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="100"/>
+        </simulation>"""
+
+    class Simulation(list):
+        class Step(object):
+            def __init__(self, name="initial", dt=0.05, iterations=100):
+                self.name = name
+                self.dt = dt
+                self.iterations = iterations
+
+        def __init__(self, *args):
+            list.__init__(self, *args)
+
+        def add_step(self, name="initial", dt=0.05, iterations=100):
+            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
+
+    class Solver(object):
+        def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler"):
+            self.linearSolver = linearSolver
+            self.processingUnit = processingUnit
+            self.timeIntegration = timeIntegration
+
+
+    def __init__(self):
+        self.simulation = MSMLEnvironment.Simulation()
+        self.solver = MSMLEnvironment.Solver()
 
 
 class MSMLVariable(object):
@@ -555,6 +588,22 @@ class ObjectElement(object):
         self.attributes = attrib
         self.object_attribute = object_attrib
 
+    def __getattr__(self, item):
+        try:
+            return self.attributes[item]
+        except KeyError as e:
+            return None
+
+    # TODO Check for valid against ObjectAttribute
+
+    @property
+    def tag(self):
+        return self.attributes['__tag__']
+
+    @tag.setter
+    def tag(self, tag):
+        self.attributes['__tag__'] = tag
+
 
 class ObjectConstraints(object):
     def __init__(self, name, forStep="initial"):
@@ -562,14 +611,17 @@ class ObjectConstraints(object):
         self._forStep = forStep
         self._constraints = []
 
+
     @property
-    def index_group(self):
+    def index_group(self)
+        warn(DeprecationWarning, "This method will be removed at the next refactoring! /alexander weigl")
         for c in self._constraints:
             if c.attributes['__tag__'] == 'indexgroup': return c
         return None
 
     @property
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @name.setter
     def name(self, v):
@@ -603,8 +655,16 @@ class SceneSets(object):
         self.elements = elements
 
 
-IndexGroup = namedtuple("IndexGroup", 'id, indices')
-Mesh = namedtuple('Mesh', 'type, id, mesh')
+class IndexGroup(object):
+    def __init__(self, id, indices):
+        self.id = id
+        self.indices = indices
+
+class Mesh(object):
+    def __init__(self, type, id, mesh):
+        self.type = type
+        self.id = id
+        self.mesh = mesh
 
 
 class MaterialRegion(list):
