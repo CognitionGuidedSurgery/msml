@@ -54,7 +54,14 @@ __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
 Argument = namedtuple('Argument', 'name,format,type,required')
+IndexGroup = namedtuple("IndexGroup", 'id, indices')
 
+
+class Mesh(object):
+    def __init__(self, type = None, mesh = None, id = None):
+        self.type = type
+        self.mesh = mesh
+        self.id = id
 
 class struct(dict):
     def __getattr__(self, attr):
@@ -473,7 +480,7 @@ class Task(object):
 
 
 class SceneObject(object):
-    def __init__(self, oid, mesh=None, body=[], material=[], constraints=[]):
+    def __init__(self, oid, mesh=Mesh(), body=[], material=[], constraints=[]):
         self._id = oid
         self._mesh = mesh
         self._material = material
@@ -603,14 +610,11 @@ class SceneSets(object):
         self.elements = elements
 
 
-IndexGroup = namedtuple("IndexGroup", 'id, indices')
-Mesh = namedtuple('Mesh', 'type, id, mesh')
-
 
 class MaterialRegion(list):
-    def __init__(self, id, elements):
+    def __init__(self, id, elements = None):
         self.id = id
-        list.__init__(self, elements)
+        list.__init__(self, elements if elements else [])
 
     def get_indices(self):
         for ele in self:
