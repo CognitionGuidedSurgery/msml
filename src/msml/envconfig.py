@@ -1,14 +1,4 @@
-__author__ = 'Alexander Weigl'
-__date__ = '2014-03-08'
-
-
-# just an placeholder, overwritten by cmake
-
-from path import path
-
-operators_path = path("~/Projects/msmlworkspace/msml/build/bin").expanduser()
-operators_path_release = operators_path
-operators_path_debug = operators_path
-
-
-
+# stub, automatically generated
+operators_path = "/home/weigl/workspace/msml/build/bin"
+operators_path_release = "/home/weigl/workspace/msml/build/bin/Release/"
+operators_path_debug = "/home/weigl/workspace/msml/build/bin/Debug/"

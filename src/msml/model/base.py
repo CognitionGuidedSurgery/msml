@@ -32,7 +32,6 @@
 
 """
 
-
 from collections import namedtuple
 import re
 import warnings
@@ -40,6 +39,7 @@ import warnings
 from path import path
 
 from .exceptions import *
+
 
 
 # from msml.model.alphabet import Argument cycle
@@ -50,6 +50,7 @@ __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
 Argument = namedtuple('Argument', 'name,format,type,required')
+
 
 class struct(dict):
     def __getattr__(self, attr):
@@ -587,9 +588,17 @@ class ObjectElement(object):
     def __getattr__(self, item):
         return self.get(item, None)
 
+    def bind(self):
+        self.meta = msml.env.current_alphabet.get(self.__tag__)
+
     def validate(self):
-        # TODO Check for valid against ObjectAttribute
-        return True
+        if self.meta is None:
+            raise MSMLError("for %s is no meta defined" % self.__tag__)
+
+        for key, value in self.attributes:
+            if key not in self.meta.parameters:
+                warnings.warn(MSMLWarning,
+                              "Paramter %s of Element %s is not specify in definition." % (key, self.meta.name))
 
     @property
     def tag(self):
@@ -601,7 +610,11 @@ class ObjectElement(object):
 
     @property
     def meta(self):
-        return self.meta
+        return self._meta
+
+    @meta.setter
+    def meta(self, new):
+        self._meta = new
 
     def _get(self, attribute):
         if attribute in self.attributes:
@@ -611,7 +624,7 @@ class ObjectElement(object):
                 return self.meta.parameters[attribute].default
         raise KeyError("Could not find %s in ObjectElement attributes or a parameter default")
 
-    def get(self, attribute, default = None):
+    def get(self, attribute, default=None):
         try:
             return self._get(attribute)
         except KeyError:
@@ -671,15 +684,16 @@ class IndexGroup(object):
         self.id = id
         self.indices = indices
 
+
 class Mesh(object):
-    def __init__(self, type = "linear", id = None, mesh = None):
+    def __init__(self, type="linear", id=None, mesh=None):
         self.type = type
         self.id = id
         self.mesh = mesh
 
 
 class MaterialRegion(list):
-    def __init__(self, id, elements = None):
+    def __init__(self, id, elements=None):
         self.id = id
         list.__init__(self, elements if elements else [])
 
