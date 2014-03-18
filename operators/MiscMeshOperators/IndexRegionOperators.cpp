@@ -83,8 +83,10 @@ vector<unsigned int>	IndexRegionOperators::computeIndicesFromBoxROI(string filen
 			thePoints->GetPoint(i, currentPoint);
 			if( (currentPoint[0]>box[0]) && (currentPoint[1]>box[1]) && (currentPoint[2]>box[2]) 
         && (currentPoint[0]<box[3]) && (currentPoint[1]<box[4]) && (currentPoint[2]<box[5]))
-					indices.push_back(i);
-      count++;
+			{
+        indices.push_back(i);
+        count++;
+      }
 		}
     cerr << count << " points found in box";
 	}
@@ -129,7 +131,7 @@ vector<unsigned int> IndexRegionOperators::computeIndicesFromMaterialId(string f
 	  vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	  reader->SetFileName(filename.c_str());
 	  reader->Update();
-  	if(type.compare("points") == 0)
+  	if(type.compare("points_experimental") == 0)
     {
   		vtkDataArray* pointData = reader->GetOutput()->GetPointData()->GetScalars();
   		for(unsigned int i=0;i< reader->GetOutput()->GetNumberOfPoints();i++)

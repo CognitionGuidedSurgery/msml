@@ -2,6 +2,30 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="mesherCGALi2v">
 
+<!--
+LIBRARY_API static
+
+std::string
+
+CreateVolumeMeshi2v(
+
+const char* infile,
+const char* outfile,
+
+double theFacetAngle,
+double theFacetSize,
+double theFacetDistance,
+double theCellRadiusEdgeRatio,
+double theCellSize,
+
+bool theOdtSmoother,
+bool theLloydSmoother,
+bool thePerturber,
+bool theExuder
+
+-->
+
+
 	<runtime>
 		<python module="msml.ext.cgal" function="CreateVolumeMeshi2v" />
 	</runtime>

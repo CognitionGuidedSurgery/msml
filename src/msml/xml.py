@@ -1,12 +1,39 @@
-"""
+# region gplv3preamble
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
+#
+# MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
+#
+# If you use this software in academic work, please cite the paper:
+#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+#   Medicine Meets Virtual Reality (MMVR) 2014
+#
+# Copyright (C) 2013-2014 see Authors.txt
+#
+# If you have any questions please feel free to contact us at suwelack@kit.edu
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# endregion
 
+
+""" msml.xml provides functionality to read and process MSML XML-Files to the msml Python models.
 
 """
 from __future__ import print_function
 
 from lxml import etree
 from warnings import warn
-
 from path import path
 
 from msml.model import *
@@ -45,8 +72,16 @@ def load_alphabet(folder=None, file_list=None):
 
 
 def load_msml_file(fil):
+    """ Process the given XML-File to and MSMLFile object.
+
+    Args:
+      fil (str): filename of an existing XML file
+
+    Returns:
+      MSMLFile
+    """
     msml_node = xmldom(fil)
-    obj =  msml_file_factory(msml_node)
+    obj = msml_file_factory(msml_node)
     obj.filename = fil
     return obj
 
@@ -55,7 +90,7 @@ def parse_file(R):
     tag = _tag_name(R.tag)
 
     if tag in _parse_hooks:
-        hook = _parse_hooks[tag];
+        hook = _parse_hooks[tag]
         return hook(R)
     else:
         print("for element %s is no parse hook registered" % tag)
@@ -213,7 +248,7 @@ def msml_file_factory(msml_node):
         '''
         if _tag_name(object_node.tag) != 'object':
             warn("only 'object' is supported, group or "
-                 "other elements are not allowed, found: %s'" % obj.tag,
+                 "other elements are not allowed, found: %s'" % object_node.tag,
                  MSMLXMlWarning, 2)
 
         def _parse_mesh(mesh_node):
@@ -267,14 +302,15 @@ def msml_file_factory(msml_node):
         mesh = _parse_mesh(mesh_node)
 
         sets_node = object_node.find('sets')
-        element_sets = sets_node.find('elements')
-        nodes_sets = sets_node.find('nodes')
-        surfaces_sets = sets_node.find('surfaces')
-
         sets = SceneSets()
-        sets.nodes = _parse_indexgroup_list(nodes_sets)
-        sets.surfaces = _parse_indexgroup_list(surfaces_sets)
-        sets.elements = _parse_indexgroup_list(element_sets)
+        if (sets_node is not None):
+            element_sets = sets_node.find('elements')
+            nodes_sets = sets_node.find('nodes')
+            surfaces_sets = sets_node.find('surfaces')
+
+            sets.nodes = _parse_indexgroup_list(nodes_sets)
+            sets.surfaces = _parse_indexgroup_list(surfaces_sets)
+            sets.elements = _parse_indexgroup_list(element_sets)
 
         constraints_node = object_node.find('constraints')
         constraints = _parse_constraints(constraints_node)
@@ -304,7 +340,20 @@ def msml_file_factory(msml_node):
             return list()
 
     def _parse_environment(env_node):
-        return etree_to_dict(env_node)
+        env = MSMLEnvironment()
+
+        solver_node = env_node.find('solver')
+        env.solver.timeIntegration = solver_node.get('timeIntegration')
+        env.solver.linearSolver = solver_node.get('linearSolver')
+        env.solver.processingUnit = solver_node.get('processingUnit')
+
+        simulation_node = env_node.find('simulation')
+        for s in simulation_node.iterchildren():
+            env.simulation.add_step(name=s.get('name'),
+                                    dt=s.get('dt'),
+                                    iterations=s.get('iterations'))
+
+        return env
 
     n_variables = msml_node.find('variables')
     n_workflow = msml_node.find('workflow')
@@ -327,7 +376,10 @@ def msml_file_factory(msml_node):
                     workflow=_parse_workflow(n_workflow))
 
 
-def _argument_sets(node):
+from collections import OrderedDict
+
+
+def _argument_sets(node, as_ordered_dict=False):
     def _parse_arg(node):
         n, f, t, r = _attributes(node, 'name, format, type, required', required=True)
         return Argument(n, f, t, bool(int(r)))
@@ -344,10 +396,19 @@ def _argument_sets(node):
         else:
             raise BaseException("unexpecting element")
 
+
     if node is not None and len(node) > 0:
-        return map(_parse_subelements, node.iterchildren())
+        result = map(_parse_subelements, node.iterchildren())
     else:
-        return list()
+        result = []
+
+    if as_ordered_dict:
+        o = OrderedDict()
+        for r in result:
+            o[r.name] = r
+        return o
+    else:
+        return result
 
 
 def operator_factory(operator_node):
@@ -402,13 +463,13 @@ def element_factory(element_node):
     quantity = element_node.attrib['quantity']
     category = element_node.attrib['category']
 
-    description = element_node.find('description').text
+    description = element_node.find('description').text.strip()
 
     input_node = element_node.find('input')
     parameter_node = element_node.find('parameters')
 
-    input = _argument_sets(input_node)
-    parameters = _argument_sets(parameter_node)
+    input = _argument_sets(input_node, True)
+    parameters = _argument_sets(parameter_node, True)
 
     clazz = ObjectAttribute.find_class(category)
 

@@ -1,4 +1,36 @@
 # -*- encoding: utf-8 -*-
+# region gplv3preamble
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
+#
+# MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
+#
+# If you use this software in academic work, please cite the paper:
+#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+#   Medicine Meets Virtual Reality (MMVR) 2014
+#
+# Copyright (C) 2013-2014 see Authors.txt
+#
+# If you have any questions please feel free to contact us at suwelack@kit.edu
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# endregion
+
+"""
+
+
+"""
 
 from collections import namedtuple
 import re
@@ -7,17 +39,6 @@ import warnings
 from path import path
 
 from .exceptions import *
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -63,13 +84,15 @@ class MSMLFile(object):
         if variables:
             self._variables = {v.name: v for v in variables}
         else:
-            self._variables = []
+            self._variables = dict()
 
         self._workflow = workflow if workflow else Workflow()
         self._scene = scene if scene else []
-        self._env = env  if env else {}
+        self._env = env if env else MSMLEnvironment()
         self._output = output if output else []
         self._exporter = None
+
+        assert isinstance(self._env, MSMLEnvironment)
 
     @property
     def variables(self):
@@ -181,6 +204,38 @@ class Workflow(object):
     def check_arguments(self):
         "checks if all tasks match the operator definition"
         return all(map(lambda x: x.validate(), self._tasks.values()))
+
+
+class MSMLEnvironment(object):
+    """<solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="100"/>
+        </simulation>"""
+
+    class Simulation(list):
+        class Step(object):
+            def __init__(self, name="initial", dt=0.05, iterations=100):
+                self.name = name
+                self.dt = dt
+                self.iterations = iterations
+
+        def __init__(self, *args):
+            list.__init__(self, *args)
+
+        def add_step(self, name="initial", dt=0.05, iterations=100):
+            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
+
+    class Solver(object):
+        def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler"):
+            self.linearSolver = linearSolver
+            self.processingUnit = processingUnit
+            self.timeIntegration = timeIntegration
+
+
+    def __init__(self):
+        self.simulation = MSMLEnvironment.Simulation()
+        self.solver = MSMLEnvironment.Solver()
 
 
 class MSMLVariable(object):
@@ -380,7 +435,7 @@ class Task(object):
                             value.link_to_task(self, self.operator.parameters[key])
                     except KeyError, e:
 
-                        f = str(var)
+                        f = str(a)
                         t = str(self.name)
                         i = key
                         op = str(self.operator)
@@ -412,7 +467,7 @@ class Task(object):
                         ref.link_to_task(self, self.operator.input[key])
                     else:
                         ref.link_to_task(self, self.operator.parameters[key])
-                except ImportError, e:
+                except KeyError, e:
                     f = str(var)
                     t = str(self.name)
                     i = key
@@ -450,7 +505,7 @@ class Task(object):
 class SceneObject(object):
     def __init__(self, oid, mesh=None, body=[], material=[], constraints=[]):
         self._id = oid
-        self._mesh = mesh
+        self._mesh = mesh if mesh else Mesh()
         self._material = material
         self._constraints = constraints
         self._sets = None
@@ -526,9 +581,54 @@ class SceneGroup(object):
 
 
 class ObjectElement(object):
-    def __init__(self, attrib={}, object_attrib=None):
+    def __init__(self, attrib={}, meta=None):
         self.attributes = attrib
-        self.object_attribute = object_attrib
+        self.meta = meta
+
+    def __getattr__(self, item):
+        return self.get(item, None)
+
+    def bind(self):
+        self.meta = msml.env.current_alphabet.get(self.__tag__)
+
+    def validate(self):
+        if self.meta is None:
+            raise MSMLError("for %s is no meta defined" % self.__tag__)
+
+        for key, value in self.attributes:
+            if key not in self.meta.parameters:
+                warnings.warn(MSMLWarning,
+                              "Paramter %s of Element %s is not specify in definition." % (key, self.meta.name))
+
+    @property
+    def tag(self):
+        return self.attributes['__tag__']
+
+    @tag.setter
+    def tag(self, tag):
+        self.attributes['__tag__'] = tag
+
+    @property
+    def meta(self):
+        return self._meta
+
+    @meta.setter
+    def meta(self, new):
+        self._meta = new
+
+    def _get(self, attribute):
+        if attribute in self.attributes:
+            return self.attributes[attribute]
+        else:
+            if self.meta:
+                return self.meta.parameters[attribute].default
+        raise KeyError("Could not find %s in ObjectElement attributes or a parameter default")
+
+    def get(self, attribute, default=None):
+        try:
+            return self._get(attribute)
+        except KeyError:
+            return default
 
 
 class ObjectConstraints(object):
@@ -539,12 +639,14 @@ class ObjectConstraints(object):
 
     @property
     def index_group(self):
+        warn(DeprecationWarning, "This method will be removed at the next refactoring! /alexander weigl")
         for c in self._constraints:
             if c.attributes['__tag__'] == 'indexgroup': return c
         return None
 
     @property
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @name.setter
     def name(self, v):
@@ -566,26 +668,34 @@ class ObjectConstraints(object):
     def constraints(self, v):
         self._constraints = v
 
-
     def add_constraint(self, *constraints):
         self._constraints += constraints
 
 
 class SceneSets(object):
-    def __init__(self, nodes=None, surfaces=None, elements=None):
+    def __init__(self, nodes=list(), surfaces=list(), elements=list()):
         self.nodes = nodes
         self.surfaces = surfaces
         self.elements = elements
 
 
-IndexGroup = namedtuple("IndexGroup", 'id, indices')
-Mesh = namedtuple('Mesh', 'type, id, mesh')
+class IndexGroup(object):
+    def __init__(self, id, indices):
+        self.id = id
+        self.indices = indices
+
+
+class Mesh(object):
+    def __init__(self, type="linear", id=None, mesh=None):
+        self.type = type
+        self.id = id
+        self.mesh = mesh
 
 
 class MaterialRegion(list):
-    def __init__(self, id, elements):
+    def __init__(self, id, elements=None):
         self.id = id
-        list.__init__(self, elements)
+        list.__init__(self, elements if elements else [])
 
     def get_indices(self):
         for ele in self:

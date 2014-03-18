@@ -108,7 +108,7 @@ add_definitions( -DTEST_DATA_PATH="${TESTDATA_PATH}" )
 set(SOFA_BIN_DIRECTORY "SOFA_BIN_DIRECTORY_NOT_FOUND" CACHE FILEPATH "description")
     
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfg.py)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
 
     
 

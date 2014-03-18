@@ -1,11 +1,41 @@
-__authors__ = 'Stefan Suwelack'
+# region gplv3preamble
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
+#
+# MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
+#
+# If you use this software in academic work, please cite the paper:
+#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+#   Medicine Meets Virtual Reality (MMVR) 2014
+#
+# Copyright (C) 2013-2014 see Authors.txt
+#
+# If you have any questions please feel free to contact us at suwelack@kit.edu
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# endregion
+
+
+__authors__ = 'Stefan Suwelack, Markus Stoll'
 __license__ = 'GPLv3'
 
 from warnings import warn
-
-import lxml.etree as etree
 import os
 import math
+import string
+
+import lxml.etree as etree
 
 #from ..ext import tetgen
 
@@ -15,7 +45,7 @@ from ..model.alphabet import PythonOperator
 from ..model.base import Task
 from .base import XMLExporter, Exporter
 from msml.model.exceptions import *
-import msml.env
+from path import path
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -31,6 +61,8 @@ class SofaExporter(XMLExporter):
       """
         self.name = 'SOFAExporter'
         Exporter.__init__(self, msml_file)
+        self.export_file = None
+        self.working_dir = path()
 
     def init_exec(self, executer):
         """
@@ -55,18 +87,18 @@ class SofaExporter(XMLExporter):
         msmlRootNode = fileTree.getroot()
 
         print("Converting to sofa scn")
-        theSOFAFilename = filename[0:-3] + 'scn'
-        print theSOFAFilename
+        self.export_file = filename[0:-3] + 'scn'
+        print self.export_file
 
-        self.write_scn(msmlRootNode, theSOFAFilename)
+        self.working_dir = path(filename).dirname()
+        self.write_scn(msmlRootNode, self.export_file)
 
 
     def execute(self):
         "should execute the external tool and set the memory"
-
         print("Executing sofa.")
+        os.system("runSofa %s" % self.export_file)
 
-        pass
 
     def write_scn(self, msmlRootNode, filename):
         sofa_scene_node = self.createScene(msmlRootNode)
@@ -94,12 +126,8 @@ class SofaExporter(XMLExporter):
 
         self.InsertAllTemplateAttributs(sofa_scene_node, solverNode);
 
-
-
         tree = etree.ElementTree(sofa_scene_node)
         tree.write(filename, pretty_print=True)
-
-
 
     def createMeshTopology(self, currentSofaNode, currentMsmlNode, msmlRootNode):
 
@@ -115,7 +143,7 @@ class SofaExporter(XMLExporter):
             #find the filename
             meshValue = currentMeshNode.attrib["mesh"]
             theFilename = self.evaluate_node(meshValue)
-            theFilename = os.path.join(msml.env.msml_file_path, theFilename)
+            theFilename = self.working_dir / theFilename
             print theFilename
 
             loaderNode.set("filename", theFilename)
@@ -139,7 +167,7 @@ class SofaExporter(XMLExporter):
             #find the filename
             meshValue = currentMeshNode.attrib["mesh"]
             theFilename = self.evaluate_node(meshValue)
-            theFilename = os.path.join(msml.env.msml_file_path, theFilename)
+            theFilename = self.working_dir / theFilename
             print theFilename
 
             loaderNode.set("filename", theFilename)
@@ -206,7 +234,6 @@ class SofaExporter(XMLExporter):
             indices_vec = self.evaluate_node(indices_key)
             indices = '%s' % ', '.join(map(str, indices_vec))
 
-
             indices_int = [int(i) for i in indices.split(",")]
 
             #Get all materials
@@ -229,13 +256,9 @@ class SofaExporter(XMLExporter):
 
         keylist = density.keys()
         keylist.sort();
-        density_str = ""
-        youngs_str = ""
-        poissons_str = ""
-        for i in keylist:
-            density_str = density_str + density[i] + " "
-            youngs_str = youngs_str + youngs[i] + " "
-            poissons_str = poissons_str + poissons[i] + " "
+        density_str = " ".join(str(v) for v in density) 
+        youngs_str = " ".join(str(v) for v in youngs) 
+        poissons_str = " ".join(str(v) for v in poissons) 
 
         #merge all different materials to single forcefield/density entries.
         if currentSofaNode.find("MeshTopology") is not None:
@@ -266,7 +289,6 @@ class SofaExporter(XMLExporter):
             indices_key = constraint.get("indices")
             indices_vec = self.evaluate_node(indices_key)
             indices = '%s' % ', '.join(map(str, indices_vec))
-
 
             if (currentConstraintType == "fixedConstraint"):
                 constraintNode = etree.SubElement(currentSofaNode, "FixedConstraint")
@@ -368,11 +390,11 @@ class SofaExporter(XMLExporter):
 
     def createPostProcessingRequests(self, currentSofaNode, currentMsmlNode, rootMSMLNode):
         for request in currentMsmlNode.iterchildren():
-            if (request.tag == "displacementOutputRequest"):
+            if (request.tag == "displacement"):
                 if (currentSofaNode.find("MeshTopology") is not None):
                     #dispOutputNode = etree.SubElement(currentSofaNode, "ExtendedVTKExporter" )
                     dispOutputNode = etree.SubElement(currentSofaNode, "VTKExporter")
-                    filename = os.path.join(msml.env.msml_file_path, request.get("id"))
+                    filename = self.working_dir / request.get("id")
                     dispOutputNode.set("filename", filename)
                     exportEveryNumberOfSteps = request.get("timestep")
                     dispOutputNode.set("exportEveryNumberOfSteps", exportEveryNumberOfSteps)
@@ -392,13 +414,13 @@ class SofaExporter(XMLExporter):
                     if (exportEveryNumberOfSteps == 0):
                         lastNumber = 1
                     else:
-
                         lastNumber = int(math.floor(timeSteps / ( int(exportEveryNumberOfSteps) + 1)))
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     request.set("filename", filenameLastOutput)
+                    
                 elif (currentSofaNode.find("QuadraticMeshTopology") is not None):
                     dispOutputNode = etree.SubElement(currentSofaNode, "ExtendedVTKExporter")
-                    filename = os.path.join(msml.env.msml_file_path, request.get("id"))
+                    filename = self.working_dir / request.get("id")
                     dispOutputNode.set("filename", filename)
                     dispOutputNode.set("exportEveryNumberOfSteps", request.get("timestep"))
                     dispOutputNode.set("tetras", "0")
