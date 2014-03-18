@@ -198,6 +198,7 @@ class Argument(MSMLVariable):
     def __init__(self, name, typ=None, format=None, required=True):
         MSMLVariable.__init__(self, name, format, typ)
         self.required = required
+        self.default = None
 
 
 StructArgument = namedtuple('StructArgument', 'name,args')

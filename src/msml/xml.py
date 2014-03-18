@@ -34,7 +34,6 @@ from __future__ import print_function
 
 from lxml import etree
 from warnings import warn
-
 from path import path
 
 from msml.model import *
@@ -82,7 +81,7 @@ def load_msml_file(fil):
       MSMLFile
     """
     msml_node = xmldom(fil)
-    obj =  msml_file_factory(msml_node)
+    obj = msml_file_factory(msml_node)
     obj.filename = fil
     return obj
 
@@ -249,7 +248,7 @@ def msml_file_factory(msml_node):
         '''
         if _tag_name(object_node.tag) != 'object':
             warn("only 'object' is supported, group or "
-                 "other elements are not allowed, found: %s'" % obj.tag,
+                 "other elements are not allowed, found: %s'" % object_node.tag,
                  MSMLXMlWarning, 2)
 
         def _parse_mesh(mesh_node):
@@ -311,7 +310,7 @@ def msml_file_factory(msml_node):
 
             sets.nodes = _parse_indexgroup_list(nodes_sets)
             sets.surfaces = _parse_indexgroup_list(surfaces_sets)
-            sets.elements = _parse_indexgroup_list(element_sets)    
+            sets.elements = _parse_indexgroup_list(element_sets)
 
         constraints_node = object_node.find('constraints')
         constraints = _parse_constraints(constraints_node)
@@ -345,9 +344,8 @@ def msml_file_factory(msml_node):
 
         solver_node = env_node.find('solver')
         env.solver.timeIntegration = solver_node.get('timeIntegration')
-        env.solver.linearSolver =  solver_node.get('linearSolver')
-        env.solver.processingUnit =  solver_node.get('processingUnit')
-
+        env.solver.linearSolver = solver_node.get('linearSolver')
+        env.solver.processingUnit = solver_node.get('processingUnit')
 
         simulation_node = env_node.find('simulation')
         for s in simulation_node.iterchildren():
@@ -378,7 +376,10 @@ def msml_file_factory(msml_node):
                     workflow=_parse_workflow(n_workflow))
 
 
-def _argument_sets(node):
+from collections import OrderedDict
+
+
+def _argument_sets(node, as_ordered_dict=False):
     def _parse_arg(node):
         n, f, t, r = _attributes(node, 'name, format, type, required', required=True)
         return Argument(n, f, t, bool(int(r)))
@@ -395,10 +396,19 @@ def _argument_sets(node):
         else:
             raise BaseException("unexpecting element")
 
+
     if node is not None and len(node) > 0:
-        return map(_parse_subelements, node.iterchildren())
+        result = map(_parse_subelements, node.iterchildren())
     else:
-        return list()
+        result = []
+
+    if as_ordered_dict:
+        o = OrderedDict()
+        for r in result:
+            o[r.name] = r
+        return o
+    else:
+        return result
 
 
 def operator_factory(operator_node):
@@ -453,13 +463,13 @@ def element_factory(element_node):
     quantity = element_node.attrib['quantity']
     category = element_node.attrib['category']
 
-    description = element_node.find('description').text
+    description = element_node.find('description').text.strip()
 
     input_node = element_node.find('input')
     parameter_node = element_node.find('parameters')
 
-    input = _argument_sets(input_node)
-    parameters = _argument_sets(parameter_node)
+    input = _argument_sets(input_node, True)
+    parameters = _argument_sets(parameter_node, True)
 
     clazz = ObjectAttribute.find_class(category)
 
