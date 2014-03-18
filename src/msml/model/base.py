@@ -32,17 +32,14 @@
 
 """
 
+
 from collections import namedtuple
 import re
 import warnings
 
 from path import path
+
 from .exceptions import *
-
-
-
-
-
 
 
 # from msml.model.alphabet import Argument cycle
@@ -53,7 +50,6 @@ __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
 Argument = namedtuple('Argument', 'name,format,type,required')
-
 
 class struct(dict):
     def __getattr__(self, attr):
@@ -435,8 +431,6 @@ class Task(object):
                         if key in self.operator.input:
                             value.link_to_task(self, self.operator.input[key])
                         else:
-                            print self
-                            print self.operator.parameters[key]
                             value.link_to_task(self, self.operator.parameters[key])
                     except KeyError, e:
 
@@ -510,7 +504,7 @@ class Task(object):
 class SceneObject(object):
     def __init__(self, oid, mesh=None, body=[], material=[], constraints=[]):
         self._id = oid
-        self._mesh = mesh
+        self._mesh = mesh if mesh else Mesh()
         self._material = material
         self._constraints = constraints
         self._sets = None
@@ -586,17 +580,16 @@ class SceneGroup(object):
 
 
 class ObjectElement(object):
-    def __init__(self, attrib={}, object_attrib=None):
+    def __init__(self, attrib={}, meta=None):
         self.attributes = attrib
-        self.object_attribute = object_attrib
+        self.meta = meta
 
     def __getattr__(self, item):
-        try:
-            return self.attributes[item]
-        except KeyError as e:
-            return None
+        return self.get(item, None)
 
-    # TODO Check for valid against ObjectAttribute
+    def validate(self):
+        # TODO Check for valid against ObjectAttribute
+        return True
 
     @property
     def tag(self):
@@ -606,13 +599,30 @@ class ObjectElement(object):
     def tag(self, tag):
         self.attributes['__tag__'] = tag
 
+    @property
+    def meta(self):
+        return self.meta
+
+    def _get(self, attribute):
+        if attribute in self.attributes:
+            return self.attributes[attribute]
+        else:
+            if self.meta:
+                return self.meta.parameters[attribute].default
+        raise KeyError("Could not find %s in ObjectElement attributes or a parameter default")
+
+    def get(self, attribute, default = None):
+        try:
+            return self._get(attribute)
+        except KeyError:
+            return default
+
 
 class ObjectConstraints(object):
     def __init__(self, name, forStep="initial"):
         self._name = name
         self._forStep = forStep
         self._constraints = []
-
 
     @property
     def index_group(self):
@@ -645,7 +655,6 @@ class ObjectConstraints(object):
     def constraints(self, v):
         self._constraints = v
 
-
     def add_constraint(self, *constraints):
         self._constraints += constraints
 
@@ -663,16 +672,16 @@ class IndexGroup(object):
         self.indices = indices
 
 class Mesh(object):
-    def __init__(self, type, id, mesh):
+    def __init__(self, type = "linear", id = None, mesh = None):
         self.type = type
         self.id = id
         self.mesh = mesh
 
 
 class MaterialRegion(list):
-    def __init__(self, id, elements):
+    def __init__(self, id, elements = None):
         self.id = id
-        list.__init__(self, elements)
+        list.__init__(self, elements if elements else [])
 
     def get_indices(self):
         for ele in self:

@@ -44,7 +44,7 @@ __date__ = "2014-01-25"
 from .exceptions import *
 
 from .alphabet import Alphabet, Operator, PythonOperator, SharedObjectOperator, ShellOperator, \
-    Argument, StructArgument, ObjectAttribute
+    Argument, StructArgument, ObjectAttribute, OAMaterial, OAConstraint, OAIndexGroup, OAMesh
 
 from .base import MSMLFile, MSMLVariable, struct, \
     MSMLFileVariable, Workflow, Task, ObjectElement, SceneObject, \

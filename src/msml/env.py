@@ -62,7 +62,7 @@ def load_user_file(loc = "~/.config/msmlrc.py"):
             alphabet__path = env_path.dirname() / '..' / '..' / 'share' / 'alphabet'
             alphabet_search_paths.append(alphabet__path)
 
-            import msml.envconfg as C
+            import msml.envconfig as C
             import sys
             #Import release and debug paths here?
             sys.path.append(C.operators_path)
