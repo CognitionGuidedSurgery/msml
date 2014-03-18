@@ -615,7 +615,7 @@ class ObjectConstraints(object):
 
 
     @property
-    def index_group(self)
+    def index_group(self):
         warn(DeprecationWarning, "This method will be removed at the next refactoring! /alexander weigl")
         for c in self._constraints:
             if c.attributes['__tag__'] == 'indexgroup': return c
