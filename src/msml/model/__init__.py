@@ -49,7 +49,7 @@ from .alphabet import Alphabet, Operator, PythonOperator, SharedObjectOperator, 
 from .base import MSMLFile, MSMLVariable, struct, \
     MSMLFileVariable, Workflow, Task, ObjectElement, SceneObject, \
     ObjectConstraints, SceneSets, IndexGroup, Mesh, MaterialRegion, \
-    Reference, parse_attribute_value, random_var_name, Constant
+    Reference, parse_attribute_value, random_var_name, Constant, MSMLEnvironment
 
 
 

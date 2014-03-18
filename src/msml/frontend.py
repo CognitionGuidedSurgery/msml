@@ -158,10 +158,10 @@ def alphabet(options):
 
 COMMANDS = OrderedDict({'show': show, 'alphabet': alphabet, 'exec': execution})
 
-
-def main():
-    args = docopt(OPTIONS, version=msml.__version__)
-    print(args)
+def main(args = None):
+    if args is None:
+        args = docopt(OPTIONS, version=msml.__version__)
+        print(args)
 
     msml.env.load_user_file()
 

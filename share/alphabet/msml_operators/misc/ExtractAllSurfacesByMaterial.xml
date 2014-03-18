@@ -1,0 +1,25 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ExtractAllSurfacesByMaterial">
+
+	<runtime>
+		<python module="msml.ext.misc" function="ExtractAllSurfacesByMaterial" />
+	</runtime>
+
+	<input>
+		<arg name="meshIn" type="linearTetMesh+triangularMesh" format="file.vtk" />
+	</input>
+
+	<output>
+		<arg name="meshOut" type="linearTetMesh+triangularMesh" format="file.vtk" />
+	</output>
+
+	<parameters>
+        <arg name="meshOutFilename" type="filename" optional="1">
+            <meta key="doc">
+                Optional input filename for the output.
+            </meta>
+      </arg>
+		<arg name="cut" type="bool" />
+	</parameters>
+</msml:operator>
