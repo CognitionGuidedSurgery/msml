@@ -91,7 +91,7 @@ class MSMLFile(object):
 
         self._workflow = workflow if workflow else Workflow()
         self._scene = scene if scene else []
-        self._env = env if env else MSMLEnvironment
+        self._env = env if env else MSMLEnvironment()
         self._output = output if output else []
         self._exporter = None
 
