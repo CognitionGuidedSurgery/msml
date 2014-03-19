@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+export PREFIX=/usr
+
+%:
+	dh $@
+
+override_dh_builddeb:
+	dh_builddeb -- -Zbzip2 -z9
+
+override_dh_auto_install:
+	python setup.py install --root=debian/msml \
+				--install-layout=deb \
+				--install-lib=/usr/share/msml/ \
+				--install-scripts=/usr/share/msml/
