@@ -49,6 +49,7 @@ EXAMPLES = [
     ("Bunny CGAL",      bunny / "bunnyCGAL.msml.xml", "Prepare the standard bunny for simulation"),
     ("Bunny CGAL High", bunny / "bunnyCGALHigh.msml.xml", "Prepare the standard bunny for simulation"),
     ("Bunny Cuda",      bunny / "bunnyExampleCuda.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny VoxMesh",      bunny / "bunnyVoxelMeshing.msml.xml", "Prepare the standard bunny for simulation"),
     ("CGal", root / "CGALi2vExample/CGALExample.xml", ""),
     ("Liver", root / "LiverExample/liverLinear.msml.xml", "Prepare a liver mesh simulation"),
     ("Color", root / "PythonExamples/color-example.xml", "Workflow only example. Colorize   a Mesh")
@@ -69,7 +70,7 @@ def main():
 
 
     for i, (name, file, desc) in enumerate(EXAMPLES):
-        print("\t \x1b[1m%d\x1b[0m \x1b[34;1m%10s\x1b[0m : %s\n\t\t\t%s\n" % (i, name, file, desc))
+        print("\t \x1b[1m%d\x1b[0m \x1b[34;1m%20s\x1b[0m : %s\n\t\t\t%s\n" % (i, name, file, desc))
 
     print("Select Examples [0]:", end=" ")
     try:
