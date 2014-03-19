@@ -31,7 +31,6 @@ from __future__ import print_function
 __author__ = "Alexander Weigl"
 __date__ = "2014-03-10"
 
-
 import sys
 
 sys.path.insert(0, "src/")
@@ -42,18 +41,20 @@ from path import path
 
 root = path("examples")
 
-bunny = root/"BunnyExample"
+bunny = root / "BunnyExample"
 
 EXAMPLES = [
-    ("Bunny",           bunny / "bunny.msml.xml", "Prepare the standard bunny for simulation"),
-    ("Bunny CGAL",      bunny / "bunnyCGAL.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny", bunny / "bunny.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny CGAL", bunny / "bunnyCGAL.msml.xml", "Prepare the standard bunny for simulation"),
     ("Bunny CGAL High", bunny / "bunnyCGALHigh.msml.xml", "Prepare the standard bunny for simulation"),
-    ("Bunny Cuda",      bunny / "bunnyExampleCuda.xml", "Prepare the standard bunny for simulation"),
-    ("Bunny VoxMesh",      bunny / "bunnyVoxelMeshing.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny Cuda", bunny / "bunnyExampleCuda.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny VoxMesh", bunny / "bunnyVoxelMeshing.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Lungs", root / "CGALi2vLungs/Lungs_new.xml", ""),
     ("CGal", root / "CGALi2vExample/CGALExample.xml", ""),
     ("Liver", root / "LiverExample/liverLinear.msml.xml", "Prepare a liver mesh simulation"),
     ("Color", root / "PythonExamples/color-example.xml", "Workflow only example. Colorize   a Mesh")
 ]
+
 
 def main():
     print("""
@@ -67,7 +68,6 @@ def main():
 
 \x1b[32mAvailable Examples\x1b[0m
 """)
-
 
     for i, (name, file, desc) in enumerate(EXAMPLES):
         print("\t \x1b[1m%d\x1b[0m \x1b[34;1m%20s\x1b[0m : %s\n\t\t\t%s\n" % (i, name, file, desc))
@@ -97,11 +97,13 @@ def main():
                    'show': False}
 
         import msml.exporter
+
         print(msml.exporter.get_exporter(options['--exporter']))
 
         frontend.main(options)
     except Exception as e:
         raise
 
-if "__main__" == __name__ :
+
+if "__main__" == __name__:
     main()
