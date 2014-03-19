@@ -80,9 +80,9 @@ class SofaExporter(XMLExporter):
 
         with codecs.open(self.export_file, 'w', 'utf-8') as scnfile:  #should be open with codecs.open
             rootelement = self.write_scn()
-            #tree.write(filename, pretty_print=True)
-            s = etree.tostring(rootelement, encoding="utf-8")
-            scnfile.write(s)
+            rootelement.write(scnfile, pretty_print=True)
+            #s = etree.tostring(rootelement, encoding="utf-8")
+            #scnfile.write(s)
 
 
     def execute(self):
