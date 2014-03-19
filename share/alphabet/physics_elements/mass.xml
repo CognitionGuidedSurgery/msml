@@ -1,26 +1,23 @@
 <!-- This physical element represents the mass -->
 <msml:element xmlns:msml="http://sfb125.de/msml"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="mass" category="basic"
-	quantity="single">
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="mass" category="basic"
+              quantity="single">
 
 
+    <description>
+        Set properties of the mass
+    </description>
 
-	<description>
-	Set properties of the mass
-</description>
+    <parameters>
+        <arg name="name">
+            <meta key="doc">
+                Name the mass element
+            </meta>
+        </arg>
 
-	<parameters>
-		<arg name="name">
-			<meta key="doc">
-			Name the mass element
-		</meta>
-
-		</arg>
-
-
-		<arg name="massDensity" default="1" optional="1">
-			<meta key="doc" value="Set the mass density" />
-		</arg>
-	</parameters>
+        <arg name="massDensity" default="1" optional="1">
+            <meta key="doc" value="Set the mass density"/>
+        </arg>
+    </parameters>
 </msml:element>

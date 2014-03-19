@@ -9,6 +9,7 @@ pydot
 #matplotlib
 #dateutil
 
+jinja2 # creation of rst (alphabet overview)
 
 # sphinx
 

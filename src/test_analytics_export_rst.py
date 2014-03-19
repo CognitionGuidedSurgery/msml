@@ -5,6 +5,7 @@ import msml.env
 
 import docutils.core
 
+
 msml.env.load_user_file()
 msml.env.current_alphabet = msml.frontend.alphabet({'--alphabet': 'alphabet.cache',
                                                     '--exporter': 'nsofa',
@@ -20,21 +21,29 @@ msml.env.current_alphabet = msml.frontend.alphabet({'--alphabet': 'alphabet.cach
                                                     'exec': True,
                                                     'show': False})
 
-rst = msml.analytics.export_alphabet_overview_markdown()
+if False:
+    rst = msml.analytics.export_alphabet_overview_rst()
 
-print rst
+    print rst
 
-def rst2html(rst):
-    return docutils.core.publish_parts(rst, writer_name='html')['html_body']
+    def rst2html(rst):
+        return docutils.core.publish_parts(rst, writer_name='html')['html_body']
 
 
-html = rst2html(rst)
+    html = rst2html(rst)
 
-import webbrowser, tempfile, path
+    import webbrowser, tempfile, path
 
-p = path.path(tempfile.mktemp(".html"))
+    p = path.path(tempfile.mktemp(".html"))
 
-with open(p, "w") as f:
-    f.write(html)
+    with open(p, "w") as f:
+        f.write(html)
 
-webbrowser.open("file:///%s" % p.abspath())
+    with open("alphabet.rst", "w") as f:
+        f.write(rst)
+
+    webbrowser.open("file:///%s" % p.abspath())
+
+if True:
+    from pprint import pprint
+    print "\n".join(map(str, msml.analytics.check_element_completeness()))

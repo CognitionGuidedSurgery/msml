@@ -31,38 +31,81 @@ This module provides functionality of validating the current loadable alphabet.
 
 
 """
+from msml.model.alphabet import PythonOperator, ShellOperator, SharedObjectOperator
 
 __author__ = 'Alexander Weigl'
 __date__ = "2014-03-19"
-
 
 import jinja2
 
 
 RST_TEMPLATE = """
-Alphabet
-=======================================
+.. role:: red
+.. raw:: html
+
+    <style> .red {color:red} </style>
+
+Version: {{ time }}
+
+**Operatoren:** {% for name in alphabet.operators %} {{ name }}_ {% endfor %}
+
+**Elemente:** {% for name in alphabet.object_attributes %} {{ name }}_ {% endfor %}
 
 
 Operatoren
 ---------------------------------------
 
+{% for name, operator in alphabet.operators.items() %}
+
+{{ name }}
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+{% if "doc" in operator.meta %}
+{{ operator.meta["doc"] | indent }}
+{% else %}
+:red:`DOCUMENTATION MISSING`
+{% endif %}
+
+{{ operator|runtime }}
+
+*Inputs:*
+
+{{ operator.input.values()|rsttable }}
+
+*Output:*
+
+{{ operator.output.values()|rsttable }}
+
+*Parameters:*
+
+{{ operator.parameters.values()|rsttable }}
+
+
+*Annotations:*
+
+{% for k,v in operator.meta.items() %}
+{{ k }}
+{{ v|indent }}
+{% endfor %}
+
+
+{% endfor %}
+
 
 Attributes
-----------------------------------------
+---------------------------------------
 
 {% for name, attrib in alphabet.object_attributes.items() %}
 
-## {{ name }}
+.. _{{name}}:
 
-> {{ attrib.description }}
+{{ name }} ``{{ attrib|type }}``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    {{ attrib.description }}
 
 
-===============  =============== =============== =============== ===============
-name             type            format          optional        default
----------------  --------------- --------------- --------------- ---------------{% for param in attrib.parameters.values() %}
-{{ param|table }}{% endfor %}
-===============  =============== =============== =============== ===============
+{{ attrib.parameters.values()|rsttable}}
 
 {% endfor %}
 
@@ -72,9 +115,10 @@ name             type            format          optional        default
 
 import msml.env
 import msml.frontend
+from StringIO import StringIO
 
 
-def export_alphabet_overview_markdown(alphabet=None):
+def export_alphabet_overview_rst(alphabet=None):
     if not alphabet:
         alphabet = msml.env.current_alphabet
 
@@ -84,11 +128,206 @@ def export_alphabet_overview_markdown(alphabet=None):
         ljust = lambda x: str(x)[:14].ljust(justify)
         return ' '.join(map(ljust, p))
 
+    def rsttable(seq, fields = "name,type,format,sort,required,default,doc"):
+        def get(obj, key):
+            try:
+                return getattr(obj, key)
+            except:
+                if key in ("doc", "type"):
+                    return ":red:`MISSING`"
+                else:
+                    return None
 
+        def sep(char = "="):
+            for sz in colsizes:
+                string.write(char * sz )
+                string.write(" ")
+            string.write("\n")
+
+        def out(seq):
+            for s, sz in zip(seq, colsizes):
+                string.write(s.ljust(sz))
+                string.write(" ")
+            string.write("\n")
+
+        fields = fields.split(",")
+
+
+        tbl = [fields] + \
+              [list(map(lambda x: str(get(s, x)), fields))
+               for s in seq]
+
+        colsizes = [0] * len(fields)
+
+        for line in tbl:
+            for col, val in enumerate(line):
+                if colsizes[col] < len(val):
+                    colsizes[col] = len(val)
+
+        string = StringIO()
+        if tbl[1:]:
+            sep("=")
+            out(tbl[0])
+            sep('=')
+            for l in tbl[1:]: out(l)
+            sep("=")
+        else:
+            string.write("none\n")
+            #string.write("none".center(sum(colsizes)))
+            #string.write("\n")
+
+        return string.getvalue()
+
+    def indent(string, spaces = 4):
+        i =  " " * spaces
+        return i + string.replace("\n", "\n" + i)
+
+    def oerator_runtime(op):
+        import msml.model
+
+        if isinstance(op, PythonOperator):
+            return """
+:type: PythonOperator
+:modul: ``%s``
+:function: ``%s``""" %( op.modul_name, op.function_name)
+
+        elif isinstance(op, ShellOperator):
+            return """
+:type: **ShellOperator**
+:template: ``%s``""" % op.command_tpl
+        elif isinstance(op, SharedObjectOperator):
+            return """
+:type: **SharedObject**
+:file: ``%s``
+:symbol: ``%s``""" %(op.filename, op.symbol_name)
+
+        return ""
+
+    def typename(obj):
+        t = type(obj)
+        return t.__name__
 
     jenv = jinja2.Environment()
-    jenv.filters['table'] = table
+    #jenv.filters['table'] = table
+    jenv.filters['rsttable'] = rsttable
+    jenv.filters['type'] = typename
+    jenv.filters['indent'] = indent
+    jenv.filters['runtime'] = oerator_runtime
     template = jenv.from_string(RST_TEMPLATE)
 
-    return template.render(alphabet=alphabet)
+    import datetime
 
+    return template.render(alphabet=alphabet, time = datetime.datetime.now())
+
+########################################################################################################################
+##
+ELEMENT_DEFAULT_VALIDATORS = []
+
+import abc
+
+
+class ReportEntry(object):
+    def __init__(self, format_tpl = None, level = "ERROR", identifier = 0, element = "", argument = "", **kwargs):
+        self._params = kwargs
+        self._params["level"] = level
+        self._params["identifier"] = identifier
+        self._params["element"] = element
+        self._params["argument"] = argument
+        if format_tpl:
+            self._format_tpl = format_tpl
+        else:
+            self._format_tpl = "\x1b[31;3m{level}\x1b[0m-\x1b[32;2m{id}\x1b[0m: \x1b[33;3m{element} {argument}\x1b[0m \x1b[37;1;2;3m{msg}\x1b[0m"
+
+    def __str__(self):
+        return self._format_tpl.format(**self._params)
+
+class Validator(object):
+    """This class defines the Validator protocol.
+    A validator is a function that returns a list of errors.
+    An error should be evaluated to a ``str``
+    """
+    @abc.abstractmethod
+    def __call__(self, to_validate):
+        return []
+
+
+
+
+class ElementDescriptionValidator(Validator):
+    """Validation if the description in an element is set."""
+    def __call__(self, element):
+        if element.description is None \
+        or element.description.strip() == "":
+            return ReportEntry(
+                    element=element.name,
+                    identifier=1,
+                    msg="Element has no description/documentation")
+        return []
+
+class ArgumentValidator(Validator):
+    """Base class for all Validators that runs on input/parameters/output arguments."""
+    def __init__(self, attribute):
+        self._attrib = attribute
+        self.identifier = 0
+        self.level = "ERROR"
+
+    def __call__(self, element_or_operator):
+        val = getattr(element_or_operator, self._attrib)
+
+        if isinstance(val, dict):
+            seq = val.values()
+        else:
+            seq = val
+
+        self.element = element_or_operator
+
+        res = []
+        for s in seq:
+            self._check_argument(res, s)
+
+        self.element = None
+        return res
+
+
+    def _check_argument(self, result, arg):
+        pass
+
+class TypeValidator(ArgumentValidator):
+    def __init__(self, attribute = "parameters"):
+        ArgumentValidator.__init__(self, attribute)
+        self.level = "ERROR"
+        self.identifier = 1
+
+    def _check_argument(self, l,  arg):
+        if arg.type is None or arg.type == "":
+            l.append(ReportEntry(
+                level = self.level, element = self.element.name, id=self.identifier,
+                attr=self._attrib, argument= arg.name, msg = "type is None or an empty string"))
+
+        if arg.doc is None or arg.doc == "":
+            l.append(ReportEntry(
+                level = "WARN", element = self.element.name, id=2,
+                attr=self._attrib, argument= arg.name, msg = "no documentation"))
+
+        if not arg.required and (arg.default is None or arg.default == ""):
+            l.append(ReportEntry(
+                level = "WARN", element = self.element.name, id=3,
+                attr=self._attrib, argument= arg.name, msg = "argument is optional and it seems there is no default value"))
+
+        #TODO more checks
+
+
+ELEMENT_DEFAULT_VALIDATORS+= (TypeValidator("parameters"), ElementDescriptionValidator())
+
+def check_element_completeness(alphabet = None, validators = None):
+    if alphabet is None:
+        alphabet = msml.env.current_alphabet
+
+    if validators is None:
+        validators = ELEMENT_DEFAULT_VALIDATORS
+
+    report = list()
+    for element in alphabet.object_attributes.values():
+        for validator in validators:
+            report += validator(element)
+    return report

@@ -157,7 +157,8 @@ def get_sort(t, f = None):
     """    
     returns the type object for the given sort definition
     """
-    return default_sorts_definition().get_sort(t, f)
+    return "`%s/%s`" % ( t,f )
+    #return default_sorts_definition().get_sort(t, f)
 
 
 def issort(x):

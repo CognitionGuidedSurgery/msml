@@ -195,10 +195,16 @@ _object_attribute_categories = {'basic': ObjectAttribute, 'material': OAMaterial
 
 
 class Argument(MSMLVariable):
-    def __init__(self, name, typ=None, format=None, required=True):
+    def __init__(self, name, typ=None, format=None, required=True, default = None, meta = dict()):
         MSMLVariable.__init__(self, name, format, typ)
         self.required = required
         self.default = None
+        self.meta = meta
+
+    def __getattr__(self, item):
+        return self.meta[item]
+
+
 
 
 StructArgument = namedtuple('StructArgument', 'name,args')

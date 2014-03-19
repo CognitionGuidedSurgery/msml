@@ -7,26 +7,22 @@
         Add a spring from point in mesh to fixed point in space.
     </description>
 
-
     <parameters>
         <arg name="stiffness">
             <meta key="doc" value="Stiffness between fixed and moving points "/>
         </arg>
 
         <arg name="rayleighStiffnes">
-            <meta key="doc" value="            rayleighStiffnes between fixed and moving points"/>
+            <meta key="doc" value="rayleighStiffnes between fixed and moving points"/>
         </arg>
 
         <arg name="fixedPoints">
-            <meta key="doc" value="            Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
+            <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
 
         <arg name="movingPoints">
-            <meta key="doc" value="            Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
-
+            <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
-
     </parameters>
-
 </msml:element>
 
