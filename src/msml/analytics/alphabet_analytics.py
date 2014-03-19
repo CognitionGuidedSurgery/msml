@@ -26,8 +26,69 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
+"""
+This module provides functionality of validating the current loadable alphabet.
+
+
+"""
+
 __author__ = 'Alexander Weigl'
 __date__ = "2014-03-19"
 
 
-from .alphabet_analytics import  *
+import jinja2
+
+
+RST_TEMPLATE = """
+Alphabet
+=======================================
+
+
+Operatoren
+---------------------------------------
+
+
+Attributes
+----------------------------------------
+
+{% for name, attrib in alphabet.object_attributes.items() %}
+
+## {{ name }}
+
+> {{ attrib.description }}
+
+
+===============  =============== =============== =============== ===============
+name             type            format          optional        default
+---------------  --------------- --------------- --------------- ---------------{% for param in attrib.parameters.values() %}
+{{ param|table }}{% endfor %}
+===============  =============== =============== =============== ===============
+
+{% endfor %}
+
+
+
+"""
+
+import msml.env
+import msml.frontend
+
+
+def export_alphabet_overview_markdown(alphabet=None):
+    if not alphabet:
+        alphabet = msml.env.current_alphabet
+
+    def table(parameter):
+        justify = 30
+        p = (parameter.name, parameter.type, parameter.format, None, parameter.default)
+        ljust = lambda x: str(x)[:14].ljust(justify)
+        return ' '.join(map(ljust, p))
+
+
+
+    jenv = jinja2.Environment()
+    jenv.filters['table'] = table
+    template = jenv.from_string(RST_TEMPLATE)
+
+    return template.render(alphabet=alphabet)
+
