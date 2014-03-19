@@ -159,5 +159,5 @@ def projectSurfaceMesh(*args ):
     return cpp.projectSurfaceMesh(*args )
 
 
-def voxelizeSurfaceMesh(*args ):
-    return cpp.voxelizeSurfaceMesh(*args )
+def voxelizeSurfaceMesh(a,b,c):
+    return cpp.voxelizeSurfaceMesh(a,b, int(c))

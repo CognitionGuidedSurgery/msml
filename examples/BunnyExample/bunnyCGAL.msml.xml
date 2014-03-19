@@ -37,7 +37,9 @@
             </material>
 
             <constraints>
-		<fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}" />               
+                <constraint name="bodyConstraint" forStep="${initial}">
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                </constraint>
             </constraints>
 
             <output>
