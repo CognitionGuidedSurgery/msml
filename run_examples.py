@@ -42,8 +42,13 @@ from path import path
 
 root = path("examples")
 
+bunny = root/"BunnyExample"
+
 EXAMPLES = [
-    ("Bunny", root / "BunnyExample/bunny.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny",           bunny / "bunny.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny CGAL",      bunny / "bunnyCGAL.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny CGAL High", bunny / "bunnyCGALHigh.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny Cuda",      bunny / "bunnyExampleCuda.xml", "Prepare the standard bunny for simulation"),
     ("CGal", root / "CGALi2vExample/CGALExample.xml", ""),
     ("Liver", root / "LiverExample/liverLinear.msml.xml", "Prepare a liver mesh simulation"),
     ("Color", root / "PythonExamples/color-example.xml", "Workflow only example. Colorize   a Mesh")
@@ -77,7 +82,7 @@ def main():
         print("Executing: %s" % name)
 
         options = {'--alphabet': 'alphabet.cache',
-                   '--exporter': 'sofa',
+                   '--exporter': 'nsofa',
                    '--output': None,
                    '--start-script': '~/.config/msmlrc.py',
                    '--verbose': False,
@@ -89,9 +94,13 @@ def main():
                    'alphabet': False,
                    'exec': True,
                    'show': False}
+
+        import msml.exporter
+        print(msml.exporter.get_exporter(options['--exporter']))
+
         frontend.main(options)
     except Exception as e:
-        raise e
+        raise
 
 if "__main__" == __name__ :
     main()
