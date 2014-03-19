@@ -80,9 +80,9 @@ class SofaExporter(XMLExporter):
 
         with codecs.open(self.export_file, 'w', 'utf-8') as scnfile:  #should be open with codecs.open
             rootelement = self.write_scn()
-            #tree.write(filename, pretty_print=True)
-            s = etree.tostring(rootelement, encoding="utf-8")
-            scnfile.write(s)
+            rootelement.write(scnfile, pretty_print=True)
+            #s = etree.tostring(rootelement, encoding="utf-8")
+            #scnfile.write(s)
 
 
     def execute(self):
@@ -128,8 +128,6 @@ class SofaExporter(XMLExporter):
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
         # TODO does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug?
 
-        self.sub("MechanicalObject", name="dofs", template=self._processing_unit, src="@LOADER")
-        self.sub("MeshTopology", name="topo", src="@LOADER")
         #check if child is present
         #if so, check operator compatibility
         #execute operator
@@ -138,15 +136,17 @@ class SofaExporter(XMLExporter):
         #if not -> copy
 
         if mesh_type == "linearTet":
-            loaderNode = self.sub("MeshVTKLoader", name="LOADER", filename=theFilename,
-                                  createSubelements=0)
+            loaderNode = self.sub("MeshVTKLoader", name="LOADER", filename=theFilename, createSubelements=0) #  createSubelements does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug? 
+            self.sub("MechanicalObject", name="dofs", template=self._processing_unit, src="@LOADER")
+            self.sub("MeshTopology", name="topo", src="@LOADER")
         elif mesh_type == "quadraticTet":
             loaderNode = self.sub("MeshExtendedVTKLoader", name="LOADER", filename=theFilename)
+            self.sub("MechanicalObject", name="dofs", template=self._processing_unit, src="@LOADER")
+            self.sub("QuadraticMeshTopology", name="topo", src="@LOADER")
         else:
             print("Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
 
-        self.sub("MechanicalObject", name="dofs", template=self._processing_unit, src="@LOADER")
-        self.sub("QuadraticMeshTopology", name="topo", src="@LOADER")
+
 
         return loaderNode
 
