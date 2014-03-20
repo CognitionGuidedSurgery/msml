@@ -233,7 +233,7 @@ class SofaExporter(XMLExporter):
 
 
         #merge all different materials to single forcefield/density entries.
-        if self.node_root.find("MeshTopology") is not None:
+        if objectNode.find("MeshTopology") is not None:
             elasticNode = self.sub("TetrahedronFEMForceField", objectNode,
                                    template=self._processing_unit, name="FEM",
                                    listening="true", youngModulus=youngs_str,
@@ -243,7 +243,7 @@ class SofaExporter(XMLExporter):
                      template=self._processing_unit)
             massNode = self.sub("DiagonalMass", name="meshMass")
             massNode.set("massDensity", density_str)
-        elif self.node_root.find("QuadraticMeshTopology") is not None:
+        elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
                                     template=self._processing_unit, name="FEM", listening="true",
                                     setYoungModulus=youngs_str,
@@ -442,5 +442,5 @@ class SofaExporter(XMLExporter):
 
     def sub(self, tag, root=None, **kwargs):
         skwargs = {k: str(v) for k, v in kwargs.items()}
-        if not root: root = self.node_root
+        if root is None: root = self.node_root
         return etree.SubElement(root, tag, **skwargs)
