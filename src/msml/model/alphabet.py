@@ -170,6 +170,8 @@ class ObjectAttribute(object):
         return _object_attribute_categories[category]
 
 
+class OAOutput(ObjectAttribute): pass
+
 class OAConstraint(ObjectAttribute):
     pass
 
@@ -179,7 +181,9 @@ class OAMaterial(ObjectAttribute):
 
 
 class OAMesh(ObjectAttribute):
-    pass
+    def  __init__(self, *args):
+        ObjectAttribute.__init__(*args)
+        warn(DeprecationWarning, "OAMesh will be removed")
 
 
 class OAIndexGroup(ObjectAttribute):
@@ -187,11 +191,13 @@ class OAIndexGroup(ObjectAttribute):
 
 
 class OABody(ObjectAttribute):
-    pass
+    def  __init__(self, *args):
+        ObjectAttribute.__init__(*args)
+        warn(DeprecationWarning, "OABody will be removed")
 
 
 _object_attribute_categories = {'basic': ObjectAttribute, 'material': OAMaterial, 'constraint': OAConstraint,
-                                'mesh': OAMesh, 'indexgroup': OAIndexGroup, 'data': OABody}
+                                'mesh': OAMesh, 'indexgroup': OAIndexGroup, 'data': OABody, "output": OAOutput}
 
 
 class Argument(MSMLVariable):
