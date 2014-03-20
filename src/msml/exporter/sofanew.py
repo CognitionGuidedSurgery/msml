@@ -104,21 +104,21 @@ class SofaExporter(XMLExporter):
             objectNode = self.createObject(self.node_root, msmlObject)
 
             #physicsElementNode = msmlObject.find("material")
-            self.createMeshTopology(self.node_root, objectNode, msmlObject)
-            self.createMaterialRegions(msmlObject)
+            self.createMeshTopology(objectNode, msmlObject)
+            self.createMaterialRegions(objectNode, msmlObject)
 
             #create simulation steps
-            self.createConstraintRegions(msmlObject)
+            self.createConstraintRegions(objectNode, msmlObject)
 
             #creat post processing request
-            self.createPostProcessingRequests(msmlObject)
+            self.createPostProcessingRequests(objectNode, msmlObject)
 
             #add solver
-            self.createSolvers(msmlObject)
+        self.createSolvers()
 
         return etree.ElementTree(self.node_root)
 
-    def createMeshTopology(self, sceneNode, objectNode, msmlObject):
+    def createMeshTopology(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
         mesh_value = msmlObject.mesh.mesh
         mesh_type = msmlObject.mesh.type
@@ -136,21 +136,28 @@ class SofaExporter(XMLExporter):
         #if not -> copy
 
         if mesh_type == "linearTet":
-            loaderNode = self.sub("MeshVTKLoader", name="LOADER", filename=theFilename, createSubelements=0) #  createSubelements does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug? 
-            self.sub("MechanicalObject", name="dofs", template=self._processing_unit, src="@LOADER")
-            self.sub("MeshTopology", name="topo", src="@LOADER")
+            loaderNode = self.sub("MeshVTKLoader", objectNode,
+                                  name="LOADER", filename=theFilename,
+                                  createSubelements=0)
+            #  createSubelements does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug?
+            self.sub("MechanicalObject", objectNode,
+                     name="dofs", template=self._processing_unit, src="@LOADER")
+            self.sub("MeshTopology", objectNode,
+                     name="topo", src="@LOADER")
         elif mesh_type == "quadraticTet":
-            loaderNode = self.sub("MeshExtendedVTKLoader", name="LOADER", filename=theFilename)
-            self.sub("MechanicalObject", name="dofs", template=self._processing_unit, src="@LOADER")
-            self.sub("QuadraticMeshTopology", name="topo", src="@LOADER")
+            loaderNode = self.sub("MeshExtendedVTKLoader", objectNode,
+                                  name="LOADER", filename=theFilename)
+            self.sub("MechanicalObject", objectNode,
+                     name="dofs", template=self._processing_unit, src="@LOADER")
+            self.sub("QuadraticMeshTopology", objectNode,
+                     name="topo", src="@LOADER")
         else:
-            print("Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
-
-
-
+            warn(MSMLSOFAExporterWarning, "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
+            return None
         return loaderNode
 
-    def createSolvers(self, sceneNode):
+
+    def createSolvers(self):
         if self._msml_file.env.solver.timeIntegration == "dynamicImplicit":
             self.sub("MyNewmarkImplicitSolver",
                      rayleighStiffness="0.2",
@@ -174,7 +181,7 @@ class SofaExporter(XMLExporter):
                                           self._msml_file.env.solver.linearSolver)
 
 
-    def createMaterialRegions(self, msmlObject):
+    def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
         youngs = {}
@@ -227,25 +234,27 @@ class SofaExporter(XMLExporter):
 
         #merge all different materials to single forcefield/density entries.
         if self.node_root.find("MeshTopology") is not None:
-            elasticNode = self.sub("TetrahedronFEMForceField", template=self._processing_unit, name="FEM",
+            elasticNode = self.sub("TetrahedronFEMForceField", objectNode,
+                                   template=self._processing_unit, name="FEM",
                                    listening="true", youngModulus=youngs_str,
                                    poissonRatio=poissons[keylist[0]])
-            self.sub("TetrahedronSetGeometryAlgorithms",
+            self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)
             massNode = self.sub("DiagonalMass", name="meshMass")
             massNode.set("massDensity", density_str)
         elif self.node_root.find("QuadraticMeshTopology") is not None:
-            eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField",
+            eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
                                     template=self._processing_unit, name="FEM", listening="true",
                                     setYoungModulus=youngs_str,
                                     setPoissonRatio=poissons[keylist[0]])  # TODO
-            emassNode = self.sub("QuadraticMeshMatrixMass", name="meshMass", massDensity=density_str)
+            emassNode = self.sub("QuadraticMeshMatrixMass", objectNode,
+                                 name="meshMass", massDensity=density_str)
         else:
             warn(MSMLSOFAExporterWarning, "Current mesh topology not supported")
 
 
-    def createConstraintRegions(self, msmlObject):
+    def createConstraintRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
@@ -258,7 +267,7 @@ class SofaExporter(XMLExporter):
                 indices = '%s' % ', '.join(map(str, indices_vec))
 
                 if currentConstraintType == "fixedConstraint":
-                    constraintNode = self.sub("FixedConstraint",
+                    constraintNode = self.sub("FixedConstraint", objectNode,
                                               name=constraint.id or constraint_set.name,
                                               indices=indices)
 
@@ -274,7 +283,7 @@ class SofaExporter(XMLExporter):
 
                     #if not -> copy
                 elif currentConstraintType == "surfacePressure":
-                    constraintNode = self.sub("Node", name="SurfaceLoad")
+                    constraintNode = self.sub("Node", objectNode, name="SurfaceLoad")
 
                     self.sub("MeshTopology", constraintNode,
                              name="SurfaceTopo",
@@ -300,7 +309,7 @@ class SofaExporter(XMLExporter):
 
                 elif currentConstraintType == "springMeshToFixed":
 
-                    constraintNode = self.sub(sceneNode, "Node", name="springMeshToFixed")
+                    constraintNode = self.sub("Node",objectNode, name="springMeshToFixed")
                     mechObj = self.sub("MechanicalObject", constraintNode, template="Vec3f",
                                        name="pointsInDeformingMesh",
                                        position=constraint.get("movingPoints"))
@@ -319,7 +328,7 @@ class SofaExporter(XMLExporter):
 
                     mechObj.set("position", constraint.get("fixedPoints"))
 
-                    forcefield = self.sub(constraintNode, "RestShapeSpringsForceField",
+                    forcefield = self.sub("RestShapeSpringsForceField", constraintNode,
                                           template="Vec3f",
                                           name="Springs",
                                           external_rest_shape="fixedPointsForSpringMeshToFixed/fixedPoints",
@@ -329,8 +338,7 @@ class SofaExporter(XMLExporter):
 
                 elif currentConstraintType == "supportingMesh":
 
-                    constraintNode = self.sub("Node", constraintNode,
-                                              name="support_" + constraint.get("name"))
+                    constraintNode = self.sub("Node", name="support_" + constraint.get("name"))
                     loaderNode = self.sub("MeshVTKLoader", constraintNode,
                                           name="LOADER_supportmesh",
                                           createSubelements="0",
@@ -386,16 +394,16 @@ class SofaExporter(XMLExporter):
         #sofa_exporter handles displacementOutputRequest only. Other postProcessing operators need to be adressed in... ?
 
 
-    def createPostProcessingRequests(self, msmlObject):
+    def createPostProcessingRequests(self, objectNode, msmlObject):
         for request in msmlObject.output:
             assert isinstance(request, ObjectElement)
             filename = self.working_dir / request.id
             if request.tag == "displacementOutputRequest":
-                if sceneNode.find("MeshTopology") is not None:
+                if objectNode.find("MeshTopology") is not None:
                     #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
                     exportEveryNumberOfSteps = request.get("timestep")
 
-                    dispOutputNode = self.sub("VTKExporter",
+                    dispOutputNode = self.sub("VTKExporter", objectNode,
                                               filename=filename,
                                               exportEveryNumberOfSteps=exportEveryNumberOfSteps,
                                               XMLformat=1,
@@ -418,8 +426,8 @@ class SofaExporter(XMLExporter):
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     request.set("filename", filenameLastOutput)
 
-                elif sceneNode.find("QuadraticMeshTopology") is not None:
-                    dispOutputNode = self.sub("ExtendedVTKExporter",
+                elif objectNode.find("QuadraticMeshTopology") is not None:
+                    dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
                                               filename=filename,
                                               exportEveryNumberOfSteps=exportEveryNumberOfSteps,
                                               #todo export material => allows extraction of surfaces in post processing
@@ -430,7 +438,7 @@ class SofaExporter(XMLExporter):
 
                     #TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
                 else:
-                    print "Topolgy type not supported"
+                    warn(MSMLSOFAExporterWarning, "Topolgy type not supported")
 
     def sub(self, tag, root=None, **kwargs):
         skwargs = {k: str(v) for k, v in kwargs.items()}

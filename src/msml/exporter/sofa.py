@@ -283,89 +283,90 @@ class SofaExporter(XMLExporter):
 
 
     def createConstraintRegions(self, currentSofaNode, currentMsmlNode, msmlRootNode):
-        for constraint in currentMsmlNode.iterchildren():
-            currentConstraintType = constraint.tag
+        for a in currentMsmlNode.iterchildren():
+            for constraint in a.iterchildren():
+                currentConstraintType = constraint.tag
 
-            indices_key = constraint.get("indices")
-            indices_vec = self.evaluate_node(indices_key)
-            indices = '%s' % ', '.join(map(str, indices_vec))
+                indices_key = constraint.get("indices")
+                indices_vec = self.evaluate_node(indices_key)
+                indices = '%s' % ', '.join(map(str, indices_vec))
 
-            if (currentConstraintType == "fixedConstraint"):
-                constraintNode = etree.SubElement(currentSofaNode, "FixedConstraint")
-                constraintNode.set("name", constraint.get("name"))
-                constraintNode.set("indices", indices)
+                if (currentConstraintType == "fixedConstraint"):
+                    constraintNode = etree.SubElement(currentSofaNode, "FixedConstraint")
+                    constraintNode.set("name", str(constraint.get("name")))
+                    constraintNode.set("indices", indices)
 
-                #elasticNode.set("setPoissonRatio", material.get("poissonRatio"))
+                    #elasticNode.set("setPoissonRatio", material.get("poissonRatio"))
 
-                #check if child is present
+                    #check if child is present
 
-                #if so, check operator compatibility
+                    #if so, check operator compatibility
 
-                #execute operator
+                    #execute operator
 
-                #check if mesh is in MSML folder
+                    #check if mesh is in MSML folder
 
-                #if not -> copy
-            elif (currentConstraintType == "surfacePressure"):
-                constraintNode = etree.SubElement(currentSofaNode, "Node", name="SurfaceLoad")
-                etree.SubElement(constraintNode, "MeshTopology", name="SurfaceTopo",
-                                 position="@LOADER.position",
-                                 triangles="@LOADER.triangles", quads="@LOADER.quads")
-                etree.SubElement(constraintNode, "MechanicalObject", template="Vec3f", name="surfacePressDOF",
-                                 position="@SurfaceTopo.position")
-                surfacePressureForceFieldNode = etree.SubElement(constraintNode, "SurfacePressureForceField",
-                                                                 template="Vec3f", name="surfacePressure",
-                                                                 pulseMode="1")
-                surfacePressureForceFieldNode.set("pressureSpeed",
-                                                  str(float(constraint.get("pressure")) / 10.0))
-                surfacePressureForceFieldNode.set("pressure", constraint.get("pressure"));
-                surfacePressureForceFieldNode.set("triangleIndices", indices)
-                etree.SubElement(constraintNode, "BarycentricMapping", template="undef, Vec3f",
-                                 name="barycentricMapSurfacePressure", input="@..", output="@.")
+                    #if not -> copy
+                elif (currentConstraintType == "surfacePressure"):
+                    constraintNode = etree.SubElement(currentSofaNode, "Node", name="SurfaceLoad")
+                    etree.SubElement(constraintNode, "MeshTopology", name="SurfaceTopo",
+                                     position="@LOADER.position",
+                                     triangles="@LOADER.triangles", quads="@LOADER.quads")
+                    etree.SubElement(constraintNode, "MechanicalObject", template="Vec3f", name="surfacePressDOF",
+                                     position="@SurfaceTopo.position")
+                    surfacePressureForceFieldNode = etree.SubElement(constraintNode, "SurfacePressureForceField",
+                                                                     template="Vec3f", name="surfacePressure",
+                                                                     pulseMode="1")
+                    surfacePressureForceFieldNode.set("pressureSpeed",
+                                                      str(float(constraint.get("pressure")) / 10.0))
+                    surfacePressureForceFieldNode.set("pressure", constraint.get("pressure"));
+                    surfacePressureForceFieldNode.set("triangleIndices", indices)
+                    etree.SubElement(constraintNode, "BarycentricMapping", template="undef, Vec3f",
+                                     name="barycentricMapSurfacePressure", input="@..", output="@.")
 
-            elif (currentConstraintType == "springMeshToFixed"):
-                constraintNode = etree.SubElement(currentSofaNode, "Node", name="springMeshToFixed")
-                mechObj = etree.SubElement(constraintNode, "MechanicalObject", template="Vec3f",
-                                           name="pointsInDeformingMesh")
-                mechObj.set("position", constraint.get("movingPoints"));
-                etree.SubElement(constraintNode, "BarycentricMapping", template="undef, Vec3f",
-                                 name="barycentricMapSpringMeshToFixed", input="@..", output="@.")
-                displacedLandLMarks = etree.SubElement(constraintNode, "Node",
-                                                       name="fixedPointsForSpringMeshToFixed")
-                mechObj = etree.SubElement(displacedLandLMarks, "MechanicalObject", template="Vec3f",
-                                           name="fixedPoints")
-                mechObj.set("position", constraint.get("fixedPoints"));
-                forcefield = etree.SubElement(constraintNode, "RestShapeSpringsForceField", template="Vec3f",
-                                              name="Springs",
-                                              external_rest_shape="fixedPointsForSpringMeshToFixed/fixedPoints",
-                                              drawSpring="true")
-                forcefield.set("stiffness", constraint.get("stiffness"));
-                forcefield.set("rayleighStiffnes", constraint.get("rayleighStiffnes"));
+                elif (currentConstraintType == "springMeshToFixed"):
+                    constraintNode = etree.SubElement(currentSofaNode, "Node", name="springMeshToFixed")
+                    mechObj = etree.SubElement(constraintNode, "MechanicalObject", template="Vec3f",
+                                               name="pointsInDeformingMesh")
+                    mechObj.set("position", constraint.get("movingPoints"));
+                    etree.SubElement(constraintNode, "BarycentricMapping", template="undef, Vec3f",
+                                     name="barycentricMapSpringMeshToFixed", input="@..", output="@.")
+                    displacedLandLMarks = etree.SubElement(constraintNode, "Node",
+                                                           name="fixedPointsForSpringMeshToFixed")
+                    mechObj = etree.SubElement(displacedLandLMarks, "MechanicalObject", template="Vec3f",
+                                               name="fixedPoints")
+                    mechObj.set("position", constraint.get("fixedPoints"));
+                    forcefield = etree.SubElement(constraintNode, "RestShapeSpringsForceField", template="Vec3f",
+                                                  name="Springs",
+                                                  external_rest_shape="fixedPointsForSpringMeshToFixed/fixedPoints",
+                                                  drawSpring="true")
+                    forcefield.set("stiffness", constraint.get("stiffness"));
+                    forcefield.set("rayleighStiffnes", constraint.get("rayleighStiffnes"));
 
-            elif (currentConstraintType == "supportingMesh"):
-                constraintNode = etree.SubElement(currentSofaNode, "Node", name="support")
-                constraintNode.set("name", "support_" + constraint.get("name"))
-                loaderNode = etree.SubElement(constraintNode, "MeshVTKLoader", name="LOADER_supportmesh",
-                                              createSubelements="0")
-                loaderNode.set("filename", constraint.get(
-                    "filename"))  #workaround, because node evaluation is only possible for data/operator nodes.
-                etree.SubElement(constraintNode, "MechanicalObject", name="dofs", src="@LOADER_supportmesh",
-                                 template="Vec3f", translation="0 0 0")
-                etree.SubElement(constraintNode, "MeshTopology", name="topo", src="@LOADER_supportmesh")
-                forcefield = etree.SubElement(constraintNode, "TetrahedronFEMForceField", listening="true",
-                                              name="FEM", template="Vec3f")
-                forcefield.set("youngModulus", constraint.get("youngModulus"))
-                forcefield.set("poissonRatio", constraint.get("poissonRatio"))
-                etree.SubElement(constraintNode, "TetrahedronSetGeometryAlgorithms",
-                                 name="aTetrahedronSetGeometryAlgorithm", template="Vec3f")
-                diagonalMass = etree.SubElement(constraintNode, "DiagonalMass", name="meshMass")
-                diagonalMass.set("massDensity", constraint.get("massDensity"))
-                etree.SubElement(constraintNode, "BarycentricMapping", input="@..", name="barycentricMap",
-                                 output="@.", template="undef, Vec3f")
+                elif (currentConstraintType == "supportingMesh"):
+                    constraintNode = etree.SubElement(currentSofaNode, "Node", name="support")
+                    constraintNode.set("name", "support_" + constraint.get("name"))
+                    loaderNode = etree.SubElement(constraintNode, "MeshVTKLoader", name="LOADER_supportmesh",
+                                                  createSubelements="0")
+                    loaderNode.set("filename", constraint.get(
+                        "filename"))  #workaround, because node evaluation is only possible for data/operator nodes.
+                    etree.SubElement(constraintNode, "MechanicalObject", name="dofs", src="@LOADER_supportmesh",
+                                     template="Vec3f", translation="0 0 0")
+                    etree.SubElement(constraintNode, "MeshTopology", name="topo", src="@LOADER_supportmesh")
+                    forcefield = etree.SubElement(constraintNode, "TetrahedronFEMForceField", listening="true",
+                                                  name="FEM", template="Vec3f")
+                    forcefield.set("youngModulus", constraint.get("youngModulus"))
+                    forcefield.set("poissonRatio", constraint.get("poissonRatio"))
+                    etree.SubElement(constraintNode, "TetrahedronSetGeometryAlgorithms",
+                                     name="aTetrahedronSetGeometryAlgorithm", template="Vec3f")
+                    diagonalMass = etree.SubElement(constraintNode, "DiagonalMass", name="meshMass")
+                    diagonalMass.set("massDensity", constraint.get("massDensity"))
+                    etree.SubElement(constraintNode, "BarycentricMapping", input="@..", name="barycentricMap",
+                                     output="@.", template="undef, Vec3f")
 
-            else:
-                print(currentConstraintType)
-                print("Constraint Type not supported!!!!!!!!!!!")
+                else:
+                    print(currentConstraintType)
+                    print("Constraint Type not supported!!!!!!!!!!!")
 
 
     def createObject(self, currentSofaNode, currentMsmlNode, msmlRootNode):
