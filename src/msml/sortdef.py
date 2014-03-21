@@ -35,9 +35,6 @@ __author__ = 'Alexander Weigl'
 __date__ = '2014-02-21'
 
 from path import path
-from msml.sorts import default_sorts_definition as dsd
-
-from functools import total_ordering
 
 class Sort(object):
     def __init__(self, type, format = None):
@@ -100,21 +97,9 @@ class Sort(object):
         self._type = tp
 
 #################################################
-dsd = dsd()
-
-dsd.register_type(int)
-dsd.register_type(float)
-dsd.register_type(str)
-dsd.register_type(unicode)
-dsd.register_type(object)
-dsd.register_type(object, 'top')
-dsd.register_type(object, '*')
-
-@dsd.register_type
 class IndexGroup(object):
     pass
 
-@dsd.register_type
 class Vertice(object):
     def __init__(self, x= 0, y = 0, z = 0):
         self.x, self.y, self.z = x,y,z
@@ -125,7 +110,6 @@ class Vertice(object):
     def __repr__(self):
         return "msml.model.sortdef.Vertice(%s,%s,%s)" % (self.x, self.y, self.z)
 
-@dsd.register_type
 class Vertices(object):
     def __init__(self, h):
         self.list = h
@@ -133,23 +117,18 @@ class Vertices(object):
     def __str__(self):
         return str(self.list)
 
-@dsd.register_type_with_name("filename")
 class Filename(path):
     pass
 
-@dsd.register_type_with_name("meshfile")
 class MeshFile(Filename):
     pass
 
-@dsd.register_type_with_name("trimeshfile")
 class TriangularMeshFile(MeshFile):
     pass
 
-@dsd.register_type_with_name("quatmeshfile")
 class QuadraticMeshFile(MeshFile):
     pass
 
-@dsd.register_type_with_name("linmeshfile")
 class LinearMeshFile(MeshFile):
     pass
 
@@ -159,26 +138,20 @@ class LinearMeshFile(MeshFile):
 class Format(object):
     pass
 
-@dsd.register_format
 class VTI(Format): pass
 
 
-@dsd.register_format
 class VTK(Format): pass
 
 
-@dsd.register_format
 class VTU(Format): pass
 
 
-@dsd.register_format
 class Image(Format): pass
 
 
-@dsd.register_format
 class PNG(Image): pass
 
 
-@dsd.register_format
 class JPG(Image): pass
 
