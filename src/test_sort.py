@@ -1,15 +1,17 @@
 __author__ = 'weigl'
 
 from msml.sorts import *
-from msml.model.sortdef import *
+from pprint import  pprint
+pprint(default_sorts_definition().type_cache)
+
 
 S = get_sort(str)
 I = get_sort(int)
 F = get_sort('filename')
-MF = get_sort('meshfile')
-LMF = get_sort('linmeshfile')
-TMF = get_sort('trimeshfile')
-QMF = get_sort('quatmeshfile')
+MF = get_sort('mesh_file')
+LMF = get_sort('lin_mesh_file')
+TMF = get_sort('tri_mesh_file')
+QMF = get_sort('quat_mesh_file')
 
 print S, I, F
 
