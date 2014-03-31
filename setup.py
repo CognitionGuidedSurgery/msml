@@ -5,6 +5,12 @@ import sys
 sys.path.insert(0, "src/")
 
 from distutils.core import setup, Command
+from pip.req import parse_requirements
+
+
+install_reqs = parse_requirements("requirements.txt")
+reqs = [str(ir.req) for ir in install_reqs]
+
 from glob import glob
 import msml
 import os
@@ -50,7 +56,6 @@ class cmake_compile(Command):
         print("Operators are in %s" % self.opdir)
         print("Build directory: %s " % self.build_dir)
 
-
     def run(self):
         current = os.getcwd()
 
@@ -89,7 +94,7 @@ setup(
     maintainer_email="Alexander.Weigl@student.kit.edu",
 
 
-    packages=['msml', 'msml.ext', 'msml.exporter_old', 'msml.exporter', 'msml.run', 'msml.model'],
+    packages = ['msml', 'msml.ext', 'msml.exporter', 'msml.run', 'msml.model'],
     package_dir={'': 'src'},
 
     scripts=["src/msml.py"],
@@ -98,7 +103,7 @@ setup(
     platforms="linux",
     long_description=msml.__doc__,
 
-    keywords='', #TODO
+    keywords=['msml', 'biomechanical'], #TODO
     license='GPL3',
 
     classifiers=[
@@ -121,7 +126,9 @@ setup(
         'Topic :: Scientific/Engineering :: Visualization',
         'Topic :: Scientific/Engineering :: Bio-Informatics'
     ],
-    zip_safe=False,
+
+    requires = reqs,
+    provides= ["msml"],
     cmdclass={'cmake': cmake_compile}
 )
 
