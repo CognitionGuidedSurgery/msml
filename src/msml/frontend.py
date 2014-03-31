@@ -117,7 +117,7 @@ class App(object):
 
     @property
     def exporter(self):
-        return msml.exporter.get_exporter(self.exporter)
+        return msml.exporter.get_exporter(self._exporter)
 
     @property
     def files(self):
@@ -201,5 +201,5 @@ def main(args=None):
         args = docopt(OPTIONS, version=msml.__version__)
         print(args)
 
-    app = App(args)
+    app = App(options=args)
     app._exec()

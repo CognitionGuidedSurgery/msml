@@ -73,7 +73,7 @@ class SofaExporter(XMLExporter):
      Builds the File (XML e.g) for the external tool
      """
         print("Converting to sofa scn")
-        self.export_file = self._msml_file.filename[0:-3] + 'scn'
+        self.export_file = path(self._msml_file.filename).namebase + ".scn"
         print self.export_file
 
         import codecs
@@ -421,10 +421,10 @@ class SofaExporter(XMLExporter):
                     if exportEveryNumberOfSteps == 0:
                         lastNumber = 1
                     else:
-                        lastNumber = int(math.floor(timeSteps / ( int(exportEveryNumberOfSteps) + 1)))
+                        lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
 
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    request.set("filename", filenameLastOutput)
+                    dispOutputNode.set("filename", filenameLastOutput)
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
                     dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
