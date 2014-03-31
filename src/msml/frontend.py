@@ -35,8 +35,8 @@ Frontend - cli interface of msml
 from __future__ import print_function
 
 from collections import OrderedDict
-
 import os
+
 from docopt import docopt
 from path import path
 
@@ -93,7 +93,7 @@ class App(object):
         self._novalidate = novalidate
 
         assert isinstance(self._files, (list, tuple))
-
+        self._alphabet = None
         self.init_msml_system()
 
     def init_msml_system(self):
@@ -103,6 +103,9 @@ class App(object):
         if not self._novalidate:
             msml.env.current_alphabet.validate()
 
+    @property
+    def alphabet(self):
+        return self._alphabet
 
     @property
     def additional_alphabet_dir(self):
@@ -166,15 +169,16 @@ class App(object):
     def _load_alphabet(self):
         print("READING alphabet...")
 
-        msml.env.alphabet_search_paths += self.additional_alphabet_path
+        msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
         print("found %d xml files in the alphabet search path" % len(files))
         alphabet = msml.xml.load_alphabet(file_list=files)
 
         # debug
-        alphabet.print_nice()
+        #        alphabet.print_nice()
 
         msml.env.current_alphabet = alphabet
+        self._alphabet = alphabet
         return alphabet
 
     def writexsd(self):
