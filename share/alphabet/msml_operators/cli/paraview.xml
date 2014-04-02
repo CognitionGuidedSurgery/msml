@@ -6,6 +6,17 @@
         <sh file="paraview" wd="" template="paraview --data={data}"/>
 	</runtime>
 
+    <annotation>
+        <entry key="doc">
+
+- calls paraview with the given ``mesh``
+- user have to click apply to display within paraview
+- blocks the execution
+
+</entry>
+    </annotation>
+
+
 	<input>
 		<arg name="data" type="mesh" format="file.vtk" />
 	</input>
