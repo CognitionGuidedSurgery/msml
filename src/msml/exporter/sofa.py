@@ -256,9 +256,9 @@ class SofaExporter(XMLExporter):
 
         keylist = density.keys()
         keylist.sort();
-        density_str = " ".join(str(v) for v in density) 
-        youngs_str = " ".join(str(v) for v in youngs) 
-        poissons_str = " ".join(str(v) for v in poissons) 
+        density_str = " ".join(str(v) for v in density.values()) 
+        youngs_str = " ".join(str(v) for v in youngs.values()) 
+        poissons_str = " ".join(str(v) for v in poissons.values()) 
 
         #merge all different materials to single forcefield/density entries.
         if currentSofaNode.find("MeshTopology") is not None:

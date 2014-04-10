@@ -1,0 +1,6 @@
+The segmentations in this directory were created using images from dir-lab, and are provided with their kind permission.
+
+http://www.dir-lab.com/
+
+The following data can be requested on the website:
+Thoracic 4DCT images acquired as part of the standard planning process for the treatment of thoracic malignancies at The University of Texas M. D. Anderson Cancer Center in Houston, TX, and Inspiratory and expiratory breath-hold CT image pairs acquired from the National Heart Lung Blood Institute COPDgene study archive.

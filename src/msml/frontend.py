@@ -63,120 +63,143 @@ OPTIONS = """
 Usage:
   msml exec     [-w] [options] [<file>...]
   msml show     [options] [<file>...]
-  msml alphabet [options] [-x XSDFile] [<paths>...] 
+  msml writexsd [-a DIR] XSDFile
+
+#for future: msml devel kit, creation of operator templates and element templates
+  msml operator init    <folder> [<name>]
+  msml operator compile <folder>
+  msml element  init    <file>
 
 Options:  
  -v, --verbose              verbose information on stdout [default: false]
  -o, --output=FILE          output file
  --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
- -a, --alphabet=FILE        loads a precalculated alphabet dump [default: alphabet.cache]
+ -a, --alphabet-dir=DIR     loads an specific alphabet dir
+ --operator-dir             path to search for additional python modules
  -x, --xsd-file=FILE        xsd-file
- -S                         SKIP-loading alphabet dump, refresh alphabet on each start
  -e VALUE, --exporter=VALUE    set the exporter (base, sofa, abaqus) [default: base]
 
 """
 
 
-def show(options):
-    """
-    """
+class App(object):
+    def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
+                 add_opeator_path=None, options={}):
+        self._exporter = options.get("--exporter") or exporter or "sofa"
+        self._files = options.get('<file>') or files or list()
+        self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
+        self._additional_operator_search_path = options.get('--operator-path') or add_opeator_path or list()
+        self._options = options
+        self._novalidate = novalidate
 
-    mfile = msml.xml.load_msml_file(fil)
-    msml.env.current_alphabet.validate()
-    mfile.validate(msml.env.current_alphabet)
+        assert isinstance(self._files, (list, tuple))
+        self._alphabet = None
+        self.init_msml_system()
 
-    dag = mfile.get_dag()
-    with open("test.dot", 'w') as w:
-        w.write(dag.dot())
-        print(dag.dot())
+    def init_msml_system(self):
+        msml.env.load_user_file()
+        self._load_alphabet()
 
+        if not self._novalidate:
+            msml.env.current_alphabet.validate()
 
-def execute_msml_file(fil, exporter_factory):
-    mfile = msml.xml.load_msml_file(fil)
-    msml.env.current_alphabet.validate()
-    exporter = exporter_factory(mfile)
-    mfile.exporter = exporter
-    mfile.validate(msml.env.current_alphabet)
+    @property
+    def alphabet(self):
+        return self._alphabet
 
-    print("Execute: %s in %s" % (fil, fil.dirname))
-    fil = path(fil)
-    os.chdir(fil.dirname().abspath())
+    @property
+    def additional_alphabet_dir(self):
+        return self._additional_alphabet_path
 
+    @additional_alphabet_dir.setter
+    def additional_alphabet_dir(self, a):
+        self._additional_alphabet_path = a
 
-    exe = msml.run.LinearSequenceExecuter(mfile)
-    mem = exe.run()
-    mem.show_content()
+    @property
+    def exporter(self):
+        return msml.exporter.get_exporter(self._exporter)
 
+    @property
+    def files(self):
+        return self._files
 
-def execution(options):
-    def trace(frame, event, arg):
-        print("%s, %s:%d" % (event, frame.f_code.co_filename, frame.f_lineno))
-        return trace
+    @files.setter
+    def files(self, files):
+        self._files = files
 
-    #sys.settrace(trace)
+    @property
+    def executer(self):
+        return msml.run.LinearSequenceExecuter
 
-
-    #debug msml.env._debug_install_operators()
-    files = options['<file>']
-
-    exporter_clazz = msml.exporter.get_exporter(options['--exporter'])
-
-    for fil in files:
-        thePath = path(fil)
-        absPath = thePath.abspath()
-        execute_msml_file(absPath, exporter_clazz)
-
-
-def alphabet(options):
-    "Create the alphabet from reading"
-
-    print("READING alphabet...")
-
-    if options['<paths>']:
-        msml.env.alphabet_search_paths += options['<paths>']
-
-    files = msml.env.gather_alphabet_files()
-    print("found %d xml files in the alphabet search path" % len(files))
-
-    # construct alphabet
-    alphabet = msml.xml.load_alphabet(file_list=files)
-
-    # debug
-    print(alphabet)
-
-    # save xsd file
-    if options['--xsd-file']:
-        with open(options['--xsd-file'], 'w') as xsd:
-            xsd.write(alphabet._xsd())
-
-    # save the alphabet dump (always set)
-    if not options['-S'] and options['--alphabet']:
-        alphabet.save(options['--alphabet'])
-
-    return alphabet
+    def _load_msml_file(self, filename):
+        mfile = msml.xml.load_msml_file(filename)
+        exporter = self.exporter(mfile)
+        mfile.exporter = exporter
+        if not self._novalidate:
+            mfile.validate(msml.env.current_alphabet)
+        return mfile
 
 
-COMMANDS = OrderedDict({'show': show, 'alphabet': alphabet, 'exec': execution})
+    def show(self):
+        def _show_file(mfile):
+            mfile.validate(msml.env.current_alphabet)
+            dag = mfile.get_dag()
+            newname = "%s.dot" % mfile.namebase
+            with open(newname, 'w') as w:
+                w.write(dag.dot())
+            print("File %s written." % newname)
 
-def main(args = None):
+        for f in self._files:
+            self._load_msml_file(f)
+
+    def execute_msml_file(self, fil):
+        mfile = self._load_msml_file(fil)
+        print("Execute: %s in %s" % (fil, fil.dirname))
+
+        os.chdir(fil.dirname().abspath())
+        exe = self.executer(mfile)
+        mem = exe.run()
+        return mem
+
+    def execution(self):
+        files = self.files
+        for fil in files:
+            self.execute_msml_file(path(fil))
+
+    def _load_alphabet(self):
+        print("READING alphabet...")
+
+        msml.env.alphabet_search_paths += self._additional_alphabet_path
+        files = msml.env.gather_alphabet_files()
+        print("found %d xml files in the alphabet search path" % len(files))
+        alphabet = msml.xml.load_alphabet(file_list=files)
+
+        # debug
+        #        alphabet.print_nice()
+
+        msml.env.current_alphabet = alphabet
+        self._alphabet = alphabet
+        return alphabet
+
+    def writexsd(self):
+        print("writexsd not implemented")
+
+    def _exec(self):
+        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution, 'writexsd': self.writexsd})
+
+        # dispatch to COMMANDS
+        for cmd, fn in COMMANDS.items():
+            if self._options[cmd]:
+                fn()
+                break
+        else:
+            print("could not find a suitable command")
+
+
+def main(args=None):
     if args is None:
         args = docopt(OPTIONS, version=msml.__version__)
         print(args)
 
-    msml.env.load_user_file()
-
-    if not args['-S']:
-        msml.env.load_alphabet(args['--alphabet'])
-    else:
-        print("Skipping alphabet dump %s" % args['--alphabet'])
-        msml.env.current_alphabet = alphabet(args)
-
-
-
-    # dispatch to COMMANDS
-    for cmd, fn in COMMANDS.items():
-        if args[cmd]:
-            fn(args)
-            break;
-    else:
-        print("could not find a suitable command")
+    app = App(options=args)
+    app._exec()

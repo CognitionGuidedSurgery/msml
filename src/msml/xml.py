@@ -127,9 +127,8 @@ def etree_to_dict(t):
 
 
 def keyval_factory(meta_node):
-    if meta_node and len(meta_node) > 1:
-        return {child.attrib['key']: child.attrib['value'].strip()
-                for child in meta_node.iterchildren()}
+    if meta_node is not None:
+        return _parse_entry_list(meta_node.iterchildren())
     else:
         return {}
 
@@ -378,11 +377,28 @@ def msml_file_factory(msml_node):
 
 from collections import OrderedDict
 
+def _parse_entry_list(nodelist):
+    d = OrderedDict()
+
+    for node in nodelist:
+        key = node.attrib['key']
+        if 'value' in node.attrib:
+            value = node.attrib['value']
+        else:
+            value = node.text
+
+        if value:
+            d[key] = value.strip()
+
+    return d
+
 
 def _argument_sets(node, as_ordered_dict=False):
     def _parse_arg(node):
-        n, f, t, r = _attributes(node, 'name, format, type, required', required=True)
-        return Argument(n, f, t, bool(int(r)))
+        n, f, t, r, d = _attributes(node, 'name, format, type, required, default', required=True)
+        meta = _parse_entry_list(node.iterchildren())
+        arg = Argument(n, f, t, bool(int(r)), d, meta)
+        return arg
 
     def _parse_struct(node):
         get = lambda k: _except_none(node.attrib, k)
@@ -435,13 +451,13 @@ def operator_factory(operator_node):
     n_input = operator_node.find('input')
     n_output = operator_node.find('output')
     n_parameters = operator_node.find('parameters')
-    n_meta = operator_node.find('meta')
+    n_annotation = operator_node.find('annotation')
 
     runtime = runtime_factory(n_runtime)
     input = _argument_sets(n_input)
     output = _argument_sets(n_output)
     parameters = _argument_sets(n_parameters)
-    meta = keyval_factory(n_meta)
+    meta = keyval_factory(n_annotation)
 
     op_classes = {'python': PythonOperator,
                   'sh': ShellOperator,
