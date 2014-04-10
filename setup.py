@@ -127,7 +127,7 @@ setup(
         'Topic :: Scientific/Engineering :: Bio-Informatics'
     ],
 
-    requires = reqs,
+#    requires = reqs,
     provides= ["msml"],
     cmdclass={'cmake': cmake_compile}
 )
