@@ -31,15 +31,15 @@ __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 __date__ = "2014-03-13"
 
+import math
+
 from warnings import warn
 import os
-import math
+from path import path
+import lxml.etree as etree
 
 from ..model import *
 from .base import XMLExporter, Exporter
-from path import path
-
-import lxml.etree as etree
 from msml.model.exceptions import *
 
 
@@ -152,7 +152,8 @@ class SofaExporter(XMLExporter):
             self.sub("QuadraticMeshTopology", objectNode,
                      name="topo", src="@LOADER")
         else:
-            warn(MSMLSOFAExporterWarning, "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
+            warn(MSMLSOFAExporterWarning,
+                 "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
             return None
         return loaderNode
 
@@ -309,7 +310,7 @@ class SofaExporter(XMLExporter):
 
                 elif currentConstraintType == "springMeshToFixed":
 
-                    constraintNode = self.sub("Node",objectNode, name="springMeshToFixed")
+                    constraintNode = self.sub("Node", objectNode, name="springMeshToFixed")
                     mechObj = self.sub("MechanicalObject", constraintNode, template="Vec3f",
                                        name="pointsInDeformingMesh",
                                        position=constraint.get("movingPoints"))
