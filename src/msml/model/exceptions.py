@@ -44,6 +44,8 @@
 
 __author__ = 'Alexander Weigl'
 
+from warnings import warn
+
 ##
 # Exception
 
