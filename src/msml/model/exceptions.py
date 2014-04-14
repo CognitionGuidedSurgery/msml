@@ -68,7 +68,7 @@ class MSMLXMLParseError(MSMLError):
 ##
 # Warning
 
-class MSMLWarning(Warning):
+class MSMLWarning(UserWarning):
     pass
 
 
