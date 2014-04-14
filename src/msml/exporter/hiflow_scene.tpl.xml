@@ -1,0 +1,58 @@
+<Param>
+    <OutputPathAndPrefix>SimResults/elasticitySimulation_</OutputPathAndPrefix>
+    <Mesh>
+        <Filename>{meshfilename}</Filename>
+        <BCdataFilename>{bcdatafilename}</BCdataFilename>
+        <InitialRefLevel>0</InitialRefLevel>
+    </Mesh>
+    <LinearAlgebra>
+        <Platform>CPU</Platform>
+        <Implementation>Naive</Implementation>
+        <MatrixFormat>CSR</MatrixFormat>
+    </LinearAlgebra>
+    <ElasticityModel>
+        <density>{{density}}</density>
+        <lambda>{{lamelambda}}</lambda>
+        <mu>{{lamemu}}</mu>
+        <gravity>{{gravity}}</gravity>
+    </ElasticityModel>
+    <QuadratureOrder>2</QuadratureOrder>
+    <FiniteElements>
+        <DisplacementDegree>1</DisplacementDegree>
+    </FiniteElements>
+    <Instationary>
+        {% if SolveInstationary %}
+        <SolveInstationary>1</SolveInstationary>
+        <DampingFactor>1.0</DampingFactor>
+        <RayleighAlpha>0.0</RayleighAlpha>
+        <!-- MassFactor -->
+        <RayleighBeta>0.2</RayleighBeta>
+        <!-- StiffnessFactor -->
+        <Method>Newmark</Method>
+        <DeltaT>{{DeltaT}}</DeltaT>
+        <MaxTimeStepIts>{{maxtimestep}}</MaxTimeStepIts>
+        {%else%}
+        <SolveInstationary>0</SolveInstationary>
+        {%endif%}
+    </Instationary>
+    <LinearSolver>
+        <SolverName>{{linsolver}}</SolverName>
+        <MaximumIterations>1000</MaximumIterations>
+        <AbsoluteTolerance>1.e-8</AbsoluteTolerance>
+        <RelativeTolerance>1.e-20</RelativeTolerance>
+        <DivergenceLimit>1.e6</DivergenceLimit>
+        <BasisSize>1000</BasisSize>
+        <Preconditioning>1</Preconditioning>
+        <PreconditionerName>{{precond}}</PreconditionerName>
+        <Omega>2.5</Omega>
+        <ILU_p>2.5</ILU_p>
+    </LinearSolver>
+    <ILUPP>
+        <PreprocessingType>0</PreprocessingType>
+        <PreconditionerNumber>11</PreconditionerNumber>
+        <MaxMultilevels>20</MaxMultilevels>
+        <MemFactor>0.8</MemFactor>
+        <PivotThreshold>2.75</PivotThreshold>
+        <MinPivot>0.05</MinPivot>
+    </ILUPP>
+</Param>
