@@ -35,8 +35,8 @@ Frontend - cli interface of msml
 from __future__ import print_function
 
 from collections import OrderedDict
-import os
 
+import os
 from docopt import docopt
 from path import path
 
@@ -78,19 +78,21 @@ Options:
  --operator-dir             path to search for additional python modules
  -x, --xsd-file=FILE        xsd-file
  -e VALUE, --exporter=VALUE    set the exporter (base, sofa, abaqus) [default: base]
+ -m FILE, --vars=FILE       predefined the memory content
 
 """
 
 
 class App(object):
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
-                 add_opeator_path=None, options={}):
+                 add_opeator_path=None, memory_init_file=None, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
         self._files = options.get('<file>') or files or list()
         self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
         self._additional_operator_search_path = options.get('--operator-path') or add_opeator_path or list()
         self._options = options
         self._novalidate = novalidate
+        self._memory_init_file = memory_init_file
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -114,6 +116,14 @@ class App(object):
     @additional_alphabet_dir.setter
     def additional_alphabet_dir(self, a):
         self._additional_alphabet_path = a
+
+    @property
+    def memory_init_file(self):
+        return self._memory_init_file
+
+    @memory_init_file.setter
+    def memory_init_file(self, v):
+        self._memory_init_file = path(v)
 
     @property
     def exporter(self):
@@ -157,7 +167,9 @@ class App(object):
         print("Execute: %s in %s" % (fil, fil.dirname))
 
         os.chdir(fil.dirname().abspath())
-        exe = self.executer(mfile)
+        execlazz = self.executer
+        exe = execlazz(mfile)
+        exe.init_memory(self.memory_init_file)
         mem = exe.run()
         return mem
 
