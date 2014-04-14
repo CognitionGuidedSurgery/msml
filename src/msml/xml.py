@@ -33,7 +33,6 @@
 from __future__ import print_function
 
 from lxml import etree
-from warnings import warn
 from path import path
 
 from msml.model import *
@@ -65,7 +64,7 @@ def load_alphabet(folder=None, file_list=None):
         folder = path(folder)
         file_list += folder.walkfiles("*.xml")
 
-    d = lambda x: xmldom(x.abspath(), "../share/msml.xsd")
+    d = lambda x: xmldom(x.abspath())
     docs = map(d, file_list)
     results = map(parse_file, docs)
     return Alphabet(results)
@@ -96,7 +95,13 @@ def parse_file(R):
         print("for element %s is no parse hook registered" % tag)
 
 
-def xmldom(files, schema="msml.xsd"):
+def get_default_scheme():
+    return path(__file__).dirname() / "msml.xsd"
+
+def xmldom(files, schema=None):
+    if not schema:
+        schema = get_default_scheme()
+
     try:
         with open(schema, 'r') as f:
             schema_root = etree.XML(f.read())
@@ -350,7 +355,6 @@ def msml_file_factory(msml_node):
         env.solver.dampingRayleighRatioMass = solver_node.get('dampingRayleighRatioMass')
         env.solver.dampingRayleighRatioStiffness = solver_node.get('dampingRayleighRatioStiffness')
 
-
         simulation_node = env_node.find('simulation')
         for s in simulation_node.iterchildren():
             env.simulation.add_step(name=s.get('name'),
@@ -381,6 +385,7 @@ def msml_file_factory(msml_node):
 
 
 from collections import OrderedDict
+
 
 def _parse_entry_list(nodelist):
     d = OrderedDict()
