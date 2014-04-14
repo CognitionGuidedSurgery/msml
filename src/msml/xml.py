@@ -346,6 +346,11 @@ def msml_file_factory(msml_node):
         env.solver.linearSolver = solver_node.get('linearSolver')
         env.solver.processingUnit = solver_node.get('processingUnit')
 
+        env.solver.preconditioner = solver_node.get('preconditioner')
+        env.solver.dampingRayleighRatioMass = solver_node.get('dampingRayleighRatioMass')
+        env.solver.dampingRayleighRatioStiffness = solver_node.get('dampingRayleighRatioStiffness')
+
+
         simulation_node = env_node.find('simulation')
         for s in simulation_node.iterchildren():
             env.simulation.add_step(name=s.get('name'),

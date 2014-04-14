@@ -33,12 +33,13 @@
 """
 
 from collections import namedtuple
+
 import re
 import warnings
-
 from path import path
 
 from .exceptions import *
+
 
 
 
@@ -227,11 +228,15 @@ class MSMLEnvironment(object):
             self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
 
     class Solver(object):
-        def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler"):
+        def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler",
+                     preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2):
             self.linearSolver = linearSolver
             self.processingUnit = processingUnit
             self.timeIntegration = timeIntegration
 
+            self.preconditioner = preconditioner
+            self.dampingRayleighRatioMass = dampingRayleighRatioMass
+            self.dampingRayleighRatioStiffness = dampingRayleighRatioStiffness
 
     def __init__(self):
         self.simulation = MSMLEnvironment.Simulation()
