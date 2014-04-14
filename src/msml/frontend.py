@@ -35,8 +35,8 @@ Frontend - cli interface of msml
 from __future__ import print_function
 
 from collections import OrderedDict
-import os
 
+import os
 from docopt import docopt
 from path import path
 
@@ -64,6 +64,9 @@ Usage:
   msml exec     [-w] [options] [<file>...]
   msml show     [options] [<file>...]
   msml writexsd [-a DIR] XSDFile
+  msml check    [<file>...]
+  msml validate
+
 
 #for future: msml devel kit, creation of operator templates and element templates
   msml operator init    <folder> [<name>]
@@ -184,8 +187,19 @@ class App(object):
     def writexsd(self):
         print("writexsd not implemented")
 
+    def check_file(self):
+        for f in self.files:
+            try:
+                self._load_msml_file(f)
+                print(f, "ok")
+            except msml.model.MSMLError as e:
+                print(f, "error")
+                print("\t", e)
+
+
     def _exec(self):
-        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution, 'writexsd': self.writexsd})
+        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution, 'writexsd': self.writexsd,
+                                'check': self.check_file})
 
         # dispatch to COMMANDS
         for cmd, fn in COMMANDS.items():
