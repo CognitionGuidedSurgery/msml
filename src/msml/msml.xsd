@@ -301,7 +301,10 @@
                                 <attribute name="dt">
                                     <simpleType>
                                         <restriction base="float">
+                                            <!-- causes a bug: XMLSyntaxError(u"Element 'step', attribute 'dt':
+                                            [facet 'minExclusive'] The value '0.05' must be greater than '0'.",))
                                             <minExclusive value="0"></minExclusive>
+                                            -->
                                         </restriction>
                                     </simpleType>
                                 </attribute>

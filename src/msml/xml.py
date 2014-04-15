@@ -64,7 +64,7 @@ def load_alphabet(folder=None, file_list=None):
         folder = path(folder)
         file_list += folder.walkfiles("*.xml")
 
-    d = lambda x: xmldom(x.abspath())
+    d = lambda x: xmldom(x.abspath(), "a.xsd")#Enable xsd
     docs = map(d, file_list)
     results = map(parse_file, docs)
     return Alphabet(results)
