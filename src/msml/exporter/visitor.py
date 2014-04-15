@@ -45,10 +45,10 @@ __authors__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 __license__ = 'GPLv3'
 __date__ = "2014-04-13"
 
+from collections import defaultdict
+
 import abc
 from path import path
-from warnings import warn
-from collections import defaultdict
 
 from ..model import *
 from .base import Exporter
@@ -57,8 +57,10 @@ from .base import Exporter
 class DispatcherWarning(MSMLWarning):
     pass
 
+
 class DispatchError(MSMLError):
     pass
+
 
 class Visitor(object):
     """
@@ -109,10 +111,34 @@ class Visitor(object):
     def msml_begin(self, msml_file):
         pass
 
+    def variables_begin(self, _msml, variables):
+        pass
+
+    def variables_element(self, _msml, _variables, variable):
+        pass
+
+    def variables_end(self, _msml, _variables, variables):
+        pass
+
+    def workflow_begin(self, _msml, workflow):
+        pass
+
+    def workflow_element(self, _msml, _workflow, task):
+        pass
+
+    def workflow_end(self, _msml, _workflow, workflow):
+        pass
+
     def environment_begin(self, _msml, env):
         pass
 
-    def environment_simulation(self, _msml, _environment, simulation):
+    def environment_simulation_begin(self, _msml, _environment, simulation):
+        pass
+
+    def environment_simulation_element(self, _msml, _environment, _simulation, step):
+        pass
+
+    def environment_simulation_end(self, _msml, _environment, _simulation, simulation):
         pass
 
     def environment_solver(self, _msml, _environment, solver):
@@ -130,16 +156,37 @@ class Visitor(object):
     def object_mesh(self, _msml, _scene, _object, mesh):
         pass
 
+
     def object_sets_begin(self, _msml, _scene, _object, sets):
         pass
 
-    def object_sets_nodes(self, _msml, _scene, _object, _object_sets, node):
+    def object_sets_nodes_begin(self, _msml, _scene, _object, _object_sets, nodes):
         pass
 
-    def object_sets_elements(self, _msml, _scene, _object, _object_sets, element):
+    def object_sets_nodes_element(self, _msml, _scene, _object, _object_sets, _nodes, node):
         pass
 
-    def object_sets_surfaces(self, _msml, _scene, _object, _object_sets, surface):
+    def object_sets_nodes_end(self, _msml, _scene, _object, _object_sets, _nodes, nodes):
+        pass
+
+
+    def object_sets_elements_begin(self, _msml, _scene, _object, _object_sets, elements):
+        pass
+
+    def object_sets_elements_element(self, _msml, _scene, _object, _object_sets, _elements, element):
+        pass
+
+    def object_sets_elements_end(self, _msml, _scene, _object, _object_sets, _elements, elements):
+        pass
+
+
+    def object_sets_surfaces_begin(self, _msml, _scene, _object, _object_sets, surfaces):
+        pass
+
+    def object_sets_surfaces_element(self, _msml, _scene, _object, _object_sets, _surfaces, surface):
+        pass
+
+    def object_sets_surfaces_end(self, _msml, _scene, _object, _object_sets, _surfaces, surfaces):
         pass
 
     def object_sets_end(self, _msml, _scene, _object):
@@ -207,6 +254,7 @@ class MethodDispatcherMeta(type):
     dispatching and gathered them with category and names.
 
     """
+
     def __new__(cls, name, bases, d):
         #       print cls, name, bases, d
 
@@ -233,11 +281,11 @@ class MethodDispatcherMeta(type):
         return type.__new__(cls, name, bases, d)
 
 
-
 def disp_cat(category):
     """
     Provides a function dispatch marker for the given category.
     """
+
     def register_name(name):
         """ Decorator for registering a function with a given name"""
 
@@ -345,8 +393,24 @@ class VisitorExporterFramework(Exporter):
     def visit(self):
         _msml = self.visitor.msml_begin(self._msml_file)
 
+        ## Variables
+        _variables = self.visitor.variables_begin(_msml, self._msml_file.variables)
+        for var in self._msml_file.variables.values():
+            self.visitor.variables_element(_msml, _variables, var)
+        self.visitor.variables_end(_msml, _variables, self._msml_file.variables)
+
+        ##Workflow
+        _workflow = self.visitor.workflow_begin(_msml, self._msml_file.workflow)
+        for task in self._msml_file.workflow._tasks.values():
+            self.visitor.workflow_element(_msml, _workflow, task)
+        self.visitor.workflow_end(_msml, _workflow, self._msml_file.workflow)
+
         _env = self.visitor.environment_begin(_msml, self._msml_file.env)
-        self.visitor.environment_simulation(_msml, _env, self._msml_file.env.simulation)
+        _simulation = self.visitor.environment_simulation_begin(_msml, _env, self._msml_file.env.simulation)
+        for s in self._msml_file.env.simulation:
+            self.visitor.environment_simulation_element(_msml, _env,_simulation, s)
+        self.visitor.environment_simulation_end(_msml, _env, _simulation, self._msml_file.env.simulation)
+
         self.visitor.environment_solver(_msml, _env, self._msml_file.env.solver)
         self.visitor.environment_end(_msml, _env, self._msml_file.env)
 
@@ -406,6 +470,7 @@ class VisitorExporterFramework(Exporter):
         #end file
 
         self.export_file = self.visitor.write_export_file(path(self._msml_file), _msml)
+        return _msml
 
     @abc.abstractmethod
     def execute(self):
