@@ -3,7 +3,15 @@ compiler:
   - gcc
   - clang
 install:
-  sudo apt-get update -qq
-  sudo apt-get install libvtk5.8 libvtk5.8-dev
-script: 
-  - mkdir cbuild; cd cbuild; cmake ../operators
+  - sudo apt-get update -qq
+  - sudo apt-get install libvtk5.8 libvtk5.8-dev libtet1.4 libtet1.4-dev
+  
+before_script: 
+  - mkdir cbuild
+  - cd cbuild
+  - cmake ../operators
+  
+script:
+  - make -j 2
+  - cd ../src/test_factory.py
+  
