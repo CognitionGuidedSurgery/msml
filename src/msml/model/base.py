@@ -218,8 +218,28 @@ class MSMLEnvironment(object):
         class Step(object):
             def __init__(self, name="initial", dt=0.05, iterations=100):
                 self.name = name
+                self._dt = None
+                self._iterations = None
+
                 self.dt = dt
                 self.iterations = iterations
+
+            @property
+            def dt(self):
+                return self._dt
+
+            @dt.setter
+            def dt(self, dt):
+                self._dt = float(dt)
+
+            @property
+            def iterations(self):
+                return self._iterations
+
+            @iterations.setter
+            def iterations(self, iterations):
+                self._iterations = int(iterations)
+
 
         def __init__(self, *args):
             list.__init__(self, *args)
@@ -593,8 +613,12 @@ class ObjectElement(object):
     def __getattr__(self, item):
         return self.get(item, None)
 
-    def bind(self):
-        self.meta = msml.env.current_alphabet.get(self.__tag__)
+    def bind(self, alphabet = None):
+        if not alphabet:
+            import msml.env
+            alphabet = msml.env.current_alphabet
+
+        self.meta = alphabet.get(self.__tag__)
 
     def validate(self):
         if self.meta is None:
