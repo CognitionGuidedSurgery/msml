@@ -2,10 +2,15 @@ language: cpp
 compiler: 
   - gcc
   - clang
+  
+  
+before_install:
+  - uname -r
+  - 
 install:
-  - sudo add-apt-repository ppa:ubuntu/vtk
   - sudo apt-get update -qq
-  - sudo apt-get install -y libvtk5.8-dev libvtk5.8 libtet1.4.2 libtet1.4.2-dev libxml2-dev
+  - sudo apt-get install -y http://security.ubuntu.com/ubuntu/pool/universe/v/vtk/libvtk5.8_5.8.0-5_amd64.deb
+  - sudo apt-get install -y libtet1.4.2 libtet1.4.2-dev libxml2-dev
   
 before_script: 
   - mkdir cbuild
