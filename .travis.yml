@@ -4,7 +4,7 @@ compiler:
   - clang
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y -qq libvtk5-dev libvtk5 libtet1.4.2 libtet1.4.2-dev
+  - sudo apt-get install -y libvtk5.8-dev libvtk5.8 libtet1.4.2 libtet1.4.2-dev
   
 before_script: 
   - mkdir cbuild
