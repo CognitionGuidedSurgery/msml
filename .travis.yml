@@ -6,11 +6,13 @@ compiler:
   
 before_install:
   - uname -r
-  - 
+  #- wget -O libvtk5.8.deb http://security.ubuntu.com/ubuntu/pool/universe/v/vtk/libvtk5.8_5.8.0-5_amd64.deb
+  #- dpkg -i libvtk5.8.deb
+  
+  
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y http://security.ubuntu.com/ubuntu/pool/universe/v/vtk/libvtk5.8_5.8.0-5_amd64.deb
-  - sudo apt-get install -y libtet1.4.2 libtet1.4.2-dev libxml2-dev
+  - sudo apt-get install -y libtet1.4.2 libtet1.4.2-dev libxml2-dev libvtk5.8
   
 before_script: 
   - mkdir cbuild
