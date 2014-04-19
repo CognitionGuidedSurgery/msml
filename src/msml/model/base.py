@@ -378,14 +378,15 @@ class Reference(object):
 
 
 def parse_attribute_value(value):
-    expr = re.match(r'\${(.*)(\..*)?}', value)
-    if expr:
-        a = expr.group(1)
-        try:
-            b = expr.group(2)
-        except:
-            b = None
-        return Reference(a, b)
+    if isinstance(value, str):
+        expr = re.match(r'\${([^.]+)(\.[^.]+)?}', value)
+        if expr:
+            a = expr.group(1)
+            try:
+                b = expr.group(2)
+            except:
+                b = None
+            return Reference(a.strip("."), b.strip("."))
     else:
         return Constant(value)
 
@@ -527,14 +528,21 @@ class Task(object):
         pass
 
 
+class SceneObjectSets(object):
+    def __init__(self, elements=None, nodes=None, surfaces=None):
+        self.elements = elements
+        self.nodes = nodes
+        self.surfaces = surfaces
+
+
 class SceneObject(object):
-    def __init__(self, oid, mesh=None, body=[], material=[], constraints=[]):
+    def __init__(self, oid, mesh=None, sets=SceneObjectSets(), material=None, constraints=None):
         self._id = oid
         self._mesh = mesh if mesh else Mesh()
-        self._material = material
-        self._constraints = constraints
-        self._sets = None
-        self._output = None
+        self._material = list() if not material else material
+        self._constraints = constraints if constraints else list()
+        self._sets = sets
+        self._output = list()
 
     @property
     def id(self):
@@ -613,9 +621,10 @@ class ObjectElement(object):
     def __getattr__(self, item):
         return self.get(item, None)
 
-    def bind(self, alphabet = None):
+    def bind(self, alphabet=None):
         if not alphabet:
             import msml.env
+
             alphabet = msml.env.current_alphabet
 
         self.meta = alphabet.get(self.__tag__)
