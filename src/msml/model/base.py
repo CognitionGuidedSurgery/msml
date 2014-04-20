@@ -78,7 +78,7 @@ def structure(name, field_names):
 
 class MSMLFile(object):
     """
-    
+
     """
 
     def __init__(self, variables=None, workflow=None, scene=None, env=None, output=None):
@@ -381,14 +381,13 @@ def parse_attribute_value(value):
     if isinstance(value, str):
         expr = re.match(r'\${([^.]+)(\.[^.]+)?}', value)
         if expr:
-            a = expr.group(1)
+            a = expr.group(1).strip(".")
             try:
-                b = expr.group(2)
+                b = expr.group(2).strip(".")
             except:
                 b = None
-            return Reference(a.strip("."), b.strip("."))
-    else:
-        return Constant(value)
+            return Reference(a,b)
+    return Constant(value)
 
 
 def random_var_name():
@@ -421,17 +420,17 @@ class Task(object):
 
         LABEL_TPL = """<
             <TABLE>
-            <tr><td>ID</td> 
+            <tr><td>ID</td>
                 <td><B>{$ id}</B></td>
             </tr>
-            <tr><td>OP</td> 
+            <tr><td>OP</td>
                 <td><I>{$ operator}</I></td>
             </tr>
-            {for o in input} 
+            {for o in input}
                 <tr><td>IN</td><td>{$ o}</td></tr>
             {end}
 
-            {for o in output} 
+            {for o in output}
                 <tr><td>OUT</td><td>{$ o}</td></tr>
             {end}
             </TABLE>
@@ -507,7 +506,7 @@ class Task(object):
 
                 self.arguments[key] = ref
             else:
-                raise MSMLError("no case %s : %s " % (value, str(type(value))))
+                raise MSMLError("no case %s : %s for attribute %s in %s " % (value, str(type(value)), key, self))
 
     def validate(self):
         if not self.operator:
