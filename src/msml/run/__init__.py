@@ -30,8 +30,9 @@
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-26"
 
-from .memory import Memory
+import warnings
 
+from .memory import Memory
 from msml.model import *
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
@@ -60,6 +61,14 @@ class LinearSequenceExecuter(Executer):
         self._memory = Memory()
         self._exporter = self._mfile.exporter
 
+    def init_memory(self, content):
+        if isinstance(content, str):
+            self._memory.reset()
+            self._memory.load_memory_file(content)
+        else:
+            warnings.warn("init_memory handles only filenames", MSMLWarning)
+
+
     def define_var(self, name, value=None):
         """defines a variable in the current memory.
 
@@ -68,7 +77,8 @@ class LinearSequenceExecuter(Executer):
           value (object): any value of variable
 
         """
-        self._memory[name] = value
+        if name not in self._memory:  #do not override
+            self._memory[name] = value
 
     def run(self):
         """starts the execution of the given MSMLFile
@@ -149,6 +159,7 @@ class DefaultGraphBuilder(object):
        exporter (Exporter)
         
     """
+
     def __init__(self, msmlfile, exporter):
         """
         :type msmlfile: msml.model.base.MSMLFile
