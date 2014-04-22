@@ -44,7 +44,7 @@
             </constraints>
 
             <output>
-                <displacement id="disp01" timestep="1"/>
+                <displacementOutputRequest id="disp01" timestep="1"/>
             </output>
         </object>
     </scene>

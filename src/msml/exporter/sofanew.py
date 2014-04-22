@@ -38,6 +38,7 @@ import math
 from ..model import *
 from .base import XMLExporter, Exporter
 from path import path
+import subprocess
 
 import lxml.etree as etree
 from msml.model.exceptions import *
@@ -87,8 +88,15 @@ class SofaExporter(XMLExporter):
 
     def execute(self):
         "should execute the external tool and set the memory"
-        print("Executing sofa.")
-        os.system("runSofa %s" % self.export_file)
+        
+        filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
+        f = open(filenameSofaBatch, 'w')
+        timeSteps = (int) (self._msml_file.env.simulation[0].iterations) #only one step supported
+        f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(timeSteps) + ' ' + self.export_file + '.simu \n')
+        f.close()
+        
+        subprocess.call("C:/Projekte/SOFA/Sofa/bin/SofaBatch.exe" + " -l SOFACuda " + filenameSofaBatch)
+        
 
 
     def write_scn(self):
