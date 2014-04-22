@@ -4,7 +4,6 @@
     <variables>
 
     </variables>
-    <scene/>
     <workflow>
         <colormesh id="clrmesh" coloredMesh="Colored/liverTet4ColoredIni.vtk" mesh="ToColor/LiverXSTet4.vtk"/>
         <paraview id="pv" data="${clrmesh}"/>

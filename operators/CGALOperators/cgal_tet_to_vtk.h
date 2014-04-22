@@ -114,9 +114,15 @@ output_c3t3_to_vtk_unstructured_grid(const C3T3& c3t3,
 
  grid->SetCells(VTK_TRIANGLE, vtk_facets);
   grid->SetCells(VTK_TETRA, vtk_cells);
+#if VTK_MAJOR_VERSION <= 5
   grid->Update();
+#endif
+
   grid->GetCellData()->SetScalars(vtka);
+
+#if VTK_MAJOR_VERSION <= 5
   grid->Update();
+#endif
 
   vtk_facets->Delete();
   vtk_cells->Delete();
