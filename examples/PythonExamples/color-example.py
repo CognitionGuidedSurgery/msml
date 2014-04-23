@@ -51,21 +51,6 @@ import msml.env
 from msml.model import *
 
 
-options = {'--alphabet': 'alphabet.cache',
-           '--exporter': 'nsofa',
-           '--output': None,
-           '--start-script': '~/.config/msmlrc.py',
-           '--verbose': True,
-           '--xsd-file': False,
-           '-S': True,
-           '-w': False,
-           '<file>': [file],
-           '<paths>': [],
-           'alphabet': False,
-           'exec': True,
-           'show': False}
-
-
 def construct_msml_file():
     def _task(name, **kwargs):
         t = Task(name, kwargs)
@@ -88,26 +73,17 @@ def construct_msml_file():
 
     wf = Workflow([clrmesh, pv])
     m = MSMLFile(workflow=wf, env=MSMLEnvironment())
-    m.filename = "bunnypy.xml" # needed for generating export file name
+
+    m.env.simulation.add_step() # add one pseudo step
+
+    m.filename = path(__file__) # needed for generating export file name
     return m
 
 def main():
-    msml.env.load_user_file()
-    msml.env.current_alphabet = msml.frontend.alphabet(options)
-    msml.env.current_alphabet.validate()
-    exporter = msml.exporter.get_exporter("nsofa")
 
     model = construct_msml_file()
-    model.exporter = exporter(model)
-    model.validate(msml.env.current_alphabet)
-
-    fil = path(__file__)
-    os.chdir(fil.dirname().abspath())
-
-    exe = msml.run.LinearSequenceExecuter(model)
-    mem = exe.run()
-
-    mem.show_content()
+    app = msml.frontend.App(files = [model], exporter="base")
+    app.execute_msml(model)
 
 
 __name__ == "__main__" and main()

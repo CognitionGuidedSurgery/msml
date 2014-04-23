@@ -146,11 +146,13 @@ class App(object):
 
     def _load_msml_file(self, filename):
         mfile = msml.xml.load_msml_file(filename)
+        return mfile
+
+    def _prepare_msml_model(self, mfile):
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
         if not self._novalidate:
             mfile.validate(msml.env.current_alphabet)
-        return mfile
 
 
     def show(self):
@@ -168,10 +170,14 @@ class App(object):
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)
         print("Execute: %s in %s" % (fil, fil.dirname))
+        self.execute_msml(mfile)
 
-        os.chdir(fil.dirname().abspath())
+
+    def execute_msml(self, msml_file):
+        self._prepare_msml_model(msml_file)
+        os.chdir(msml_file.filename.dirname().abspath())
         execlazz = self.executer
-        exe = execlazz(mfile)
+        exe = execlazz(msml_file)
         exe.init_memory(self.memory_init_file)
         mem = exe.run()
         return mem
