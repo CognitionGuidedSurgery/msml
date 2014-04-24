@@ -162,3 +162,6 @@ def projectSurfaceMesh(*args ):
 
 def voxelizeSurfaceMesh(a,b,c):
     return cpp.voxelizeSurfaceMesh(a,b, int(c))
+
+def GenerateDVF(ref_mesh, DVFFilename, DeformedMesh, multipleReferenceGrids):
+    return cpp.GenerateDVF(str(ref_mesh), DVFFilename, DeformedMesh, _bool(multipleReferenceGrids))

@@ -56,6 +56,7 @@ class SofaExporter(XMLExporter):
 
       """
         self.name = 'SOFAExporter'
+        self.id = 'SOFAExporter'
         Exporter.__init__(self, msml_file)
         self.export_file = None
         self.working_dir = path()
@@ -432,7 +433,8 @@ class SofaExporter(XMLExporter):
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
 
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    dispOutputNode.set("filename", filenameLastOutput)
+                    self._memory['SOFAExporter'] = {request.id : filenameLastOutput}
+                    dispOutputNode.set("filename", filename+ ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
                     dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
