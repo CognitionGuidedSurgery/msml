@@ -65,7 +65,7 @@ class LinearSequenceExecuter(Executer):
         if isinstance(content, str):
             self._memory.reset()
             self._memory.load_memory_file(content)
-        else:
+        elif content:
             warnings.warn("init_memory handles only filenames", MSMLWarning)
 
 

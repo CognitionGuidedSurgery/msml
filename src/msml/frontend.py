@@ -62,7 +62,7 @@ OPTIONS = """
 
 Usage:
   msml exec     [-w] [options] [<file>...]
-  msml show     [options] [<file>...]
+  msml show     [options] <file>
   msml writexsd [-a DIR] XSDFile
   msml check    [<file>...]
   msml validate
@@ -155,17 +155,19 @@ class App(object):
             mfile.validate(msml.env.current_alphabet)
 
 
-    def show(self):
-        def _show_file(mfile):
-            mfile.validate(msml.env.current_alphabet)
-            dag = mfile.get_dag()
-            newname = "%s.dot" % mfile.namebase
-            with open(newname, 'w') as w:
-                w.write(dag.dot())
-            print("File %s written." % newname)
+    def show(self, msml_file = None):
+        if not msml_file:
+            msml_file = self._load_msml_file(self.files[0])
+        self._prepare_msml_model(msml_file)
+        from msml.run.GraphDotWriter import *
+        from msml.run import DefaultGraphBuilder
+        graphb = DefaultGraphBuilder(msml_file, msml_file.exporter)
+        writer = GraphDotWriter(graphb.dag)
 
-        for f in self._files:
-            self._load_msml_file(f)
+        newname = "%s.dot" % path(msml_file.filename).namebase
+        with open(newname, 'w') as w:
+            w.write(writer())
+        print("File %s written." % newname)
 
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)

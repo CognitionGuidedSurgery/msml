@@ -42,6 +42,14 @@ except ImportError, e:
          "sys.path is %s" % (e, sys.path),
          MSMLUnknownModuleWarning, 0)
 
+    class _cpp(object):
+        def __getattribute__(self, item):
+            def fn(*args, **kwargs):
+                return None
+            return fn
+    cpp = _cpp()
+
+
 
 def _bool(s):
     return s in ("on", "True", "true", "yes")

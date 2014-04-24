@@ -28,63 +28,63 @@
 
 __author__ = 'Alexander Weigl'
 
-TMPL = """
-digraph G {{
-  //rankdir = LR;
-  splines=ortho
+from jinja2 import Template
 
+
+TMPL = """
+digraph G {
+  splines=ortho
   node [shape=box]
 
-  {for n in nodes}
-   {$ n.name } [ {$ n.spec} ]; {end}
+  {% for n in nodes %}
+   {{ n.name }} [ {{ n.spec }} ] ;
+  {% endfor%}
 
-  {for e in edges}
-    {$ e.a } -> {$ e.b } [{$ e.spec }]; {end}
-
+  {%for e in edges%}
+    {{ e.a }} -> {{ e.b }} [{{ e.spec }}] ;
+  {%endfor%}
 }
 """
-import itertools
 
+template = Template(TMPL)
+
+import itertools
 from collections import namedtuple
 
 
 def kvstr(dic, noquote=False):
+    a = '%s=%s' if noquote else '%s="%s"'
     return ', '.join(itertools.starmap(
-        lambda k, v: '%s=%s' % (k, v.replace('"', "'")),
+        lambda k, v:  a % (k, v.replace('"', "'")),
         dic.items()))
 
-
-from msml.titen import titen as T
-
-gen = T(text=TMPL)
 N = namedtuple("NodeTP", "name spec")
 E = namedtuple("EdgeTP", "a b spec")
+
+from msml.model.dag import DiGraph
 
 
 class GraphDotWriter(object):
     def __init__(self, dag):
-        self.edges = 0
+        self.dag = dag
 
-        self.nodes = 0
+    def __call__(self):
+        dag = self.dag
+        assert isinstance(dag, DiGraph)
 
+        nodes = [N(id(n), kvstr(todot(n)))
+                 for n in dag.nodes_iter()]
 
-    def __str__(self):
-        nodes = [
-            N(id(n), kvstr(n._dot()))
-            for n in self._outgoing.keys()]
-
-        def _edge(a, b):
-            ref = self._edge_value[(a, b)]
+        def _edge(e):
+            a,b, data = e
+            ref = data['ref']
             _a = "%d" % (id(a))
             _b = "%d" % (id(b))
-            l = kvstr(ref._edge_dot())
+            l = kvstr(todot(ref))
             return E(_a, _b, l)
 
-        edges = (_edge(a, b)
-                 for a, to in self._outgoing.items()
-                 for b in to)
-
-        return gen(nodes=nodes, edges=edges)
+        edges = map(_edge, dag.edges_iter(data=True))
+        return template.render(nodes=nodes, edges=edges)
 
 
 from ..model import *
@@ -97,17 +97,21 @@ from simplegeneric import generic
 def todot(obj):
     return {'label': str(obj), 'color': 'red'}
 
+@todot.when_type(Task)
+def todot_task(task):
+    return {'label': "{%s|%s}" % (task.id, task.name), 'color': 'red', 'shape':'record'}
+
 
 @todot.when_type(Exporter)
 def todot_exporter(exporter):
-    return {'label': str(exporter), 'color': 'yellow'}
+    return {'label': str(exporter), 'color': 'yellow', 'shape':'house'}
 
 
 @todot.when_type(MSMLVariable)
-def todot(obj):
-    return {'label': str(obj), 'color': 'green'}
+def todot_var(obj):
+    return {'label': obj.value or obj.name, 'color': 'green', 'shape':'parallelogram'}
 
-
-#@todot.when_type(MSMLVariable)
-def todot_task(task):
-    return {'label': str(task), 'color': 'blue'}
+@todot.when_type(Reference)
+def todot_ref(ref):
+    return {'taillabel': str(ref.linked_to.arginfo.sort),
+            'headlabel': str(ref.linked_from.arginfo.sort), 'fontsize':'8'}

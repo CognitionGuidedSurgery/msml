@@ -50,6 +50,24 @@ from msml.sorts import get_sort
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
+
+def xor(l):
+    """
+    xor on iterables
+    >>> l1 = [0, 1 , 0]
+    >>> l2 = [1, 1 , 0]
+    >>> l3 = [1, 1 , 1]
+    >>> xor(l1)
+    True
+
+    >>> xor(l2)
+    False
+
+    >>> xor(l3)
+    True
+    """
+    return reduce(lambda x,y: x ^ y,map(bool, l), False)
+
 Argument = namedtuple('Argument', 'name,format,type,required')
 
 
@@ -147,28 +165,46 @@ class MSMLFile(object):
 
     def lookup(self, ref, outarg=True):
         "lookup a reference, consists of task id and output arg"
+        def lookup_exporter():
+            return self._exporter.lookup(ref, outarg)
+
+
+        def lookup_task():
+            task = self._workflow.lookup(ref.task)
+            if task:
+                op = task.operator
+                args = op.output if outarg else op.input + op.parameters
+                if ref.slot:
+                    #choose slot
+                    return task, args[ref]
+                else:
+                    # choose first from output/input
+                    return task, args.values()[0]
+            else:
+                return None
+
+        def lookup_var():
+            if ref.task in self._variables:
+                return self._variables[ref.task], self._variables[ref.task]
+            return None
+
+
         if isinstance(ref, str):
             ref = parse_attribute_value(ref)
 
-        r = ref.task
-        v = ref.slot
+        looked_up = (lookup_task(), lookup_var(), lookup_exporter())
 
-        task = self._workflow.lookup(r)
-        if task:
-            op = task.operator
-            args = op.output if outarg else op.input + op.parameters
-            if v:
-                return task, args[ref]
-            else:
-                # choose first from output/input
-                return task, args.values()[0]
-        elif r in self._variables:
-            return self._variables[r], self._variables[r]
-        else:
-            a = self._exporter.lookup(ref, outarg)
-            if a: return a
+        first_true = looked_up[0] or looked_up[1] or looked_up[2]
+        if not xor(looked_up):
+            #raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
+            #relaxed /weigl
+            warnings.warn("reference %s is ambigous. Found: %s" % (ref, looked_up))
 
-        warnings.warn("could not bind %s to a slot" % ref)
+        if not first_true:
+            raise MSMLError("could not bind %s to a slot" % ref)
+
+        return first_true
+
 
     def add_variable(self, var):
         self._variables[var.name] = var;
@@ -357,11 +393,6 @@ class Reference(object):
 
     def validate(self):
         pass
-
-
-    def _edge_dot(self):
-        return {'taillabel': str(self.linked_to.arginfo.sort),
-                'headlabel': str(self.linked_from.arginfo.sort)}
 
     def __str__(self):
         def _id(a):

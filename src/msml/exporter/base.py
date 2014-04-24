@@ -60,7 +60,19 @@ class Exporter(object):
 
 
     def lookup(self, ref, outarg):
-        pass
+        assert isinstance(ref, Reference)
+        obj = ref.task
+        slot = ref.slot
+
+        for scene_object in self._msml_file.scene:
+            assert isinstance(scene_object, SceneObject)
+            for o in scene_object.output:
+                assert isinstance(o, ObjectElement)
+                if o.id == obj:
+                    # TODO define type/Format of this output
+                    return self, ExporterOutputVariable(obj)
+
+
 
 
     def gather_output(self):
