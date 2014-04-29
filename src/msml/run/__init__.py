@@ -37,7 +37,7 @@ from msml.model import *
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
 from msml.run.GraphDotWriter import GraphDotWriter
-
+from path import path
 
 class Executer(object):
     """Describe the interface of an Executer.
@@ -50,6 +50,31 @@ class Executer(object):
     # TODO define interface /weigl
     pass
 
+def contains(a,b):
+    if isinstance(b, type):
+        b = b.__name__
+    elif not isinstance(b,(str,unicode)):
+        b = str(b)
+    try:
+        return b.index(a) >= 0
+    except ValueError:
+        return False
+
+
+def initialize_file_literals(first_bucket):
+    def var_is_file(var):
+        if  isinstance(var, MSMLVariable):
+            #TODO better predicate if sort logic defined /weigl
+            return contains("file", var.type) or contains("file", var.format)
+        return False
+
+    def abs_value(var):
+        import os.path
+        var.value = os.path.abspath(var.value)
+        return var
+
+    return map(abs_value, filter(var_is_file, first_bucket))
+
 
 class LinearSequenceExecuter(Executer):
     """ The LinearSequenceExecuter executes the given MSMLFile  in one sequence with no parallelism in topological order.
@@ -60,6 +85,7 @@ class LinearSequenceExecuter(Executer):
         self._mfile = msmlfile
         self._memory = Memory()
         self._exporter = self._mfile.exporter
+        self.working_dir = None
 
     def init_memory(self, content):
         if isinstance(content, str):
@@ -88,6 +114,19 @@ class LinearSequenceExecuter(Executer):
         #dag.show()
 
         buckets = dag.toporder()
+
+        # make absolute paths for every string/file literal
+        # wd is msml file dirname
+        initialize_file_literals(buckets[0])
+
+        # change to output_dir
+        wd = path(self.working_dir)
+        try:
+            wd.mkdir()
+        except:
+            pass
+        finally:
+            wd.chdir()
 
         for bucket in buckets:
             for node in bucket:

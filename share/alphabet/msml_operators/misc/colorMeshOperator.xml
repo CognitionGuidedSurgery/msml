@@ -11,10 +11,6 @@
         <arg name="mesh"
              type="linearTetMesh, quadraticTetMesh"
              format="file.vtk"/>
-
-        <arg name="coloredMesh"
-             type="triangularMesh"
-             format="file.vtk"/>
     </input>
 
     <output>
@@ -22,5 +18,11 @@
              type="triangularMesh"
              format="file.vtk"/>
     </output>
+
+    <parameters>
+        <arg name="coloredMesh"
+             type="str"
+             format=""/>
+    </parameters>
 
 </msml:operator>

@@ -75,7 +75,7 @@ Usage:
 
 Options:  
  -v, --verbose              verbose information on stdout [default: false]
- -o, --output=FILE          output file
+ -o, --output=DIR           output file
  --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
  -a, --alphabet-dir=DIR     loads an specific alphabet dir
  --operator-dir             path to search for additional python modules
@@ -88,12 +88,13 @@ Options:
 
 class App(object):
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
-                 add_opeator_path=None, memory_init_file=None, options={}):
+                 add_opeator_path=None, memory_init_file=None, output_dir = None, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
         self._files = options.get('<file>') or files or list()
         self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
         self._additional_operator_search_path = options.get('--operator-path') or add_opeator_path or list()
         self._options = options
+        self.output_dir = output_dir or options.get('--output')
         self._novalidate = novalidate
         self._memory_init_file = memory_init_file
 
@@ -107,6 +108,14 @@ class App(object):
 
         if not self._novalidate:
             msml.env.current_alphabet.validate()
+
+    @property
+    def output_dir(self):
+        return self._output_dir
+
+    @output_dir.setter
+    def output_dir(self, o):
+        self._output_dir = path(o)
 
     @property
     def alphabet(self):
@@ -177,9 +186,12 @@ class App(object):
 
     def execute_msml(self, msml_file):
         self._prepare_msml_model(msml_file)
-        os.chdir(msml_file.filename.dirname().abspath())
         execlazz = self.executer
+
+        # change to msml-file dirname
+        os.chdir(msml_file.filename.dirname().abspath())
         exe = execlazz(msml_file)
+        exe.working_dir = self.output_dir
         exe.init_memory(self.memory_init_file)
         mem = exe.run()
         return mem

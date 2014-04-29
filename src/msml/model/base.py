@@ -442,37 +442,6 @@ class Task(object):
     def __str__(self):
         return "{Task %s (%s)}" % (self.id, self.name)
 
-    def _dot(self):
-        i = ["%s : %s" % (k, str(v))
-             for k, v in self.arguments.items()]
-
-        o = ("%s :  %s" % (k, v)
-             for k, v in self.operator.output.items())
-
-        LABEL_TPL = """<
-            <TABLE>
-            <tr><td>ID</td>
-                <td><B>{$ id}</B></td>
-            </tr>
-            <tr><td>OP</td>
-                <td><I>{$ operator}</I></td>
-            </tr>
-            {for o in input}
-                <tr><td>IN</td><td>{$ o}</td></tr>
-            {end}
-
-            {for o in output}
-                <tr><td>OUT</td><td>{$ o}</td></tr>
-            {end}
-            </TABLE>
-            >
-        """
-
-        import msml.titen
-
-        TPL = msml.titen.titen(LABEL_TPL)
-        return {'label': TPL(id=self.id, operator=self.operator.name, input=i, output=o)}
-
     def bind(self, alphabet):
         self.operator = alphabet.get(self.name)
 
@@ -512,6 +481,13 @@ class Task(object):
                     warnings.warn("Lookup after %s does not succeeded" % value)
             elif isinstance(value, Constant):
                 var = MSMLVariable(random_var_name(), value=value.value);
+                # get type and format from input/parameter
+
+                slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
+                if slot:
+                    var.type = slot.type
+                    var.format = slot.format
+
                 msmlfile.add_variable(var)
                 ref = Reference(var.name, None)
                 outtask, outarg = msmlfile.lookup(ref)
