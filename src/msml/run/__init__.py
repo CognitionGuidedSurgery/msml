@@ -120,13 +120,14 @@ class LinearSequenceExecuter(Executer):
         initialize_file_literals(buckets[0])
 
         # change to output_dir
-        wd = path(self.working_dir)
-        try:
-            wd.mkdir()
-        except:
-            pass
-        finally:
-            wd.chdir()
+        if self.working_dir:
+            wd = path(self.working_dir)
+            try:
+                wd.mkdir()
+            except:
+                pass
+            finally:
+                wd.chdir()
 
         for bucket in buckets:
             for node in bucket:

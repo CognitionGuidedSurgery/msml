@@ -115,7 +115,10 @@ class App(object):
 
     @output_dir.setter
     def output_dir(self, o):
-        self._output_dir = path(o)
+        if o:
+            self._output_dir = path(o)
+        else:
+            self._output_dir = None
 
     @property
     def alphabet(self):
