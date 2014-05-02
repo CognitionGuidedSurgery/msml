@@ -37,6 +37,7 @@
 #include <CGAL/IO/Polyhedron_iostream.h>
 
 
+
 //Polyhedral domain:
 // Domain poly
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -88,6 +89,9 @@ using namespace CGAL::parameters;
 //local includes
 #include "CGALOperators.h"
 #include "cgal_tet_to_vtk.h"
+#include "../vtk6_compat.h"
+
+
 
 namespace MSML{
 
@@ -120,12 +124,15 @@ namespace MSML{
 
     //cast image pixel data array to unsigned char  
     vtkSmartPointer<vtkImageCast > image_caster = vtkSmartPointer<vtkImageCast>::New();
-    image_caster->SetInput(image_compact);
+    __SetInput(image_caster, image_compact);
     image_caster->SetOutputScalarTypeToUnsignedChar();
     image_caster->Update();
     vtkSmartPointer<vtkImageData > image_data_byte =  image_caster->GetOutput();
+#if VTK_MAJOR_VERSION <= 5
     image_data_byte->SetScalarTypeToUnsignedChar(); //does not work as expected. read_vtk_image_data will find double in image_data_byte->GetScalarType()
-
+#else
+    image_data_byte->AllocateScalars(VTK_UNSIGNED_CHAR,3);
+#endif
     //convert vtk image to INRIA Image_3 and mesh it.
     CGAL::Image_3 image = read_vtk_image_data_char(image_data_byte);
     //image.read_vtk_image_data(image_data_byte); //read_vtk_image_data is undocumented (see http://cgal-discuss.949826.n4.nabble.com/VTK-support-td2531799.html)
@@ -142,7 +149,7 @@ namespace MSML{
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
     transform->Translate( image_compact->GetOrigin() );
     vtkSmartPointer<vtkTransformFilter> transformFilter = vtkSmartPointer<vtkTransformFilter>::New();
-    transformFilter->SetInput(outputMesh);
+    __SetInput(transformFilter, outputMesh);
     transformFilter->SetTransform(transform);
     transformFilter->Update();
     outputMesh = (vtkUnstructuredGrid*) transformFilter->GetOutput();
@@ -195,7 +202,7 @@ namespace MSML{
 	  vtkSmartPointer<vtkUnstructuredGridWriter >::New();
     string tmp_file = string(outfile);
 	  aVtkUnstructuredGridWriter->SetFileName(tmp_file.c_str());
-	  aVtkUnstructuredGridWriter->SetInput(outputMesh);
+	  __SetInput(aVtkUnstructuredGridWriter, outputMesh);
 	  aVtkUnstructuredGridWriter->Write();
 
 
@@ -315,7 +322,7 @@ namespace MSML{
     vtkSmartPointer<vtkUnstructuredGridWriter > aVtkUnstructuredGridWriter =
 	  vtkSmartPointer<vtkUnstructuredGridWriter >::New();
 	  aVtkUnstructuredGridWriter->SetFileName(outfile);
-	  aVtkUnstructuredGridWriter->SetInput(outputMesh);
+	  __SetInput(aVtkUnstructuredGridWriter, outputMesh);
 	  aVtkUnstructuredGridWriter->Write();
     return outfile;
   }
@@ -413,7 +420,10 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
   image->vy = spacing[1];
   image->vz = spacing[2];
 
+#if VTK_MAJOR_VERSION <= 5
   vtk_image->Update();
+#endif 
+
   image->endianness = ::_getEndianness();
   int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType(); 
   if(vtk_type =! VTK_UNSIGNED_CHAR) 

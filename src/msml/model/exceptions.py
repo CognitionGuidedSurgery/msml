@@ -44,6 +44,8 @@
 
 __author__ = 'Alexander Weigl'
 
+from warnings import warn
+
 ##
 # Exception
 
@@ -68,7 +70,7 @@ class MSMLXMLParseError(MSMLError):
 ##
 # Warning
 
-class MSMLWarning(Warning):
+class MSMLWarning(UserWarning):
     pass
 
 

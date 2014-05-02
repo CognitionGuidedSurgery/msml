@@ -12,35 +12,6 @@ import math
 class MSMLSOFAExporterWarning(Warning):
     pass
 
-
-class Dispatcher(object):
-    def __init__(self, getter, error_msg="Could not dispatch key %s"):
-        self._registry = {}
-        self._getter = getter
-        self.error_msg = error_msg
-
-    def __call__(self, *args, **kwargs):
-        try:
-            key = self._getter(*args, **kwargs)
-            return self._registry[key](*args, **kwargs)
-        except KeyError as e:
-            warn(MSMLSOFAExporterWarning, self.error_msg % key)
-
-
-    def register(self, name):
-        def _add(fn):
-            self._registry[name] = fn
-
-        return _add
-
-
-def attrib_getter(position, attrib):
-    def fn(*args, **kwargs):
-        return getattr(args[position], attrib)
-
-    return fn
-
-
 def SubElement(root, tag, **kwargs):
     skwargs = {k: str(v) for k, v in kwargs.items()}
     return etree.SubElement(root, tag, **skwargs)

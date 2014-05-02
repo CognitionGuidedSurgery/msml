@@ -59,9 +59,16 @@ class Memory(object):
         r = self._internal[key] = value
         return r
 
+    def __contains__(self, item):
+        return self._internal.__contains__(item)
+
+
     def is_compatible(self, name):
         #TODO
         pass
+
+    def reset(self):
+        self._internal = {}
 
     def load_memory_file(self, filename):
         mem = {}

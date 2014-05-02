@@ -38,49 +38,57 @@
             </material>
 
             <constraints>
-              <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}" />
-              <surfacePressure name="l1" indices="${lung1facesToIndexGroup}" pressure="50"/>
-              <surfacePressure name="l2" indices="${lung2facesToIndexGroup}" pressure="50"/>
+                <constraint forStep="${initial}" name="1">
+                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+                    <surfacePressure name="l1" indices="${lung1facesToIndexGroup}" pressure="50"/>
+                    <surfacePressure name="l2" indices="${lung2facesToIndexGroup}" pressure="50"/>
+                </constraint>
             </constraints>
 
             <output>
-                <displacement id="disp01" timestep="1"/>
+                <displacementOutputRequest id="disp" timestep="1"/>
             </output>
         </object>
     </scene>
 
-    <workflow>    
-        <ExtractAllSurfacesByMaterial  id="surfaceExtraction" meshIn="${VolumeMesher}" meshOutFilename="${combo_mesh}" cut="false" />
-        <mesherCGALi2v id="VolumeMesher" meshFilename="${tet_only_mesh}" image="${segementation_voxel_image}" 
-					facet_angle="20" facet_size="12" facet_distance="3" cell_radius_edge_ratio="3" cell_size="18" odt="false" lloyd="false"  pertube="false" exude="false" />
+    <workflow>
+        <ExtractAllSurfacesByMaterial id="surfaceExtraction" meshIn="${VolumeMesher}" meshOutFilename="${combo_mesh}"
+                                      cut="false"/>
+
+        <mesherCGALi2v id="VolumeMesher" meshFilename="${tet_only_mesh}" image="${segementation_voxel_image}"
+                       facet_angle="20" facet_size="12" facet_distance="3" cell_radius_edge_ratio="3" cell_size="18"
+                       odt="false" lloyd="false" pertube="false" exude="false"/>
 
         <materialId-to-index id="bodyToIndexGroup"
-                               num="100" mesh="${surfaceExtraction}"
-                               type="elements"/>
+                             num="100" mesh="${surfaceExtraction}"
+                             type="elements"/>
 
         <materialId-to-index id="bonesToIndexGroup"
-                               num="25" mesh="${surfaceExtraction}"
-                               type="elements"/>
+                             num="25" mesh="${surfaceExtraction}"
+                             type="elements"/>
 
         <materialId-to-index id="lung1ToIndexGroup"
-                               num="50" mesh="${surfaceExtraction}"
-                               type="elements"/>
+                             num="50" mesh="${surfaceExtraction}"
+                             type="elements"/>
 
         <materialId-to-index id="lung2ToIndexGroup"
-                               num="75" mesh="${surfaceExtraction}"
-                               type="elements"/>
-                               
+                             num="75" mesh="${surfaceExtraction}"
+                             type="elements"/>
+
         <materialId-to-index id="lung1facesToIndexGroup"
-                               num="50" mesh="${surfaceExtraction}"
-                               type="faces"/>
+                             num="50" mesh="${surfaceExtraction}"
+                             type="faces"/>
 
         <materialId-to-index id="lung2facesToIndexGroup"
-                               num="75" mesh="${surfaceExtraction}"
-                               type="faces"/>
-                               
+                             num="75" mesh="${surfaceExtraction}"
+                             type="faces"/>
+
         <boxROIToIndexOperator id="bottomToIndexGroup"
                                box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
                                select="points"/>
+
+        <paraview id="a" data="${disp}" /> <!-- nonsense -->
+		<generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${combo_mesh}" multipleReferenceGrids="false" DVFFilename="dvf01.vtk"/>
     </workflow>
 
 

@@ -95,7 +95,9 @@
 #include <vtkThreshold.h>
 #include <vtkMergeCells.h>
 
+#include "../vtk6_compat.h"
 //#include <SOLID/SOLID.h>
+
 
 using namespace std;
 
@@ -135,7 +137,8 @@ bool MiscMeshOperators::ConvertSTLToVTK(const char* infile, const char* outfile)
 	vtkSmartPointer<vtkPolyDataWriter> writer =
 	 vtkSmartPointer<vtkPolyDataWriter>::New();
 	writer->SetFileName(outfile);
-	writer->SetInput(mesh);
+
+	__SetInput(writer, mesh);
 	writer->Write();
 
 	return true;
@@ -175,7 +178,7 @@ bool MiscMeshOperators::ConvertVTKToSTL(const char* infile, const char* outfile)
 	 vtkSmartPointer<vtkSTLWriter>::New();
 	writer->SetFileTypeToBinary();
 	writer->SetFileName(outfile);
-	writer->SetInput(reader->GetOutput());
+	__SetInput(writer, reader->GetOutput());
 	writer->Write();
 	std::cout<<"STL file written\n";
 
@@ -343,8 +346,8 @@ bool MiscMeshOperators::VTKToInp( const char* infile, const char* outfile)
     }
     vtkSmartPointer<vtkUnstructuredGridWriter> cutGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
     cutGridWriter->SetFileName((string(outfile) + "-cut.vtk").c_str());
-	  cutGridWriter->SetInput(inputGrid);
-	  cutGridWriter->Write();
+    __SetInput(cutGridWriter,inputGrid);
+    cutGridWriter->Write();
   }
   //done cutting
 
@@ -363,7 +366,7 @@ bool MiscMeshOperators::VTKToInp( const char* infile, const char* outfile)
   {
     cout << it->second << " cells of MaterialId=" << it->first << " found." << std::endl;
     vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
-    threshold->SetInput(inputGrid);
+    __SetInput(threshold, inputGrid);
     threshold->ThresholdBetween(it->first, it->first);
     threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Materials"); 
     threshold->Update();
@@ -373,8 +376,8 @@ bool MiscMeshOperators::VTKToInp( const char* infile, const char* outfile)
     stringstream itFirst;
     itFirst << it->first;
     aUGridWriter->SetFileName((string(outfile) + "-volume" + itFirst.str() + ".vtk").c_str());
-	  aUGridWriter->SetInput(threshold->GetOutput());
-	  aUGridWriter->Write();
+    __SetInput(aUGridWriter, threshold->GetOutput());
+    aUGridWriter->Write();
     //done debug out
 
     cout << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  it->first << std::endl;
@@ -387,8 +390,8 @@ bool MiscMeshOperators::VTKToInp( const char* infile, const char* outfile)
     //debug out surface
     vtkSmartPointer<vtkPolyDataWriter> aGridWriter = vtkSmartPointer<vtkPolyDataWriter>::New();
     aGridWriter->SetFileName((string(outfile) + "-surface" + itFirst.str() + ".vtk").c_str());
-	  aGridWriter->SetInput(mesh);
-	  aGridWriter->Write();
+    __SetInput(aGridWriter, mesh);
+    aGridWriter->Write();
     //done debug out
 
     surfaces.push_back(mesh);
@@ -431,10 +434,10 @@ bool MiscMeshOperators::VTKToInp( const char* infile, const char* outfile)
 
 	//save the merged data
   vtkSmartPointer<vtkUnstructuredGridWriter> unioGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	unioGridWriter->SetFileName(outfile);
-	unioGridWriter->SetInput(unionMesh);
-	unioGridWriter->Write();
-	return outfile;
+  unioGridWriter->SetFileName(outfile);
+  __SetInput(unioGridWriter, unionMesh);
+  unioGridWriter->Write();
+  return outfile;
 }
 
 
@@ -479,7 +482,7 @@ bool MiscMeshOperators::ExtractSurfaceMesh( const char* infile, const char* outf
 	  vtkSmartPointer<vtkPolyDataWriter> polywriter =
 	  vtkSmartPointer<vtkPolyDataWriter>::New();
 	  polywriter->SetFileName(outfile);
-	  polywriter->SetInput(mesh);
+	  __SetInput(polywriter, mesh);
 	  polywriter->Write();
 
 	  return result;
@@ -492,8 +495,8 @@ bool MiscMeshOperators::ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkP
 
 	//extract the surface as unstructured grid
 	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
-			vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-	geom->SetInput(inputMesh);
+		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
+	__SetInput(geom, inputMesh);
 	geom->Update();
 
 
@@ -512,19 +515,19 @@ bool MiscMeshOperators::ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkP
 	if(isQuadratic)
 		std::cout<<"QuadraticMeshDetected\n";
 
-    vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceTessellator =
-    			vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceTessellator =
+		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
 
-	 surfaceTessellator->SetInput(currentGrid);
-	    if(isQuadratic)
-	    	surfaceTessellator->SetNonlinearSubdivisionLevel(3);
-	    surfaceTessellator->Update();
+	__SetInput(surfaceTessellator, currentGrid);
+	if(isQuadratic)
+		surfaceTessellator->SetNonlinearSubdivisionLevel(3);
+	surfaceTessellator->Update();
 
 
 
-	 outputMesh->DeepCopy(surfaceTessellator->GetOutput());
+	outputMesh->DeepCopy(surfaceTessellator->GetOutput());
 
-	 return true; //todo: add useful return value
+	return true; //todo: add useful return value
 }
 
 bool MiscMeshOperators::AssignSurfaceRegion( const char* infile, const char* outfile,  std::vector<std::string> regionMeshes )
@@ -532,35 +535,35 @@ bool MiscMeshOperators::AssignSurfaceRegion( const char* infile, const char* out
 	//load the vtk  mesh
 	vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	  reader->SetFileName(infile);
-	  reader->Update();
+	reader->SetFileName(infile);
+	reader->Update();
 
-		vtkSmartPointer<vtkUnstructuredGrid> mesh =
-		 vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-
-	 unsigned int meshCount = regionMeshes.size();
-
-	 std::vector<vtkSmartPointer<vtkPolyData> > regionMeshesVec;
-
-	 for(unsigned int i=0;i<meshCount;i++)
-	 {
-			vtkSmartPointer<vtkPolyDataReader> tempReader =
-				vtkSmartPointer<vtkPolyDataReader>::New();
-			tempReader->SetFileName(regionMeshes[i].c_str());
-			tempReader->Update();
-
-				vtkSmartPointer<vtkPolyData> currentMesh =
-				 vtkSmartPointer<vtkPolyData>::New();
-
-				currentMesh->DeepCopy(tempReader->GetOutput());
-				regionMeshesVec.push_back(currentMesh);
+	vtkSmartPointer<vtkUnstructuredGrid> mesh =
+		vtkSmartPointer<vtkUnstructuredGrid>::New();
 
 
-	 }
+	unsigned int meshCount = regionMeshes.size();
+
+	std::vector<vtkSmartPointer<vtkPolyData> > regionMeshesVec;
+
+	for(unsigned int i=0;i<meshCount;i++)
+	{
+		vtkSmartPointer<vtkPolyDataReader> tempReader =
+			vtkSmartPointer<vtkPolyDataReader>::New();
+		tempReader->SetFileName(regionMeshes[i].c_str());
+		tempReader->Update();
+
+		vtkSmartPointer<vtkPolyData> currentMesh =
+			vtkSmartPointer<vtkPolyData>::New();
+
+		currentMesh->DeepCopy(tempReader->GetOutput());
+		regionMeshesVec.push_back(currentMesh);
 
 
-	  bool result = MiscMeshOperators::AssignSurfaceRegion( reader->GetOutput() , mesh, regionMeshesVec);
+	}
+
+
+	bool result = MiscMeshOperators::AssignSurfaceRegion( reader->GetOutput() , mesh, regionMeshesVec);
 
 
 
@@ -568,7 +571,7 @@ bool MiscMeshOperators::AssignSurfaceRegion( const char* infile, const char* out
 	  vtkSmartPointer<vtkUnstructuredGridWriter> polywriter =
 	  vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	  polywriter->SetFileName(outfile);
-	  polywriter->SetInput(mesh);
+	  __SetInput(polywriter, mesh);
 	  polywriter->Write();
 
 	  return result;
@@ -608,7 +611,7 @@ bool MiscMeshOperators::AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtk
 	//extract surface as ug
 	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
 			vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-	geom->SetInput(inputMesh);
+	__SetInput(geom,inputMesh);
 	geom->Update();
 
 	vtkUnstructuredGrid* currentSurfaceMesh = geom->GetOutput();
@@ -758,7 +761,7 @@ bool MiscMeshOperators::ConvertVTKPolydataToUnstructuredGrid(const char* infile,
 	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	writer->SetFileName(outfile);
 	writer->SetFileTypeToBinary();
-	writer->SetInput(mesh);
+	__SetInput(writer, mesh);
 	writer->Write();
 
 	return returnValue;
@@ -771,7 +774,7 @@ bool MiscMeshOperators::ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputP
 	  vtkSmartPointer<vtkAppendFilter> appendFilter =
 	    vtkSmartPointer<vtkAppendFilter>::New();
 
-	  appendFilter->AddInput(inputPolyData);
+	  __AddInput(appendFilter, inputPolyData);
 
 	  appendFilter->Update();
 
@@ -814,7 +817,7 @@ bool MiscMeshOperators::ProjectSurfaceMesh(const char* infile, const char* outfi
 	vtkSmartPointer<vtkPolyDataWriter>::New();
 	writer->SetFileName(outfile);
 	writer->SetFileTypeToBinary();
-	writer->SetInput(currentGrid);
+	__SetInput(writer,currentGrid);
 	writer->Write();
 
 	return true;
@@ -990,7 +993,7 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(const char* infile, const char* outf
 	vtkSmartPointer<vtkXMLImageDataWriter> writer =
 	 vtkSmartPointer<vtkXMLImageDataWriter>::New();
 	writer->SetFileName(outfile);
-	writer->SetInput(outputImage);
+	__SetInput(writer, outputImage);
 	writer->Write();
 
 //	vtkSmartPointer<vtkPNGWriter> writer2 =
@@ -1044,7 +1047,7 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData
 	    featureEdges->FeatureEdgesOff();
 	    featureEdges->BoundaryEdgesOn();
 	    featureEdges->NonManifoldEdgesOn();
-	    featureEdges->SetInput(inputMesh);
+	    __SetInput(featureEdges, inputMesh);
 	    featureEdges->Update();
 	    int num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
 
@@ -1057,18 +1060,18 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData
 			vtkSmartPointer<vtkFillHolesFilter> fillHolesFilter =
 			vtkSmartPointer<vtkFillHolesFilter>::New();
 
-			fillHolesFilter->SetInput(inputMesh);
+			__SetInput(fillHolesFilter, inputMesh);
 
 			fillHolesFilter->SetHoleSize(holeSize);;
 
 			vtkSmartPointer<vtkCleanPolyData> cleanFilter =
 			vtkSmartPointer<vtkCleanPolyData>::New();
 
-			cleanFilter->SetInput(fillHolesFilter->GetOutput());
+			__SetInput(cleanFilter, fillHolesFilter->GetOutput());
 			cleanFilter->Update();
 
 			//test again
-			featureEdges->SetInput(fillHolesFilter->GetOutput());
+			__SetInput(featureEdges, fillHolesFilter->GetOutput());
 			featureEdges->Update();
 			num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
 			std::cout<<"Number of holes ofter filling is "<<num_open_edges<<"\n";
@@ -1105,8 +1108,14 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData
 	  origin[2] = bounds[4] + spacingArray[2] / 2;
 	  whiteImage->SetOrigin(origin);
 
+#if VTK_MAJOR_VERSION <= 5	 
 	  whiteImage->SetScalarTypeToUnsignedChar();
 	  whiteImage->AllocateScalars();
+#else
+	  whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,3);
+	  // 3 could be wrong, no   image->SetNumberOfScalarComponents(3); found /Weigl
+#endif 
+
 
 	  // fill the image with foreground voxels:
 	  unsigned char inval = 255;
@@ -1121,7 +1130,9 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData
 	  vtkSmartPointer<vtkPolyDataToImageStencil> pol2stenc =
 	    vtkSmartPointer<vtkPolyDataToImageStencil>::New();
 
-	  pol2stenc->SetInput(inputMesh);
+	  __SetInput(pol2stenc, inputMesh);
+		  
+
 
 	  pol2stenc->SetOutputOrigin(origin);
 	  pol2stenc->SetOutputSpacing(spacingArray);
@@ -1132,8 +1143,8 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData
 	  vtkSmartPointer<vtkImageStencil> imgstenc =
 	    vtkSmartPointer<vtkImageStencil>::New();
 
-	  imgstenc->SetInput(whiteImage);
-	  imgstenc->SetStencil(pol2stenc->GetOutput());
+	  __SetInput(imgstenc, whiteImage);
+	  __SetStencil(imgstenc,pol2stenc->GetOutput());
 
 	  imgstenc->ReverseStencilOff();
 	  imgstenc->SetBackgroundValue(outval);

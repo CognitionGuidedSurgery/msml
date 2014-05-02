@@ -40,6 +40,17 @@ from msml.model.exceptions import MSMLUnknownModuleWarning
 
 try:
     import MiscMeshOperatorsPython as cpp
+    class VecUInt(cpp.VecUInt):
+        pass
+
+
+    class VecDouble(cpp.VecDouble):
+        pass
+
+    ApplyDVF = cpp.ApplyDVF
+    GenerateDVF = cpp.GenerateDVF
+
+
 except ImportError, e:
     import sys
     warn("Could not import MiscMeshOperatorsPython. "
@@ -48,13 +59,6 @@ except ImportError, e:
          "Error is %s, Current sys.path: %s" % (e, sys.path),
          MSMLUnknownModuleWarning, 0)
 
-
-class VecUInt(cpp.VecUInt):
-    pass
-
-
-class VecDouble(cpp.VecDouble):
-    pass
 
 
 __all__ = ['colorMeshFromComparison',
@@ -76,9 +80,6 @@ __all__ = ['colorMeshFromComparison',
            'ExtractAllSurfacesByMaterial',
            'GenerateDVF']
 
-ApplyDVF = cpp.ApplyDVF
-
-GenerateDVF = cpp.GenerateDVF
 
 def _bool(s):
     return s in ("on", "True", "true", "yes")
@@ -161,3 +162,6 @@ def projectSurfaceMesh(*args ):
 
 def voxelizeSurfaceMesh(a,b,c):
     return cpp.voxelizeSurfaceMesh(a,b, int(c))
+
+def GenerateDVF(ref_mesh, DVFFilename, DeformedMesh, multipleReferenceGrids):
+    return cpp.GenerateDVF(str(ref_mesh), DVFFilename, DeformedMesh, _bool(multipleReferenceGrids))

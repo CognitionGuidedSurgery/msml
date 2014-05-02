@@ -33,12 +33,13 @@
 """
 
 from collections import namedtuple
+
 import re
 import warnings
-
 from path import path
 
 from .exceptions import *
+
 
 
 
@@ -48,6 +49,24 @@ from msml.sorts import get_sort
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
+
+
+def xor(l):
+    """
+    xor on iterables
+    >>> l1 = [0, 1 , 0]
+    >>> l2 = [1, 1 , 0]
+    >>> l3 = [1, 1 , 1]
+    >>> xor(l1)
+    True
+
+    >>> xor(l2)
+    False
+
+    >>> xor(l3)
+    True
+    """
+    return reduce(lambda x,y: x ^ y,map(bool, l), False)
 
 Argument = namedtuple('Argument', 'name,format,type,required')
 
@@ -77,7 +96,7 @@ def structure(name, field_names):
 
 class MSMLFile(object):
     """
-    
+
     """
 
     def __init__(self, variables=None, workflow=None, scene=None, env=None, output=None):
@@ -146,28 +165,46 @@ class MSMLFile(object):
 
     def lookup(self, ref, outarg=True):
         "lookup a reference, consists of task id and output arg"
+        def lookup_exporter():
+            return self._exporter.lookup(ref, outarg)
+
+
+        def lookup_task():
+            task = self._workflow.lookup(ref.task)
+            if task:
+                op = task.operator
+                args = op.output if outarg else op.input + op.parameters
+                if ref.slot:
+                    #choose slot
+                    return task, args[ref]
+                else:
+                    # choose first from output/input
+                    return task, args.values()[0]
+            else:
+                return None
+
+        def lookup_var():
+            if ref.task in self._variables:
+                return self._variables[ref.task], self._variables[ref.task]
+            return None
+
+
         if isinstance(ref, str):
             ref = parse_attribute_value(ref)
 
-        r = ref.task
-        v = ref.slot
+        looked_up = (lookup_task(), lookup_var(), lookup_exporter())
 
-        task = self._workflow.lookup(r)
-        if task:
-            op = task.operator
-            args = op.output if outarg else op.input + op.parameters
-            if v:
-                return task, args[ref]
-            else:
-                # choose first from output/input
-                return task, args.values()[0]
-        elif r in self._variables:
-            return self._variables[r], self._variables[r]
-        else:
-            a = self._exporter.lookup(ref, outarg)
-            if a: return a
+        first_true = looked_up[0] or looked_up[1] or looked_up[2]
+        if not xor(looked_up):
+            #raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
+            #relaxed /weigl
+            warnings.warn("reference %s is ambigous. Found: %s" % (ref, looked_up))
 
-        warnings.warn("could not bind %s to a slot" % ref)
+        if not first_true:
+            raise MSMLError("could not bind %s to a slot" % ref)
+
+        return first_true
+
 
     def add_variable(self, var):
         self._variables[var.name] = var;
@@ -217,8 +254,28 @@ class MSMLEnvironment(object):
         class Step(object):
             def __init__(self, name="initial", dt=0.05, iterations=100):
                 self.name = name
+                self._dt = None
+                self._iterations = None
+
                 self.dt = dt
                 self.iterations = iterations
+
+            @property
+            def dt(self):
+                return self._dt
+
+            @dt.setter
+            def dt(self, dt):
+                self._dt = float(dt)
+
+            @property
+            def iterations(self):
+                return self._iterations
+
+            @iterations.setter
+            def iterations(self, iterations):
+                self._iterations = int(iterations)
+
 
         def __init__(self, *args):
             list.__init__(self, *args)
@@ -227,11 +284,15 @@ class MSMLEnvironment(object):
             self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
 
     class Solver(object):
-        def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler"):
+        def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler",
+                     preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2):
             self.linearSolver = linearSolver
             self.processingUnit = processingUnit
             self.timeIntegration = timeIntegration
 
+            self.preconditioner = preconditioner
+            self.dampingRayleighRatioMass = dampingRayleighRatioMass
+            self.dampingRayleighRatioStiffness = dampingRayleighRatioStiffness
 
     def __init__(self):
         self.simulation = MSMLEnvironment.Simulation()
@@ -333,11 +394,6 @@ class Reference(object):
     def validate(self):
         pass
 
-
-    def _edge_dot(self):
-        return {'taillabel': str(self.linked_to.arginfo.sort),
-                'headlabel': str(self.linked_from.arginfo.sort)}
-
     def __str__(self):
         def _id(a):
             try:
@@ -353,16 +409,16 @@ class Reference(object):
 
 
 def parse_attribute_value(value):
-    expr = re.match(r'\${(.*)(\..*)?}', value)
-    if expr:
-        a = expr.group(1)
-        try:
-            b = expr.group(2)
-        except:
-            b = None
-        return Reference(a, b)
-    else:
-        return Constant(value)
+    if isinstance(value, str):
+        expr = re.match(r'\${([^.]+)(\.[^.]+)?}', value)
+        if expr:
+            a = expr.group(1).strip(".")
+            try:
+                b = expr.group(2).strip(".")
+            except:
+                b = None
+            return Reference(a,b)
+    return Constant(value)
 
 
 def random_var_name():
@@ -385,37 +441,6 @@ class Task(object):
 
     def __str__(self):
         return "{Task %s (%s)}" % (self.id, self.name)
-
-    def _dot(self):
-        i = ["%s : %s" % (k, str(v))
-             for k, v in self.arguments.items()]
-
-        o = ("%s :  %s" % (k, v)
-             for k, v in self.operator.output.items())
-
-        LABEL_TPL = """<
-            <TABLE>
-            <tr><td>ID</td> 
-                <td><B>{$ id}</B></td>
-            </tr>
-            <tr><td>OP</td> 
-                <td><I>{$ operator}</I></td>
-            </tr>
-            {for o in input} 
-                <tr><td>IN</td><td>{$ o}</td></tr>
-            {end}
-
-            {for o in output} 
-                <tr><td>OUT</td><td>{$ o}</td></tr>
-            {end}
-            </TABLE>
-            >
-        """
-
-        import msml.titen
-
-        TPL = msml.titen.titen(LABEL_TPL)
-        return {'label': TPL(id=self.id, operator=self.operator.name, input=i, output=o)}
 
     def bind(self, alphabet):
         self.operator = alphabet.get(self.name)
@@ -456,6 +481,13 @@ class Task(object):
                     warnings.warn("Lookup after %s does not succeeded" % value)
             elif isinstance(value, Constant):
                 var = MSMLVariable(random_var_name(), value=value.value);
+                # get type and format from input/parameter
+
+                slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
+                if slot:
+                    var.type = slot.type
+                    var.format = slot.format
+
                 msmlfile.add_variable(var)
                 ref = Reference(var.name, None)
                 outtask, outarg = msmlfile.lookup(ref)
@@ -481,7 +513,7 @@ class Task(object):
 
                 self.arguments[key] = ref
             else:
-                raise MSMLError("no case %s : %s " % (value, str(type(value))))
+                raise MSMLError("no case %s : %s for attribute %s in %s " % (value, str(type(value)), key, self))
 
     def validate(self):
         if not self.operator:
@@ -502,14 +534,21 @@ class Task(object):
         pass
 
 
+class SceneObjectSets(object):
+    def __init__(self, elements=None, nodes=None, surfaces=None):
+        self.elements = elements
+        self.nodes = nodes
+        self.surfaces = surfaces
+
+
 class SceneObject(object):
-    def __init__(self, oid, mesh=None, body=[], material=[], constraints=[]):
+    def __init__(self, oid, mesh=None, sets=SceneObjectSets(), material=None, constraints=None):
         self._id = oid
         self._mesh = mesh if mesh else Mesh()
-        self._material = material
-        self._constraints = constraints
-        self._sets = None
-        self._output = None
+        self._material = list() if not material else material
+        self._constraints = constraints if constraints else list()
+        self._sets = sets
+        self._output = list()
 
     @property
     def id(self):
@@ -588,8 +627,13 @@ class ObjectElement(object):
     def __getattr__(self, item):
         return self.get(item, None)
 
-    def bind(self):
-        self.meta = msml.env.current_alphabet.get(self.__tag__)
+    def bind(self, alphabet=None):
+        if not alphabet:
+            import msml.env
+
+            alphabet = msml.env.current_alphabet
+
+        self.meta = alphabet.get(self.__tag__)
 
     def validate(self):
         if self.meta is None:

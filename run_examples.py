@@ -1,3 +1,4 @@
+#!/usr/bin/env python 
 #region gplv3
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #

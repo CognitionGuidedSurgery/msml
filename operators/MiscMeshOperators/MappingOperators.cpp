@@ -101,6 +101,8 @@
 
 //#include <SOLID/SOLID.h>
 
+#include "../vtk6_compat.h"
+
 using namespace std;
 
 namespace MSML
@@ -157,7 +159,7 @@ bool MappingOperators::MapMesh( const char* meshIni, const char* meshDeformed, c
 	  //save the subdivided polydata
 	  vtkSmartPointer<vtkUnstructuredGridWriter> gridWriter =	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	  gridWriter->SetFileName( mappedMeshFilename);
-	  gridWriter->SetInput( mappedMesh);
+	  __SetInput(gridWriter,  mappedMesh);
 	  gridWriter->Write();
 
 	  return result;

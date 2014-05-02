@@ -16,6 +16,11 @@
 	</output>
 
 	<parameters>
+      <arg name="DVFFilename" type="filename" optional="1">
+            <meta key="doc">
+                Optional input filename for the output.
+            </meta>
+      </arg>
 		<arg name="DeformedMesh" type="file.vtu" />
 		<arg name="multipleReferenceGrids" type="bool" />
 	</parameters>

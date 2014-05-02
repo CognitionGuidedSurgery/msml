@@ -88,6 +88,7 @@
 
 using namespace boost;
 
+#include "../vtk6_compat.h"
 
 
 namespace MSML
@@ -141,12 +142,12 @@ void PostProcessingOperators::CompareMeshes(std::vector<double> & errorVec, vtkU
 	{
 			vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
 					vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-			geom->SetInput(referenceMesh);
+			__SetInput(geom, referenceMesh);
 			geom->Update();
 
 			vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom2 =
 					vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-			geom2->SetInput(testMesh);
+			__SetInput(geom2,testMesh);
 			geom2->Update();
 
 			refPoints->DeepCopy(geom->GetOutput()->GetPoints());
@@ -235,12 +236,12 @@ void PostProcessingOperators::CompareMeshes(double & errorRMS, double & errorMax
 	{
 			vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
 					vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-			geom->SetInput(referenceMesh);
+			__SetInput(geom, referenceMesh);
 			geom->Update();
 
 			vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom2 =
 					vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-			geom2->SetInput(testMesh);
+			__SetInput(geom2, testMesh);
 			geom2->Update();
 
 			refPoints->DeepCopy(geom->GetOutput()->GetPoints());
@@ -322,7 +323,7 @@ void PostProcessingOperators::ColorMeshFromComparison(const char* modelFilename,
 	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	writer->SetFileName(coloredModelFilename);
-	writer->SetInput(coloredGrid);
+	__SetInput(writer, coloredGrid);
 	writer->Write();
 }
 
@@ -389,7 +390,7 @@ void PostProcessingOperators::ColorMesh(const char* modelFilename, const char* c
 		vtkSmartPointer<vtkPolyDataWriter> polywriter =
 				vtkSmartPointer<vtkPolyDataWriter>::New();
 		polywriter->SetFileName(coloredModelFilename);
-		polywriter->SetInput(surface);
+		__SetInput(polywriter, surface);
 		polywriter->Write();
 
 }
@@ -399,7 +400,7 @@ void PostProcessingOperators::ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyD
 	//extract the surface as unstructured grid
 	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
 	  	    vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-	geom->SetInput(inputMesh);
+	__SetInput(geom, inputMesh);
 	geom->Update();
 
 
@@ -520,7 +521,7 @@ void PostProcessingOperators::ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyD
     vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceTessellator =
     			vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
 
-    surfaceTessellator->SetInput(currentGrid);
+    __SetInput(surfaceTessellator, currentGrid);
     if(isQuadratic)
     {
     	surfaceTessellator->SetNonlinearSubdivisionLevel(3);
@@ -543,7 +544,11 @@ void PostProcessingOperators::ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyD
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     points->DeepCopy(pointsMesh->GetPoints());
     outputMesh->SetPoints(points);
+#if VTK_MAJOR_VERSION <= 5    
     outputMesh->Update();
+    //TODO is there really no method in vtk 6 for Update?
+    //     In documentation is nothing listed
+#endif
   }
 
 void PostProcessingOperators::MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, const char* outputMeshFilename)
@@ -558,7 +563,7 @@ void PostProcessingOperators::MergeMeshes(const char* pointsMeshFilename, const 
 		vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 		vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 		writer->SetFileName(outputMeshFilename);
-		writer->SetInput(mergedGrid);
+		__SetInput(writer, mergedGrid);
 		writer->Write();
   }
 //TODO: Refactor+cleanup
@@ -630,7 +635,7 @@ void PostProcessingOperators::MergeMeshes(const char* pointsMeshFilename, const 
 		vtkSmartPointer<vtkXMLImageDataWriter> writer =
 		vtkSmartPointer<vtkXMLImageDataWriter>::New();
 		writer->SetFileName(outputDeformedImage);
-		writer->SetInput(outputDefImage);
+		__SetInput(writer, outputDefImage);
     writer->SetCompressorTypeToZLib();
 		writer->Write();
   }
@@ -763,7 +768,7 @@ void PostProcessingOperators::MergeMeshes(const char* pointsMeshFilename, const 
 		//write output
 		vtkSmartPointer<vtkStructuredPointsWriter> writer = vtkSmartPointer<vtkStructuredPointsWriter>::New();
 		writer->SetFileName(outputDVFFilename);
-		writer->SetInput(outputDVF);
+		__SetInput(writer, outputDVF);
 		writer->Write();
 
     //write raw data
@@ -806,9 +811,13 @@ void PostProcessingOperators::MergeMeshes(const char* pointsMeshFilename, const 
 	  origin[1] = bounds[2] + spacingArray[1] / 2;
 	  origin[2] = bounds[4] + spacingArray[2] / 2;
 	  outputDVF->SetOrigin(origin);
+#if VTK_MAJOR_VERSION <= 5
     outputDVF->SetScalarTypeToFloat();
     outputDVF->SetNumberOfScalarComponents(3);
     outputDVF->AllocateScalars();
+#else
+    outputDVF->AllocateScalars(VTK_FLOAT, 3);
+#endif
 
     
     //octree

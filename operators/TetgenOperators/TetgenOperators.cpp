@@ -123,7 +123,11 @@ bool TetgenOperators::CreateVolumeMesh(const char* infile, const char* outfile, 
 	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	writer->SetFileName(outfile);
+#if VTK_MAJOR_VERSION <= 5
 	writer->SetInput(outputMesh);
+#else
+	writer->SetInputData(outputMesh);
+#endif
 	writer->Write();
 
 

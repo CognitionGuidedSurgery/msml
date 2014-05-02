@@ -30,6 +30,20 @@
 __authors__ = 'Stefan Suwelack, Markus Stoll'
 __license__ = 'GPLv3'
 
+
+# MODULE is DEPRECATED /Alexander Weigl
+# consider sofanew.py
+#      d)                                                   t)                d)
+#      d)                                                 t)tTTT              d)
+#  d)DDDD e)EEEEE p)PPPP   r)RRR  e)EEEEE  c)CCCC a)AAAA    t)   e)EEEEE  d)DDDD
+# d)   DD e)EEEE  p)   PP r)   RR e)EEEE  c)       a)AAA    t)   e)EEEE  d)   DD
+# d)   DD e)      p)   PP r)      e)      c)      a)   A    t)   e)      d)   DD
+#  d)DDDD  e)EEEE p)PPPP  r)       e)EEEE  c)CCCC  a)AAAA   t)T   e)EEEE  d)DDDD
+#                 p)
+#                 p)
+
+
+
 from warnings import warn
 import os
 import math
