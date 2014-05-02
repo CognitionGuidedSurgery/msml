@@ -5,8 +5,8 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
@@ -61,59 +61,65 @@ __date__ = "2014-01-25, 2014-02-23"
 
 
 class SortsDefinition(object):
-    def __init__(self, default_sorts = True):
-        self.type_cache = {}
-        self.format_cache = {}
+    def __init__(self, default_sorts=True):
+        self.logical_cache = {}
+        self.physical_cache = {}
         self.sort_cache = {}
 
         if default_sorts:
             self._bulk_sorts_load(DEFAULTS_SORTS)
 
-    def get_sort(self, tp, fmt=None):
-        if type(tp) is str:
-            tp = self._find_type(tp)
+    def get_sort(self, physical, logical=None):
+        pythontypes = {str: MSMLString, int: MSMLInt, float: MSMLFloat}
+        if physical in pythontypes:
+            physical = pythontypes[physical]
 
-        if type(fmt) is str:
-            fmt = self._find_format(fmt)
+        if type(physical) is str:
+            physical = self._find_physical(physical)
+
+        if logical and type(logical) is str:
+            logical = self._find_logical(logical)
 
         try:
-            return self.sort_cache[tp, fmt]
+            return self.sort_cache[physical, logical]
         except:
-            s = Sort(tp, fmt)
-            self.sort_cache[tp, fmt] = s
+            s = Sort(physical, logical)
+            self.sort_cache[physical, logical] = s
             return s
 
-    def _find_type(self, typestr):
+    def _find_logical(self, typestr):
         try:
-            return self.type_cache[typestr]
-        except:
+            return self.logical_cache[typestr]
+        except BaseException as e:
             print "todo"
+            raise e
 
-    def _find_format(self, fmtstr):
+    def _find_physical(self, fmtstr):
         try:
-            return self.format_cache[fmtstr]
+            return self.physical_cache[fmtstr]
         except:
             print "todo2"
 
 
-    def register_format(self, clazz, name=None):
+    def register_logical(self, clazz, name=None):
         if not name: name = clazz.__name__
-        self.format_cache[name] = clazz
+        self.logical_cache[name] = clazz
         return clazz
 
-    def register_type(self, clazz, name=None):
+    def register_physical(self, clazz, name=None):
         if not name: name = clazz.__name__
-        self.type_cache[name] = clazz
+        self.physical_cache[name] = clazz
         return clazz
 
     def register_type_with_name(self, name):
         def fn(clazz):
             return self.register_type(clazz, name)
+
         return fn
 
     def _bulk_sorts_load(self, defs):
-        temp = (('type', self.register_type),
-                ('format', self.register_format))
+        temp = (('logical', self.register_logical),
+                ('physical', self.register_physical))
 
         for tp, register in temp:
             for d in defs[tp]:
@@ -125,35 +131,58 @@ class SortsDefinition(object):
                     names = tuple()
 
                 if len(names) == 0:
-                        names = (clazz.__name__,)
+                    names = (clazz.__name__,)
 
                 for n in names:
-                    register(clazz,n)
+                    register(clazz, n)
+
 
 DEFAULTS_SORTS = {
-    'type': [
-        (int, "int", "i"),
-        (float, "float", "f"),
-        (str, "str", "string", "s"),
-        (unicode, "unicode", "wstr"),
-        (object, "top", "object", "*"),
-        (IndexGroup, "indexgroup"),
-        Vertice,
-        Vertices,
-        (Filename,"filename"),
-        (MeshFile, "mesh_file"),
-        (TriangularMeshFile, "tri_mesh_file"),
-        (QuadraticMeshFile, "quat_mesh_file"),
-        (LinearMeshFile, "lin_mesh_file"),
+    'logical': [
+        (MSMLTop, "top", "object", "*"),
+        IndexSet,
+        NodeSet,
+        FaceSet,
+        ElementSet,
+        Mesh,
+        Volume,
+        Tetrahedral,
+        Hexahedral,
+        QuadraticTetraHedral,
+        Surface,
+        Triangular,
+        Square,
+        Image3D,
+        Image2D,
+        Scalar,
+        VonMisesStress,
+        Vector,
+        Force,
+        Velocity,
+        Tensor
+        , Stress,
+        Displacement,
     ],
 
-    'format': [
-        VTI, VTK, VTU,
-        Image, PNG, JPG,
+    'physical': [
+        (MSMLString, "str", "string", "s"),
+        (MSMLFloat, "float"),
+        (MSMLInt, "int"),
+        (MSMLBool, "bool"),
+        (MSMLUInt, "uint"),
+        (MSMLListFI, "ListF"),
+        (MSMLListUI, "ListUI"),
+        (MSMLListI, "ListI"),
+        VTK,
+        DICOM,
+        HDF5,
+        STL,
+        PNG
     ],
 }
 
 DEFAULT_SORTS_DEFINITION = SortsDefinition()
+
 
 def default_sorts_definition():
     "return default sorts definition"
@@ -164,8 +193,8 @@ def get_sort(t, f=None):
     """    
     returns the type object for the given sort definition
     """
-    return "`%s/%s`" % ( t,f )
-    #return default_sorts_definition().get_sort(t, f)
+    return default_sorts_definition().get_sort(t, f)
+
 
 def is_sort(x):
     return isinstance(x, type) or isinstance(x, Sort)
@@ -197,11 +226,11 @@ class ConversionNetwork(networkx.DiGraph):
 
         import inspect, itertools
 
-        mro = inspect.getmro(a.type)
-        mrosorts = map(lambda x: get_sort(x, a.format), mro)
+        mro = inspect.getmro(a.physical)
+        mrosorts = map(lambda x: get_sort(x, a.logical), mro)
 
         resolve_order = [a] + mrosorts
-        for start in  resolve_order:
+        for start in resolve_order:
             path = list(networkx.dijkstra_path(self, a, b, 'precedence'))
 
             if len(path) == 0:
@@ -227,18 +256,18 @@ def default_conversion_network():
 register_conversion = DEFAULT_CONVERSION_NETWORK.register_conversion
 conversion = DEFAULT_CONVERSION_NETWORK.converter
 
-# if __name__ == "__main__":
-#     todo remove tests
-#     a = "vector.int + file.vtk"
-#     print _parse_sortsdef(a)
-#     print _sortsdef_to_classname( _parse_sortsdef(a) )
-#     print get_sort(a)
-#     print get_sort(_parse_sortsdef(a))
+########################################################################################################################
+## Default Conversions!
 #
-#     a = ["vector.float", "file.vtk"]
-#     print _parse_sortsdef(a)
-#     print _sortsdef_to_classname( _parse_sortsdef(a) )
-#     print get_sort(a)
-#     print get_sort(_parse_sortsdef(a))
-#
-#
+
+def _bool(s):
+    return s in ('true', 'on', 'yes', 'True', 'YES', 'ON')
+
+
+register_conversion(get_sort("str"), get_sort("int"), int, 100)
+register_conversion(get_sort("str"), get_sort("float"), float, 100)
+register_conversion(get_sort("str"), get_sort("bool"), _bool, 100)
+register_conversion(get_sort("str"), get_sort("VTK"), VTK, 100)
+register_conversion(get_sort("str"), get_sort("STL"), STL, 100)
+
+

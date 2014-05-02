@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -30,25 +30,22 @@
 
 """
 
-
 __author__ = 'Alexander Weigl'
 __date__ = '2014-02-21'
 
-from path import path
 
 class Sort(object):
-    def __init__(self, type, format = None):
-        self._type, self._format = None, None
-
-        self.type = type
-        self.format = format
+    def __init__(self, physical, logical=None):
+        assert physical is not None
+        self._physical = physical
+        self._logical = logical
 
     def __eq__(self, other):
         if other is self:
             return True
 
         if isinstance(other, Sort):
-            return other.format == self.format and self.type == other.type
+            return other._logical == self._logical and self._physical == other._physical
 
         return False
 
@@ -56,12 +53,12 @@ class Sort(object):
         if other is self:
             return False
 
-        a = issubclass(self.type, other.type)
+        a = issubclass(self._physical, other._physical)
 
-        if self._format is None and other.format is None:
+        if self._logical is None and other._logical is None:
             return a
         else:
-            b = issubclass(self.format,  other.format)
+            b = issubclass(self._logical, other._logical)
             return a and b
 
         return False
@@ -76,82 +73,166 @@ class Sort(object):
         return self == other or self < other
 
     def __str__(self):
-        return "<Sort: %s %s>" % (self.type, self.format)
+        return "<Sort: %s %s>" % (self.physical, self._logical)
 
     @property
-    def format(self): return self._format
+    def physical(self):
+        return self._physical
 
-    @format.setter
-    def format(self, fmt):
-        assert fmt is None or isinstance(fmt, type)
-        self._format = fmt
+    @physical.setter
+    def physical(self, fmt):
+        if not fmt:
+            assert isinstance(fmt, type)
+        self._physical = fmt
 
 
     @property
-    def type(self):
-        return self._type
+    def logical(self):
+        return self._logical
 
-    @type.setter
-    def type(self, tp):
+    @logical.setter
+    def logical(self, tp):
         assert isinstance(tp, type)
-        self._type = tp
+        self._logical = tp
 
-#################################################
-class IndexGroup(object):
+
+# ################################################
+# #  Logical Type Hierarchy
+#
+
+class MSMLTop(object): pass
+
+
+class IndexSet(MSMLTop): pass
+
+
+class NodeSet(IndexSet): pass
+
+
+class FaceSet(IndexSet): pass
+
+
+class ElementSet(IndexSet): pass
+
+
+class Mesh(MSMLTop): pass
+
+
+class Volume(Mesh): pass
+
+
+class Tetrahedral(Volume): pass
+
+
+class Hexahedral(Volume): pass
+
+
+class QuadraticTetraHedral(Volume): pass
+
+
+class Surface(Mesh): pass
+
+
+class Triangular(Surface): pass
+
+
+class Square(Surface): pass
+
+
+class Image(MSMLTop): pass
+
+
+class Image2D(Image): pass
+
+
+class Image3D(Image): pass
+
+
+class PhysicalQuantities(MSMLTop): pass
+
+
+class Scalar(PhysicalQuantities): pass
+
+
+class VonMisesStress(Scalar): pass
+
+
+class Vector(PhysicalQuantities): pass
+
+
+class Displacement(Vector): pass
+
+
+class Force(Vector): pass
+
+
+class Velocity(Vector): pass
+
+
+class Tensor(PhysicalQuantities): pass
+
+
+class Stress(PhysicalQuantities): pass
+
+
+##########################################################
+##
+# Physical Hierarchy
+class MSMLPhysicalTop(object): pass
+
+
+class InMemory(MSMLPhysicalTop):
     pass
 
-class Vertice(object):
-    def __init__(self, x= 0, y = 0, z = 0):
-        self.x, self.y, self.z = x,y,z
 
-    def __str__(self):
-        return str( (self.x,self.y,self.z) )
+class MSMLFloat(float, MSMLPhysicalTop): pass
 
-    def __repr__(self):
-        return "msml.model.sortdef.Vertice(%s,%s,%s)" % (self.x, self.y, self.z)
 
-class Vertices(object):
-    def __init__(self, h):
-        self.list = h
+class MSMLInt(int, MSMLPhysicalTop): pass
 
-    def __str__(self):
-        return str(self.list)
+class MSMLBool(int, MSMLPhysicalTop): pass
 
-class Filename(path):
+
+class MSMLUInt(int, MSMLPhysicalTop): pass
+
+
+class MSMLString(str, MSMLPhysicalTop): pass
+
+
+class MSMLListUI(list, MSMLPhysicalTop): pass
+
+
+class MSMLListI(list, MSMLPhysicalTop): pass
+
+
+class MSMLListFI(list, MSMLPhysicalTop): pass
+
+
+class InFile(MSMLPhysicalTop):
     pass
 
-class MeshFile(Filename):
+
+class PNG(InFile):
     pass
 
-class TriangularMeshFile(MeshFile):
-    pass
 
-class QuadraticMeshFile(MeshFile):
-    pass
-
-class LinearMeshFile(MeshFile):
-    pass
-
-###
+class ContainerFile(InFile):
+    def __init__(self, filename, partname = None):
+        if not partname:
+            self.filename, self.partname = filename.split(";")
+        else:
+            self.filename = filename
+            self.partname = partname
 
 
-class Format(object):
-    pass
-
-class VTI(Format): pass
+class VTK(ContainerFile): pass
 
 
-class VTK(Format): pass
+class STL(InFile): pass
 
 
-class VTU(Format): pass
+class DICOM(ContainerFile): pass
 
 
-class Image(Format): pass
-
-
-class PNG(Image): pass
-
-
-class JPG(Image): pass
+class HDF5(ContainerFile): pass
 
