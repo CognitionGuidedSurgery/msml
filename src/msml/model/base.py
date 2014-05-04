@@ -7,7 +7,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -39,6 +39,8 @@ import warnings
 from path import path
 
 from .exceptions import *
+
+
 
 
 
@@ -80,7 +82,7 @@ class struct(dict):
             return struct(a)
         return a
 
-    #    __getattr__= dict.__getitem__
+    # __getattr__= dict.__getitem__
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
@@ -91,9 +93,6 @@ def structure(name, field_names):
             self.__dict__.update(kwargs)
 
     return type(name, (_allset,), {f: None for f in field_names.split('[ ,]')})
-
-
-#Edge = namedtuple("Edge", "inarg outarg");
 
 
 class MSMLFile(object):
@@ -364,12 +363,16 @@ class MSMLFileVariable(object):
 
 
 class Constant(object):
+    """A `constant` value within attribute values.
+    """
+
     def __init__(self, value):
-        self.value = value
+        self._value = value
 
-
-def is_compatible(a,b):
-    pass
+    @property
+    def value(self):
+        """the value of this constant, readonly """
+        return self._value
 
 
 class Reference(object):
@@ -396,7 +399,7 @@ class Reference(object):
         """ Returns True iff. the input and output slot are physical type compatible
         :return: bool
         """
-        return
+        return self.linked and self.linked_from.arginfo.sort < self.linked_to.arginfo.sort
 
     def link_from_task(self, task, outarg):
         self.linked_from = Reference.ref(task, outarg.name, outarg)
@@ -407,8 +410,6 @@ class Reference(object):
     def link_to_task(self, task, inarg):
         self.linked_to = Reference.ref(task, inarg.name, inarg)
 
-    def validate(self):
-        pass
 
     def __str__(self):
         def _id(a):
@@ -419,7 +420,8 @@ class Reference(object):
 
         if self.linked:
             return "{Ref+: %s.%s -> %s.%s}" % (
-                _id(self.linked_from.task), self.linked_from.name, _id(self.linked_to.task), self.linked_to.name)
+                _id(self.linked_from.task), self.linked_from.name,
+                _id(self.linked_to.task), self.linked_to.name)
         else:
             return "{Ref-: %s.%s}" % (self.task, self.slot)
 
@@ -451,6 +453,7 @@ def random_var_name():
     random_var_name.current_number += 1
     return "_gen_%03d_" % random_var_name.current_number
 
+
 random_var_name.current_number = 0  #start with zero
 
 
@@ -463,6 +466,9 @@ def is_generated_name(name):
 
 
 class Task(object):
+    """
+
+    """
     ID_ATTRIB = "id"
 
     def __init__(self, name, attrib):
@@ -768,18 +774,17 @@ class Mesh(object):
     """
 
     """
+
     def __init__(self, type="linear", id=None, mesh=None):
         self.type = type
         self.id = id
         self.mesh = mesh
 
 
-class MaterialRegion(list):
-    def __init__(self, id, elements=None):
-        self.id = id
-        list.__init__(self, elements if elements else [])
+class MaterialRegion(IndexGroup, list):
+    """
 
-    def get_indices(self):
-        for ele in self:
-            if ele.attributes['__tag__'] == 'indexgroup':
-                return ele
+    """
+    def __init__(self, id, indices, elements=None):
+        super(MaterialRegion, self).__init__(self, id, indices)
+        list.__init__(self, elements if elements else [])

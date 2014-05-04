@@ -50,13 +50,13 @@ def load_alphabet(folder=None, file_list=None):
     """
     Load and build the Alphabet
 
+    :param folder: a name of a folder
+    :type folder: str or path.path
 
-    Args:
-      folder (str,path): a name of an folder
-      file_list (list): list of file names
+    :param list file_list: list of file names
 
-    Returns:
-      Alphabet: an alphabet object, not validated
+    :return: an alphabet object, not validated
+    :rtype: Alphabet
     """
     if not file_list:
         file_list = []

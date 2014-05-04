@@ -30,7 +30,7 @@ Contents:
 
 .. toctree::
    :numbered:
-   :maxdepth: 2
+   :maxdepth: 4
    :glob:
 
    Installation
@@ -39,6 +39,7 @@ Contents:
    system_explanation
    Development
    Roadmap
+   modules/msml/__init__
 
 
 
