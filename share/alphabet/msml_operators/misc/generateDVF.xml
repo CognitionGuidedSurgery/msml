@@ -7,22 +7,22 @@
 	</runtime>
 
 	<input>
-		<arg name="RefMesh" type="linearTetMesh+displacementOutputRequest"
-			format="file.vtk+file.vtu" />
+		<arg name="RefMesh" logical="linearTetMesh+displacementOutputRequest"
+			physical="file.vtk+file.vtu" />
 	</input>
 
 	<output>
-		<arg name="DVF" type="image" format="file.vtk" />
+		<arg name="DVF" logical="image" physical="file.vtk" />
 	</output>
 
 	<parameters>
-      <arg name="DVFFilename" type="filename" optional="1">
+      <arg name="DVFFilename" physical="filename" optional="1">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
       </arg>
-		<arg name="DeformedMesh" type="file.vtu" />
-		<arg name="multipleReferenceGrids" type="bool" />
+		<arg name="DeformedMesh" physical="file.vtu" />
+		<arg name="multipleReferenceGrids" physical="bool" />
 	</parameters>
 
 </msml:operator>

@@ -7,17 +7,17 @@
     </runtime>
 
     <input>
-        <arg name="surfaceMesh" type="triangularMesh" format="file.vtk"/>
+        <arg name="surfaceMesh" logical="triangularMesh" physical="vtk"/>
     </input>
 
     <output>
-        <arg name="mesh" type="linearTetMesh" format="file.vtk"/>
+        <arg name="mesh" logical="linearTetMesh" physical="vtk"/>
     </output>
 
     <parameters>
-        <arg name="preserveBoundary" type="bool"/>
+        <arg name="preserveBoundary" physical="bool"/>
 
-        <arg name="meshFilename" type="filename" optional="1">
+        <arg name="meshFilename" physical="filename" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>

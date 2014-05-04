@@ -10,13 +10,13 @@
     </description>
 
     <parameters>
-        <arg name="name">
+        <arg name="name" physical="str">
             <meta key="doc">
                 Name the mass element
             </meta>
         </arg>
 
-        <arg name="massDensity" default="1" optional="1">
+        <arg name="massDensity" physical="float" default="1">
             <meta key="doc" value="Set the mass density"/>
         </arg>
     </parameters>

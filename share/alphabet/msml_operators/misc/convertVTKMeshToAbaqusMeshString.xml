@@ -6,17 +6,17 @@
 	</runtime>
 
 	<input>
-		<arg name="inputMesh" type="linearTetMesh+quadraticTetMesh"
-			format="file.vtk" />
+		<arg name="inputMesh" logical="linearTetMesh+quadraticTetMesh"
+			physical="file.vtk" />
 	</input>
 
 	<output>
-		<arg name="mesh" type="linearTetMesh+quadraticTetMesh" format="string" />
+		<arg name="mesh" logical="linearTetMesh+quadraticTetMesh" physical="string" />
 	</output>
 
 	<parameters>
-		<arg name="partName" type="string" />
-		<arg name="materialName" type="string" />
+		<arg name="partName" physical="string" />
+		<arg name="materialName" physical="string" />
 	</parameters>
 
 </msml:operator>

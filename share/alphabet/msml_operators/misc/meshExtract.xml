@@ -7,14 +7,14 @@
 	</runtime>
 
 	<input>
-		<arg name="meshIn" type="linearTetMesh+triangularMesh" format="file.vtk" />
+		<arg name="meshIn" logical="Mesh" physical="vtk" />
 	</input>
 
 	<output>
-		<arg name="meshOut" type="linearTetMesh+triangularMesh" format="file.vtk" />
+		<arg name="meshOut" logical="Mesh" physical="vtk" />
 	</output>
 
 	<parameters>
-		<arg name="cud" type="bool" />
+		<arg name="cud" physical="bool" />
 	</parameters>
 </msml:operator>

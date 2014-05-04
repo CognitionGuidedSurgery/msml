@@ -8,18 +8,18 @@
 	</runtime>
 
 	<input>
-		<arg name="ApplyDVF" type="image" format="file.vtk" />
+		<arg name="ApplyDVF" logical="Image3D" physical="VTK" />
 	</input>
 
 	<output>
-		<arg name="outputDefImage" type="image" format="file.vti" />
+		<arg name="outputDefImage" logical="Image3D" physical="VTI" />
 	</output>
 
 
 	<parameters>
-		<arg name="dvf" type="file.vtk" />
-		<arg name="multipleDVF" type="bool" />
-		<arg name="reverseDirection" type="bool" />
+		<arg name="dvf" physical="VTK" />
+		<arg name="multipleDVF" physical="bool" />
+		<arg name="reverseDirection" physical="bool" />
 	</parameters>
 </msml:operator>
 

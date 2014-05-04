@@ -176,8 +176,8 @@ class XmlBuilder(VisitorExporterFramework, Visitor):
         if variable.name.startswith("_gen"):
             return None
 
-        return Sub(_variables, "var", format=variable.format, name=variable.name, value=variable.value,
-                   type=variable.type)
+        return Sub(_variables, "var", format=variable.physical_type, name=variable.name, value=variable.value,
+                   type=variable.logical_type)
 
     def workflow_begin(self, _msml, workflow):
         return Sub(_msml, "workflow")

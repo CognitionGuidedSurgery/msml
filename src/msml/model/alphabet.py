@@ -4,8 +4,8 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
@@ -28,11 +28,10 @@
 
 from collections import namedtuple, OrderedDict
 import pickle
-from warnings import warn
 
+from ..log import logging
 from .exceptions import *
 from ..titen import titen
-from .base import MSMLVariable
 
 
 __author__ = "Alexander Weigl"
@@ -79,10 +78,12 @@ class Alphabet(object):
         self.append(elements)
 
     @property
-    def operators(self): return self._operators
+    def operators(self):
+        return self._operators
 
     @property
-    def object_attributes(self): return self._object_attributes
+    def object_attributes(self):
+        return self._object_attributes
 
     def append(self, elements):
         for e in elements:
@@ -172,6 +173,7 @@ class ObjectAttribute(object):
 
 class OAOutput(ObjectAttribute): pass
 
+
 class OAConstraint(ObjectAttribute):
     pass
 
@@ -181,7 +183,7 @@ class OAMaterial(ObjectAttribute):
 
 
 class OAMesh(ObjectAttribute):
-    def  __init__(self, *args):
+    def __init__(self, *args):
         ObjectAttribute.__init__(*args)
         warn(DeprecationWarning, "OAMesh will be removed")
 
@@ -191,7 +193,7 @@ class OAIndexGroup(ObjectAttribute):
 
 
 class OABody(ObjectAttribute):
-    def  __init__(self, *args):
+    def __init__(self, *args):
         ObjectAttribute.__init__(*args)
         warn(DeprecationWarning, "OABody will be removed")
 
@@ -200,21 +202,36 @@ _object_attribute_categories = {'basic': ObjectAttribute, 'material': OAMaterial
                                 'mesh': OAMesh, 'indexgroup': OAIndexGroup, 'data': OABody, "output": OAOutput}
 
 
-class Argument(MSMLVariable):
-    def __init__(self, name, typ=None, format=None, required=True, default = None, meta = dict()):
-        MSMLVariable.__init__(self, name, format, typ)
+class OperatorSlot(object):
+    SLOT_TYPE_UNKNOWN = -1
+    SLOT_TYPE_INPUT = 0
+    SLOT_TYPE_OUTPUT = 1
+    SLOT_TYPE_PARAMETER = 2
+
+    def __init__(self, name, physical, logical=None,
+                 required=True, default=None, meta=dict()):
+        self.name = name
+        self.logical_type = logical
+        self.physical_type = physical
         self.required = required
         self.default = None
         self.meta = meta
+        self.slot_type = OperatorSlot.SLOT_TYPE_UNKNOWN
+
+        try:
+            self.sort = get_sort(self.physical_type, self.logical_type)
+        except AssertionError as ae:
+            logging.error("Operator %s has physical_type %s" % (self.name, self.physical_type))
+
 
     def __getattr__(self, item):
         return self.meta[item]
 
+    def __str__(self):
+        return "<OperatorSlot: %s>" % str(self.__dict__)
 
 
-
-StructArgument = namedtuple('StructArgument', 'name,args')
-
+from ..sorts import get_sort
 
 def _list_to_dict(lis, attrib='name'):
     if not lis:

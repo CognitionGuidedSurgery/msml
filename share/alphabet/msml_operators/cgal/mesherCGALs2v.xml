@@ -1,56 +1,33 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://sfb125.de/msml" name="mesherCGALs2v">
-<!--
-
- std::string
-
- CreateVolumeMeshs2v(
- const char* infile,
- const char* outfile,
-
- bool thePreserveFeatures,
-
- double theFacetAngle,
- double theFacetSize,
- double theFacetDistance,
- double theCellRadiusEdgeRatio,
- double theCellSize,
-
- bool theOdtSmoother,
- bool theLloydSmoother,
- bool thePerturber,
- bool theExuder
--->
-
-
     <runtime>
         <python module="msml.ext.cgal" function="CreateVolumeMeshs2v"/>
     </runtime>
 
     <input>
-        <arg name="surfaceMesh" type="triangularMesh" format="file.vtk"/>  
+        <arg name="surfaceMesh" logical="triangularMesh" physical="file.vtk"/>  
     </input>
 
     <output>
-        <arg name="mesh" type="linearTetMesh" format="file.vtk"/>
+        <arg name="mesh" logical="linearTetMesh" physical="file.vtk"/>
     </output>
 
     <parameters>
-        <arg name="meshFilename" type="filename" optional="1">
+        <arg name="meshFilename" physical="filename" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
         </arg>
-        <arg name="preserveFeatures" type="bool"/>
-        <arg name="facet_angle" type="float"/>
-        <arg name="facet_size" type="float"/>
-        <arg name="facet_distance" type="float"/>
-        <arg name="cell_radius_edge_ratio" type="float"/>
-        <arg name="cell_size" type="float"/>
-        <arg name="odt" type="bool"/>
-        <arg name="lloyd" type="bool"/>
-        <arg name="pertube" type="bool"/>
-        <arg name="exude" type="bool"/>        
+        <arg name="preserveFeatures" physical="bool"/>
+        <arg name="facet_angle" physical="float"/>
+        <arg name="facet_size" physical="float"/>
+        <arg name="facet_distance" physical="float"/>
+        <arg name="cell_radius_edge_ratio" physical="float"/>
+        <arg name="cell_size" physical="float"/>
+        <arg name="odt" physical="bool"/>
+        <arg name="lloyd" physical="bool"/>
+        <arg name="pertube" physical="bool"/>
+        <arg name="exude" physical="bool"/>
     </parameters>
 </msml:operator>

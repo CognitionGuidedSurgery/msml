@@ -104,12 +104,12 @@ class Exporter(object):
         :return:
         '''
 
-        indexgroups_arg = Argument("indices", 'indices')
+        indexgroups_arg = OperatorSlot("indices", 'indices')
 
         for scene_obj in self._msml_file.scene:
             assert isinstance(scene_obj, SceneObject)
 
-            self._input['mesh'] = (parse_attribute_value(scene_obj.mesh.mesh), Argument('mesh', 'mesh'))
+            self._input['mesh'] = (parse_attribute_value(scene_obj.mesh.mesh), OperatorSlot('mesh', 'mesh'))
 
             for i, ig in enumerate(scene_obj.sets.nodes +
                     scene_obj.sets.elements +

@@ -65,7 +65,7 @@ def initialize_file_literals(first_bucket):
     def var_is_file(var):
         if  isinstance(var, MSMLVariable):
             #TODO better predicate if sort logic defined /weigl
-            return contains("file", var.type) or contains("file", var.format)
+            return contains("file", var.logical_type) or contains("file", var.physical_type)
         return False
 
     def abs_value(var):

@@ -53,8 +53,8 @@
             </element>
         </sequence>
         <attribute name="name" type="string" use="required"></attribute>
-        <attribute name="type" type="string" use="optional"></attribute>
-        <attribute name="format" type="string"></attribute>
+        <attribute name="physical" type="string" use="required"></attribute>
+        <attribute name="logical" type="string" use="optional"></attribute>
         <attribute name="optional" type="boolean" use="optional"
                    default="0"></attribute>
         <attribute name="default" type="string" use="optional"></attribute>
@@ -227,9 +227,8 @@
                                     <attribute use="required" name="name" type="string">
                                     </attribute>
                                     <attribute name="value" type="string"></attribute>
-                                    <attribute name="type" type="string"></attribute>
-                                    <attribute use="optional" name="format" type="string">
-                                    </attribute>
+                                    <attribute use="optional" name="physcial" type="string"></attribute>
+                                    <attribute use="optional" name="logical" type="string"></attribute>
                                 </complexType>
                             </element>
                             <element name="file">

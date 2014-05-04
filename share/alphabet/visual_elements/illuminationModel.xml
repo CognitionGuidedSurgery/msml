@@ -9,7 +9,7 @@
 
 
 	<parameters>
-		<arg name="color">
+		<arg name="color" physical="vector.int">
 			<meta key="doc" value="Set the color" />
 		</arg>
 	</parameters>

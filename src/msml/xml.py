@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -33,6 +33,7 @@
 from __future__ import print_function
 
 from lxml import etree
+
 from path import path
 
 from msml.model import *
@@ -64,7 +65,7 @@ def load_alphabet(folder=None, file_list=None):
         folder = path(folder)
         file_list += folder.walkfiles("*.xml")
 
-    d = lambda x: xmldom(x.abspath(), "a.xsd")#Enable xsd
+    d = lambda x: xmldom(x.abspath(), "a.xsd")  # Enable xsd
     docs = map(d, file_list)
     results = map(parse_file, docs)
     return Alphabet(results)
@@ -97,6 +98,7 @@ def parse_file(R):
 
 def get_default_scheme():
     return path(__file__).dirname() / "msml.xsd"
+
 
 def xmldom(files, schema=None):
     if not schema:
@@ -181,14 +183,14 @@ def msml_file_factory(msml_node):
         for n_var in var_node.iterchildren():
             get = lambda x: _except_none(n_var.attrib, x)
             name = get('name')
-            format = get('format')
-            type = get('type')
+            physical = get('physical')
+            logical = get('logical')
 
             if _tag_name(n_var.tag) == 'var':
-                v = MSMLVariable(name, format, type, get('value'))
+                v = MSMLVariable(name, physical, logical, get('value'))
 
             if _tag_name(n_var.tag) == 'file':
-                v = MSMLFileVariable(name, format, type, get('location'))
+                v = MSMLFileVariable(name, physical, logical, get('location'))
 
             vars.append(v)
         return vars
@@ -405,20 +407,20 @@ def _parse_entry_list(nodelist):
 
 def _argument_sets(node, as_ordered_dict=False):
     def _parse_arg(node):
-        n, f, t, r, d = _attributes(node, 'name, format, type, required, default', required=True)
+        n, p, l, r, d = _attributes(node, 'name, physical, logical, required, default', required=True)
         meta = _parse_entry_list(node.iterchildren())
-        arg = Argument(n, f, t, bool(int(r)), d, meta)
+        arg = OperatorSlot(n, p, l, bool(int(r)), d, meta)
         return arg
 
-    def _parse_struct(node):
-        get = lambda k: _except_none(node.attrib, k)
-        return StructArgument(get('name'), _argument_sets(node))
+    # def _parse_struct(node):
+    #    get = lambda k: _except_none(node.attrib, k)
+    #    return StructArgument(get('name'), _argument_sets(node))
 
     def _parse_subelements(node):
         if node.tag == 'arg':
             return _parse_arg(node)
-        elif node.tag == 'struct':
-            return _parse_struct(node)
+        #        elif node.tag == 'struct':
+        #            return _parse_struct(node)
         else:
             raise BaseException("unexpecting element")
 
@@ -441,7 +443,6 @@ def operator_factory(operator_node):
     """
 
     """
-
     def runtime_factory(node):
         TAGS = {'python': ('function', 'method'), 'sh': ('file', 'wd'), 'so': ('file', 'symbol')}
 

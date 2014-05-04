@@ -300,10 +300,10 @@ class MSMLEnvironment(object):
 
 
 class MSMLVariable(object):
-    def __init__(self, name, format=None, typ=None, value=None):
+    def __init__(self, name, physical=None, logical=None, value=None):
         self.name = name
-        self.format = format
-        self.type = typ
+        self.physical_type = physical
+        self.logical_type = logical
         self.value = value
         self.sort = None
 
@@ -311,25 +311,22 @@ class MSMLVariable(object):
 
     def _find_sort(self):
         if self.value is not None:
-            self.type = type(self.value)
-            self.sort = self.type
-        elif self.format is not None and self.type is not None:
-            self.sort = get_sort(self.format + self.type)
-        elif self.format:
-            self.sort = get_sort(self.format)
-        elif self.type:
-            self.sort = get_sort(self.type)
+            self.logical_type = type(self.value)
+            self.sort = self.logical_type
+        elif self.physical_type is not None and self.logical_type is not None:
+            self.sort = get_sort(self.physical_type + self.logical_type)
+        elif self.physical_type:
+            self.sort = get_sort(self.physical_type)
+        elif self.logical_type:
+            self.sort = get_sort(self.logical_type)
         else:
             self.sort = get_sort('*')
-
-    def _dot(self):
-        return {'label': self.name, 'color': 'orange'}
 
     def __str__(self):
         return "Var '%s' (%s)" % (self.name, self.sort)
 
     def __repr__(self):
-        return "MSMLVariable(%s,%s,%s)" % (self.name, self.format, self.type)
+        return "MSMLVariable(%s,%s,%s)" % (self.name, self.physical_type, self.logical_type)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -485,8 +482,8 @@ class Task(object):
 
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
                 if slot:
-                    var.type = slot.type
-                    var.format = slot.format
+                    var.logical_type = slot.type
+                    var.physical_type = slot.format
 
                 msmlfile.add_variable(var)
                 ref = Reference(var.name, None)

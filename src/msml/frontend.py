@@ -231,9 +231,16 @@ class App(object):
                 print(f, "error")
                 print("\t", e)
 
+    def validate(self):
+        for r in check_element_completeness(self.alphabet, ELEMENT_DEFAULT_VALIDATORS):
+            print(r)
+        #print(export_alphabet_overview_rst(self.alphabet))
+
 
     def _exec(self):
-        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution, 'writexsd': self.writexsd,
+        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution,
+                                'validate': self.validate,
+                                'writexsd': self.writexsd,
                                 'check': self.check_file})
 
         # dispatch to COMMANDS
@@ -244,6 +251,7 @@ class App(object):
         else:
             print("could not find a suitable command")
 
+from .analytics.alphabet_analytics import *
 
 def main(args=None):
     if args is None:

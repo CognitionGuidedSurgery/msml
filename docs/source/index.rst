@@ -35,8 +35,8 @@ Contents:
 
    Installation
    GettingStarted
-   examples
-   advanced
+   advanced_topics
+   system_explanation
    Development
    Roadmap
 

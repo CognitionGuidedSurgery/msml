@@ -11,11 +11,11 @@
 
 
     <parameters>
-        <arg name="poissonRatio" default="0.3">
+        <arg name="poissonRatio" physical="float" default="0.3">
             <meta key="doc" value="Set the poisson ratio of the model"/>
         </arg>
 
-        <arg name="youngModulus" default="3000">
+        <arg name="youngModulus" default="3000" physical="int">
             <meta key="doc" value="Set the young modulus of the model"/>
         </arg>
     </parameters>

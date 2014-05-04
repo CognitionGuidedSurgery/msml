@@ -128,7 +128,7 @@ def export_alphabet_overview_rst(alphabet=None):
         ljust = lambda x: str(x)[:14].ljust(justify)
         return ' '.join(map(ljust, p))
 
-    def rsttable(seq, fields = "name,type,format,sort,required,default,doc"):
+    def rsttable(seq, fields = "name,physical_type,logical_type,sort,required,default,doc"):
         def get(obj, key):
             try:
                 return getattr(obj, key)
@@ -299,7 +299,7 @@ class TypeValidator(ArgumentValidator):
         self.identifier = 1
 
     def _check_argument(self, l,  arg):
-        if arg.type is None or arg.type == "":
+        if arg.physical_type is None or arg.physical_type == "":
             l.append(ReportEntry(
                 level = self.level, element = self.element.name, id=self.identifier,
                 attr=self._attrib, argument= arg.name, msg = "type is None or an empty string"))
