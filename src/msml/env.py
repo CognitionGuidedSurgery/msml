@@ -41,7 +41,7 @@ __date__ = "2014-01-25"
 
 from path import path
 import os
-from msml.model.alphabet import Alphabet, PythonOperator, OperatorSlot, SharedObjectOperator, ShellOperator
+from msml.model.alphabet import Alphabet, PythonOperator, Slot, SharedObjectOperator, ShellOperator
 
 # msml alphabet search path
 alphabet_search_paths = list()
@@ -109,22 +109,22 @@ def _debug_install_operators():
     global current_alphabet
     current_alphabet = Alphabet()
 
-    op_square = PythonOperator("square", [OperatorSlot('n', 'int', None, True)],
-                                         [OperatorSlot('n', 'int', None, True)],
+    op_square = PythonOperator("square", [Slot('n', 'int', None, True)],
+                                         [Slot('n', 'int', None, True)],
                                          runtime = {'exec':'python', 'module': 'test', 'function': 'square'})
 
     op_square.function = lambda n: int(n) ** 2
 
-    op_output = PythonOperator("output", [OperatorSlot('object', '*', None, True)],
+    op_output = PythonOperator("output", [Slot('object', '*', None, True)],
                                          runtime = {'exec':'python', 'module': 'pprint', 'function': 'pprint'})
 
     op_output.bind_function()
     
-    op_ctype = SharedObjectOperator("ctime", None, [OperatorSlot('time', 'int', None, True)],
+    op_ctype = SharedObjectOperator("ctime", None, [Slot('time', 'int', None, True)],
                         runtime = {'exec':'so', 'file': 'libc.so.6', 'symbol': 'time'})
     op_ctype.bind_function()
 
-    op_id = ShellOperator("id", [OperatorSlot('name', 'string', None, True)],
+    op_id = ShellOperator("id", [Slot('name', 'string', None, True)],
                                          runtime = {'exec':'sh', 'template' : 'id {name}'})
 
     current_alphabet.append((op_square, op_output, op_ctype, op_id))

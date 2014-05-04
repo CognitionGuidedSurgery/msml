@@ -6,7 +6,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -29,7 +29,7 @@
 from collections import namedtuple, OrderedDict
 import pickle
 
-from ..log import logging
+from msml.log import p
 from .exceptions import *
 from ..titen import titen
 
@@ -115,7 +115,7 @@ class Alphabet(object):
     def validate(self):
         for o in self._operators.values():
             o.validate()
-            #r = map(lambda x: x.validate(), self._operators.values())
+            # r = map(lambda x: x.validate(), self._operators.values())
             #return r
 
     def _xsd(self):
@@ -146,7 +146,7 @@ class Alphabet(object):
         with open(filename, 'w') as file:
             pickle.dump(self, file)
 
-            #import jsonpickle
+            # import jsonpickle
             #print(jsonpickle.encode(self))
 
 
@@ -202,26 +202,32 @@ _object_attribute_categories = {'basic': ObjectAttribute, 'material': OAMaterial
                                 'mesh': OAMesh, 'indexgroup': OAIndexGroup, 'data': OABody, "output": OAOutput}
 
 
-class OperatorSlot(object):
+class Slot(object):
+    """A input, parameter or output slot of an operator or an element
+    Consists of name, physical and logical type.
+
+    """
     SLOT_TYPE_UNKNOWN = -1
     SLOT_TYPE_INPUT = 0
     SLOT_TYPE_OUTPUT = 1
     SLOT_TYPE_PARAMETER = 2
 
     def __init__(self, name, physical, logical=None,
-                 required=True, default=None, meta=dict()):
+                 required=True, default=None,
+                 meta=dict(), parent=None):
         self.name = name
         self.logical_type = logical
         self.physical_type = physical
         self.required = required
         self.default = None
         self.meta = meta
-        self.slot_type = OperatorSlot.SLOT_TYPE_UNKNOWN
+        self.parent = parent
+        self.slot_type = Slot.SLOT_TYPE_UNKNOWN
 
         try:
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
-            logging.error("Operator %s has physical_type %s" % (self.name, self.physical_type))
+            p("{slot_sort_error %s %s has physical_type %s}" % (self.parent, self.name, self.physical_type))
 
 
     def __getattr__(self, item):
@@ -232,6 +238,7 @@ class OperatorSlot(object):
 
 
 from ..sorts import get_sort
+
 
 def _list_to_dict(lis, attrib='name'):
     if not lis:
@@ -291,7 +298,7 @@ class Operator(object):
         return True
 
 
-#     def check_types(self, args, kwargs):
+# def check_types(self, args, kwargs):
 #         sig = signature(self.func)
 #         type_bind = sig.bind(*self.args)
 #         val_bind = sig.bind(*args)

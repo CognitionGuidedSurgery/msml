@@ -405,16 +405,16 @@ def _parse_entry_list(nodelist):
     return d
 
 
-def _argument_sets(node, as_ordered_dict=False):
+def _argument_sets(node, parent=None, as_ordered_dict=False):
     def _parse_arg(node):
         n, p, l, r, d = _attributes(node, 'name, physical, logical, required, default', required=True)
         meta = _parse_entry_list(node.iterchildren())
-        arg = OperatorSlot(n, p, l, bool(int(r)), d, meta)
+        arg = Slot(n, p, l, bool(int(r)), d, meta, parent)
         return arg
 
     # def _parse_struct(node):
-    #    get = lambda k: _except_none(node.attrib, k)
-    #    return StructArgument(get('name'), _argument_sets(node))
+    # get = lambda k: _except_none(node.attrib, k)
+    # return StructArgument(get('name'), _argument_sets(node))
 
     def _parse_subelements(node):
         if node.tag == 'arg':
@@ -443,6 +443,7 @@ def operator_factory(operator_node):
     """
 
     """
+
     def runtime_factory(node):
         TAGS = {'python': ('function', 'method'), 'sh': ('file', 'wd'), 'so': ('file', 'symbol')}
 
@@ -465,42 +466,48 @@ def operator_factory(operator_node):
     n_annotation = operator_node.find('annotation')
 
     runtime = runtime_factory(n_runtime)
-    input = _argument_sets(n_input)
-    output = _argument_sets(n_output)
-    parameters = _argument_sets(n_parameters)
-    meta = keyval_factory(n_annotation)
-
     op_classes = {'python': PythonOperator,
                   'sh': ShellOperator,
                   'so': SharedObjectOperator, }
-
     factory = op_classes[runtime['exec']]
 
-    return factory(
-        name=name,
-        input=input,
-        output=output,
-        parameters=parameters,
-        meta=meta,
-        runtime=runtime)
+    op = factory(name=name, runtime=runtime)
+
+    input = _argument_sets(n_input, op)
+    output = _argument_sets(n_output, op)
+    parameters = _argument_sets(n_parameters, op)
+    meta = keyval_factory(n_annotation)
+
+    op.input = input
+
+    op.output = output,
+    op.parameters = parameters,
+    op.meta = meta,
+
+    return op
 
 
 def element_factory(element_node):
     name = element_node.attrib['name']
     quantity = element_node.attrib['quantity']
     category = element_node.attrib['category']
+    clazz = ObjectAttribute.find_class(category)
+
+    obj = clazz(name=name, quantity=quantity)
 
     description = element_node.find('description').text.strip()
 
     input_node = element_node.find('input')
     parameter_node = element_node.find('parameters')
 
-    input = _argument_sets(input_node, True)
-    parameters = _argument_sets(parameter_node, True)
+    input = _argument_sets(input_node, obj, True)
+    parameters = _argument_sets(parameter_node, obj, True)
 
-    clazz = ObjectAttribute.find_class(category)
+    obj.input = input
+    obj.parameters = parameters
+    obj.description = description
 
-    return clazz(name=name, quantity=quantity, description=description, parameters=parameters, inputs=input)
+    return obj
 
 
 _parse_hooks = {'operator': operator_factory, 'element': element_factory}

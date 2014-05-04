@@ -5,8 +5,8 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
@@ -33,12 +33,13 @@
 """
 
 from collections import namedtuple
-
 import re
 import warnings
+
 from path import path
 
 from .exceptions import *
+
 
 
 
@@ -66,7 +67,8 @@ def xor(l):
     >>> xor(l3)
     True
     """
-    return reduce(lambda x,y: x ^ y,map(bool, l), False)
+    return reduce(lambda x, y: x ^ y, map(bool, l), False)
+
 
 Argument = namedtuple('Argument', 'name,format,type,required')
 
@@ -165,6 +167,7 @@ class MSMLFile(object):
 
     def lookup(self, ref, outarg=True):
         "lookup a reference, consists of task id and output arg"
+
         def lookup_exporter():
             return self._exporter.lookup(ref, outarg)
 
@@ -365,7 +368,13 @@ class Constant(object):
         self.value = value
 
 
+def is_compatible(a,b):
+    pass
+
+
 class Reference(object):
+    """Describes a connection from an *input slot* to an *output slot*.
+    """
     ref = namedtuple("ref", "task,name,arginfo")
 
     def __init__(self, task, out=None):
@@ -377,7 +386,17 @@ class Reference(object):
 
     @property
     def linked(self):
+        """ Returns True iff. the Reference is closed iff. input and output slot found and set.
+        :return: bool
+        """
         return self.linked_to and self.linked_from
+
+    @property
+    def valid(self):
+        """ Returns True iff. the input and output slot are physical type compatible
+        :return: bool
+        """
+        return
 
     def link_from_task(self, task, outarg):
         self.linked_from = Reference.ref(task, outarg.name, outarg)
@@ -406,6 +425,13 @@ class Reference(object):
 
 
 def parse_attribute_value(value):
+    """Parse attribute values:
+    >>> parse_attribute_value("${abc}") # => Reference
+    >>> parse_attribute_value("abc") # => Constant
+
+    :param str value: value of a xml attribute
+    :return: Constant | Reference
+    """
     if isinstance(value, str):
         expr = re.match(r'\${([^.]+)(\.[^.]+)?}', value)
         if expr:
@@ -414,14 +440,26 @@ def parse_attribute_value(value):
                 b = expr.group(2).strip(".")
             except:
                 b = None
-            return Reference(a,b)
+            return Reference(a, b)
     return Constant(value)
 
 
 def random_var_name():
-    import random
+    """generate a random variable name
+    :return: str
+    """
+    random_var_name.current_number += 1
+    return "_gen_%03d_" % random_var_name.current_number
 
-    return "_gen_%d_" % random.randint(100, 999)
+random_var_name.current_number = 0  #start with zero
+
+
+def is_generated_name(name):
+    """True iff. the given `name` is a generated name
+    :param str name:
+    :return: bool
+    """
+    return name.startswith("_gen_")
 
 
 class Task(object):
@@ -727,6 +765,9 @@ class IndexGroup(object):
 
 
 class Mesh(object):
+    """
+
+    """
     def __init__(self, type="linear", id=None, mesh=None):
         self.type = type
         self.id = id

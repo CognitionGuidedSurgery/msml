@@ -55,8 +55,7 @@ path     => name/path in the class hierarchy, each class is seperated with ».«
 #__all__ = ["__author__", "__date__", "SortsDefinition", "get_sort", "default_sorts_definition"]
 
 from msml.sortdef import *
-from .log import *
-
+from log import p
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25, 2014-02-23"
@@ -93,14 +92,14 @@ class SortsDefinition(object):
         try:
             return self.logical_cache[typestr]
         except KeyError as e:
-            logging.warn("logical type %s requested, but does not exist" % typestr)
+            p("{ltype_error logical type %s requested, but does not exist}" % typestr)
             return None
 
     def _find_physical(self, fmtstr):
         try:
             return self.physical_cache[fmtstr]
         except KeyError as e:
-            logging.warn("physical type %s requested, but does not exist" % fmtstr)
+            p("{ptype_error physical type %s requested, but does not exist}" % fmtstr)
 
 
     def register_logical(self, clazz, name=None):
@@ -175,7 +174,7 @@ DEFAULTS_SORTS = {
         (MSMLListFI, "ListF", "vector.float"),
         (MSMLListUI, "ListUI", "vector.uint"),
         (MSMLListI, "ListI", "vector.int"),
-        (VTK, "VTK", "vtk", "VTI", "vti"),
+        (VTK, "VTK", "vtk", "VTI", "vti", "file.vtk", "file.vti"),
         DICOM,
         HDF5,
         (STL, "STL", "stl"),

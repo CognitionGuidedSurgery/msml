@@ -4,7 +4,7 @@ networkx
 simplegeneric
 docopt
 pyparsing
-pydot
+ansitagcolor
 #numpy      
 #matplotlib
 #dateutil
