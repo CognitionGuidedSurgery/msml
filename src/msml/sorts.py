@@ -7,7 +7,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -52,10 +52,10 @@ sortsdef => name of a sort, characterize by multiple path, seperated with »+«
 path     => name/path in the class hierarchy, each class is seperated with ».«
 """
 
-#__all__ = ["__author__", "__date__", "SortsDefinition", "get_sort", "default_sorts_definition"]
+# __all__ = ["__author__", "__date__", "SortsDefinition", "get_sort", "default_sorts_definition"]
 
 from msml.sortdef import *
-from log import p
+from .log import report
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25, 2014-02-23"
@@ -92,14 +92,15 @@ class SortsDefinition(object):
         try:
             return self.logical_cache[typestr]
         except KeyError as e:
-            p("{ltype_error logical type %s requested, but does not exist}" % typestr)
+            report("logical type %s requested, but does not exist" % typestr, 'W', 161)
             return None
 
     def _find_physical(self, fmtstr):
         try:
             return self.physical_cache[fmtstr]
         except KeyError as e:
-            p("{ptype_error physical type %s requested, but does not exist}" % fmtstr)
+            report("physical type %s requested, but does not exist" % fmtstr, 'E', 162)
+            raise BaseException()
 
 
     def register_logical(self, clazz, name=None):
@@ -140,7 +141,7 @@ class SortsDefinition(object):
 
 DEFAULTS_SORTS = {
     'logical': [
-        (MSMLTop, "top", "object", "*"),
+        (MSMLLTop, "top", "object", "*"),
         IndexSet,
         NodeSet,
         FaceSet,
@@ -156,12 +157,13 @@ DEFAULTS_SORTS = {
         Image3D,
         Image2D,
         Scalar,
+        Indices,
         VonMisesStress,
         Vector,
         Force,
         Velocity,
-        Tensor
-        , Stress,
+        Tensor,
+        Stress,
         Displacement,
     ],
 
@@ -171,7 +173,7 @@ DEFAULTS_SORTS = {
         (MSMLInt, "int"),
         (MSMLBool, "bool"),
         (MSMLUInt, "uint"),
-        (MSMLListFI, "ListF", "vector.float"),
+        (MSMLListF, "ListF", "vector.float"),
         (MSMLListUI, "ListUI", "vector.uint"),
         (MSMLListI, "ListI", "vector.int"),
         (VTK, "VTK", "vtk", "VTI", "vti", "file.vtk", "file.vti"),
@@ -200,7 +202,7 @@ def get_sort(t, f=None):
 def is_sort(x):
     return isinstance(x, type) or isinstance(x, Sort)
 
-######################################################################################
+# #####################################################################################
 # conversion
 #
 #
@@ -209,11 +211,17 @@ def is_sort(x):
 import networkx
 
 
+def _ptype(o):
+    return o if isinstance(o, type) else o.physical
+
+
 class ConversionNetwork(networkx.DiGraph):
     def register_conversion(self, a, b, fn, precedence):
-        assert is_sort(a)
-        assert is_sort(b)
+        assert is_sort(a) or isinstance(a, type)
+        assert is_sort(b) or isinstance(b, type)
         assert callable(fn)
+
+        a, b = _ptype(a), _ptype(b)
 
         self.add_node(a)
         self.add_node(b)
@@ -222,23 +230,28 @@ class ConversionNetwork(networkx.DiGraph):
 
     def converter(self, a, b):
         def c(n1, n2):
-            data = self.get_edge_data(a, b)
+            data = self.get_edge_data(n1, n2)
             return data['fn']
+
 
         import inspect, itertools
 
-        mro = inspect.getmro(a.physical)
-        mrosorts = map(lambda x: get_sort(x, a.logical), mro)
+        from_type = _ptype(a)
+        to_type = _ptype(b)
 
-        resolve_order = [a] + mrosorts
+        mro = inspect.getmro(from_type)  # inherited from
+
+        resolve_order = [from_type] + list(mro)
         for start in resolve_order:
-            path = list(networkx.dijkstra_path(self, a, b, 'precedence'))
+            (length, paths) = networkx.single_source_dijkstra(self, from_type, to_type, 'precedence')
 
-            if len(path) == 0:
-                continue
+            if to_type not in length:
+                continue  # not found a valid path, try super class
+
+            path = paths[to_type]
 
             edges = zip(path[:-1], path[1:])
-            converters = itertools.starmap(c, edges)
+            converters = list(itertools.starmap(c, edges))
 
             def fn(val):
                 return reduce(lambda val, convert: convert(val),
@@ -265,10 +278,32 @@ def _bool(s):
     return s in ('true', 'on', 'yes', 'True', 'YES', 'ON')
 
 
-register_conversion(get_sort("str"), get_sort("int"), int, 100)
-register_conversion(get_sort("str"), get_sort("float"), float, 100)
-register_conversion(get_sort("str"), get_sort("bool"), _bool, 100)
-register_conversion(get_sort("str"), get_sort("VTK"), VTK, 100)
-register_conversion(get_sort("str"), get_sort("STL"), STL, 100)
+def _list_of_type(s, t):
+    """
+    :param s:
+    :param t:
+
+    :type s: str
+    :type t: type
+    :return:
+    :rtype: list[t]
+    """
+    return map(lambda x: t(x.strip(" ")), s.split(" "))
+
+
+def _list_float(s): return _list_of_type(s, float)
+
+
+def _list_integer(s): return _list_of_type(s, int)
+
+
+register_conversion(str, get_sort("str"), MSMLString, 100)
+register_conversion(str, get_sort("int"), int, 100)
+register_conversion(str, get_sort("float"), float, 100)
+register_conversion(str, get_sort("bool"), _bool, 100)
+register_conversion(str, get_sort("VTK"), VTK, 100)
+register_conversion(str, get_sort("STL"), STL, 100)
+register_conversion(str, get_sort('vector.int'), _list_integer, 100)
+register_conversion(str, get_sort('vector.float'), _list_float, 100)
 
 

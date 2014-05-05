@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -32,12 +32,14 @@ __date__ = "2014-01-26"
 
 import warnings
 
+from path import path
+
 from .memory import Memory
 from msml.model import *
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
 from msml.run.GraphDotWriter import GraphDotWriter
-from path import path
+
 
 class Executer(object):
     """Describe the interface of an Executer.
@@ -50,10 +52,11 @@ class Executer(object):
     # TODO define interface /weigl
     pass
 
-def contains(a,b):
+
+def contains(a, b):
     if isinstance(b, type):
         b = b.__name__
-    elif not isinstance(b,(str,unicode)):
+    elif not isinstance(b, (str, unicode)):
         b = str(b)
     try:
         return b.index(a) >= 0
@@ -63,13 +66,14 @@ def contains(a,b):
 
 def initialize_file_literals(first_bucket):
     def var_is_file(var):
-        if  isinstance(var, MSMLVariable):
+        if isinstance(var, MSMLVariable):
             #TODO better predicate if sort logic defined /weigl
             return contains("file", var.logical_type) or contains("file", var.physical_type)
         return False
 
     def abs_value(var):
         import os.path
+
         var.value = os.path.abspath(var.value)
         return var
 
@@ -191,6 +195,92 @@ class LinearSequenceExecuter(Executer):
         return vals
 
 
+def build_graph(tasks, exporter, variables):
+    dag = DiGraph()
+
+    nodes = dict(tasks)
+    nodes.update(variables)
+
+    for t in nodes.values():
+        dag.add_node(t)
+
+    dag.add_node(exporter)
+
+    for t in tasks.values():
+        for ta in t.arguments.values():
+            dag.add_edge(ta.linked_from.task,
+                         ta.linked_to.task,
+                         ref=ta)
+
+    for ta in exporter.arguments.values():
+        dag.add_edge(ta.linked_from.task,
+                     ta.linked_to.task, ref=ta)
+
+    return dag
+
+
+from ..log import report
+from ..sorts import conversion
+
+
+def inject_implict_conversion(dag):
+    """Finds type mismatch and injects suitable conversion operators
+
+    :param dag: a directed acyclic graph from `build_graph`
+    :type dag: DiGraph
+    :return: the given graph
+    :rtype: DiGraph
+    """
+    for a, b, data in dag.edges(data=True):
+        ref = data['ref']
+        if not ref.valid:
+            report("Reference %s is invalid. Try to implicit conversion" % ref, 'I', 1561)
+            task = create_conversion_task(ref.linked_from, ref.linked_to)
+
+            dag.add_node(task)
+            dag.remove_edge(a, b)
+
+            _a_t = Reference(ref.task, ref.slot)
+            _a_t.linked_from = ref.linked_from
+            _a_t.link_to_task(task, task.operator.input['i'])
+
+            _t_b = Reference(ref.task, ref.slot)
+            _t_b.linked_to = ref.linked_to
+            _t_b.link_from_task(task, task.operator.output['o'])
+
+            task.arguments['i'] = _a_t
+            b.arguments[ref.linked_to.name] = _t_b
+
+            dag.add_edge(a, task, ref=_a_t)
+            dag.add_edge(task, b, ref=_t_b)
+
+        else:
+            report("Reference %s is valid" % ref, 'D', 1562)
+    return dag
+
+
+from ..model import PythonOperator, Task, Slot
+
+
+def get_python_conversion_operator(slotA, slotB):
+    r = {'function': '', 'module': ''}
+    pyop = PythonOperator("converter_%s_%s" % (slotA.arginfo.sort.physical.__name__, slotB.arginfo.sort.physical.__name__),
+                          input=[Slot("i", slotA.arginfo.sort.physical, slotA.arginfo.sort.logical)],
+                          output=[Slot("o", slotB.arginfo.sort.physical, slotB.arginfo.sort.logical)], runtime=r)
+
+    return pyop
+
+
+def create_conversion_task(slotA, slotB):
+    fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
+    pyop = get_python_conversion_operator(slotA, slotB)
+    pyop.function = fn
+    attrib = {'id': random_var_name(), 'i': None}
+    task = Task(pyop.name, attrib)
+    task.operator = pyop
+    return task
+
+
 class DefaultGraphBuilder(object):
     """ Builds the DAG for the given msmlfile and exporter
 
@@ -213,31 +303,10 @@ class DefaultGraphBuilder(object):
 
         self._dag = None
 
-    def _build(self):
-        dag = DiGraph()
-
-        nodes = dict(self.mfile._workflow._tasks)
-        nodes.update(self.mfile._variables)
-
-        for t in nodes.values():
-            dag.add_node(t)
-
-        dag.add_node(self.exporter)
-
-        for t in self.mfile._workflow._tasks.values():
-            for ta in t.arguments.values():
-                dag.add_edge(ta.linked_from.task,
-                             ta.linked_to.task,
-                             ref=ta)
-
-        for ta in self.exporter.arguments.values():
-            dag.add_edge(ta.linked_from.task,
-                         ta.linked_to.task, ref=ta)
-
-        return dag
 
     @property
     def dag(self):
         if not self._dag:
-            self._dag = self._build()
+            self._dag = inject_implict_conversion(
+                build_graph(self.mfile.workflow._tasks, self.exporter, self.mfile.variables))
         return self._dag

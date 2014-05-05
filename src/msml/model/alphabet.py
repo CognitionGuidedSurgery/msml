@@ -29,7 +29,7 @@
 from collections import namedtuple, OrderedDict
 import pickle
 
-from msml.log import p
+from msml.log import report
 from .exceptions import *
 from ..titen import titen
 
@@ -219,7 +219,7 @@ class Slot(object):
         self.logical_type = logical
         self.physical_type = physical
         self.required = required
-        self.default = None
+        self.default = default
         self.meta = meta
         self.parent = parent
         self.slot_type = Slot.SLOT_TYPE_UNKNOWN
@@ -227,15 +227,16 @@ class Slot(object):
         try:
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
-            p("{slot_sort_error %s %s has physical_type %s}" % (self.parent, self.name, self.physical_type))
+            report("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type),
+                 type="E", number=156)
+            self.sort = None
 
 
     def __getattr__(self, item):
         return self.meta[item]
 
     def __str__(self):
-        return "<OperatorSlot: %s>" % str(self.__dict__)
-
+        return "<Slot %s: %s>" % (self.name, self.sort)
 
 from ..sorts import get_sort
 

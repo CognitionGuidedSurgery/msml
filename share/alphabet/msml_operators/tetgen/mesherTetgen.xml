@@ -17,7 +17,7 @@
     <parameters>
         <arg name="preserveBoundary" physical="bool"/>
 
-        <arg name="meshFilename" physical="filename" optional="true">
+        <arg name="meshFilename" physical="str" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>

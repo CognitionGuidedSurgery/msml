@@ -7,8 +7,9 @@
 	</runtime>
 
 	<input>
-		<arg name="RefMesh" logical="linearTetMesh+displacementOutputRequest"
-			physical="file.vtk+file.vtu" />
+        <!-- TODO logical and physical type -->
+		<arg name="RefMesh" logical="Mesh"
+			physical="VTK" />
 	</input>
 
 	<output>
@@ -16,12 +17,12 @@
 	</output>
 
 	<parameters>
-      <arg name="DVFFilename" physical="filename" optional="1">
+      <arg name="DVFFilename" physical="str" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
       </arg>
-		<arg name="DeformedMesh" physical="file.vtu" />
+		<arg name="DeformedMesh" physical="VTK" />
 		<arg name="multipleReferenceGrids" physical="bool" />
 	</parameters>
 

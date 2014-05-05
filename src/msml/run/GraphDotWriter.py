@@ -55,7 +55,7 @@ from collections import namedtuple
 def kvstr(dic, noquote=False):
     a = '%s=%s' if noquote else '%s="%s"'
     return ', '.join(itertools.starmap(
-        lambda k, v:  a % (k, v.replace('"', "'")),
+        lambda k, v:  a % (k, str(v).replace('"', "'")),
         dic.items()))
 
 N = namedtuple("NodeTP", "name spec")

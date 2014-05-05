@@ -294,9 +294,9 @@ def msml_file_factory(msml_node):
                 return list()
 
             def _parse_region(reg_node):
-                ident = _attributes(reg_node, 'id')
+                ident, ind = _attributes(reg_node, ['id','indices'])
                 elements = list(_parse_elements(reg_node))
-                return MaterialRegion(ident, elements)
+                return MaterialRegion(ident, ind,elements)
 
             return map(_parse_region, mat_node.iterchildren())
 

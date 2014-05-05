@@ -43,7 +43,7 @@ from .exceptions import *
 
 
 
-
+from ..sorts import conversion
 
 
 # from msml.model.alphabet import Argument cycle
@@ -300,6 +300,7 @@ class MSMLEnvironment(object):
         self.simulation = MSMLEnvironment.Simulation()
         self.solver = MSMLEnvironment.Solver()
 
+from ..log import report
 
 class MSMLVariable(object):
     def __init__(self, name, physical=None, logical=None, value=None):
@@ -307,25 +308,26 @@ class MSMLVariable(object):
         self.physical_type = physical
         self.logical_type = logical
         self.value = value
-        self.sort = None
 
-        self._find_sort()
+        if not self.physical_type and self.value:
+            self.physical_type = type(self.value)
 
-    def _find_sort(self):
-        if self.value is not None:
-            self.logical_type = type(self.value)
-            self.sort = self.logical_type
-        elif self.physical_type is not None and self.logical_type is not None:
-            self.sort = get_sort(self.physical_type + self.logical_type)
-        elif self.physical_type:
-            self.sort = get_sort(self.physical_type)
-        elif self.logical_type:
-            self.sort = get_sort(self.logical_type)
-        else:
-            self.sort = get_sort('*')
+        if not self.physical_type:
+            s = 'Try to initialize a variable without physical type and value'
+            report(s, 'F', 666)
+            raise MSMLError(s)
+
+        self.sort = get_sort(self.physical_type, self.logical_type)
+        if not isinstance(self.value, self.sort.physical):
+            report("Need convert value of %s" % self, 'I',6161)
+            from_type = type(self.value)
+            converter = conversion(from_type, self.sort)
+            self.value = converter(self.value)
+
+
 
     def __str__(self):
-        return "Var '%s' (%s)" % (self.name, self.sort)
+        return "<var %s : %s = %s>" % (self.name, self.sort, self.value)
 
     def __repr__(self):
         return "MSMLVariable(%s,%s,%s)" % (self.name, self.physical_type, self.logical_type)
@@ -338,6 +340,7 @@ class MSMLVariable(object):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self._find_sort()
+
 
 
 class MSMLFileVariable(object):
@@ -392,23 +395,23 @@ class Reference(object):
         """ Returns True iff. the Reference is closed iff. input and output slot found and set.
         :return: bool
         """
-        return self.linked_to and self.linked_from
+        return self.linked_to is not None and self.linked_from is not None
 
     @property
     def valid(self):
         """ Returns True iff. the input and output slot are physical type compatible
         :return: bool
         """
-        return self.linked and self.linked_from.arginfo.sort < self.linked_to.arginfo.sort
+        return self.linked and self.linked_from.arginfo.sort <= self.linked_to.arginfo.sort
 
-    def link_from_task(self, task, outarg):
-        self.linked_from = Reference.ref(task, outarg.name, outarg)
+    def link_from_task(self, task, slot):
+        self.linked_from = Reference.ref(task, slot.name, slot)
 
     def link_from_variable(self, variable):
         self.linked_from = Reference.ref(variable, variable.name, variable)
 
-    def link_to_task(self, task, inarg):
-        self.linked_to = Reference.ref(task, inarg.name, inarg)
+    def link_to_task(self, task, slot):
+        self.linked_to = Reference.ref(task, slot.name, slot)
 
 
     def __str__(self):
@@ -419,11 +422,10 @@ class Reference(object):
                 return a.name
 
         if self.linked:
-            return "{Ref+: %s.%s -> %s.%s}" % (
-                _id(self.linked_from.task), self.linked_from.name,
-                _id(self.linked_to.task), self.linked_to.name)
+            return "<Reference+: %s -> %s>" % (self.linked_to.arginfo, self.linked_to.arginfo)
+
         else:
-            return "{Ref-: %s.%s}" % (self.task, self.slot)
+            return "<Reference-: %s.%s>" % (self.task, self.slot)
 
 
 def parse_attribute_value(value):
@@ -519,15 +521,15 @@ class Task(object):
 
                     self.arguments[key] = value
                 else:
-                    warnings.warn("Lookup after %s does not succeeded" % value)
+                    report("Lookup after %s does not succeeded" % value, 'E')
             elif isinstance(value, Constant):
-                var = MSMLVariable(random_var_name(), value=value.value);
+                var = MSMLVariable(random_var_name(), value=value.value)
                 # get type and format from input/parameter
 
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
                 if slot:
-                    var.logical_type = slot.type
-                    var.physical_type = slot.format
+                    var.logical_type = slot.logical_type
+                    var.physical_type = slot.physical_type
 
                 msmlfile.add_variable(var)
                 ref = Reference(var.name, None)
@@ -786,5 +788,5 @@ class MaterialRegion(IndexGroup, list):
 
     """
     def __init__(self, id, indices, elements=None):
-        super(MaterialRegion, self).__init__(self, id, indices)
+        IndexGroup.__init__(self, id, indices)
         list.__init__(self, elements if elements else [])

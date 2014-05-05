@@ -50,12 +50,12 @@ class Sort(object):
         return False
 
     def __lt__(self, other):
-        if other is self:
+        if not other or other is self:
             return False
 
         a = issubclass(self._physical, other._physical)
 
-        if self._logical is None and other._logical is None:
+        if self._logical is None or other._logical is None:
             return a
         else:
             b = issubclass(self._logical, other._logical)
@@ -73,7 +73,10 @@ class Sort(object):
         return self == other or self < other
 
     def __str__(self):
-        return "<Sort: %s %s>" % (self.physical, self._logical)
+        return "<Sort: %s, %s>" % (self.physical, self._logical)
+
+    def __repr__(self):
+        return "Sort(%s,%s)" % (self.physical, self._logical)
 
     @property
     def physical(self):
@@ -100,10 +103,13 @@ class Sort(object):
 # #  Logical Type Hierarchy
 #
 
-class MSMLTop(object): pass
+class MSMLLTop(object): pass
 
 
-class IndexSet(MSMLTop): pass
+class Indices(MSMLLTop): pass
+
+
+class IndexSet(MSMLLTop): pass
 
 
 class NodeSet(IndexSet): pass
@@ -115,7 +121,7 @@ class FaceSet(IndexSet): pass
 class ElementSet(IndexSet): pass
 
 
-class Mesh(MSMLTop): pass
+class Mesh(MSMLLTop): pass
 
 
 class Volume(Mesh): pass
@@ -139,7 +145,7 @@ class Triangular(Surface): pass
 class Square(Surface): pass
 
 
-class Image(MSMLTop): pass
+class Image(MSMLLTop): pass
 
 
 class Image2D(Image): pass
@@ -148,7 +154,7 @@ class Image2D(Image): pass
 class Image3D(Image): pass
 
 
-class PhysicalQuantities(MSMLTop): pass
+class PhysicalQuantities(MSMLLTop): pass
 
 
 class Scalar(PhysicalQuantities): pass
@@ -175,7 +181,7 @@ class Tensor(PhysicalQuantities): pass
 class Stress(PhysicalQuantities): pass
 
 
-##########################################################
+# #########################################################
 ##
 # Physical Hierarchy
 class MSMLPhysicalTop(object): pass
@@ -189,6 +195,7 @@ class MSMLFloat(float, MSMLPhysicalTop): pass
 
 
 class MSMLInt(int, MSMLPhysicalTop): pass
+
 
 class MSMLBool(int, MSMLPhysicalTop): pass
 
@@ -205,7 +212,7 @@ class MSMLListUI(list, MSMLPhysicalTop): pass
 class MSMLListI(list, MSMLPhysicalTop): pass
 
 
-class MSMLListFI(list, MSMLPhysicalTop): pass
+class MSMLListF(list, MSMLPhysicalTop): pass
 
 
 class InFile(MSMLPhysicalTop):
@@ -217,12 +224,19 @@ class PNG(InFile):
 
 
 class ContainerFile(InFile):
-    def __init__(self, filename, partname = None):
+    def __init__(self, filename, partname=None):
         if not partname:
-            self.filename, self.partname = filename.split(";")
+            try:
+                self.filename, self.partname = filename.split(";")
+            except:
+                self.filename = filename
+                self.partname = None
         else:
             self.filename = filename
             self.partname = partname
+
+    def __str__(self):
+        return "<%s: %s;%s>" % (type(self).__name__, self.filename,self.partname)
 
 
 class VTK(ContainerFile): pass

@@ -1,8 +1,8 @@
-sortsdef module
+sortdef module
 =================
 
 
-.. automodule:: msml.sortsdef
+.. automodule:: msml.sortdef
     :members:
     :undoc-members:
     :show-inheritance:
