@@ -473,16 +473,15 @@ def operator_factory(operator_node):
 
     op = factory(name=name, runtime=runtime)
 
-    input = _argument_sets(n_input, op)
-    output = _argument_sets(n_output, op)
-    parameters = _argument_sets(n_parameters, op)
+    input = _argument_sets(n_input, op, True)
+    output = _argument_sets(n_output, op, True)
+    parameters = _argument_sets(n_parameters, op, True)
     meta = keyval_factory(n_annotation)
 
     op.input = input
-
-    op.output = output,
-    op.parameters = parameters,
-    op.meta = meta,
+    op.output = output
+    op.parameters = parameters
+    op.meta = meta
 
     return op
 

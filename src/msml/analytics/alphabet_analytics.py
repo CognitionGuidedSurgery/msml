@@ -37,82 +37,7 @@ __author__ = 'Alexander Weigl'
 __date__ = "2014-03-19"
 
 import jinja2
-
-
-RST_TEMPLATE = """
-.. role:: red
-.. raw:: html
-
-    <style> .red {color:red} </style>
-
-Version: {{ time }}
-
-**Operatoren:** {% for name in alphabet.operators %} {{ name }}_ {% endfor %}
-
-**Elemente:** {% for name in alphabet.object_attributes %} {{ name }}_ {% endfor %}
-
-
-Operatoren
----------------------------------------
-
-{% for name, operator in alphabet.operators.items() %}
-
-{{ name }}
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-{% if "doc" in operator.meta %}
-{{ operator.meta["doc"] | indent }}
-{% else %}
-:red:`DOCUMENTATION MISSING`
-{% endif %}
-
-{{ operator|runtime }}
-
-*Inputs:*
-
-{{ operator.input.values()|rsttable }}
-
-*Output:*
-
-{{ operator.output.values()|rsttable }}
-
-*Parameters:*
-
-{{ operator.parameters.values()|rsttable }}
-
-
-*Annotations:*
-
-{% for k,v in operator.meta.items() %}
-{{ k }}
-{{ v|indent }}
-{% endfor %}
-
-
-{% endfor %}
-
-
-Attributes
----------------------------------------
-
-{% for name, attrib in alphabet.object_attributes.items() %}
-
-.. _{{name}}:
-
-{{ name }} ``{{ attrib|type }}``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-    {{ attrib.description }}
-
-
-{{ attrib.parameters.values()|rsttable}}
-
-{% endfor %}
-
-
-
-"""
-
+import os.path
 import msml.env
 import msml.frontend
 from StringIO import StringIO
@@ -207,13 +132,13 @@ def export_alphabet_overview_rst(alphabet=None):
         t = type(obj)
         return t.__name__
 
-    jenv = jinja2.Environment()
+    jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
     #jenv.filters['table'] = table
     jenv.filters['rsttable'] = rsttable
     jenv.filters['type'] = typename
     jenv.filters['indent'] = indent
     jenv.filters['runtime'] = oerator_runtime
-    template = jenv.from_string(RST_TEMPLATE)
+    template = jenv.get_template("alphabet_doc.tpl")
 
     import datetime
 
