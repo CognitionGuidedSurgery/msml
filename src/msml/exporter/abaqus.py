@@ -42,19 +42,13 @@
 __authors__ = 'Stefan Suwelack'
 __license__ = 'GPLv3'
 
-from warnings import warn
-
 import lxml.etree as etree
-import os
 
 #from ..ext import tetgen
 
-from ..model import alphabet
-from ..model import base
-from ..model.alphabet import PythonOperator
 from ..model.base import Task
 from .base import XMLExporter, Exporter
-from msml.model.exceptions import *
+from msml.exceptions import *
 import msml.env
 
 

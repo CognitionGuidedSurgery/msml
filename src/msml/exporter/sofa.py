@@ -44,21 +44,16 @@ __license__ = 'GPLv3'
 
 
 
-from warnings import warn
 import os
 import math
-import string
 
 import lxml.etree as etree
 
+
 #from ..ext import tetgen
 
-from ..model import alphabet
-from ..model import base
-from ..model.alphabet import PythonOperator
-from ..model.base import Task
 from .base import XMLExporter, Exporter
-from msml.model.exceptions import *
+from msml.exceptions import *
 from path import path
 
 

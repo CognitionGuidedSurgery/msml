@@ -38,12 +38,9 @@ import warnings
 
 from path import path
 
-from .exceptions import *
-
-
-
-
+from .msml.exceptions import *
 from ..sorts import conversion
+
 
 
 # from msml.model.alphabet import Argument cycle

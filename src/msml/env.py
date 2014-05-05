@@ -31,7 +31,6 @@
 """
 Environment things, such as defining alphabet search path, 
 defining msml-wide options and user configuration
-
 """
 
 
@@ -53,37 +52,43 @@ current_alphabet = None
 msml_file_path = None
 
 def load_user_file(loc = "~/.config/msmlrc.py"):
-        global alphabet_search_paths
-        loc = path(loc).expanduser()
-        if loc.exists() and False:
-            execfile(loc, {"alphabet_search_path" : alphabet_search_paths})
-        else:
-            env_path = path(__file__)
-            alphabet__path = env_path.dirname() / '..' / '..' / 'share' / 'alphabet'
-            alphabet_search_paths.append(alphabet__path)
+    """load user rc file.
 
-            import msml.envconfig as C
-            import sys
-            #Import release and debug paths here?
-            sys.path.append(C.operators_path)
-            sys.path.append(C.operators_path_debug)
-            sys.path.append(C.operators_path_release)
-            
-            #Add windows paths to python path - Python sometimes only checks this directories for dependencies (e.g. boost dlls)
-            win_path = os.environ.get('path')
-            if win_path is not None:       
-                win_paths = win_path.split(';')
-                for currentPath in win_paths:
-                    sys.path.append(currentPath)
-            
+    The user can load custom python code into the msml workflow with the rc file.
+    The rc file lies per default in `~/.config/msmlrc.py`, but can be given on the command line interface.
 
+    The scope in the file is only `alphabet_search_path`
 
+    :return: nothing
+    :rtype: NoneType
+    """
+    global alphabet_search_paths
+    loc = path(loc).expanduser()
+    if loc.exists() and False:
+        execfile(loc, {"alphabet_search_path" : alphabet_search_paths})
+    else:
+        env_path = path(__file__)
+        alphabet__path = env_path.dirname() / '..' / '..' / 'share' / 'alphabet'
+        alphabet_search_paths.append(alphabet__path)
 
+        import msml.envconfig as C
+        import sys
+        #Import release and debug paths here?
+        sys.path.append(C.operators_path)
+        sys.path.append(C.operators_path_debug)
+        sys.path.append(C.operators_path_release)
 
+        #Add windows paths to python path - Python sometimes only checks this directories for dependencies (e.g. boost dlls)
+        win_path = os.environ.get('path')
+        if win_path is not None:
+            win_paths = win_path.split(';')
+            for currentPath in win_paths:
+                sys.path.append(currentPath)
 
 def gather_alphabet_files():
-    """
-    finds all xml files in the alphabet_search_paths  
+    """finds all xml files in the `alphabet_search_paths`
+    :return: list of all xml files in the `alphabet_search_paths`
+    :rtype: list[path.path]
     """
     files = []
     for loc in alphabet_search_paths:
@@ -94,7 +99,12 @@ def gather_alphabet_files():
             files += loc.walkfiles("*.xml" , errors= 'warn')
     return files
 
+
 def load_alphabet(fil = "alphabet.cache"):
+    """Loads an alphabet from a pickled file
+    :param fil:
+    :return: Alphabet
+    """
     p = path(fil).expanduser().expandvars()
 
     if p.exists():

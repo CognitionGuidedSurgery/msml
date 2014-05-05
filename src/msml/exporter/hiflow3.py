@@ -33,9 +33,8 @@ __license__ = 'GPLv3'
 
 import lxml.etree as etree
 import os
-from ..model.base import Task
 from .base import XMLExporter, Exporter
-from msml.model.exceptions import *
+from msml.exceptions import *
 import msml.env
 
 from msml.model import *

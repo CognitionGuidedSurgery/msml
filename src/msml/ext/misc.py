@@ -36,7 +36,7 @@ __date__ = "2014-01-28"
 
 from warnings import warn
 
-from msml.model.exceptions import MSMLUnknownModuleWarning
+from msml.exceptions import MSMLUnknownModuleWarning
 
 try:
     import MiscMeshOperatorsPython as cpp

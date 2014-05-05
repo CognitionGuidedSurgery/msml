@@ -26,7 +26,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
-"""
+"""This modules include the base definition of both the sort hierarchies.
 
 """
 
@@ -35,6 +35,10 @@ __date__ = '2014-02-21'
 
 
 class Sort(object):
+    """A sort is a mixture from an physical and a logical data type.
+
+    It provides the function of sort comparison.
+    """
     def __init__(self, physical, logical=None):
         assert physical is not None
         self._physical = physical
@@ -80,6 +84,9 @@ class Sort(object):
 
     @property
     def physical(self):
+        """The physical data type
+        :return:
+        """
         return self._physical
 
     @physical.setter
@@ -91,6 +98,7 @@ class Sort(object):
 
     @property
     def logical(self):
+        """the logical data type"""
         return self._logical
 
     @logical.setter
@@ -103,7 +111,9 @@ class Sort(object):
 # #  Logical Type Hierarchy
 #
 
-class MSMLLTop(object): pass
+class MSMLLTop(object):
+    """Top of the logical hierarchy"""
+    pass
 
 
 class Indices(MSMLLTop): pass
@@ -224,6 +234,8 @@ class PNG(InFile):
 
 
 class ContainerFile(InFile):
+    """A container file is built from a filename and a partname
+    """
     def __init__(self, filename, partname=None):
         if not partname:
             try:

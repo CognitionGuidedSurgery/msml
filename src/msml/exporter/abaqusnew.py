@@ -26,16 +26,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
-from msml.model.base import *
-
 __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 
 import lxml.etree as etree
 
-from ..model.base import Task
 from .base import XMLExporter, Exporter
-from msml.model.exceptions import *
+from msml.exceptions import *
 import msml.env
 
 from msml.model import *

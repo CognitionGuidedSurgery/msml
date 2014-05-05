@@ -56,9 +56,13 @@ path     => name/path in the class hierarchy, each class is seperated with ».«
 
 from msml.sortdef import *
 from .log import report
+from .exceptions import MSMLException
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25, 2014-02-23"
+
+
+class MSMLMissingConversionException(MSMLException): pass
 
 
 class SortsDefinition(object):
@@ -243,21 +247,27 @@ class ConversionNetwork(networkx.DiGraph):
 
         resolve_order = [from_type] + list(mro)
         for start in resolve_order:
-            (length, paths) = networkx.single_source_dijkstra(self, from_type, to_type, 'precedence')
+            try:
+                (length, paths) = networkx.single_source_dijkstra(self, start, to_type, 'precedence')
 
-            if to_type not in length:
-                continue  # not found a valid path, try super class
+                if to_type not in length:
+                    continue  # not found a valid path, try super class
 
-            path = paths[to_type]
+                path = paths[to_type]
 
-            edges = zip(path[:-1], path[1:])
-            converters = list(itertools.starmap(c, edges))
+                edges = zip(path[:-1], path[1:])
+                converters = list(itertools.starmap(c, edges))
 
-            def fn(val):
-                return reduce(lambda val, convert: convert(val),
-                              converters, val)
+                def fn(val):
+                    return reduce(lambda val, convert: convert(val),
+                                  converters, val)
 
-            return fn
+                return fn
+            except KeyError as e:
+                # : Unknown node
+                pass
+
+        raise MSMLMissingConversionException("Could not find a conversion for %s -> %s" % (from_type, to_type))
 
 
 DEFAULT_CONVERSION_NETWORK = ConversionNetwork()
@@ -270,7 +280,7 @@ def default_conversion_network():
 register_conversion = DEFAULT_CONVERSION_NETWORK.register_conversion
 conversion = DEFAULT_CONVERSION_NETWORK.converter
 
-########################################################################################################################
+# #######################################################################################################################
 ## Default Conversions!
 #
 
@@ -291,10 +301,12 @@ def _list_of_type(s, t):
     return map(lambda x: t(x.strip(" ")), s.split(" "))
 
 
-def _list_float(s): return _list_of_type(s, float)
+def _list_float(s):
+    return _list_of_type(s, float)
 
 
-def _list_integer(s): return _list_of_type(s, int)
+def _list_integer(s):
+    return _list_of_type(s, lambda x: int(float(x)))
 
 
 register_conversion(str, get_sort("str"), MSMLString, 100)
@@ -305,5 +317,6 @@ register_conversion(str, get_sort("VTK"), VTK, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
+register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
 

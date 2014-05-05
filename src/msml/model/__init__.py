@@ -41,7 +41,7 @@ defines classes for:
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
-from .exceptions import *
+from ..exceptions import *
 
 from .alphabet import Alphabet, Operator, PythonOperator, SharedObjectOperator, ShellOperator, \
     Slot, ObjectAttribute, OAMaterial, OAConstraint, OAIndexGroup, OAMesh

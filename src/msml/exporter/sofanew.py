@@ -32,16 +32,15 @@ __license__ = 'GPLv3'
 __date__ = "2014-03-13"
 
 import math
-
-from warnings import warn
 import os
-from path import path
-import lxml.etree as etree
+import subprocess
 
+from path import path
+
+import lxml.etree as etree
 from ..model import *
 from .base import XMLExporter, Exporter
-import subprocess
-from msml.model.exceptions import *
+from msml.exceptions import *
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass

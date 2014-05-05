@@ -29,8 +29,9 @@
 from collections import namedtuple, OrderedDict
 import pickle
 
+from ..sorts import get_sort
 from msml.log import report
-from .exceptions import *
+from ..exceptions import *
 from ..titen import titen
 
 
@@ -116,7 +117,7 @@ class Alphabet(object):
         for o in self._operators.values():
             o.validate()
             # r = map(lambda x: x.validate(), self._operators.values())
-            #return r
+            # return r
 
     def _xsd(self):
         """
@@ -147,7 +148,7 @@ class Alphabet(object):
             pickle.dump(self, file)
 
             # import jsonpickle
-            #print(jsonpickle.encode(self))
+            # print(jsonpickle.encode(self))
 
 
     @staticmethod
@@ -207,9 +208,16 @@ class Slot(object):
     Consists of name, physical and logical type.
 
     """
+    #: slot type is not set
     SLOT_TYPE_UNKNOWN = -1
+
+    #: slot is an input
     SLOT_TYPE_INPUT = 0
+
+    #: slot is an output
     SLOT_TYPE_OUTPUT = 1
+
+    #: slot is a parameter
     SLOT_TYPE_PARAMETER = 2
 
     def __init__(self, name, physical, logical=None,
@@ -228,7 +236,7 @@ class Slot(object):
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
             report("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type),
-                 type="E", number=156)
+                   type="E", number=156)
             self.sort = None
 
 
@@ -237,8 +245,6 @@ class Slot(object):
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)
-
-from ..sorts import get_sort
 
 
 def _list_to_dict(lis, attrib='name'):
@@ -252,7 +258,7 @@ def _list_to_dict(lis, attrib='name'):
 
 
 class Operator(object):
-    """Operator"""
+    """Operator hold all slot, runtime information and meta data"""
 
     def __init__(self,
                  name,
@@ -261,9 +267,6 @@ class Operator(object):
                  parameters=None,
                  runtime=None,
                  meta=None):
-        """
-        
-        """
         self.name = name
         self.input = _list_to_dict(input)
         self.output = _list_to_dict(output)
@@ -300,7 +303,7 @@ class Operator(object):
 
 
 # def check_types(self, args, kwargs):
-#         sig = signature(self.func)
+# sig = signature(self.func)
 #         type_bind = sig.bind(*self.args)
 #         val_bind = sig.bind(*args)
 #
