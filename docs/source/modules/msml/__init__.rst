@@ -13,6 +13,7 @@ MSML API DOCUMENTATION
 
 
    env
+   exception
    frontend
    log
    sorts

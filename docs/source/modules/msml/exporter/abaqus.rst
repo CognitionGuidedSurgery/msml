@@ -1,7 +1,7 @@
 Abaqus Exporter
 ================
 
-.. automodule:: msml.exporter.newabaqus
+.. automodule:: msml.exporter.abaqusnew
     :members:
     :undoc-members:
     :show-inheritance:

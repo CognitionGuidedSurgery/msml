@@ -38,7 +38,7 @@ import warnings
 
 from path import path
 
-from .msml.exceptions import *
+from msml.exceptions import *
 from ..sorts import conversion
 
 
@@ -314,7 +314,8 @@ class MSMLVariable(object):
             report(s, 'F', 666)
             raise MSMLError(s)
 
-        self.sort = get_sort(self.physical_type, self.logical_type)
+        self.\
+            sort = get_sort(self.physical_type, self.logical_type)
         if not isinstance(self.value, self.sort.physical):
             report("Need convert value of %s" % self, 'I',6161)
             from_type = type(self.value)

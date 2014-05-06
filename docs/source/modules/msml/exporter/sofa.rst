@@ -1,7 +1,7 @@
 Sofa Exporter
 ================
 
-.. automodule:: msml.exporter.newsofa
+.. automodule:: msml.exporter.sofanew
     :members:
     :undoc-members:
     :show-inheritance:

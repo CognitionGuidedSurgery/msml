@@ -1,6 +1,7 @@
+from __future__ import print_function
+
 __author__ = 'weigl'
 
-from __future__ import print_function
 
 from lxml import etree
 from warnings import warn

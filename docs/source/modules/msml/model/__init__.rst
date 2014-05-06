@@ -7,7 +7,6 @@ model package
    base
    alphabet
    dag
-   exception
    writer
 
 .. automodule:: msml.model

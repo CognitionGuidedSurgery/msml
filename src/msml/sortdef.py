@@ -65,8 +65,6 @@ class Sort(object):
             b = issubclass(self._logical, other._logical)
             return a and b
 
-        return False
-
     def __gt__(self, other):
         return other < self
 

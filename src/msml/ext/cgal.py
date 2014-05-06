@@ -31,7 +31,7 @@ __author__ = 'Alexander Weigl'
 
 from warnings import  warn
 
-from ..msml.exceptions import MSMLUnknownModuleWarning
+from msml.exceptions import MSMLUnknownModuleWarning
 
 try:
     import CGALOperatorsPython as cpp

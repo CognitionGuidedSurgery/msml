@@ -2,7 +2,7 @@ exception module
 =================
 
 
-.. automodule:: msml.model.exception
+.. automodule:: msml.exceptions
     :members:
     :undoc-members:
     :show-inheritance:
