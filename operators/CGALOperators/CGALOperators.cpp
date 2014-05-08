@@ -94,6 +94,7 @@ using namespace CGAL::parameters;
 
 
 namespace MSML{
+    namespace CGALOperators {
     //local helper methods
   CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image);
   C3t3_poly mesh_polyhedral_Domain(Polyhedron thePolyhedron,
@@ -108,7 +109,6 @@ namespace MSML{
     Polyhedron OpenOffSurface(const char* infile_off);
     map<int,int>*  CompressImageData(vtkImageData* theImageData);
 
-    namespace CGALOperators {
 
   std::string CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance,
      double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)

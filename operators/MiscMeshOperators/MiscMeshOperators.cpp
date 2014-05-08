@@ -222,12 +222,11 @@ bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh )
     return true;
 }
 
-std::string VTKToInpPython( std::string infile, std::string outfile)
+/* std::string VTKToInpPython( std::string infile, std::string outfile)
 {
-
     VTKToInp( infile.c_str(),  outfile.c_str());
     return outfile;
-}
+}*/
 
 bool VTKToInp( const char* infile, const char* outfile)
 {

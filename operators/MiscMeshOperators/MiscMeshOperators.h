@@ -52,11 +52,11 @@ namespace MSML {
 
         LIBRARY_API  bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile);
 
-        LIBRARY_API  std::string ConvertInpToVTKPython(std::string infile, std::string outfile);
+        //LIBRARY_API  std::string ConvertInpToVTKPython(std::string infile, std::string outfile);
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, const char* outfile);
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh);
 
-        LIBRARY_API  std::string VTKToInpPython( std::string infile, std::string outfile);
+        //LIBRARY_API  std::string VTKToInpPython( std::string infile, std::string outfile);
         LIBRARY_API  bool VTKToInp( const char* infile, const char* outfile);
         LIBRARY_API  bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile);
 
