@@ -20,7 +20,7 @@
 =========================================================================*/
 
 #include <map>
-#include <assert.h> 
+#include <assert.h>
 
 //CGAL Includes:
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -46,7 +46,7 @@ typedef CGAL::Polyhedral_mesh_domain_3<Polyhedron, K> Mesh_domain_poly;
 // Triangulation poly
 typedef CGAL::Mesh_triangulation_3<Mesh_domain_poly>::type Tr_poly;
 typedef CGAL::Mesh_complex_3_in_triangulation_3<Tr_poly> C3t3_poly;
-// Criteria poly 
+// Criteria poly
 typedef CGAL::Mesh_criteria_3<Tr_poly> Mesh_criteria_poly;
 
 //Labled image domain
@@ -94,25 +94,23 @@ using namespace CGAL::parameters;
 
 
 namespace MSML{
-
-  //local helper methods
+    //local helper methods
   CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image);
-  C3t3_poly mesh_polyhedral_Domain(Polyhedron thePolyhedron, bool thePreserveFeatures, double theFacetAngle, double theFacetSize, double theFacetDistance, 
-     double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
-  C3t3_img mesh_image_domain(CGAL::Image_3 theImage, double theFacetAngle, double theFacetSize, double theFacetDistance, 
-     double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
-  Polyhedron OpenOffSurface(const char* infile_off);
-  map<int,int>*  CompressImageData(vtkImageData* theImageData);
-  
-  CGALOperators::CGALOperators()
-  {
-  }
+  C3t3_poly mesh_polyhedral_Domain(Polyhedron thePolyhedron,
+                                   bool thePreserveFeatures, double theFacetAngle,
+                                   double theFacetSize, double theFacetDistance,
+                                   double theCellRadiusEdgeRatio, double theCellSize,
+                                   bool theOdtSmoother, bool theLloydSmoother,
+                                   bool thePerturber, bool theExuder);
 
-  CGALOperators::~CGALOperators()
-  {
-  }
+    C3t3_img mesh_image_domain(CGAL::Image_3 theImage, double theFacetAngle, double theFacetSize, double theFacetDistance,
+                               double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
+    Polyhedron OpenOffSurface(const char* infile_off);
+    map<int,int>*  CompressImageData(vtkImageData* theImageData);
 
-  std::string CGALOperators::CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance, 
+    namespace CGALOperators {
+
+  std::string CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance,
      double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)
   {
     vtkSmartPointer<vtkImageData> imageIn = IOHelper::VTKReadImage(infile);
@@ -122,7 +120,7 @@ namespace MSML{
     //compress pixel values to [0...255]. (CGAL seems to need unsigned char) - more than 255 difference segmentation classes are supported.
     map<int,int>* aLUT = CompressImageData(image_compact);
 
-    //cast image pixel data array to unsigned char  
+    //cast image pixel data array to unsigned char
     vtkSmartPointer<vtkImageCast > image_caster = vtkSmartPointer<vtkImageCast>::New();
     __SetInput(image_caster, image_compact);
     image_caster->SetOutputScalarTypeToUnsignedChar();
@@ -155,18 +153,18 @@ namespace MSML{
     outputMesh = (vtkUnstructuredGrid*) transformFilter->GetOutput();
 
 
-    //check if any materials were removed 
+    //check if any materials were removed
     map<int,int>* hist_img = MiscMeshOperators::createHist(image_data_byte->GetPointData()->GetScalars());
     map<int,int>*  hist_cells = MiscMeshOperators::createHist(outputMesh->GetCellData()->GetScalars());
 
     int countOfRemoved = hist_img->size()-1 - hist_cells->size();
-    
+
     //If materials were removed guess which and adapt the LUT.
     for (int i=0; i<countOfRemoved; i++)
     {
       //find index of rarest pixel value
       int aMinKey = hist_img->begin()->first;
-      for (map<int,int>::iterator it = hist_img->begin(); it!=hist_img->end(); it++) 
+      for (map<int,int>::iterator it = hist_img->begin(); it!=hist_img->end(); it++)
       {
         if (it->second < hist_img->at(aMinKey))
         {
@@ -177,21 +175,21 @@ namespace MSML{
 
       hist_cells->erase(aMinKey); //remove entry for material, which has not created any cells.
       //adapt all entries.
-      for (map<int,int>::iterator it = hist_img->begin(); it!=hist_img->end(); it++) 
+      for (map<int,int>::iterator it = hist_img->begin(); it!=hist_img->end(); it++)
       {
         if (it->first >= aMinKey)
         {
           it->second = it->second -1;
         }
       }
-      cout << "Warning: CGAL generated cells of less material types than the image input. I guess image material of index=" << 
+      cout << "Warning: CGAL generated cells of less material types than the image input. I guess image material of index=" <<
         aLUT->at(aMinKey) <<" did not create any cells. The LUT was adpated." << std::endl;
     }
 
     //replace the reduced material values using the LUT
     vtkDataArray* pd = outputMesh->GetCellData()->GetScalars();
     for (int i=0; i<pd->GetNumberOfTuples();i++)
-    { 
+    {
       double* key = pd->GetTuple(i);
       float value = aLUT->at((int) *key);
       pd->SetTuple(i,  &value);
@@ -208,7 +206,7 @@ namespace MSML{
 
     return outfile;
   }
-	
+
   map<int,int>* CompressImageData(vtkImageData* theImageData)
   {
     map<int,int>*   hist = MiscMeshOperators::createHist(theImageData->GetPointData()->GetScalars());
@@ -226,10 +224,10 @@ namespace MSML{
     for (map<int,int>::iterator it = hist->begin(); it!=hist->end(); it++) //iterates in order std::less<Key>
     {
       inverseLUT->insert(pair<int,int>(it->first,counter));//    old_value => new_value
-      aLUT->insert(pair<int,int>(counter, it->first));  //new_Value => old_value 
+      aLUT->insert(pair<int,int>(counter, it->first));  //new_Value => old_value
       counter++;
-    } 
-    
+    }
+
     if (counter <= 1)
     {
       cout << "Error: The image has the same value in each voxel.";
@@ -239,7 +237,7 @@ namespace MSML{
     //Use LUT the replace values in the image
     vtkDataArray* pd = theImageData->GetPointData()->GetScalars();
     for (int i=0; i<pd->GetNumberOfTuples();i++)
-    { 
+    {
       double* value = pd->GetTuple(i);
       float key = inverseLUT->at(*value);
       pd->SetTuple(i,  &key);
@@ -247,15 +245,15 @@ namespace MSML{
     return aLUT;
   }
 
-  
-  C3t3_img mesh_image_domain(CGAL::Image_3 theImage, double theFacetAngle, double theFacetSize, double theFacetDistance, 
+
+  C3t3_img mesh_image_domain(CGAL::Image_3 theImage, double theFacetAngle, double theFacetSize, double theFacetDistance,
     double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)
   {
     assert(theFacetAngle<=30);
     assert(theCellRadiusEdgeRatio>2);
-    
+
     CGAL::parameters::internal::Features_options featuresParameter=no_features();
-    
+
     CGAL::parameters::internal::Odt_options odtParameter = 0;
     if (theOdtSmoother)
       odtParameter=odt();
@@ -279,7 +277,7 @@ namespace MSML{
       ExudeParameter=exude();
     else
       ExudeParameter=no_exude();
-    
+
     CGAL::Labeled_image_mesh_domain_3<CGAL::Image_3,K> domain(theImage);
     //Mesh_criteria_img criteria(facet_angle=20, facet_size=10, facet_distance=6,
        //                  cell_radius_edge_ratio=theCellRadiusEdgeRatio, cell_size=14);
@@ -298,7 +296,7 @@ namespace MSML{
   /// <param name="outfile">The outfile.</param>
   /// <param name="preserveBoundary">The preserve boundary.</param>
   /// <returns></returns>
-  std::string CGALOperators::CreateVolumeMeshs2v(const char* infile, const char* outfile, bool thePreserveFeatures, double theFacetAngle, double theFacetSize, double theFacetDistance, 
+  std::string CreateVolumeMeshs2v(const char* infile, const char* outfile, bool thePreserveFeatures, double theFacetAngle, double theFacetSize, double theFacetDistance,
         double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)
   {
 
@@ -313,7 +311,7 @@ namespace MSML{
     vtkUnstructuredGrid* outputMesh = vtkUnstructuredGrid::New();
     string errorMessage;
     MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), "CreateVolumeMeshs2v__TEMP.off");
-    C3t3_poly c3t3 = mesh_polyhedral_Domain(OpenOffSurface("CreateVolumeMeshs2v__TEMP.off"), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance, 
+    C3t3_poly c3t3 = mesh_polyhedral_Domain(OpenOffSurface("CreateVolumeMeshs2v__TEMP.off"), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
       theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
     remove("CreateVolumeMeshs2v__TEMP.off");
@@ -337,12 +335,12 @@ namespace MSML{
   }
 
 
-  C3t3_poly mesh_polyhedral_Domain(Polyhedron thePolyhedron, bool thePreserveFeatures, double theFacetAngle, double theFacetSize, double theFacetDistance, 
+  C3t3_poly mesh_polyhedral_Domain(Polyhedron thePolyhedron, bool thePreserveFeatures, double theFacetAngle, double theFacetSize, double theFacetDistance,
      double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)
 	{
 	  assert(theFacetAngle<=30);
     assert(theCellRadiusEdgeRatio>2);
-    
+
     CGAL::parameters::internal::Features_options featuresParameter = no_features();
     if (thePreserveFeatures)
       featuresParameter=features();
@@ -362,13 +360,13 @@ namespace MSML{
     CGAL::parameters::internal::Exude_options ExudeParameter = no_exude();
     if (theExuder)
       ExudeParameter=exude();
-    
+
     CGAL::Polyhedral_mesh_domain_3<Polyhedron, K> domain(thePolyhedron);
 
 	  Mesh_criteria_poly criteria(facet_angle=theFacetAngle, facet_size=theFacetSize, facet_distance=theFacetDistance,
 							 cell_radius_edge_ratio=theCellRadiusEdgeRatio, cell_size=theCellSize);
 	  C3t3_poly c3t3 = CGAL::make_mesh_3<C3t3_poly>(domain, criteria, featuresParameter, odtParameter, LloydParameter, PertubeParameter, ExudeParameter);
-	  
+
     return c3t3;
 	}
 
@@ -422,11 +420,11 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 
 #if VTK_MAJOR_VERSION <= 5
   vtk_image->Update();
-#endif 
+#endif
 
   image->endianness = ::_getEndianness();
-  int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType(); 
-  if(vtk_type =! VTK_UNSIGNED_CHAR) 
+  int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType();
+  if(vtk_type =! VTK_UNSIGNED_CHAR)
   {
     cerr << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
     exit(2);
@@ -445,4 +443,5 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 }
 //end of taken form CGAL Image_3
 
-}
+    } //end of namespace CGALOperators
+} // end of namespace MSML

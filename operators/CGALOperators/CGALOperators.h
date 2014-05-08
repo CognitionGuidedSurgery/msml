@@ -23,27 +23,23 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
-namespace MSML
-{
+namespace MSML {
+ namespace  CGALOperators {
+     //vtk polydata -> tetrahedron unstructured grid vtk
+     LIBRARY_API std::string
+         CreateVolumeMeshs2v(const char* infile, const char* outfile,
+                             bool thePreserveFeatures, double theFacetAngle,
+                             double theFacetSize, double theFacetDistance,
+                             double theCellRadiusEdgeRatio, double theCellSize,
+                             bool theOdtSmoother, bool theLloydSmoother,
+                             bool thePerturber, bool theExuder);
 
-  class CGALOperators
-  {
-    public:
-	    // constructor
-	    CGALOperators();
-	    // destructor
-	    ~CGALOperators();
-
-      //vtk polydata -> tetrahedron unstructured grid vtk
-      LIBRARY_API static std::string CreateVolumeMeshs2v(const char* infile, const char* outfile, bool thePreserveFeatures, double theFacetAngle, double theFacetSize, double theFacetDistance,
-        double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
-           
-      //image vtk => tetrahedron unstructured grid vtk
-      LIBRARY_API static  std::string CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance,
-        double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
- 
-    protected:
-  };
+     //image vtk => tetrahedron unstructured grid vtk
+     LIBRARY_API std::string
+         CreateVolumeMeshi2v(const char* infile, const char* outfile,
+                             double theFacetAngle, double theFacetSize,
+                             double theFacetDistance, double theCellRadiusEdgeRatio,
+                             double theCellSize, bool theOdtSmoother,
+                             bool theLloydSmoother, bool thePerturber, bool theExuder);
+  }
 }
-
-
