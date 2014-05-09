@@ -1,3 +1,4 @@
+#!/bin/bash
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 # 
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
