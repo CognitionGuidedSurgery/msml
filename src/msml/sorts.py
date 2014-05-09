@@ -175,7 +175,7 @@ DEFAULTS_SORTS = {
         (MSMLString, "str", "string", "s"),
         (MSMLFloat, "float"),
         (MSMLInt, "int"),
-        (MSMLBool, "bool"),
+        (bool, "bool"),
         (MSMLUInt, "uint"),
         (MSMLListF, "ListF", "vector.float"),
         (MSMLListUI, "ListUI", "vector.uint"),
@@ -281,7 +281,7 @@ register_conversion = DEFAULT_CONVERSION_NETWORK.register_conversion
 conversion = DEFAULT_CONVERSION_NETWORK.converter
 
 # #######################################################################################################################
-## Default Conversions!
+# # Default Conversions!
 #
 
 def _bool(s):
@@ -298,15 +298,22 @@ def _list_of_type(s, t):
     :return:
     :rtype: list[t]
     """
-    return map(lambda x: t(x.strip(" ")), s.split(" "))
+
+
+    return map(lambda x: t(x.strip(" ")),
+               filter(lambda x: x != "", s.split(" ")))
 
 
 def _list_float(s):
-    return _list_of_type(s, float)
+    return _list_of_type(s, MSMLFloat)
 
 
 def _list_integer(s):
-    return _list_of_type(s, lambda x: int(float(x)))
+    return _list_of_type(s, lambda x: MSMLInt(float(x)))
+
+
+def _list_uinteger(s):
+    return _list_of_type(s, lambda x: MSMLUInt(float(x)))
 
 
 register_conversion(str, get_sort("str"), MSMLString, 100)
@@ -317,6 +324,6 @@ register_conversion(str, get_sort("VTK"), VTK, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
-register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
+#register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
 

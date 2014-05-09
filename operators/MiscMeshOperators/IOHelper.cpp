@@ -80,7 +80,7 @@ namespace MSML {
             }
         }
 
-        vtkSmartPointer<vtkPolyData>VTKReadPolyData(const char* filename)
+        vtkSmartPointer<vtkPolyData> VTKReadPolyData(const char* filename)
         {
             boost::filesystem::path filePath(filename);
             vtkSmartPointer<vtkDataObject> aReturn;

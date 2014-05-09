@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://sfb125.de/msml" name="stl2vtk">
 
 	<runtime>
-		<python module="msml.ext.misc" function="convertSTLToVTK" />
+		<python module="msml.ext.misc" function="ConvertSTLToVTK" />
 	</runtime>
 
 	<input>

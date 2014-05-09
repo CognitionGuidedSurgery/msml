@@ -30,7 +30,15 @@ class ConversionTest(TestCase):
         self.assertEqual([1.0, 2.3, 3.0], S._list_float("1 2.3 3.0"))
 
 
-    def test_container_file(self):
-        cf = S.ContainerFile("test.vtk;part")
-        self.assertEqual('test.vtk', cf.filename)
-        self.assertEqual('part', cf.partname)
+    # def test_container_file(self):
+    #     cf = S.ContainerFile("test.vtk;part")
+    #     self.assertEqual('test.vtk', cf.filename)
+    #     self.assertEqual('part', cf.partname)
+
+    def test_str_MSMLString(self):
+        cvt = S.conversion(str, S.MSMLString)
+        self.assertEqual(S.MSMLString("abc"), cvt("abc"))
+
+    def test_MSMLString_float(self):
+        cvt = S.conversion(S.MSMLString, S.MSMLFloat)
+        self.assertEqual(3.5, cvt("3.5"))

@@ -4,7 +4,7 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 #   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
@@ -37,17 +37,9 @@ from msml.exceptions import MSMLUnknownModuleWarning
 
 
 try:
-    import TetgenOperatorsPython as cpp
+    from  TetgenOperatorsPython import *
 except ImportError, e:
     warn("Could not load TetgenOperatorsPython. "
          "This is the C++-Modul. Have you successfully compiled and installed it? "
          "Error is %s" % e,
          MSMLUnknownModuleWarning, 0)
-
-
-def createVolumeMeshTetgen(surfaceMesh, preserveBoundary=True, meshFilename=None):
-    '''
-
-    '''
-    preserveBoundary = bool(preserveBoundary)
-    return cpp.createVolumeMeshTetgen(surfaceMesh, meshFilename, preserveBoundary)

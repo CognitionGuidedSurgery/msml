@@ -68,7 +68,6 @@ SET(LIBRARY_OUTPUT_PATH  ${CMAKE_BINARY_DIR}/bin)
 #SET(BUILD_SHARED_LIBS ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/CMake/)
 
 SET(CMAKE_OPERATOR_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -79,12 +78,19 @@ SET(CMAKE_TESTDATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Testdata
 add_definitions( -DTEST_DATA_PATH="${TESTDATA_PATH}" )
 
 
-
 #SET(CMAKE_PYTHON_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../MSML_Python
 #    CACHE PATH "Choose the test data path.")
 
-set(SOFA_BIN_DIRECTORY "SOFA_BIN_DIRECTORY_NOT_FOUND" CACHE FILEPATH "description")
-    
+FIND_FILE(SOFA_EXECUTABLE "sofaBatch" NAMES "sofaBatch.exe" "sofaBatchExtended"
+    DOC "")
+
+FIND_FILE(HIFLOW_EXECUTABLE "hiflow3" NAMES "hiflow3"
+    DOC "")
+
+FIND_FILE(ABAQUS_EXECUTABLE "abaqus" NAMES "abaqus" "abaqus"
+    DOC "")
+
+
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
 
@@ -93,7 +99,7 @@ SET(CMAKE_ECLIPSE_MAKE_ARGUMENTS "-j${x}" CACHE STRING "" FORCE )
 ################################################################################
 ## Modules
 # 
-
+ADD_SUBDIRECTORY(Base)
 ADD_SUBDIRECTORY(TetgenOperators)
 ADD_SUBDIRECTORY(VCGOperators)  
 ADD_SUBDIRECTORY(MiscMeshOperators)

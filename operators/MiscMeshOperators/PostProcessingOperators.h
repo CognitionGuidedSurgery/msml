@@ -50,7 +50,7 @@ namespace PostProcessingOperators {
 // bool CoarseSurfaceMesh(const char* infile, const char* outfile, unsigned int numberOfElements, std::string * errorMessage );
 // bool CoarseSurfaceMesh(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, unsigned int numberOfElements, std::string * errorMessage=0 );
 
-LIBRARY_API  std::string  ColorMeshPython(std::string modelFilename, std::string coloredModelFilename);
+LIBRARY_API  std::string ColorMeshPython(std::string modelFilename, std::string coloredModelFilename);
 LIBRARY_API  std::string ColorMeshFromComparisonPython(std::string modelFilename, std::string referenceFilename, std::string coloredModelFilename);
 
 //Returns 4-tuple: RMS Volume, Max Volume, RMS Surface, Max Surface

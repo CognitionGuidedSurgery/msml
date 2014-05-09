@@ -39,6 +39,7 @@ class Sort(object):
 
     It provides the function of sort comparison.
     """
+
     def __init__(self, physical, logical=None):
         assert physical is not None
         self._physical = physical
@@ -190,7 +191,7 @@ class Stress(PhysicalQuantities): pass
 
 
 # #########################################################
-##
+# #
 # Physical Hierarchy
 class MSMLPhysicalTop(object): pass
 
@@ -205,7 +206,7 @@ class MSMLFloat(float, MSMLPhysicalTop): pass
 class MSMLInt(int, MSMLPhysicalTop): pass
 
 
-class MSMLBool(int, MSMLPhysicalTop): pass
+#class MSMLBool(bool, MSMLPhysicalTop): pass
 
 
 class MSMLUInt(int, MSMLPhysicalTop): pass
@@ -223,7 +224,7 @@ class MSMLListI(list, MSMLPhysicalTop): pass
 class MSMLListF(list, MSMLPhysicalTop): pass
 
 
-class InFile(MSMLPhysicalTop):
+class InFile(str, MSMLPhysicalTop):
     pass
 
 
@@ -232,21 +233,24 @@ class PNG(InFile):
 
 
 class ContainerFile(InFile):
-    """A container file is built from a filename and a partname
-    """
-    def __init__(self, filename, partname=None):
-        if not partname:
-            try:
-                self.filename, self.partname = filename.split(";")
-            except:
-                self.filename = filename
-                self.partname = None
-        else:
-            self.filename = filename
-            self.partname = partname
+    pass
 
-    def __str__(self):
-        return "<%s: %s;%s>" % (type(self).__name__, self.filename,self.partname)
+
+    # """A container file is built from a filename and a partname
+    # """
+    # def __init__(self, filename, partname=None):
+    # if not partname:
+    #         try:
+    #             self.filename, self.partname = filename.split(";")
+    #         except:
+    #             self.filename = filename
+    #             self.partname = None
+    #     else:
+    #         self.filename = filename
+    #         self.partname = partname
+    #
+    # def __str__(self):
+    #     return "<%s: %s;%s>" % (type(self).__name__, self.filename,self.partname)
 
 
 class VTK(ContainerFile): pass

@@ -35,6 +35,7 @@ import warnings
 from path import path
 
 from .memory import Memory
+from msml.log import report
 from msml.model import *
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
@@ -67,7 +68,7 @@ def contains(a, b):
 def initialize_file_literals(first_bucket):
     def var_is_file(var):
         if isinstance(var, MSMLVariable):
-            #TODO better predicate if sort logic defined /weigl
+            # TODO better predicate if sort logic defined /weigl
             return contains("file", var.logical_type) or contains("file", var.physical_type)
         return False
 
@@ -107,7 +108,7 @@ class LinearSequenceExecuter(Executer):
           value (object): any value of variable
 
         """
-        if name not in self._memory:  #do not override
+        if name not in self._memory:  # do not override
             self._memory[name] = value
 
     def run(self):
@@ -115,7 +116,7 @@ class LinearSequenceExecuter(Executer):
         """
         dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
 
-        #dag.show()
+        # dag.show()
 
         buckets = dag.toporder()
 
@@ -165,9 +166,9 @@ class LinearSequenceExecuter(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        print '--Executing operator of task {} with arguments {}'.format(task, kwargs)
+        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
         result = task.operator(**kwargs)
-        print '--Executing operator of task {} done'.format(task)
+        report('--Executing operator of task {} done'.format(task), 'I', '002')
         self._memory[task.id] = result
 
 
@@ -263,18 +264,22 @@ from ..model import PythonOperator, Task, Slot
 
 
 def get_python_conversion_operator(slotA, slotB):
-    r = {'function': '', 'module': ''}
-    pyop = PythonOperator("converter_%s_%s" % (slotA.arginfo.sort.physical.__name__, slotB.arginfo.sort.physical.__name__),
-                          input=[Slot("i", slotA.arginfo.sort.physical, slotA.arginfo.sort.logical)],
-                          output=[Slot("o", slotB.arginfo.sort.physical, slotB.arginfo.sort.logical)], runtime=r)
+    r = {'function': '<automatic-converter>', 'module': '<module-name>'}
+    pyop = PythonOperator(
+        "converter_%s_%s" % (slotA.arginfo.sort.physical.__name__, slotB.arginfo.sort.physical.__name__),
+        input=[Slot("i", slotA.arginfo.sort.physical, slotA.arginfo.sort.logical)],
+        output=[Slot("o", slotB.arginfo.sort.physical, slotB.arginfo.sort.logical)], runtime=r)
 
     return pyop
 
 
 def create_conversion_task(slotA, slotB):
     fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
+    if not fn:
+        raise MSMLError("Could not find an automatic Converter for %s to %s" % (slotA, slotB))
+
     pyop = get_python_conversion_operator(slotA, slotB)
-    pyop.function = fn
+    pyop._function = fn
     attrib = {'id': random_var_name(), 'i': None}
     task = Task(pyop.name, attrib)
     task.operator = pyop

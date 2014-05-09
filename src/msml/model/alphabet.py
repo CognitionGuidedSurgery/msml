@@ -208,13 +208,13 @@ class Slot(object):
     Consists of name, physical and logical type.
 
     """
-    #: slot type is not set
+    # : slot type is not set
     SLOT_TYPE_UNKNOWN = -1
 
-    #: slot is an input
+    # : slot is an input
     SLOT_TYPE_INPUT = 0
 
-    #: slot is an output
+    # : slot is an output
     SLOT_TYPE_OUTPUT = 1
 
     #: slot is a parameter
@@ -304,10 +304,10 @@ class Operator(object):
 
 # def check_types(self, args, kwargs):
 # sig = signature(self.func)
-#         type_bind = sig.bind(*self.args)
-#         val_bind = sig.bind(*args)
+# type_bind = sig.bind(*self.args)
+# val_bind = sig.bind(*args)
 #
-#         T = type_bind.args
+# T = type_bind.args
 #         V = val_bind.args
 #
 #         return issubtype(V, T)
@@ -330,7 +330,7 @@ class PythonOperator(Operator):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
         self.function_name = runtime['function']
         self.modul_name = runtime['module']
-        self.function = None
+        self._function = None
 
     def _check_function(self):
         pass
@@ -340,19 +340,20 @@ class PythonOperator(Operator):
         return "<PythonOperator: %s.%s>" % (self.modul_name, self.function_name)
 
     def __call__(self, **kwargs):
-        if not self.__function:
+        if not self._function:
             self.bind_function()
 
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
 
         args = [kwargs.get(x, None) for x in self.acceptable_names()]
-        r = self.__function(*args)
+        r = self._function(*args)
 
-        if not isinstance(r, tuple):
-            r = (r,)
+        if len(self.output) == 1:
+            results = {self.output_names()[0]: r}
+        else:
+            results = dict(zip(self.output_names(), r))
 
-        results = dict(zip(self.output_names(), r))
         return results
 
     def bind_function(self):
@@ -361,9 +362,9 @@ class PythonOperator(Operator):
         try:
             #print("LOADING: %s.%s" % (self.modul_name, self.function_name))
             mod = importlib.import_module(self.modul_name)
-            self.__function = getattr(mod, self.function_name)
+            self._function = getattr(mod, self.function_name)
 
-            return self.__function
+            return self._function
         except ImportError, e:
             warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
                  MSMLUnknownModuleWarning, 0)

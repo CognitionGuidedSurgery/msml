@@ -4,7 +4,7 @@
                xsi:schemaLocation="http://sfb125.de/msml" name="colormesh">
     <runtime>
         <python module="msml.ext.misc"
-                function="colorMeshOperator"/>
+                function="ColorMeshPython"/>
     </runtime>
 
     <input>

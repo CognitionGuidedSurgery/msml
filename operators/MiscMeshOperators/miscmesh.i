@@ -9,8 +9,7 @@
 
 %}
 
-
-%include "../MSML_Operators.h"
+%include "../std.i"
 
 %include "IOHelper.h"
 %include "IndexRegionOperators.h"
