@@ -4,14 +4,7 @@ networkx
 simplegeneric
 docopt
 pyparsing
-#pydot
-#numpy      
-#matplotlib
-#dateutil
-
-jinja2 # creation of rst (alphabet overview)
-
+jinja2 
 # sphinx
-
-sphinxcontrib-napoleon 
+# sphinxcontrib-napoleon 
 
