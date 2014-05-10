@@ -50,10 +50,7 @@ mkdir cbuild
 cd cbuild 
 
 #VCG not valid
-cmake -DVTK_DIR=/usr/bin/ \
-	-DMODULES_VCGOperators=OFF
-	-DVCG_INCLUDE_DIR:PATH="/usr/include/" \
-	../operators
+cmake -DVTK_DIR=/usr/bin/ -DMODULES_VCGOperators=OFF -DVCG_INCLUDE_DIR:PATH="/usr/include/" ../operators
 
 make -j 4
 cd ..
