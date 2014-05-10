@@ -50,11 +50,12 @@ mkdir cbuild
 cd cbuild 
 
 #VCG not valid
-cmake -DVTK_DIR=/usr/bin/ ../operators -DVCG_INCLUDE_DIR:PATH="/usr/include/" 
+cmake -DVTK_DIR=/usr/bin/ \
+	-DMODULES_VCGOperators=OFF
+	-DVCG_INCLUDE_DIR:PATH="/usr/include/" \
+	../operators
 
-make TetgenOperatorsPython 
-make MiscMeshOperatorsPython
-#make CGALOperatorsPython
+make -j 4
 cd ..
 
 sudo pip install nose coveralls
