@@ -31,7 +31,7 @@
 Small wrapper around MiscMeshOperatorsPython.so
 """
 
-__author__ = "Alexander Weigl"
+__author__ = "Alexander Weigl, Nicolai Schoch"
 __date__ = "2014-01-28"
 
 from warnings import warn
@@ -70,6 +70,7 @@ __all__ = ['colorMeshFromComparison',
            'convertSTLToVTK',
            'convertVTKMeshToAbaqusMeshString',
            'convertVTKPolydataToUnstructuredGrid',
+           'convertVTKToVTU',
            'convertVTKToSTL',
            'convertVtkToInp',
            'extractPointPositions',
@@ -111,7 +112,7 @@ def compareMeshesFullError(*args ):
 def _parse_points_triples(string):
     box = map(float, filter(lambda x: len(x) > 0, string.split(" ")))
 
-    vd = cpp.VecDouble()
+    vd = VecDouble() #before: cpp.VecDouble()
     for d in box: vd.append(d)
     return vd
 
@@ -143,6 +144,10 @@ def convertVTKToSTL(*args ):
 
 def convertVtkToInp(*args ):
     return cpp.convertVtkToInp(*args )
+
+
+def convertVTKToVTU(*args ):
+    return cpp.ConvertVTKToVTU(*args )
 
 
 def extractPointPositions(*args ):

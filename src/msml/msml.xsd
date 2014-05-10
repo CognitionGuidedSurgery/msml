@@ -278,14 +278,31 @@
                         <simpleType>
                             <restriction base="string">
                                 <enumeration value="iterativeCG"></enumeration>
+                                <enumeration value="CG"></enumeration>
+                                <enumeration value="GMRES"></enumeration>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute name="preconditioner">
+                        <simpleType>
+                            <restriction base="string">
+                                <enumeration value="NOPRECOND"></enumeration>
+                                <enumeration value="JACOBI"></enumeration>
+                                <enumeration value="GAUSS_SEIDEL"></enumeration>
+                                <enumeration value="SGAUSS_SEIDEL"></enumeration>
+                                <enumeration value="SOR"></enumeration>
+                                <enumeration value="SSOR"></enumeration>
+                                <enumeration value="ILU"></enumeration>
+                                <enumeration value="ILU2"></enumeration>
+                                <enumeration value="ILU_P"></enumeration>
                             </restriction>
                         </simpleType>
                     </attribute>
                     <attribute name="timeIntegration">
                         <simpleType>
                             <restriction base="string">
-                                <enumeration value="dynamicImplicitEuler">
-                                </enumeration>
+                                <enumeration value="dynamicImplicitEuler"></enumeration>
+                                <enumeration value="Newmark"></enumeration>
                             </restriction>
                         </simpleType>
                     </attribute>

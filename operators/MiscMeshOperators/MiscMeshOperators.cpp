@@ -2,7 +2,7 @@
 
   Program:   The Medical Simulation Markup Language
   Module:    Operators, MiscMeshOperators
-  Authors:   Markus Stoll, Stefan Suwelack
+  Authors:   Markus Stoll, Stefan Suwelack, Nicolai Schoch
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ bool MiscMeshOperators::ConvertSTLToVTK(const char* infile, vtkPolyData* outputM
 
 std::string MiscMeshOperators::ConvertVTKToSTLPython(std::string infile, std::string outfile)
 {
-	ConvertVTKToSTL( infile.c_str(), outfile.c_str());
+	ConvertVTKToVTU( infile.c_str(), outfile.c_str());
 
 	return outfile;
 }
@@ -184,6 +184,56 @@ bool MiscMeshOperators::ConvertVTKToSTL(const char* infile, const char* outfile)
 
 	return true;
 }
+
+//---------------------------- start of new by Nico on 2014-05-10.
+std::string MiscMeshOperators::ConvertVTKToVTUPython(std::string infile, std::string outfile)
+{
+	ConvertVTKToSTL( infile.c_str(), outfile.c_str());
+
+	return outfile;
+}
+
+bool MiscMeshOperators::ConvertVTKToVTU(const char* infile, const char* outfile )
+{
+	std::cout<<"Converting "<<infile <<" to VTU\n";
+	vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+	reader->SetFileName(infile);
+	reader->Update();
+	//vtkPolyData* currentPolydata = reader->GetOutput();
+	// OR: ?!
+	//vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+	//write output
+	vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
+	// OR: ?!
+	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
+	writer->SetFileTypeToBinary();
+	writer->SetFileName(outfile);
+	__SetInput(writer, reader->GetOutput());
+	// OR: ?!
+	//__SetInput(writer, mesh);
+	writer->Write();
+	std::cout<<"VTU file written\n";
+
+	return true;
+}
+
+/*
+bool ConvertVTKToVTU(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh) // is this needed at all?!
+{
+	  // Combine the two data sets
+	  vtkSmartPointer<vtkAppendFilter> appendFilter = vtkSmartPointer<vtkAppendFilter>::New();
+
+	  __AddInput(appendFilter, inputPolyData);
+
+	  appendFilter->Update();
+
+	  outputMesh->DeepCopy(appendFilter->GetOutput());
+
+	 return true;
+}
+*/
+//---------------------------- end of new by Nico on 2014-05-10.
 
 bool MiscMeshOperators::ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile)
 {

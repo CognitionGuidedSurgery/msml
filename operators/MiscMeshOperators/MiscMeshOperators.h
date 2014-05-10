@@ -2,7 +2,7 @@
 
   Program:   The Medical Simulation Markup Language
   Module:    Operators, MiscMeshOperators
-  Authors:   Markus Stoll, Stefan Suwelack
+  Authors:   Markus Stoll, Stefan Suwelack, Nicolai Schoch
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -131,6 +131,10 @@ public:
 	LIBRARY_API  static std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile);
 	LIBRARY_API  static bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile );
 	LIBRARY_API  static bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstructuredGrid* outputMesh);
+
+    LIBRARY_API  static std::string ConvertVTKToVTUPython(std::string infile, std::string outfile); // python: 'convertVTKToVTU()'
+	LIBRARY_API  static bool ConvertVTKToVTU(const char* infile, const char* outfile );
+//	LIBRARY_API  static bool ConvertVTKToVTU(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh); // is this needed at all?!
 
 //	LIBRARY_API static boost::python::list ExtractPointPositionsPython( boost::python::list indices, std::string infile);
 	LIBRARY_API static std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);

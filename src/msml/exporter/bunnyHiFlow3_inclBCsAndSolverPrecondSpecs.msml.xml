@@ -1,0 +1,90 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" type="linearMesh"
+             format="file.vtk"/>
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" type="linearMesh"
+             format="file.vtk"/>
+    </variables>
+    
+    <scene>
+        <object id="bunny">
+            <mesh>
+                <linearTet id="bunnyMesh" mesh="${bunnyVolumeMesher}"/>
+            </mesh>
+
+            <sets>
+                <nodes>
+                    <indexgroup id="constraintRegion1" indices="${bottomToIndexGroup}"/>
+                    <indexgroup id="constraintRegion2" indices="${earsToIndexGroup}"/> <!-- DOES THIS WORK?! -->
+                </nodes>
+                <elements>
+                    <indexgroup id="bodyRegion" indices="${bodyToIndexGroup}"/>
+                </elements>
+                <surfaces>
+                    <indexgroup id="constraintRegionSurfaces1" indices="${bottomToIndexGroup}"/>
+                    <indexgroup id="constraintRegionSurfaces2" indices="${earsToIndexGroup}"/> <!-- DOES THIS WORK?! -->
+                </surfaces>
+            </sets>
+
+            <material>
+                <region id="bunnyMaterial">
+                    <!--<materialRegion name=""> -->
+                    <indexgroup indices="${bodyToIndexGroup}"/> <!-- one material only, otherwise: weak boundaries, X-FEM needed?! -->
+                    <linearElastic youngModulus="300000" poissonRatio="0.35"/> <!-- corresponds to {lambda=259259, mu=111111} -->
+                    <mass density="1070"/> <!-- mass density 1070 kg/m^3 -->
+                </region>
+            </material>
+
+            <constraints>
+                <constraint>
+                    <fixedConstraint name="test" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint name="test2" forStep="${initial}" indices="${earsToIndexGroup}" displacement="{0.0, 0.2, 0.0}"/>
+                </constraint>
+                <!-- <constraint name="test" forStep="${initial}">
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint indices="${earsToIndexGroup}"/> <!MINUSMINUS how to include displacementVector {0.0, 0.2, 0.0} ?! where is this included so far ?! -->
+                <!-- </constraint> -->
+            </constraints>
+
+            <output>
+                <displacement id="liver" timestep="1"/> <!-- what is this used for?! -->
+            </output>
+        </object>
+    </scene>
+
+    <workflow>
+        <mesherTetgen id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}"
+                      surfaceMesh="${input_surf_mesh}" preserveBoundary="0"/>
+
+        <boxROIToIndexOperator id="bodyToIndexGroup"
+                               box="-0.1 0.03 -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"
+                               select="elements"/> <!-- second coord is *(-1) -->
+
+        <boxROIToIndexOperator id="bottomToIndexGroup"
+                               box="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
+                               select="points"/>
+                               
+        <boxROIToIndexOperator id="earsToIndexGroup"
+                               box="-0.1 0.165 -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"
+                               select="points"/>
+                               
+        <!-- <pointOfInterestIndexOperator id="earPointToIndexGroup"
+                                      point="x y z" mesh="${bunnyVolumeMesher}"
+                                      select="points"/> <!MINUSMINUS NEW: point coordinates; is this possible?! --> <!-- how to include external BCdata files?! -->
+        <!-- <pointsWhereForcesAct id="bunnyBackToIndexGroup"
+                              surfacePart="x y z x y z x y z" mesh="${bunnyForceSurfaceMesh}"
+                              select="facets"/> <!MINUSMINUS NEW: facets to be read or rather points on facets?! --> <!-- how to include non-Dirichlet-BCs?! -->
+    </workflow>
+
+    <environment>
+        <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" processingUnit="CPU"
+                timeIntegration="Newmark" dampingRayleighRatioMass="0.0" dampingRayleighRatioStiffness="0.2"/> <!-- NEW -->
+        <simulation>
+            <step name="initial" dt="0.05" iterations="20"/>
+        </simulation>
+    </environment>
+
+</msml:msml>
