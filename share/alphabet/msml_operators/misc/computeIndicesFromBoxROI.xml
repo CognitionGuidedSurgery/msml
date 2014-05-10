@@ -10,24 +10,24 @@
 
     <input>
         <arg name="mesh"
-             type="linearTetMesh, quadraticTetMesh"
-             format="file.vtk"/>
+             logical="linearTetMesh, quadraticTetMesh"
+             physical="file.vtk"/>
         <!--
         <arg name="meshB"
-             type="linearTetMesh, quadraticTetMesh"
-             format="file.vtk"/>
+             logical="linearTetMesh, quadraticTetMesh"
+             physical="file.vtk"/>
              -->
     </input>
 
     <output>
         <arg name="indices"
-             type="indexgroup"
-             format="vector.int"/>
+             logical="indexgroup"
+             physical="vector.int"/>
     </output>
 
     <parameters>
-        <arg name="box" format="vector.float"/>
-        <arg name="select" format="string"/>
+        <arg name="box" physical="vector.float"/>
+        <arg name="select" physical="string"/>
     </parameters>
 
 

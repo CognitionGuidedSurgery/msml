@@ -4,25 +4,24 @@
                xsi:schemaLocation="http://sfb125.de/msml" name="colormesh">
     <runtime>
         <python module="msml.ext.misc"
-                function="colorMeshOperator"/>
+                function="ColorMeshPython"/>
     </runtime>
 
     <input>
         <arg name="mesh"
-             type="linearTetMesh, quadraticTetMesh"
-             format="file.vtk"/>
+             logical="Mesh"
+             physical="vtk"/>
     </input>
 
     <output>
         <arg name="coloredMesh"
-             type="triangularMesh"
-             format="file.vtk"/>
+             logical="triangularMesh"
+             physical="vtk"/>
     </output>
 
     <parameters>
         <arg name="coloredMesh"
-             type="str"
-             format=""/>
+             physical="str"/>
     </parameters>
 
 </msml:operator>

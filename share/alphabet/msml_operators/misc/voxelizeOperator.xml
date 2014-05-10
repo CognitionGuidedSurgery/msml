@@ -2,22 +2,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="voxelize">
 	<runtime>
-		<python module="msml.ext.misc" function="voxelizeSurfaceMesh" />
+		<python module="msml.ext.misc" function="VoxelizeSurfaceMesh" />
 	</runtime>
 
 	<input>
-		<arg name="surfaceMesh" type="triangularMesh" format="file.vtk" />
+		<arg name="surfaceMesh" logical="triangularMesh" physical="vtk" />
 	</input>
 
 	<output>
-		<arg name="image" type="segmentationImage" format="file.vti" />
+		<arg name="image" logical="segmentationImage" physical="vti" />
 	</output>
 	<parameters>
-       <arg name="imageFilename" type="filename" optional="1">
+       <arg name="imageFilename" physical="string" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
       </arg>
-		<arg name="resolution" type="int" />
+		<arg name="resolution" physical="int" />
 	</parameters>
 </msml:operator>

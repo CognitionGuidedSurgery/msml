@@ -33,15 +33,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
 
 using namespace std;
-
-
 
 // ****************************************************************************
 // Defines
@@ -53,55 +49,20 @@ using namespace std;
 #define ELEMENTS_PER_CURVE 0.6;
 #define ELEMENTS_PER_EDGE 0.3;
 
-
-
-// ****************************************************************************
-// VCGOperators
-// ****************************************************************************
-
-
-
 namespace MSML {
-
-
-
-
-class VCGOperators
+namespace VCGOperators
 {
-public:
-	// constructor
-	VCGOperators();
 
-	// destructor
-	~VCGOperators();
+    LIBRARY_API std::string CoarseSurfaceMeshPython(std::string infile,
+                                                    std::string outfile,
+                                                    int numberOfElements);
 
-	// standard class typedefs
+    LIBRARY_API bool CoarseSurfaceMesh(const char* infile,
+                                       const char* outfile,
+                                       unsigned int numberOfElements);
 
-
-	// public methods
-	LIBRARY_API static std::string CoarseSurfaceMeshPython(std::string infile, std::string outfile, int numberOfElements);
-	LIBRARY_API static bool CoarseSurfaceMesh(const char* infile, const char* outfile, unsigned int numberOfElements);
-	
-	// member access
-
-
-protected:
-
-
-
-private:
-	// private methods
-
-
-	// private attributes
-
-
-
-
-
-};
-
-} // end namespace MediAssist
+} // end namespace VCGOperators
+} // end namespace MSML
 
 
 #endif /* __VCGOperators_h */

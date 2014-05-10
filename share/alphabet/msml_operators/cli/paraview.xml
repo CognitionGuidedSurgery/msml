@@ -16,12 +16,10 @@
 </entry>
     </annotation>
 
-
 	<input>
-		<arg name="data" type="mesh" format="file.vtk" />
+		<arg name="data" logical="Mesh" physical="VTK" />
 	</input>
 
     <output>
-
     </output>
 </msml:operator>

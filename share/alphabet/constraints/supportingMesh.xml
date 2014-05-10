@@ -10,15 +10,15 @@
 
 
     <parameters>
-        <arg name="youngModulus">
-            <meta key="doc" value="        homogenous youngModulus  "/>
+        <arg name="youngModulus" physical="float">
+            <meta key="doc" value="homogenous youngModulus  "/>
         </arg>
 
-        <arg name="poissonRatio">
-            <meta key="doc" value="             homogenous poissonRatio  "/>
+        <arg name="poissonRatio" physical="float">
+            <meta key="doc" value="homogenous poissonRatio  "/>
         </arg>
 
-        <arg name="filename">
+        <arg name="filename" physical="string">
             <meta key="doc" value=" filename (TODO: allow @ operator with use data objects)."/>
         </arg>
 

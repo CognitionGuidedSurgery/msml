@@ -10,16 +10,16 @@
     </description>
 
     <parameters>
-        <arg name="time">
+        <arg name="time" physical="float">
             <meta key="doc" value="Set time."/>
         </arg>
-        <arg name="indices">
+        <arg name="indices" physical="vector.int">
             <meta key="doc" value="Set indices of fixed points separated by spaces."/>
 
         </arg>
 
 
-        <arg name="displacement">
+        <arg name="displacement" physical="vector.int">
             <meta key="doc" value="State the displacement of the point."/>
         </arg>
     </parameters>

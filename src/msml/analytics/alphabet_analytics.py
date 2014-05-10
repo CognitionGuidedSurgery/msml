@@ -37,82 +37,7 @@ __author__ = 'Alexander Weigl'
 __date__ = "2014-03-19"
 
 import jinja2
-
-
-RST_TEMPLATE = """
-.. role:: red
-.. raw:: html
-
-    <style> .red {color:red} </style>
-
-Version: {{ time }}
-
-**Operatoren:** {% for name in alphabet.operators %} {{ name }}_ {% endfor %}
-
-**Elemente:** {% for name in alphabet.object_attributes %} {{ name }}_ {% endfor %}
-
-
-Operatoren
----------------------------------------
-
-{% for name, operator in alphabet.operators.items() %}
-
-{{ name }}
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-{% if "doc" in operator.meta %}
-{{ operator.meta["doc"] | indent }}
-{% else %}
-:red:`DOCUMENTATION MISSING`
-{% endif %}
-
-{{ operator|runtime }}
-
-*Inputs:*
-
-{{ operator.input.values()|rsttable }}
-
-*Output:*
-
-{{ operator.output.values()|rsttable }}
-
-*Parameters:*
-
-{{ operator.parameters.values()|rsttable }}
-
-
-*Annotations:*
-
-{% for k,v in operator.meta.items() %}
-{{ k }}
-{{ v|indent }}
-{% endfor %}
-
-
-{% endfor %}
-
-
-Attributes
----------------------------------------
-
-{% for name, attrib in alphabet.object_attributes.items() %}
-
-.. _{{name}}:
-
-{{ name }} ``{{ attrib|type }}``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-    {{ attrib.description }}
-
-
-{{ attrib.parameters.values()|rsttable}}
-
-{% endfor %}
-
-
-
-"""
-
+import os.path
 import msml.env
 import msml.frontend
 from StringIO import StringIO
@@ -128,7 +53,7 @@ def export_alphabet_overview_rst(alphabet=None):
         ljust = lambda x: str(x)[:14].ljust(justify)
         return ' '.join(map(ljust, p))
 
-    def rsttable(seq, fields = "name,type,format,sort,required,default,doc"):
+    def rsttable(seq, fields = "name,physical_type,logical_type,sort,required,default,doc"):
         def get(obj, key):
             try:
                 return getattr(obj, key)
@@ -207,13 +132,13 @@ def export_alphabet_overview_rst(alphabet=None):
         t = type(obj)
         return t.__name__
 
-    jenv = jinja2.Environment()
+    jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
     #jenv.filters['table'] = table
     jenv.filters['rsttable'] = rsttable
     jenv.filters['type'] = typename
     jenv.filters['indent'] = indent
     jenv.filters['runtime'] = oerator_runtime
-    template = jenv.from_string(RST_TEMPLATE)
+    template = jenv.get_template("alphabet_doc.tpl")
 
     import datetime
 
@@ -299,7 +224,7 @@ class TypeValidator(ArgumentValidator):
         self.identifier = 1
 
     def _check_argument(self, l,  arg):
-        if arg.type is None or arg.type == "":
+        if arg.physical_type is None or arg.physical_type == "":
             l.append(ReportEntry(
                 level = self.level, element = self.element.name, id=self.identifier,
                 attr=self._attrib, argument= arg.name, msg = "type is None or an empty string"))

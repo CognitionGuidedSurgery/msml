@@ -10,15 +10,15 @@
 
 
     <parameters>
-        <arg name="time">
+        <arg name="time" physical="int">
             <meta key="doc" value="Set time  "/>
         </arg>
 
-        <arg name="indices">
+        <arg name="indices" physical="int">
             <meta key="doc" value="Set indices of fixed points separated by spaces."/>
         </arg>
 
-        <arg name="pressure">
+        <arg name="pressure" physical="int">
             <meta key="doc" value="	State the pressure of the triangle."/>
         </arg>
 

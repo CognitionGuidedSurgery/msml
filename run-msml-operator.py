@@ -25,7 +25,7 @@ def build_argparse():
                                         help=op.meta.get('doc'))
 
         for i in chain(op.input.values(), op.parameters.values()):
-            isinstance(i, Argument)
+            isinstance(i, Slot)
             op_args.add_argument("--%s" % i.name,
                                  help="wait for merge",
                                  default=i.default)

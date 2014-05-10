@@ -3,10 +3,10 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="3Dircadb0101Labeled.vtk" type="linearMesh"
-             format="file.vtk"/>
-        <var name="input_image" value="3Dircadb0101Labeled.vti" type="linearMesh"
-             format="file.vtk"/>
+        <var name="input_vol_mesh" value="3Dircadb0101Labeled.vtk" logical="linearMesh"
+             physical="file.vtk"/>
+        <var name="input_image" value="3Dircadb0101Labeled.vti" logical="linearMesh"
+             physical="file.vtk"/>
     </variables>
 
     <scene>
@@ -28,16 +28,16 @@
             </sets>
 
             <material>
-                <region id="Material">
-                    <!--<materialRegion name=""> -->
-                    <indexgroup indices="${bodyToIndexGroup}"/>
+                <region id="Material" indices="${bodyToIndexGroup}">
                     <linearElastic youngModulus="80000" poissonRatio="0.49"/>
                     <mass density="0.10"/>
                 </region>
             </material>
 
             <constraints>
-		<fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}" />               
+                <constraint>
+		            <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}" />
+                </constraint>
             </constraints>
 
             <output>

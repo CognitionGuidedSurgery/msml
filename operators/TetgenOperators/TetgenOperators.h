@@ -40,57 +40,18 @@
 
 
 using namespace std;
-//using namespace MediAssist;
-
-
 
 
 // ****************************************************************************
 // TetgenOperators
 // ****************************************************************************
 
-
 namespace MSML {
-
-
-
-
-class TetgenOperators
-{
-public:
-	// constructor
-	TetgenOperators();
-
-	// destructor
-	~TetgenOperators();
-
-	// standard class typedefs
-
-
-	// public methods
-	LIBRARY_API static bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic );
-	LIBRARY_API static std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary);
-	LIBRARY_API static bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
-
-	// member access
-
-
-protected:
-
-
-
-private:
-	// private methods
-
-
-	// private attributes
-
-
-
-
-
-};
-
+    namespace Tetgen {
+    LIBRARY_API bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic );
+    LIBRARY_API std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary);
+    LIBRARY_API bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
+    } //end namespace Tetgen
 } // end namespace MediAssist
 
 

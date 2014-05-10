@@ -5,9 +5,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -33,13 +33,13 @@
 """
 
 from collections import namedtuple
-
 import re
 import warnings
+
 from path import path
 
-from .exceptions import *
-
+from msml.exceptions import *
+from ..sorts import conversion
 
 
 
@@ -66,7 +66,8 @@ def xor(l):
     >>> xor(l3)
     True
     """
-    return reduce(lambda x,y: x ^ y,map(bool, l), False)
+    return reduce(lambda x, y: x ^ y, map(bool, l), False)
+
 
 Argument = namedtuple('Argument', 'name,format,type,required')
 
@@ -78,7 +79,7 @@ class struct(dict):
             return struct(a)
         return a
 
-    #    __getattr__= dict.__getitem__
+    # __getattr__= dict.__getitem__
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
@@ -89,9 +90,6 @@ def structure(name, field_names):
             self.__dict__.update(kwargs)
 
     return type(name, (_allset,), {f: None for f in field_names.split('[ ,]')})
-
-
-#Edge = namedtuple("Edge", "inarg outarg");
 
 
 class MSMLFile(object):
@@ -165,6 +163,7 @@ class MSMLFile(object):
 
     def lookup(self, ref, outarg=True):
         "lookup a reference, consists of task id and output arg"
+
         def lookup_exporter():
             return self._exporter.lookup(ref, outarg)
 
@@ -298,38 +297,38 @@ class MSMLEnvironment(object):
         self.simulation = MSMLEnvironment.Simulation()
         self.solver = MSMLEnvironment.Solver()
 
+from ..log import report
 
 class MSMLVariable(object):
-    def __init__(self, name, format=None, typ=None, value=None):
+    def __init__(self, name, physical=None, logical=None, value=None):
         self.name = name
-        self.format = format
-        self.type = typ
+        self.physical_type = physical
+        self.logical_type = logical
         self.value = value
-        self.sort = None
 
-        self._find_sort()
+        if not self.physical_type and self.value:
+            self.physical_type = type(self.value)
 
-    def _find_sort(self):
-        if self.value is not None:
-            self.type = type(self.value)
-            self.sort = self.type
-        elif self.format is not None and self.type is not None:
-            self.sort = get_sort(self.format + self.type)
-        elif self.format:
-            self.sort = get_sort(self.format)
-        elif self.type:
-            self.sort = get_sort(self.type)
-        else:
-            self.sort = get_sort('*')
+        if not self.physical_type:
+            s = 'Try to initialize a variable without physical type and value'
+            report(s, 'F', 666)
+            raise MSMLError(s)
 
-    def _dot(self):
-        return {'label': self.name, 'color': 'orange'}
+        self.\
+            sort = get_sort(self.physical_type, self.logical_type)
+        if not isinstance(self.value, self.sort.physical):
+            report("Need convert value of %s" % self, 'I',6161)
+            from_type = type(self.value)
+            converter = conversion(from_type, self.sort)
+            self.value = converter(self.value)
+
+
 
     def __str__(self):
-        return "Var '%s' (%s)" % (self.name, self.sort)
+        return "<var %s : %s = %s>" % (self.name, self.sort, self.value)
 
     def __repr__(self):
-        return "MSMLVariable(%s,%s,%s)" % (self.name, self.format, self.type)
+        return "MSMLVariable(%s,%s,%s)" % (self.name, self.physical_type, self.logical_type)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -339,6 +338,7 @@ class MSMLVariable(object):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self._find_sort()
+
 
 
 class MSMLFileVariable(object):
@@ -364,11 +364,21 @@ class MSMLFileVariable(object):
 
 
 class Constant(object):
+    """A `constant` value within attribute values.
+    """
+
     def __init__(self, value):
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self):
+        """the value of this constant, readonly """
+        return self._value
 
 
 class Reference(object):
+    """Describes a connection from an *input slot* to an *output slot*.
+    """
     ref = namedtuple("ref", "task,name,arginfo")
 
     def __init__(self, task, out=None):
@@ -380,19 +390,27 @@ class Reference(object):
 
     @property
     def linked(self):
-        return self.linked_to and self.linked_from
+        """ Returns True iff. the Reference is closed iff. input and output slot found and set.
+        :return: bool
+        """
+        return self.linked_to is not None and self.linked_from is not None
 
-    def link_from_task(self, task, outarg):
-        self.linked_from = Reference.ref(task, outarg.name, outarg)
+    @property
+    def valid(self):
+        """ Returns True iff. the input and output slot are physical type compatible
+        :return: bool
+        """
+        return self.linked and self.linked_from.arginfo.sort <= self.linked_to.arginfo.sort
+
+    def link_from_task(self, task, slot):
+        self.linked_from = Reference.ref(task, slot.name, slot)
 
     def link_from_variable(self, variable):
         self.linked_from = Reference.ref(variable, variable.name, variable)
 
-    def link_to_task(self, task, inarg):
-        self.linked_to = Reference.ref(task, inarg.name, inarg)
+    def link_to_task(self, task, slot):
+        self.linked_to = Reference.ref(task, slot.name, slot)
 
-    def validate(self):
-        pass
 
     def __str__(self):
         def _id(a):
@@ -402,13 +420,20 @@ class Reference(object):
                 return a.name
 
         if self.linked:
-            return "{Ref+: %s.%s -> %s.%s}" % (
-                _id(self.linked_from.task), self.linked_from.name, _id(self.linked_to.task), self.linked_to.name)
+            return "<Reference+: %s -> %s>" % (self.linked_to.arginfo, self.linked_to.arginfo)
+
         else:
-            return "{Ref-: %s.%s}" % (self.task, self.slot)
+            return "<Reference-: %s.%s>" % (self.task, self.slot)
 
 
 def parse_attribute_value(value):
+    """Parse attribute values:
+    >>> parse_attribute_value("${abc}") # => Reference
+    >>> parse_attribute_value("abc") # => Constant
+
+    :param str value: value of a xml attribute
+    :return: Constant | Reference
+    """
     if isinstance(value, str):
         expr = re.match(r'\${([^.]+)(\.[^.]+)?}', value)
         if expr:
@@ -417,17 +442,33 @@ def parse_attribute_value(value):
                 b = expr.group(2).strip(".")
             except:
                 b = None
-            return Reference(a,b)
+            return Reference(a, b)
     return Constant(value)
 
 
 def random_var_name():
-    import random
+    """generate a random variable name
+    :return: str
+    """
+    random_var_name.current_number += 1
+    return "_gen_%03d_" % random_var_name.current_number
 
-    return "_gen_%d_" % random.randint(100, 999)
+
+random_var_name.current_number = 0  #start with zero
+
+
+def is_generated_name(name):
+    """True iff. the given `name` is a generated name
+    :param str name:
+    :return: bool
+    """
+    return name.startswith("_gen_")
 
 
 class Task(object):
+    """
+
+    """
     ID_ATTRIB = "id"
 
     def __init__(self, name, attrib):
@@ -478,15 +519,15 @@ class Task(object):
 
                     self.arguments[key] = value
                 else:
-                    warnings.warn("Lookup after %s does not succeeded" % value)
+                    report("Lookup after %s does not succeeded" % value, 'E')
             elif isinstance(value, Constant):
-                var = MSMLVariable(random_var_name(), value=value.value);
+                var = MSMLVariable(random_var_name(), value=value.value)
                 # get type and format from input/parameter
 
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
                 if slot:
-                    var.type = slot.type
-                    var.format = slot.format
+                    var.logical_type = slot.logical_type
+                    var.physical_type = slot.physical_type
 
                 msmlfile.add_variable(var)
                 ref = Reference(var.name, None)
@@ -730,18 +771,20 @@ class IndexGroup(object):
 
 
 class Mesh(object):
+    """
+
+    """
+
     def __init__(self, type="linear", id=None, mesh=None):
         self.type = type
         self.id = id
         self.mesh = mesh
 
 
-class MaterialRegion(list):
-    def __init__(self, id, elements=None):
-        self.id = id
-        list.__init__(self, elements if elements else [])
+class MaterialRegion(IndexGroup, list):
+    """
 
-    def get_indices(self):
-        for ele in self:
-            if ele.attributes['__tag__'] == 'indexgroup':
-                return ele
+    """
+    def __init__(self, id, indices, elements=None):
+        IndexGroup.__init__(self, id, indices)
+        list.__init__(self, elements if elements else [])

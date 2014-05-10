@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -31,7 +31,6 @@ __author__ = 'Alexander Weigl'
 import warnings
 
 import lxml.etree as ET
-
 from ..model import *
 
 
@@ -73,8 +72,6 @@ class Exporter(object):
                     return self, ExporterOutputVariable(obj)
 
 
-
-
     def gather_output(self):
         """
         finds all variables that is provided by the exporter
@@ -88,8 +85,8 @@ class Exporter(object):
                 tag = out.attributes['__tag__']
                 id = out.attributes['id']
 
-                fmt = None
-                typ = "*"
+                fmt = object
+                typ = object
 
                 if id in self._output_types_for_tags:
                     typ, fmt = self._output_types_for_tags[id]
@@ -104,33 +101,35 @@ class Exporter(object):
         :return:
         '''
 
-        indexgroups_arg = Argument("indices", 'indices')
-
         for scene_obj in self._msml_file.scene:
             assert isinstance(scene_obj, SceneObject)
 
-            self._input['mesh'] = (parse_attribute_value(scene_obj.mesh.mesh), Argument('mesh', 'mesh'))
+            self._input['mesh'] = Slot('mesh', 'VTK', 'Mesh', required=True,
+                                       default=parse_attribute_value(scene_obj.mesh.mesh), parent=self)
 
             for i, ig in enumerate(scene_obj.sets.nodes +
                     scene_obj.sets.elements +
                     scene_obj.sets.surfaces):
-                self._input['sets_%d' % i] = (parse_attribute_value(ig.indices), indexgroups_arg)
+                self._input['sets_%d' % i] = Slot('sets_%d' % i, 'vector.int', 'Indices',
+                                                  default=parse_attribute_value(ig.indices), parent=self)
 
             for mr in scene_obj.material:
-                ind = mr.get_indices().attributes['indices']
-                self._input['mr_%s_indexgroup' % mr.id] = (parse_attribute_value(ind), indexgroups_arg)
+                ind = mr.indices
+                self._input['mr_%s_indexgroup' % mr.id] = Slot('mr_%s_indexgroup' % mr.id, 'vector.int',
+                                                               default=parse_attribute_value(ind), parent=self)
 
 
     def link(self):
         self.arguments = {}
-        for key, (value, arginfo) in self._input.iteritems():
+        for key, slot in self._input.iteritems():
+            value = slot.default
             if isinstance(value, Reference):
-                a = self._msml_file.lookup(value)
-                if a:
-                    outtask, outarg = a
+                opposite = self._msml_file.lookup(value)
+                if opposite:
+                    outtask, outarg = opposite
                     value.link_from_task(outtask, outarg)
                     try:
-                        value.link_to_task(self, arginfo)
+                        value.link_to_task(self, slot)
                     except KeyError, e:
                         f = str(var)
                         t = str(self.name)
@@ -153,7 +152,7 @@ class Exporter(object):
                 ref.link_from_task(outtask, outarg)
 
                 try:
-                    ref.link_to_task(self, self._input[key])
+                    ref.link_to_task(self, self._input[key][1])
                 except ImportError, e:
                     f = str(var)
                     t = str(self.name)
@@ -168,7 +167,7 @@ class Exporter(object):
 
                 self.arguments[key] = ref
             else:
-                raise MSMLError("no case %s : %s " % (value, str(type(value))))
+                raise MSMLError("no case %s : %s " % (key, str(type(value))))
 
 
     def init_exec(self, executer):
@@ -191,9 +190,9 @@ class Exporter(object):
         "should execute the external tool and set the memory"
         pass
 
-    def evaluate_node(self,expression):
-        if((expression[0:2]=='${')&(expression[-1]=='}') ):
-            #in this case, get value from workflow
+    def evaluate_node(self, expression):
+        if ((expression[0:2] == '${') & (expression[-1] == '}') ):
+            # in this case, get value from workflow
             resultNode = self._memory._internal[expression[2:-1]]
             if isinstance(resultNode, basestring):
                 resultExpression = resultNode
@@ -208,29 +207,3 @@ class Exporter(object):
 class XMLExporter(Exporter):
     def render(self):
         scene = self._mfile.scene
-
-def dict_to_xml(d, parent_node=None, tag_name="__tag__"):
-    if isinstance(d, dict):
-        tag = d[tag_name]
-        del d[tag_name]
-
-        if parent_node is not None:
-            element = ET.SubElement(parent_node, tag)
-        else:
-            element = ET.Element(tag)
-
-        for k, v in d.items():
-            if isinstance(v, list) and isinstance(v[0], dict):
-                for a in v:
-                    element.append(dict_to_xml(a, element))
-            else:
-                element.attrib[k] = unicode(v)
-
-        return element
-    return None
-
-def dictxml(**kwargs):
-    return dict_to_xml(kwargs)
-
-if __name__ == '__main__':
-    print dictxml(__tag__ = 'root', a = 1, b = 'abc', c = 3.2)

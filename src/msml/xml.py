@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -33,6 +33,7 @@
 from __future__ import print_function
 
 from lxml import etree
+
 from path import path
 
 from msml.model import *
@@ -49,13 +50,13 @@ def load_alphabet(folder=None, file_list=None):
     """
     Load and build the Alphabet
 
+    :param folder: a name of a folder
+    :type folder: str or path.path
 
-    Args:
-      folder (str,path): a name of an folder
-      file_list (list): list of file names
+    :param list file_list: list of file names
 
-    Returns:
-      Alphabet: an alphabet object, not validated
+    :return: an alphabet object, not validated
+    :rtype: Alphabet
     """
     if not file_list:
         file_list = []
@@ -64,7 +65,7 @@ def load_alphabet(folder=None, file_list=None):
         folder = path(folder)
         file_list += folder.walkfiles("*.xml")
 
-    d = lambda x: xmldom(x.abspath(), "a.xsd")#Enable xsd
+    d = lambda x: xmldom(x.abspath(), "a.xsd")  # Enable xsd
     docs = map(d, file_list)
     results = map(parse_file, docs)
     return Alphabet(results)
@@ -97,6 +98,7 @@ def parse_file(R):
 
 def get_default_scheme():
     return path(__file__).dirname() / "msml.xsd"
+
 
 def xmldom(files, schema=None):
     if not schema:
@@ -181,14 +183,14 @@ def msml_file_factory(msml_node):
         for n_var in var_node.iterchildren():
             get = lambda x: _except_none(n_var.attrib, x)
             name = get('name')
-            format = get('format')
-            type = get('type')
+            physical = get('physical')
+            logical = get('logical')
 
             if _tag_name(n_var.tag) == 'var':
-                v = MSMLVariable(name, format, type, get('value'))
+                v = MSMLVariable(name, physical, logical, get('value'))
 
             if _tag_name(n_var.tag) == 'file':
-                v = MSMLFileVariable(name, format, type, get('location'))
+                v = MSMLFileVariable(name, physical, logical, get('location'))
 
             vars.append(v)
         return vars
@@ -292,9 +294,9 @@ def msml_file_factory(msml_node):
                 return list()
 
             def _parse_region(reg_node):
-                ident = _attributes(reg_node, 'id')
+                ident, ind = _attributes(reg_node, ['id','indices'])
                 elements = list(_parse_elements(reg_node))
-                return MaterialRegion(ident, elements)
+                return MaterialRegion(ident, ind,elements)
 
             return map(_parse_region, mat_node.iterchildren())
 
@@ -403,22 +405,22 @@ def _parse_entry_list(nodelist):
     return d
 
 
-def _argument_sets(node, as_ordered_dict=False):
+def _argument_sets(node, parent=None, as_ordered_dict=False):
     def _parse_arg(node):
-        n, f, t, r, d = _attributes(node, 'name, format, type, required, default', required=True)
+        n, p, l, r, d = _attributes(node, 'name, physical, logical, required, default', required=True)
         meta = _parse_entry_list(node.iterchildren())
-        arg = Argument(n, f, t, bool(int(r)), d, meta)
+        arg = Slot(n, p, l, bool(int(r)), d, meta, parent)
         return arg
 
-    def _parse_struct(node):
-        get = lambda k: _except_none(node.attrib, k)
-        return StructArgument(get('name'), _argument_sets(node))
+    # def _parse_struct(node):
+    # get = lambda k: _except_none(node.attrib, k)
+    # return StructArgument(get('name'), _argument_sets(node))
 
     def _parse_subelements(node):
         if node.tag == 'arg':
             return _parse_arg(node)
-        elif node.tag == 'struct':
-            return _parse_struct(node)
+        #        elif node.tag == 'struct':
+        #            return _parse_struct(node)
         else:
             raise BaseException("unexpecting element")
 
@@ -464,42 +466,47 @@ def operator_factory(operator_node):
     n_annotation = operator_node.find('annotation')
 
     runtime = runtime_factory(n_runtime)
-    input = _argument_sets(n_input)
-    output = _argument_sets(n_output)
-    parameters = _argument_sets(n_parameters)
-    meta = keyval_factory(n_annotation)
-
     op_classes = {'python': PythonOperator,
                   'sh': ShellOperator,
                   'so': SharedObjectOperator, }
-
     factory = op_classes[runtime['exec']]
 
-    return factory(
-        name=name,
-        input=input,
-        output=output,
-        parameters=parameters,
-        meta=meta,
-        runtime=runtime)
+    op = factory(name=name, runtime=runtime)
+
+    input = _argument_sets(n_input, op, True)
+    output = _argument_sets(n_output, op, True)
+    parameters = _argument_sets(n_parameters, op, True)
+    meta = keyval_factory(n_annotation)
+
+    op.input = input
+    op.output = output
+    op.parameters = parameters
+    op.meta = meta
+
+    return op
 
 
 def element_factory(element_node):
     name = element_node.attrib['name']
     quantity = element_node.attrib['quantity']
     category = element_node.attrib['category']
+    clazz = ObjectAttribute.find_class(category)
+
+    obj = clazz(name=name, quantity=quantity)
 
     description = element_node.find('description').text.strip()
 
     input_node = element_node.find('input')
     parameter_node = element_node.find('parameters')
 
-    input = _argument_sets(input_node, True)
-    parameters = _argument_sets(parameter_node, True)
+    input = _argument_sets(input_node, obj, True)
+    parameters = _argument_sets(parameter_node, obj, True)
 
-    clazz = ObjectAttribute.find_class(category)
+    obj.input = input
+    obj.parameters = parameters
+    obj.description = description
 
-    return clazz(name=name, quantity=quantity, description=description, parameters=parameters, inputs=input)
+    return obj
 
 
 _parse_hooks = {'operator': operator_factory, 'element': element_factory}

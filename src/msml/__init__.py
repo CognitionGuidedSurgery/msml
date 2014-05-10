@@ -35,11 +35,8 @@ Your way to automagically 3D model simulation.
 
 """
 
-
-# __all__ = []
-
 __author__ = "Markus Stoll, Stefan Suwelack, Alexander Weigl"
-__version__ = "0.1alpha"
+__version__ = "0.2alpha"
 __date__ = "2013-12-13"
 
 

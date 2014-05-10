@@ -21,7 +21,7 @@
                      type="msml:annotation_t">
             </element>
         </all>
-        <attribute name="name" type="string" use="required"></attribute>
+        <attribute name="name" type="string" use="required"/>
     </complexType>
 
     <complexType name="struct_t">
@@ -30,9 +30,9 @@
                      maxOccurs="unbounded">
             </element>
         </sequence>
-        <attribute name="name" type="string"></attribute>
+        <attribute name="name" type="string"/>
         <attribute name="optional" type="boolean" use="optional"
-                   default="0"></attribute>
+                   default="0"/>
     </complexType>
 
     <complexType name="arg_t">
@@ -52,12 +52,12 @@
                      minOccurs="0">
             </element>
         </sequence>
-        <attribute name="name" type="string" use="required"></attribute>
-        <attribute name="type" type="string" use="optional"></attribute>
-        <attribute name="format" type="string"></attribute>
+        <attribute name="name" type="string" use="required"/>
+        <attribute name="physical" type="string" use="required"/>
+        <attribute name="logical" type="string" use="optional"/>
         <attribute name="optional" type="boolean" use="optional"
-                   default="0"></attribute>
-        <attribute name="default" type="string" use="optional"></attribute>
+                   default="0"/>
+        <attribute name="default" type="string" use="optional"/>
     </complexType>
 
 
@@ -71,7 +71,7 @@
 
         <simpleContent>
             <extension base="string">
-                <attribute name="value" type="string" use="optional"></attribute>
+                <attribute name="value" type="string" use="optional"/>
                 <attribute name="key" use="required"/>
             </extension>
         </simpleContent>
@@ -82,22 +82,22 @@
         <choice minOccurs="1" maxOccurs="1">
             <element name="python">
                 <complexType>
-                    <attribute name="module" type="string" use="required"></attribute>
-                    <attribute name="function" type="string" use="required"></attribute>
+                    <attribute name="module" type="string" use="required"/>
+                    <attribute name="function" type="string" use="required"/>
                 </complexType>
             </element>
             <element name="sh">
                 <complexType>
                     <attribute name="file" type="string" use="required">
                     </attribute>
-                    <attribute name="wd" type="string" use="required"></attribute>
-                    <attribute name="template" type="string"></attribute>
+                    <attribute name="wd" type="string" use="required"/>
+                    <attribute name="template" type="string"/>
                 </complexType>
             </element>
             <element name="so">
                 <complexType>
-                    <attribute name="file" type="string" use="required"></attribute>
-                    <attribute name="symbol" type="string" use="required"></attribute>
+                    <attribute name="file" type="string" use="required"/>
+                    <attribute name="symbol" type="string" use="required"/>
                 </complexType>
             </element>
         </choice>
@@ -106,13 +106,13 @@
     <complexType name="setofparameters_t">
         <sequence minOccurs="0" maxOccurs="unbounded">
             <choice minOccurs="1" maxOccurs="1">
-                <element name="arg" type="msml:arg_t"></element>
-                <element name="struct" type="msml:struct_t"></element>
+                <element name="arg" type="msml:arg_t"/>
+                <element name="struct" type="msml:struct_t"/>
             </choice>
         </sequence>
     </complexType>
 
-    <element name="operator" type="msml:operator_t"></element>
+    <element name="operator" type="msml:operator_t"/>
 
 
     <element name="msml" type="msml:msml_t">
@@ -120,9 +120,9 @@
 
     <complexType name="everything_t">
         <sequence>
-            <any processContents="skip" minOccurs="0"></any>
+            <any processContents="skip" minOccurs="0"/>
         </sequence>
-        <anyAttribute processContents="skip"></anyAttribute>
+        <anyAttribute processContents="skip"/>
     </complexType>
 
     <complexType name="object_t">
@@ -145,13 +145,13 @@
                     <element name="output" minOccurs="0" maxOccurs="1">
                         <complexType>
                             <sequence>
-                                <any processContents="lax"></any>
+                                <any processContents="lax"/>
                             </sequence>
-                            <anyAttribute></anyAttribute>
+                            <anyAttribute/>
                         </complexType>
                     </element>
                 </all>
-                <attribute name="id" type="string"></attribute>
+                <attribute name="id" type="string"/>
             </extension>
         </complexContent>
     </complexType>
@@ -161,8 +161,8 @@
             <extension base="msml:node_t">
                 <sequence>
                     <choice>
-                        <element name="group" type="msml:group_t"></element>
-                        <element name="object" type="msml:object_t"></element>
+                        <element name="group" type="msml:group_t"/>
+                        <element name="object" type="msml:object_t"/>
                     </choice>
                 </sequence>
             </extension>
@@ -170,7 +170,7 @@
 
     </complexType>
 
-    <complexType name="node_t"></complexType>
+    <complexType name="node_t"/>
 
     <complexType name="scene_t">
         <complexContent>
@@ -187,31 +187,31 @@
     <complexType name="element_t">
         <sequence>
             <element name="description" type="string" minOccurs="1"
-                     maxOccurs="1"></element>
+                     maxOccurs="1"/>
             <element name="parameters" type="msml:setofparameters_t"
-                     minOccurs="0" maxOccurs="1"></element>
+                     minOccurs="0" maxOccurs="1"/>
             <element name="inputs" type="msml:setofparameters_t"
-                     minOccurs="0"></element>
+                     minOccurs="0"/>
         </sequence>
-        <attribute name="name" type="string"></attribute>
+        <attribute name="name" type="string"/>
         <attribute use="required" name="category">
             <simpleType>
                 <restriction base="string">
-                    <enumeration value="constraint"></enumeration>
-                    <enumeration value="mesh"></enumeration>
-                    <enumeration value="basic"></enumeration>
-                    <enumeration value="indexgroup"></enumeration>
-                    <enumeration value="material"></enumeration>
+                    <enumeration value="constraint"/>
+                    <enumeration value="mesh"/>
+                    <enumeration value="basic"/>
+                    <enumeration value="indexgroup"/>
+                    <enumeration value="material"/>
                 </restriction>
             </simpleType>
         </attribute>
         <attribute use="required" name="quantity">
-            <!-- <simpleType> <restriction base="anySimpleType"> <enumeration value="single"></enumeration>
+            <!-- <simpleType> <restriction base="anySimpleType"> <enumeration value="single"/>
                 </simpleType> </restriction> -->
             <simpleType>
                 <restriction base="string">
-                    <enumeration value="single"></enumeration>
-                    <enumeration value="multi"></enumeration>
+                    <enumeration value="single"/>
+                    <enumeration value="multi"/>
                 </restriction>
             </simpleType>
         </attribute>
@@ -226,26 +226,25 @@
                                 <complexType>
                                     <attribute use="required" name="name" type="string">
                                     </attribute>
-                                    <attribute name="value" type="string"></attribute>
-                                    <attribute name="type" type="string"></attribute>
-                                    <attribute use="optional" name="format" type="string">
-                                    </attribute>
+                                    <attribute name="value" type="string"/>
+                                    <attribute use="optional" name="physical" type="string"/>
+                                    <attribute use="optional" name="logical" type="string"/>
                                 </complexType>
                             </element>
                             <element name="file">
                                 <complexType>
-                                    <attribute use="required" name="name" type="string"></attribute>
-                                    <attribute name="location" type="string"></attribute>
-                                    <attribute name="type" type="string"></attribute>
-                                    <attribute use="optional" name="format" type="string"></attribute>
+                                    <attribute use="required" name="name" type="string"/>
+                                    <attribute name="location" type="string"/>
+                                    <attribute name="type" type="string"/>
+                                    <attribute use="optional" name="format" type="string"/>
                                 </complexType>
                             </element>
                         </choice>
                     </sequence>
                 </complexType>
             </element>
-            <element name="scene" type="msml:scene_t" minOccurs="0"></element>
-            <element name="workflow" type="msml:workflow_t" minOccurs="0"></element>
+            <element name="scene" type="msml:scene_t" minOccurs="0"/>
+            <element name="workflow" type="msml:workflow_t" minOccurs="0"/>
             <element name="environment" minOccurs="0" maxOccurs="1"
                      type="msml:environment_t">
             </element>
@@ -253,7 +252,7 @@
     </complexType>
     <complexType name="annotation_t">
         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element name="entry" type="msml:keyvalue_t"></element>
+            <element name="entry" type="msml:keyvalue_t"/>
         </sequence>
     </complexType>
 
@@ -269,15 +268,15 @@
                     <attribute use="optional" default="CPU" name="processingUnit">
                         <simpleType>
                             <restriction base="string">
-                                <enumeration value="CPU"></enumeration>
-                                <enumeration value="GPU"></enumeration>
+                                <enumeration value="CPU"/>
+                                <enumeration value="GPU"/>
                             </restriction>
                         </simpleType>
                     </attribute>
                     <attribute name="linearSolver">
                         <simpleType>
                             <restriction base="string">
-                                <enumeration value="iterativeCG"></enumeration>
+                                <enumeration value="iterativeCG"/>
                             </restriction>
                         </simpleType>
                     </attribute>
@@ -311,7 +310,7 @@
                                 <attribute name="iterations">
                                     <simpleType>
                                         <restriction base="int">
-                                            <minExclusive value="0"></minExclusive>
+                                            <minExclusive value="0"/>
                                         </restriction>
                                     </simpleType>
                                 </attribute>
@@ -325,12 +324,12 @@
 
     <complexType name="body_t">
         <sequence minOccurs="0" maxOccurs="unbounded">
-            <any processContents="lax"></any>
+            <any processContents="lax"/>
         </sequence>
-        <anyAttribute></anyAttribute>
+        <anyAttribute/>
     </complexType>
 
-    <complexType name="material_type"></complexType>
+    <complexType name="material_type"/>
 
     <complexType name="material_t">
         <sequence minOccurs="0" maxOccurs="unbounded">
@@ -338,15 +337,15 @@
                 <complexType>
                     <sequence minOccurs="1" maxOccurs="unbounded">
                         <choice>
-                            <!-- <element name="indexgroup" type="msml:indexgroup_t"></element> -->
-                            <any processContents="lax"></any>
+                            <any processContents="skip"/>
                         </choice>
                     </sequence>
-                    <attribute name="id" type="string"></attribute>
+                    <attribute name="id" type="string" use="required"/>
+                    <attribute name="indices" type="string" use="required"/>
                 </complexType>
             </element>
         </sequence>
-        <anyAttribute></anyAttribute>
+        <anyAttribute/>
     </complexType>
 
     <complexType name="constraints_t">
@@ -354,10 +353,10 @@
             <element name="constraint" minOccurs="1" maxOccurs="unbounded">
                 <complexType>
                     <sequence>
-                        <any minOccurs="0" maxOccurs="unbounded" processContents="lax"></any>
+                        <any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
                     </sequence>
-                    <attribute name="name" type="string"></attribute>
-                    <attribute name="forStep" type="string"></attribute>
+                    <attribute name="name" type="string"/>
+                    <attribute name="forStep" type="string"/>
                 </complexType>
             </element>
         </sequence>
@@ -365,36 +364,36 @@
 
     <complexType name="mesh_t">
         <choice minOccurs="1" maxOccurs="1">
-            <element name="linearTet" type="msml:mesh_sub_t"></element>
-            <element name="quadraticTet" type="msml:mesh_sub_t"></element>
-            <element name="triangularTet" type="msml:mesh_sub_t"></element>
+            <element name="linearTet" type="msml:mesh_sub_t"/>
+            <element name="quadraticTet" type="msml:mesh_sub_t"/>
+            <element name="triangularTet" type="msml:mesh_sub_t"/>
         </choice>
     </complexType>
 
     <complexType name="mesh_sub_t">
-        <attribute name="mesh" type="string"></attribute>
-        <attribute name="id" type="string"></attribute>
+        <attribute name="mesh" type="string"/>
+        <attribute name="id" type="string"/>
     </complexType>
 
     <complexType name="sets_t">
         <sequence>
             <element name="nodes" type="msml:list_of_indexgroups_t"
-                     minOccurs="0" maxOccurs="1"></element>
+                     minOccurs="0" maxOccurs="1"/>
             <element name="elements" type="msml:list_of_indexgroups_t"
-                     minOccurs="0" maxOccurs="1"></element>
+                     minOccurs="0" maxOccurs="1"/>
             <element name="surfaces" type="msml:list_of_indexgroups_t"
-                     minOccurs="0" maxOccurs="1"></element>
+                     minOccurs="0" maxOccurs="1"/>
         </sequence>
     </complexType>
 
     <complexType name="list_of_indexgroups_t">
         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element name="indexgroup" type="msml:indexgroup_t"></element>
+            <element name="indexgroup" type="msml:indexgroup_t"/>
         </sequence>
     </complexType>
 
     <complexType name="indexgroup_t">
-        <attribute name="indices" type="string"></attribute>
-        <attribute name="id" type="string" use="optional"></attribute>
+        <attribute name="indices" type="string"/>
+        <attribute name="id" type="string" use="optional"/>
     </complexType>
 </schema>

@@ -2,26 +2,13 @@ __author__ = 'weigl'
 
 import msml.analytics
 import msml.env
+from msml.frontend import App
 
 import docutils.core
 
+app = App()
 
-msml.env.load_user_file()
-msml.env.current_alphabet = msml.frontend.alphabet({'--alphabet': 'alphabet.cache',
-                                                    '--exporter': 'nsofa',
-                                                    '--output': None,
-                                                    '--start-script': '~/.config/msmlrc.py',
-                                                    '--verbose': False,
-                                                    '--xsd-file': None,
-                                                    '-S': True,
-                                                    '-w': False,
-                                                    '<file>': [],
-                                                    '<paths>': [],
-                                                    'alphabet': False,
-                                                    'exec': True,
-                                                    'show': False})
-
-if False:
+if True:
     rst = msml.analytics.export_alphabet_overview_rst()
 
     print rst
@@ -44,6 +31,6 @@ if False:
 
     webbrowser.open("file:///%s" % p.abspath())
 
-if True:
+if 0:
     from pprint import pprint
     print "\n".join(map(str, msml.analytics.check_element_completeness()))

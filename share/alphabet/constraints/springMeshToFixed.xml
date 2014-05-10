@@ -8,19 +8,19 @@
     </description>
 
     <parameters>
-        <arg name="stiffness">
+        <arg name="stiffness" physical="int">
             <meta key="doc" value="Stiffness between fixed and moving points "/>
         </arg>
 
-        <arg name="rayleighStiffnes">
+        <arg name="rayleighStiffnes" physical="int">
             <meta key="doc" value="rayleighStiffnes between fixed and moving points"/>
         </arg>
 
-        <arg name="fixedPoints">
+        <arg name="fixedPoints" physical="int">
             <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
 
-        <arg name="movingPoints">
+        <arg name="movingPoints" physical="vector.float">
             <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
     </parameters>

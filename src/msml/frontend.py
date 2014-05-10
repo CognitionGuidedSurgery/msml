@@ -35,6 +35,8 @@ Frontend - cli interface of msml
 from __future__ import print_function
 
 from collections import OrderedDict
+from msml.run.GraphDotWriter import *
+from msml.run import DefaultGraphBuilder
 
 import os
 from docopt import docopt
@@ -171,8 +173,6 @@ class App(object):
         if not msml_file:
             msml_file = self._load_msml_file(self.files[0])
         self._prepare_msml_model(msml_file)
-        from msml.run.GraphDotWriter import *
-        from msml.run import DefaultGraphBuilder
         graphb = DefaultGraphBuilder(msml_file, msml_file.exporter)
         writer = GraphDotWriter(graphb.dag)
 
@@ -205,11 +205,11 @@ class App(object):
             self.execute_msml_file(path(fil))
 
     def _load_alphabet(self):
-        print("READING alphabet...")
+        log.report("READING alphabet...", 'I')
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
-        print("found %d xml files in the alphabet search path" % len(files))
+        log.report("found %d xml files in the alphabet search path" % len(files), 'I')
         alphabet = msml.xml.load_alphabet(file_list=files)
 
         # debug
@@ -231,9 +231,16 @@ class App(object):
                 print(f, "error")
                 print("\t", e)
 
+    def validate(self):
+        for r in check_element_completeness(self.alphabet, ELEMENT_DEFAULT_VALIDATORS):
+            print(r)
+        #print(export_alphabet_overview_rst(self.alphabet))
+
 
     def _exec(self):
-        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution, 'writexsd': self.writexsd,
+        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution,
+                                'validate': self.validate,
+                                'writexsd': self.writexsd,
                                 'check': self.check_file})
 
         # dispatch to COMMANDS
@@ -244,11 +251,13 @@ class App(object):
         else:
             print("could not find a suitable command")
 
+from .analytics.alphabet_analytics import *
+
+import log
 
 def main(args=None):
     if args is None:
         args = docopt(OPTIONS, version=msml.__version__)
-        print(args)
 
     app = App(options=args)
     app._exec()

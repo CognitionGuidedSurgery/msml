@@ -41,10 +41,10 @@ defines classes for:
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
-from .exceptions import *
+from ..exceptions import *
 
 from .alphabet import Alphabet, Operator, PythonOperator, SharedObjectOperator, ShellOperator, \
-    Argument, StructArgument, ObjectAttribute, OAMaterial, OAConstraint, OAIndexGroup, OAMesh
+    Slot, ObjectAttribute, OAMaterial, OAConstraint, OAIndexGroup, OAMesh
 
 from .base import MSMLFile, MSMLVariable, struct, \
     MSMLFileVariable, Workflow, Task, ObjectElement, SceneObject, \

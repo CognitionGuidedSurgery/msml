@@ -3,10 +3,10 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" type="linearMesh"
-             format="file.vtk"/>
-        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" type="linearMesh"
-             format="file.vtk"/>
+        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" logical="linearMesh"
+             physical="file.vtk"/>
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="linearMesh"
+             physical="file.vtk"/>
     </variables>
 
     <scene>
@@ -28,9 +28,7 @@
             </sets>
 
             <material>
-                <region id="bunnyMaterial">
-                    <!--<materialRegion name=""> -->
-                    <indexgroup indices="${bodyToIndexGroup}"/>
+                <region id="bunnyMaterial" indices="${bodyToIndexGroup}">
                     <linearElastic youngModulus="80000" poissonRatio="0.49"/>
                     <mass density="1000"/>
                 </region>
@@ -50,13 +48,14 @@
     </scene>
 
     <workflow>
-               
-         <mesherCGALi2v id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
-			    facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3" cell_size="0.01" odt="false" lloyd="false"  pertube="false" exude="false" />
-          
-         <voxelize id="voxelizer" surfaceMesh="${vtkConverter}" imageFilename="BunnyVoxelImage.vti" resolution="110" />
-         
-         <stl2vtk id="vtkConverter" STLMesh="BunnyXL.stl" vtkFilename="BunnySurface.vtk"  />
+
+        <mesherCGALi2v id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
+                       facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3"
+                       cell_size="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+
+        <voxelize id="voxelizer" surfaceMesh="${vtkConverter}" imageFilename="BunnyVoxelImage.vti" resolution="110"/>
+
+        <stl2vtk id="vtkConverter" STLMesh="BunnyXL.stl" vtkFilename="BunnySurface.vtk"/>
 
         <boxROIToIndexOperator id="bodyToIndexGroup"
                                box="-0.1 -0.03  -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"

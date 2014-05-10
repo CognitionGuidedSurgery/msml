@@ -30,15 +30,16 @@ Contents:
 
 .. toctree::
    :numbered:
-   :maxdepth: 2
+   :maxdepth: 4
    :glob:
 
    Installation
    GettingStarted
-   examples
-   advanced
+   advanced_topics
+   system_explanation
    Development
    Roadmap
+   modules/msml/__init__
 
 
 

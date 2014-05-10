@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -28,11 +28,11 @@
 
 from collections import namedtuple, OrderedDict
 import pickle
-from warnings import warn
 
-from .exceptions import *
+from ..sorts import get_sort
+from msml.log import report
+from ..exceptions import *
 from ..titen import titen
-from .base import MSMLVariable
 
 
 __author__ = "Alexander Weigl"
@@ -79,10 +79,12 @@ class Alphabet(object):
         self.append(elements)
 
     @property
-    def operators(self): return self._operators
+    def operators(self):
+        return self._operators
 
     @property
-    def object_attributes(self): return self._object_attributes
+    def object_attributes(self):
+        return self._object_attributes
 
     def append(self, elements):
         for e in elements:
@@ -114,8 +116,8 @@ class Alphabet(object):
     def validate(self):
         for o in self._operators.values():
             o.validate()
-            #r = map(lambda x: x.validate(), self._operators.values())
-            #return r
+            # r = map(lambda x: x.validate(), self._operators.values())
+            # return r
 
     def _xsd(self):
         """
@@ -145,8 +147,8 @@ class Alphabet(object):
         with open(filename, 'w') as file:
             pickle.dump(self, file)
 
-            #import jsonpickle
-            #print(jsonpickle.encode(self))
+            # import jsonpickle
+            # print(jsonpickle.encode(self))
 
 
     @staticmethod
@@ -172,6 +174,7 @@ class ObjectAttribute(object):
 
 class OAOutput(ObjectAttribute): pass
 
+
 class OAConstraint(ObjectAttribute):
     pass
 
@@ -181,7 +184,7 @@ class OAMaterial(ObjectAttribute):
 
 
 class OAMesh(ObjectAttribute):
-    def  __init__(self, *args):
+    def __init__(self, *args):
         ObjectAttribute.__init__(*args)
         warn(DeprecationWarning, "OAMesh will be removed")
 
@@ -191,7 +194,7 @@ class OAIndexGroup(ObjectAttribute):
 
 
 class OABody(ObjectAttribute):
-    def  __init__(self, *args):
+    def __init__(self, *args):
         ObjectAttribute.__init__(*args)
         warn(DeprecationWarning, "OABody will be removed")
 
@@ -200,20 +203,48 @@ _object_attribute_categories = {'basic': ObjectAttribute, 'material': OAMaterial
                                 'mesh': OAMesh, 'indexgroup': OAIndexGroup, 'data': OABody, "output": OAOutput}
 
 
-class Argument(MSMLVariable):
-    def __init__(self, name, typ=None, format=None, required=True, default = None, meta = dict()):
-        MSMLVariable.__init__(self, name, format, typ)
+class Slot(object):
+    """A input, parameter or output slot of an operator or an element
+    Consists of name, physical and logical type.
+
+    """
+    # : slot type is not set
+    SLOT_TYPE_UNKNOWN = -1
+
+    # : slot is an input
+    SLOT_TYPE_INPUT = 0
+
+    # : slot is an output
+    SLOT_TYPE_OUTPUT = 1
+
+    #: slot is a parameter
+    SLOT_TYPE_PARAMETER = 2
+
+    def __init__(self, name, physical, logical=None,
+                 required=True, default=None,
+                 meta=dict(), parent=None):
+        self.name = name
+        self.logical_type = logical
+        self.physical_type = physical
         self.required = required
-        self.default = None
+        self.default = default
         self.meta = meta
+        self.parent = parent
+        self.slot_type = Slot.SLOT_TYPE_UNKNOWN
+
+        try:
+            self.sort = get_sort(self.physical_type, self.logical_type)
+        except AssertionError as ae:
+            report("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type),
+                   type="E", number=156)
+            self.sort = None
+
 
     def __getattr__(self, item):
         return self.meta[item]
 
-
-
-
-StructArgument = namedtuple('StructArgument', 'name,args')
+    def __str__(self):
+        return "<Slot %s: %s>" % (self.name, self.sort)
 
 
 def _list_to_dict(lis, attrib='name'):
@@ -227,7 +258,7 @@ def _list_to_dict(lis, attrib='name'):
 
 
 class Operator(object):
-    """Operator"""
+    """Operator hold all slot, runtime information and meta data"""
 
     def __init__(self,
                  name,
@@ -236,9 +267,6 @@ class Operator(object):
                  parameters=None,
                  runtime=None,
                  meta=None):
-        """
-        
-        """
         self.name = name
         self.input = _list_to_dict(input)
         self.output = _list_to_dict(output)
@@ -274,12 +302,12 @@ class Operator(object):
         return True
 
 
-#     def check_types(self, args, kwargs):
-#         sig = signature(self.func)
-#         type_bind = sig.bind(*self.args)
-#         val_bind = sig.bind(*args)
+# def check_types(self, args, kwargs):
+# sig = signature(self.func)
+# type_bind = sig.bind(*self.args)
+# val_bind = sig.bind(*args)
 #
-#         T = type_bind.args
+# T = type_bind.args
 #         V = val_bind.args
 #
 #         return issubtype(V, T)
@@ -302,7 +330,7 @@ class PythonOperator(Operator):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
         self.function_name = runtime['function']
         self.modul_name = runtime['module']
-        self.function = None
+        self._function = None
 
     def _check_function(self):
         pass
@@ -312,19 +340,20 @@ class PythonOperator(Operator):
         return "<PythonOperator: %s.%s>" % (self.modul_name, self.function_name)
 
     def __call__(self, **kwargs):
-        if not self.__function:
+        if not self._function:
             self.bind_function()
 
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
 
         args = [kwargs.get(x, None) for x in self.acceptable_names()]
-        r = self.__function(*args)
+        r = self._function(*args)
 
-        if not isinstance(r, tuple):
-            r = (r,)
+        if len(self.output) == 1:
+            results = {self.output_names()[0]: r}
+        else:
+            results = dict(zip(self.output_names(), r))
 
-        results = dict(zip(self.output_names(), r))
         return results
 
     def bind_function(self):
@@ -333,9 +362,9 @@ class PythonOperator(Operator):
         try:
             #print("LOADING: %s.%s" % (self.modul_name, self.function_name))
             mod = importlib.import_module(self.modul_name)
-            self.__function = getattr(mod, self.function_name)
+            self._function = getattr(mod, self.function_name)
 
-            return self.__function
+            return self._function
         except ImportError, e:
             warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
                  MSMLUnknownModuleWarning, 0)
