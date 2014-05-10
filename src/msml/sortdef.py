@@ -41,7 +41,7 @@ class Sort(object):
     """
 
     def __init__(self, physical, logical=None):
-        assert physical is not None
+        # assert physical is not None
         self._physical = physical
         self._logical = logical
 
@@ -58,13 +58,14 @@ class Sort(object):
         if not other or other is self:
             return False
 
-        a = issubclass(self._physical, other._physical)
+        def _compare(p, q):
+            if q is None or p is None:
+                return True
+            else:
+                return issubclass(p, q)
 
-        if self._logical is None or other._logical is None:
-            return a
-        else:
-            b = issubclass(self._logical, other._logical)
-            return a and b
+        return _compare(self.physical, other.physical) \
+               and _compare(self.logical, other.logical)
 
     def __gt__(self, other):
         return other < self
@@ -206,7 +207,7 @@ class MSMLFloat(float, MSMLPhysicalTop): pass
 class MSMLInt(int, MSMLPhysicalTop): pass
 
 
-#class MSMLBool(bool, MSMLPhysicalTop): pass
+# class MSMLBool(bool, MSMLPhysicalTop): pass
 
 
 class MSMLUInt(int, MSMLPhysicalTop): pass
