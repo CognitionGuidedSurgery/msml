@@ -2,7 +2,7 @@
 
     Program:   The Medical Simulation Markup Language
     Module:    Operators, MiscMeshOperators
-    Authors:   Markus Stoll, Stefan Suwelack
+    Authors:   Markus Stoll, Stefan Suwelack, Nicolai Schoch
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,10 @@ namespace MSML {
         //LIBRARY_API  std::string ConvertInpToVTKPython(std::string infile, std::string outfile);
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, const char* outfile);
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh);
+
+    LIBRARY_API  static std::string ConvertVTKToVTUPython(std::string infile, std::string outfile); // python: 'convertVTKToVTU()'
+	LIBRARY_API  static bool ConvertVTKToVTU(const char* infile, const char* outfile );
+//	LIBRARY_API  static bool ConvertVTKToVTU(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh); // is this needed at all?!
 
         //LIBRARY_API  std::string VTKToInpPython( std::string infile, std::string outfile);
         LIBRARY_API  bool VTKToInp( const char* infile, const char* outfile);

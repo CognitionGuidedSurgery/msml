@@ -1,0 +1,17 @@
+<Param>
+    <FixedConstraintsBCs>
+        <NumberOfFixedDirichletPoints>{{nFDP}}</NumberOfFixedDirichletPoints>
+        <fDPoints>{{fDPointsList}}</fDPoints>
+        <fDisplacements>{{fDisplacementsList}}</fDisplacements>
+    </FixedConstraintsBCs>
+    <DisplacementConstraintsBCs>
+        <NumberOfDisplacedDirichletPoints>{{nDDP}}</NumberOfDisplacedDirichletPoints>
+        <dDPoints>{{dDPointsList}}</dDPoints>
+        <dDisplacements>{{dDisplacementsList}}</dDisplacements>
+    </DisplacementConstraintsBCs>
+    <ForceOrPressureBCs>
+        <NumberOfForceOrPressureBCPoints>{{nFoPBCPoints}}</NumberOfForceOrPressureBCPoints>
+        <ForceOrPressureBCPoints>{{FoPBCPointsList}}</ForceOrPressureBCPoints>
+        <ForcesOrPressures>{{FoPBCVectorsList}}</ForcesOrPressures>
+    </ForceOrPressureBCs>
+</Param>
