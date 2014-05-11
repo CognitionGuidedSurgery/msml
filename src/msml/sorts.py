@@ -180,7 +180,9 @@ DEFAULTS_SORTS = {
         (MSMLListF, "ListF", "vector.float"),
         (MSMLListUI, "ListUI", "vector.uint"),
         (MSMLListI, "ListI", "vector.int"),
-        (VTK, "VTK", "vtk", "VTI", "vti", "file.vtk", "file.vti"),
+        (VTK, "VTK", "vtk", "file.vtk"),
+        (VTU, "VTU", "vtu", "file.vtu"),
+        (VTI, "VTI", "vti", "file.vti"),
         DICOM,
         HDF5,
         (STL, "STL", "stl"),
@@ -299,7 +301,6 @@ def _list_of_type(s, t):
     :rtype: list[t]
     """
 
-
     return map(lambda x: t(x.strip(" ")),
                filter(lambda x: x != "", s.split(" ")))
 
@@ -324,6 +325,24 @@ register_conversion(str, get_sort("VTK"), VTK, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
-#register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
+# register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
+
+
+from msml.ext.misc import ConvertVTKToVTUPython
+import os.path
+
+def convert_vtk_to_vtu(vtk):
+    """Convert VTK to VTU file format.
+    :param vtk:
+    :type vtk: VTK
+    :return:
+    :rtype: VTU
+    """
+
+    name = "%s_auto_converted.vtu"
+    ConvertVTKToVTUPython(vtk, name)
+    return VTU(name)
+
+register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
 
 

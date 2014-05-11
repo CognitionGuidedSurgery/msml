@@ -50,19 +50,17 @@ SET(CGALOperators_SRCS
   cgal_tet_to_vtk.h
   )
 
-SET(CGALOpeators_LIBS
-  ${VTK_LIBRARIES}
-  MiscMeshOperators
-)
-
+SET(CGALOperators_LIBS
+  ${VTK_LIBRARIES})
 
 INCLUDE( ${CGAL_USE_FILE} )
 INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/MiscMeshOperators
   ${WRAPPER_INCLUDES})
 # weigl: hä?
-include( CGAL_CreateSingleSourceCGALProgram )
-include_directories (BEFORE "../../include")
+
+include(CGAL_CreateSingleSourceCGALProgram)
+include_directories(BEFORE "../../include")
 
 
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_GREATER 2.6)

@@ -163,17 +163,18 @@ bool ConvertVTKToSTL(const char* infile, const char* outfile)
 }
 
 //---------------------------- start of new by Nico on 2014-05-10.
-std::string MiscMeshOperators::ConvertVTKToVTUPython(std::string infile, std::string outfile)
+std::string ConvertVTKToVTUPython(std::string infile, std::string outfile)
 {
 	ConvertVTKToSTL( infile.c_str(), outfile.c_str());
 
 	return outfile;
 }
 
-bool MiscMeshOperators::ConvertVTKToVTU(const char* infile, const char* outfile )
+bool ConvertVTKToVTU(const char* infile, const char* outfile )
 {
 	std::cout<<"Converting "<<infile <<" to VTU\n";
-	vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+	vtkSmartPointer<vtkXMLUnstructuredGridReader> reader =
+	    vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
 	reader->SetFileName(infile);
 	reader->Update();
 	//vtkPolyData* currentPolydata = reader->GetOutput();
@@ -184,7 +185,11 @@ bool MiscMeshOperators::ConvertVTKToVTU(const char* infile, const char* outfile 
 	vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
 	// OR: ?!
 	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
+#if VTK_MAJOR_VERSION <= 5
+    // no counter part
+#else
 	writer->SetFileTypeToBinary();
+#endif
 	writer->SetFileName(outfile);
 	__SetInput(writer, reader->GetOutput());
 	// OR: ?!

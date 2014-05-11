@@ -256,6 +256,8 @@ class ContainerFile(InFile):
 
 class VTK(ContainerFile): pass
 
+class VTU(ContainerFile): pass
+class VTI(ContainerFile): pass
 
 class STL(InFile): pass
 

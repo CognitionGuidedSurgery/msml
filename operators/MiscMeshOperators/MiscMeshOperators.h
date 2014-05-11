@@ -56,8 +56,8 @@ namespace MSML {
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, const char* outfile);
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh);
 
-    LIBRARY_API  static std::string ConvertVTKToVTUPython(std::string infile, std::string outfile); // python: 'convertVTKToVTU()'
-	LIBRARY_API  static bool ConvertVTKToVTU(const char* infile, const char* outfile );
+        LIBRARY_API  std::string ConvertVTKToVTUPython(std::string infile, std::string outfile); // python: 'convertVTKToVTU()'
+	    LIBRARY_API  bool        ConvertVTKToVTU(const char* infile, const char* outfile );
 //	LIBRARY_API  static bool ConvertVTKToVTU(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh); // is this needed at all?!
 
         //LIBRARY_API  std::string VTKToInpPython( std::string infile, std::string outfile);

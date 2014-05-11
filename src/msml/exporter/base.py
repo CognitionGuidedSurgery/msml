@@ -30,7 +30,6 @@ __author__ = 'Alexander Weigl'
 
 import warnings
 
-import lxml.etree as ET
 from ..model import *
 
 
@@ -53,6 +52,8 @@ class Exporter(object):
 
         self._output = {}
         self._input = {}
+
+        self.mesh_sort = ['VTK', 'Mesh']
 
         self.gather_output()
         self.gather_inputs()
@@ -104,7 +105,7 @@ class Exporter(object):
         for scene_obj in self._msml_file.scene:
             assert isinstance(scene_obj, SceneObject)
 
-            self._input['mesh'] = Slot('mesh', 'VTK', 'Mesh', required=True,
+            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1], required=True,
                                        default=parse_attribute_value(scene_obj.mesh.mesh), parent=self)
 
             for i, ig in enumerate(scene_obj.sets.nodes +
@@ -204,6 +205,4 @@ class Exporter(object):
         return resultExpression
 
 
-class XMLExporter(Exporter):
-    def render(self):
-        scene = self._mfile.scene
+class XMLExporter(Exporter): pass
