@@ -277,31 +277,31 @@
                         <simpleType>
                             <restriction base="string">
                                 <enumeration value="iterativeCG"/>
-                                <enumeration value="CG"></enumeration>
-                                <enumeration value="GMRES"></enumeration>
+                                <enumeration value="CG"/>
+                                <enumeration value="GMRES"/>
                             </restriction>
                         </simpleType>
                     </attribute>
                     <attribute name="preconditioner">
                         <simpleType>
                             <restriction base="string">
-                                <enumeration value="NOPRECOND"></enumeration>
-                                <enumeration value="JACOBI"></enumeration>
-                                <enumeration value="GAUSS_SEIDEL"></enumeration>
-                                <enumeration value="SGAUSS_SEIDEL"></enumeration>
-                                <enumeration value="SOR"></enumeration>
-                                <enumeration value="SSOR"></enumeration>
-                                <enumeration value="ILU"></enumeration>
-                                <enumeration value="ILU2"></enumeration>
-                                <enumeration value="ILU_P"></enumeration>
+                                <enumeration value="NOPRECOND"/>
+                                <enumeration value="JACOBI"/>
+                                <enumeration value="GAUSS_SEIDEL"/>
+                                <enumeration value="SGAUSS_SEIDEL"/>
+                                <enumeration value="SOR"/>
+                                <enumeration value="SSOR"/>
+                                <enumeration value="ILU"/>
+                                <enumeration value="ILU2"/>
+                                <enumeration value="ILU_P"/>
                             </restriction>
                         </simpleType>
                     </attribute>
                     <attribute name="timeIntegration">
                         <simpleType>
                             <restriction base="string">
-                                <enumeration value="dynamicImplicitEuler"></enumeration>
-                                <enumeration value="Newmark"></enumeration>
+                                <enumeration value="dynamicImplicitEuler"/>
+                                <enumeration value="Newmark"/>
                             </restriction>
                         </simpleType>
                     </attribute>

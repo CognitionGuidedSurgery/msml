@@ -46,12 +46,24 @@ SET(CGALOperators_ACTIVE "ON" PARENT_SCOPE)
 MESSAGE("CGALOperators: ENABLED and ACTIVE")
 
 SET(CGALOperators_SRCS
-  CGALOperators.h
   CGALOperators.cpp
   cgal_tet_to_vtk.h
   )
 
+SET(CGALOpeators_LIBS
+  ${VTK_LIBRARIES}
+  MiscMeshOperators
+)
+
+
 INCLUDE( ${CGAL_USE_FILE} )
+INCLUDE_DIRECTORIES(
+  ${CMAKE_SOURCE_DIR}/MiscMeshOperators
+  ${WRAPPER_INCLUDES})
+# weigl: hä?
+include( CGAL_CreateSingleSourceCGALProgram )
+include_directories (BEFORE "../../include")
+
 
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_GREATER 2.6)
   if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
@@ -60,35 +72,12 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_GREATER 2.6)
     cmake_policy(VERSION 2.6)
   endif()
 endif()
-  
-IF(WIN32 AND NOT CYGWIN)
-  ADD_LIBRARY(CGALOperators STATIC ${CGALOperators_SRCS})
-ELSE()
-  ADD_LIBRARY(CGALOperators SHARED ${CGALOperators_SRCS})
-ENDIF(WIN32 AND NOT CYGWIN)
 
-INCLUDE_DIRECTORIES(
-  ${CMAKE_SOURCE_DIR}/MiscMeshOperators
-  )
-
-# weigl: hä?
-include( CGAL_CreateSingleSourceCGALProgram )
-include_directories (BEFORE "../../include")
-
-TARGET_LINK_LIBRARIES(CGALOperators 
-  ${VTK_LIBRARIES}
-  MiscMeshOperators
-)
-
-
-SET_SOURCE_FILES_PROPERTIES(cgal.i PROPERTIES CPLUSPLUS ON)
-SWIG_ADD_MODULE(CGALOperatorsPython python cgal.i ${CGALOperators_SRCS})
-SWIG_LINK_LIBRARIES(CGALOperatorsPython
-  ${VTK_LIBRARIES}
-  ${PYTHON_LIBRARIES} 
-  MiscMeshOperators
-)
-
+MSML_LIBRARY(
+  NAME      CGALOperators
+  SWIG_FILE cgal.i 
+  SOURCES   ${CGALOperators_SRCS}
+  LIBRARIES ${CGALOperators_LIBS})
 
 if(MSVC)
   # /bigobj is required for CGAL builds for windows

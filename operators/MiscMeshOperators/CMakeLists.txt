@@ -37,44 +37,30 @@ SET(MiscMeshOperators_SRCS
   MappingOperators.cpp
   )
 
+SET(MiscMeshOperators_LIBS
+  ${VTK_LIBRARIES}
+  ${SOLID_LIBRARIES}
+  ${TETGEN_LIBRARIES}
+  ${Boost_LIBRARIES})
+
 INCLUDE_DIRECTORIES(
   ${MiscMeshOperators_SOURCE_DIR}
   ${MiscMeshOperators_BINARY_DIR}
   ${PYTHON_INCLUDE_DIRS}
   )
 
+MSML_LIBRARY(
+  NAME      MiscMeshOperators
+  SWIG_FILE miscmesh.i
+  SOURCES   ${MiscMeshOperators_SRCS}
+  LIBRARIES ${MiscMeshOperators_LIBS})
+
+
 SET(MiscMeshOperatorsExample_SRCS Example.cpp)
   
-  
-# Python Wrapper
-SET_SOURCE_FILES_PROPERTIES(miscmesh.i PROPERTIES CPLUSPLUS ON)
-#SET_SOURCE_FILES_PROPERTIES(tetgen.i PROPERTIES SWIG_FLAGS "-includeall")
-SWIG_ADD_MODULE(MiscMeshOperatorsPython python miscmesh.i ${MiscMeshOperators_SRCS})
-SWIG_LINK_LIBRARIES(MiscMeshOperatorsPython
-  ${VTK_LIBRARIES}
-  ${SOLID_LIBRARIES}
-  ${TETGEN_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${PYTHON_LIBRARIES}
-  )
-
-IF(WIN32 AND NOT CYGWIN)
-  ADD_LIBRARY(MiscMeshOperators STATIC ${MiscMeshOperators_SRCS})
-ELSE()
-  ADD_LIBRARY(MiscMeshOperators SHARED ${MiscMeshOperators_SRCS})
-ENDIF()
-
-TARGET_LINK_LIBRARIES(MiscMeshOperators ${VTK_LIBRARIES}
-  ${TETGEN_LIBRARIES} 
-  ${SOLID_LIBRARIES}
-  ${Boost_LIBRARIES}
-  )
-
 ADD_EXECUTABLE (MiscMeshOperatorsExample ${MiscMeshOperatorsExample_SRCS} )
-TARGET_LINK_LIBRARIES(MiscMeshOperatorsExample MiscMeshOperators ${VTK_LIBRARIES}
-  ${TETGEN_LIBRARIES}
-  ${Boost_LIBRARIES}
-  MiscMeshOperators
-  )
-
+TARGET_LINK_LIBRARIES(MiscMeshOperatorsExample 
+  MiscMeshOperators 
+  ${MiscMeshOperators_LIBS}
+)
 

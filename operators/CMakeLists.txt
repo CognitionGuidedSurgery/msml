@@ -39,9 +39,6 @@ INCLUDE(${SWIG_USE_FILE})
 SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 
-# Find Python
-FIND_PACKAGE(PythonLibs REQUIRED)
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
 
 #MESSAGE("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
 #message("Libs of Python: " ${PYTHON_LIBRARIES} )
@@ -91,10 +88,75 @@ FIND_FILE(ABAQUS_EXECUTABLE "abaqus" NAMES "abaqus" "abaqus"
     DOC "")
 
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
 
 SET(CMAKE_ECLIPSE_MAKE_ARGUMENTS "-j${x}" CACHE STRING "" FORCE ) 
+
+SET(SWIG_LANG "python")
+#SET(SWIG_LANG "java")
+
+
+IF( "${SWIG_LANG}" STREQUAL "python")
+  # Find Python
+  FIND_PACKAGE(PythonLibs REQUIRED)
+  SET(WRAPPER_LIBRARIES ${PYTHON_LIBRARIES})
+  SET(WRAPPER_INCLUDES  ${PYTHON_INCLUDE_DIRS})
+#ELSEIF( "${SWIG_LANG}" EQUAL "java")
+ELSE()
+  FIND_PACKAGE(JNI)
+  SET(WRAPPER_LIBRARIES ${JNI_LIBRARIES})
+  SET(WRAPPER_INCLUDES  ${JNI_INCLUDE_DIRS})
+  
+  # this does not work
+  #message(${JNI_FOUND})
+  #IF(NOT ${JNI_FOUND})
+  #  message("Java Wrapper selected but no JNI found. JAVA_HOME set?")
+  #  RETURN()
+  #ENDIF()
+ENDIF()
+
+
+#message(${SWIG_LANG})
+#message(${JNI_LIBRARIES})
+
+
+INCLUDE_DIRECTORIES(${WRAPPER_INCLUDES})
+
+################################################################################
+## Macro
+#
+MACRO(MSML_LIBRARY)
+  CMAKE_PARSE_ARGUMENTS(ML 
+    ""   # options
+    "NAME;SWIG_FILE" # single arg
+    "SOURCES;LIBRARIES" # multi arg
+    ${ARGN}
+    )
+  
+  #message("AAAAAA ${ML_UNPARSED_ARGUMENTS}")
+
+  SET_SOURCE_FILES_PROPERTIES(${ML_SWIG_FILE} PROPERTIES CPLUSPLUS ON)
+  #SET_SOURCE_FILES_PROPERTIES(tetgen.i PROPERTIES SWIG_FLAGS "-includeall")
+  SWIG_ADD_MODULE(${ML_NAME}Python ${SWIG_LANG} ${ML_SWIG_FILE} ${ML_SOURCES})
+  SWIG_LINK_LIBRARIES(
+    ${ML_NAME}Python
+    ${ML_LIBRARIES}
+    ${WRAPPER_LIBRARIES}  
+    )
+  
+  IF(WIN32 AND NOT CYGWIN)
+    ADD_LIBRARY(${ML_NAME} STATIC ${ML_SOURCES})
+  ELSE()
+    ADD_LIBRARY(${ML_NAME} SHARED ${ML_SOURCES})
+  ENDIF()
+ 
+  TARGET_LINK_LIBRARIES(${ML_NAME} ${ML_LIBRARIES})
+ENDMACRO()
+
     
 ################################################################################
 ## Modules
