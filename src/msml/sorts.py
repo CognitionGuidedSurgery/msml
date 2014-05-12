@@ -29,11 +29,11 @@
 
 
 """
-Sorts logic. 
+Sorts logic.
 
 Factory and Cache for Sorts in MSML.
 
-Currently there are two disjoint sorts hierarchies. 
+Currently there are two disjoint sorts hierarchies.
 
 1. format
 2. type
@@ -45,8 +45,8 @@ sortdef
 
 vector.int + file.vtk
 
-result in: file_vtk__vector_int as subtype of file and vector 
- 
+result in: file_vtk__vector_int as subtype of file and vector
+
 
 sortsdef => name of a sort, characterize by multiple path, seperated with »+«
 path     => name/path in the class hierarchy, each class is seperated with ».«
@@ -199,7 +199,7 @@ def default_sorts_definition():
 
 
 def get_sort(t, f=None):
-    """    
+    """
     returns the type object for the given sort definition
     """
     return default_sorts_definition().get_sort(t, f)
@@ -328,21 +328,21 @@ register_conversion(str, get_sort('vector.float'), _list_float, 100)
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
 
-from msml.ext.misc import ConvertVTKToVTUPython
-import os.path
+try:
+    from msml.ext.misc import ConvertVTKToVTUPython
+    import os.path
+    def convert_vtk_to_vtu(vtk):
+        """Convert VTK to VTU file format.
+        :param vtk:
+        :type vtk: VTK
+        :return:
+        :rtype: VTU
+        """
 
-def convert_vtk_to_vtu(vtk):
-    """Convert VTK to VTU file format.
-    :param vtk:
-    :type vtk: VTK
-    :return:
-    :rtype: VTU
-    """
+        name = "%s_auto_converted.vtu"
+        ConvertVTKToVTUPython(vtk, name)
+        return VTU(name)
 
-    name = "%s_auto_converted.vtu"
-    ConvertVTKToVTUPython(vtk, name)
-    return VTU(name)
-
-register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
-
-
+    register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
+except:
+    report("No Conversion VTK to VTU avaaible. Hiflow3 may not useable.", 'E', 616)

@@ -5,6 +5,9 @@ simplegeneric
 docopt
 pyparsing
 jinja2 
-# sphinx
-# sphinxcontrib-napoleon 
+
+## ReadTheDocs.org / Sphinx
+sphinx
+sphinxcontrib-napoleon 
+sphinx-bootstrap-theme
 

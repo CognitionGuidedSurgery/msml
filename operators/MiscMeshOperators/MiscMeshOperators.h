@@ -40,6 +40,375 @@
 
 using namespace std;
 
+/*MSMLDOC
+MiscMeshOperators
+==================
+
+.. cpp:namespace:: MSML::MiscMeshOperators
+
+
+.. cpp:function:: std::string ConvertSTLToVTKPython(std::string infile, std::string outfile)
+
+    :param std::string infile:
+    :param std\:\:string outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertSTLToVTK(const char* infile, const char* outfile)
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertSTLToVTK(const char* infile, vtkPolyData* outputMesh)
+
+    :param const char* infile:
+    :param vtkPolyData* outputMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ConvertVTKToSTLPython(std::string infile, std::string outfile)
+
+    :param std\:\:string infile:
+    :param std\:\:string outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertVTKToSTL(const char* infile, const char* outfile)
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile)
+
+    :param vtkPolyData* inputMesh:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertInpToVTK(const char* infile, const char* outfile)
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh)
+
+    :param const char* infile:
+    :param vtkUnstructuredGrid* outputMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ConvertVTKToVTUPython(std::string infile, std::string outfile)
+
+    :param std\:\:string infile:
+    :param std\:\:string outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool        ConvertVTKToVTU(const char* infile, const char* outfile )
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool VTKToInp( const char* infile, const char* outfile)
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile)
+
+    :param vtkUnstructuredGrid* inputMesh:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ExtractSurfaceMeshPython( std::string infile, std::string outfile)
+
+    :param std\:\:string infile:
+    :param std\:\:string outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ExtractSurfaceMesh( const char* infile, const char* outfile)
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
+
+    :param vtkUnstructuredGrid* inputMesh:
+    :param vtkPolyData* outputMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ExtractAllSurfacesByMaterial( const char* infile, const char* outfile, bool theCutIntoPieces)
+
+    :param const char* infile:
+    :param const char* outfile:
+    :param bool theCutIntoPieces:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::map\<int,int>* createHist(vtkDataArray* theVtkDataArray)
+
+    :param vtkDataArray* theVtkDataArray:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool AssignSurfaceRegion( const char* infile, const char* outfile, std::vector\<std::string> regionMeshes )
+
+    :param const char* infile:
+    :param const char* outfile:
+    :param std\:\:vector\<std::string> regionMeshes:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, std::vector\<vtkSmartPointer\<vtkPolyData> > & regionMeshes)
+
+    :param vtkUnstructuredGrid* inputMesh:
+    :param vtkUnstructuredGrid* outputMesh:
+    :param std\:\:vector\<vtkSmartPointer\<vtkPolyData> > & regionMeshes:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName)
+
+    :param vtkUnstructuredGrid* inputMesh:
+    :param std\:\:string partName:
+    :param std\:\:string materialName:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName)
+
+    :param std\:\:string inputMesh:
+    :param std\:\:string partName:
+    :param std\:\:string materialName:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
+
+    :param std\:\:string infile:
+    :param std\:\:string outfile:
+    :param std\:\:string referenceMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh )
+
+    :param const char* infile:
+    :param const char* outfile:
+    :param const char* referenceMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh)
+
+    :param vtkPolyData* inputMesh:
+    :param vtkPolyData* referenceMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution)
+
+    :param std\:\:string infile:
+    :param std\:\:string outfile:
+    :param int resolution:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution)
+
+    :param const char* infile:
+    :param const char* outfile:
+    :param int resolution:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing)
+
+    :param vtkPolyData* inputMesh:
+    :param vtkImageData* outputImage:
+    :param int spacing:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile)
+
+    :param std\:\:string infile:
+    :param std\:\:string outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile )
+
+    :param const char* infile:
+    :param const char* outfile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstructuredGrid* outputMesh)
+
+    :param vtkPolyData* inputPolyData:
+    :param vtkUnstructuredGrid* outputMesh:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::vector\<double> ExtractPointPositions( std::vector\<int> indices, const char* infile)
+
+    :param std\:\:vector\<int> indices:
+    :param const char* infile:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: std::vector\<double> ExtractPointPositions( std::vector\<int> indices, vtkUnstructuredGrid* inputMesh)
+
+    :param std\:\:vector\<int> indices:
+    :param vtkUnstructuredGrid* inputMesh:
+
+    :returns:
+    :rtype:
+
+*/
+
+
+
 namespace MSML {
     namespace MiscMeshOperators
     {

@@ -21,8 +21,6 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../src/'))
 sys.path.insert(0, os.path.abspath('../../src/'))
 
-print sys.path
-
 
 # -- General configuration -----------------------------------------------------
 
@@ -58,7 +56,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = 'index'
@@ -94,11 +92,11 @@ exclude_patterns = []
 #default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-#add_function_parentheses = True
+add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+add_module_names = True
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -115,24 +113,72 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'bootstrap'
+import sphinx_bootstrap_theme
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-#bodyfont (CSS font family): Font for normal text.
-#headerfont (CSS font family): Font for headings.
-#pagewidth (CSS length): Width of the page content, default 70em.
-#documentwidth (CSS length): Width of the document (without sidebar), default 50em.
-#sidebarwidth (CSS length): Width of the sidebar, default 20em.
-#bgcolor (CSS color): Background color.
-#headerbg (CSS value for “background”): background for the header area, default a grayish gradient.
-#footerbg (CSS value for “background”): background for the footer area, default a light gray gradient.
-#linkcolor (CSS color): Body link color.
-#headercolor1, headercolor2 (CSS color): colors for <h1> and <h2> headings.
-#headerlinkcolor (CSS color): Color for the backreference link in headings.
-#textalign (CSS text-align value): Text alignment for the body, default is justify
+    # Navigation bar title. (Default: ``project`` value)
+    #'navbar_title': "MSML",
+
+    # Tab name for entire site. (Default: "Site")    
+    #'navbar_site_name': "Medical Simulation Markup Language",
+
+    # A list of tuples containing pages or urls to link to.
+    # Valid tuples should be in the following forms:
+    #    (name, page)                 # a link to a page
+    #    (name, "/aa/bb", 1)          # a link to an arbitrary relative url
+    #    (name, "http://example.com", True) # arbitrary absolute url
+    # Note the "1" or "True" value above as the third argument to indicate
+    # an arbitrary url.
+    'navbar_links': [],
+#        ("Examples", "examples"),
+#        ("Link", "http://example.com", True),
+#    ],
+
+    # Render the next and previous page links in navbar. (Default: true)
+    'navbar_sidebarrel': False,
+
+    # Render the current pages TOC in the navbar. (Default: true)
+    'navbar_pagenav': False,
+
+    # Global TOC depth for "site" navbar tab. (Default: 1)
+    # Switching to -1 shows all levels.
+    'globaltoc_depth': 2,
+
+    # Include hidden TOCs in Site navbar?
+    #
+    # Note: If this is "false", you cannot have mixed ``:hidden:`` and
+    # non-hidden ``toctree`` directives in the same page, or else the build
+    # will break.
+    #
+    # Values: "true" (default) or "false"
+    'globaltoc_includehidden': "true",
+
+    # HTML navbar class (Default: "navbar") to attach to <div> element.
+    # For black navbar, do "navbar navbar-inverse"
+    'navbar_class': "navbar navbar-default",
+
+    # Fix navigation bar to top of page?
+    # Values: "true" (default) or "false"
+    'navbar_fixed_top': "false",
+
+    # Location of link to source.
+    # Options are "nav" (default), "footer" or anything else to exclude.
+    'source_link_position': "footer",
+
+    # Bootswatch (http://bootswatch.com/) theme.
+    #
+    # Options are nothing with "" (default) or the name of a valid theme
+    # such as "amelia" or "cosmo".
+    'bootswatch_theme': "flatly",
+
+    # Choose Bootstrap version.
+    # Values: "3" (default) or "2" (in quotes)
+    'bootstrap_version': "3",	
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -147,7 +193,7 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "_static/cgs.png"
+html_logo = ""#_static/msml_logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -281,3 +327,22 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+from sphinxcontrib.domaintools import custom_domain
+
+def setup(app):
+    app.add_domain(custom_domain('GnuMakeDomain',
+        name  = 'msml',
+        label = "MSML",
+
+        elements = dict(
+            element = dict(
+                objname      = "Make Target",
+                indextemplate = "pair: %s; element",
+            ),
+            operator = dict(
+                objname = "Operator",
+                indextemplate = "pair: %s; operator",
+            ),
+        )))
