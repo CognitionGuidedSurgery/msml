@@ -11,3 +11,4 @@ sphinx
 sphinxcontrib-napoleon 
 sphinx-bootstrap-theme
 
+sphinxcontrib-domaintools
