@@ -63,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'msml'
-copyright = u'2013, Alexander Weigl, Markus Stoll, Nicolai Schoch, Sebastian Schalck, Stefan Suwelack'
+copyright = u'2013-2014, Alexander Weigl, Markus Stoll, Nicolai Schoch, Sebastian Schalck, Stefan Suwelack'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -124,7 +124,6 @@ html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
     #'navbar_title': "MSML",
 
-    'bootswatch_css_custom': ['_static/my-styles.css'],
     # Tab name for entire site. (Default: "Site")    
     #'navbar_site_name': "Medical Simulation Markup Language",
 
