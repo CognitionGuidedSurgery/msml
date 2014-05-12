@@ -124,6 +124,7 @@ html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
     #'navbar_title': "MSML",
 
+    'bootswatch_css_custom': ['_static/my-styles.css'],
     # Tab name for entire site. (Default: "Site")    
     #'navbar_site_name': "Medical Simulation Markup Language",
 
