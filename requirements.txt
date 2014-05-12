@@ -10,5 +10,4 @@ jinja2
 sphinx
 sphinxcontrib-napoleon 
 sphinx-bootstrap-theme
-
 sphinxcontrib-domaintools
