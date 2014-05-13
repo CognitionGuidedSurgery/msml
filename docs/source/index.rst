@@ -18,15 +18,16 @@ msml - medical markup language
 
 .. toctree::
 
+   About
+   modules/run-msml
    Installation
    GettingStarted
-   AdvancedTopics
-   SystemExplanation
+   examples/index
+   advanced/index
    Development
    Roadmap
-   modules/msml/__init__
+   Api
 
-   
 
 .. raw:: html
 
@@ -94,17 +95,17 @@ MSML was created in the SFB125_ in a coorperation between KIT_ and DKFZ_.
 
 ..  <div>
                             <a href="http://http://his.anthropomatik.kit.edu/">
-                              <img src="http://www.arch.kit.edu/downloads/kit_logo_de_farbe_positiv.jpg" 
+                              <img src="http://www.arch.kit.edu/downloads/kit_logo_de_farbe_positiv.jpg"
                                 height="50" />
                             </a>
-                            
+
                             <a href="http://dkfz.de">
                               <img src="http://www.unit-werbeagentur.de/kunden/dkfz/assets/dkfz_logo_b.jpg"
                                 height="50" />
                             </a>
                         </div>
 
-   
+
 .. _SFB125: http://cognitionguidedsurgery.de/
 .. _KIT: http://his.anthropomatik.kit.edu/
 .. _DKFZ: https://www.dkfz.de/en/index.html

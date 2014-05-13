@@ -9,6 +9,7 @@ exporter Package
    sofa
    abaqus
    hiflow3
+   visitor
 
 
 .. automodule:: msml.exporter

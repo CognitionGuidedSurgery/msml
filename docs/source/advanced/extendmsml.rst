@@ -1,7 +1,6 @@
 Extend MSML
 ========================
 
-
 How to write an Exporter
 ------------------------
 
@@ -166,4 +165,3 @@ Example
            </arg>
        </parameters>
    </msml:element>
-

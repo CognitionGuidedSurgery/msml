@@ -1,5 +1,5 @@
 IndexRegionOperators
-^^^^^^^^^^^^^^^^^^^^
+====================
 
 
 .. cpp:namespace:: MSML::IndexRegionOperators
@@ -392,7 +392,7 @@ MiscMeshOperators
 
 
 IOHelper
-^^^^^^^^
+========
 
 .. cpp:namespace:: MSML::IOHelper
 
@@ -425,7 +425,7 @@ IOHelper
 
 
 Post Processing
-^^^^^^^^^^^^^^^
+===============
 
 .. cpp:function:: void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
 
@@ -627,15 +627,15 @@ Post Processing
 
 
 MappingOperators
-^^^^^^^^^^^^^^^^
+================
 
 
 .. cpp:function:: std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh )
 
-                :param std::string meshIni:
-                :param std::string meshDeformed:
-                :param std::string meshToMap:
-                :param std::string mappedMesh:
+                :param std\:\:string meshIni:
+                :param std\:\:string meshDeformed:
+                :param std\:\:string meshToMap:
+                :param std\:\:string mappedMesh:
 
                 :rtype:
                 :returns:
@@ -661,5 +661,3 @@ MappingOperators
 
                 :rtype:
                 :returns:
-
-

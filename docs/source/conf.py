@@ -21,6 +21,11 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../src/'))
 sys.path.insert(0, os.path.abspath('../../src/'))
 
+# EDIT on Github 
+sys.path.insert(0, os.path.abspath('_ext'))
+
+
+
 
 # -- General configuration -----------------------------------------------------
 
@@ -31,8 +36,13 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx',
               'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 
+              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'edit_on_github', 
               'sphinxcontrib.napoleon']
+
+
+edit_on_github_project = "CognitionGuidedSurgery/msml"
+edit_on_github_branch = "master/docs/source"
+
 
 todo_include_todos = True
 
@@ -114,8 +124,9 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'bootstrap'
-import sphinx_bootstrap_theme
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+html_theme_path = ['_themes']
+#import sphinx_bootstrap_theme
+#html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -329,6 +340,7 @@ texinfo_documents = [
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 
+"""
 from sphinxcontrib.domaintools import custom_domain
 
 def setup(app):
@@ -346,3 +358,4 @@ def setup(app):
                 indextemplate = "pair: %s; operator",
             ),
         )))
+        """

@@ -4,8 +4,10 @@ analytics package
 
 .. toctree::
    :maxdepth: 4
+   :glob:
 
-    alphabet_analytics
+   *
+
 
 .. automodule:: msml.analytics
     :members:
