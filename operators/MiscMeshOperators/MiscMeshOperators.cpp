@@ -29,6 +29,8 @@
 
 #include "vtkUnstructuredGrid.h"
 
+#include "IOHelper.h"
+
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkTetra.h>
@@ -165,16 +167,15 @@ bool ConvertVTKToSTL(const char* infile, const char* outfile)
 //---------------------------- start of new by Nico on 2014-05-10.
 std::string ConvertVTKToVTUPython(std::string infile, std::string outfile)
 {
-	ConvertVTKToSTL( infile.c_str(), outfile.c_str());
-
+	ConvertVTKToVTU( infile.c_str(), outfile.c_str());
 	return outfile;
 }
 
 bool ConvertVTKToVTU(const char* infile, const char* outfile )
 {
 	std::cout<<"Converting "<<infile <<" to VTU\n";
-	vtkSmartPointer<vtkXMLUnstructuredGridReader> reader =
-	    vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+	    vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	reader->SetFileName(infile);
 	reader->Update();
 	//vtkPolyData* currentPolydata = reader->GetOutput();
