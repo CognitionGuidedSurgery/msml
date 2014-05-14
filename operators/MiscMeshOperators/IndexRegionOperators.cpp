@@ -178,6 +178,81 @@ namespace MSML {
         }
 
 
+        vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type) {
+            vector<double> points;
+
+
+            vtkSmartPointer<vtkUnstructuredGridReader> reader =
+                vtkSmartPointer<vtkUnstructuredGridReader>::New();
+            reader->SetFileName(filename.c_str());
+            reader->Update();
+
+            vtkUnstructuredGrid* theMesh = reader->GetOutput();
+
+            vtkPoints* thePoints = theMesh->GetPoints();
+            double* currentPoint = new double[3];
+
+            if(type.compare("points") == 0)
+            {
+                int count = 0;
+
+                auto it = indices.begin();
+                auto end = indices.end();
+
+                for(; it != end; it++)
+                {
+                    if(*it >= thePoints->GetNumberOfPoints()) {
+                       cerr << "ID to high" << endl;
+                       continue;
+                    }
+
+                      thePoints->GetPoint(*it, currentPoint);
+                      points.push_back(currentPoint[0]);
+                      points.push_back(currentPoint[1]);
+                      points.push_back(currentPoint[2]);
+                 }
+
+                cerr << count << " points found in box";
+            }/* TODO implement this
+
+            else if(type.compare("elements") == 0)
+            {
+                vtkCell* currentCell;
+                vtkUnsignedCharArray* cellsTypes = reader->GetOutput()->GetCellTypesArray();
+                vtkIdType numberOfPoints;
+                double currentBounds[6];
+                int count = 0;
+
+                for(unsigned int i=0; i<reader->GetOutput()->GetNumberOfCells(); i++)
+                {
+                    if (*cellsTypes->GetTuple(i) == VTK_TETRA || *cellsTypes->GetTuple(i) == VTK_HEXAHEDRON ||
+                            *cellsTypes->GetTuple(i) == VTK_QUADRATIC_TETRA || *cellsTypes->GetTuple(i) == VTK_QUADRATIC_HEXAHEDRON)
+                    {
+                        reader->GetOutput()->GetCellBounds(i, currentBounds);
+
+                        if( (currentBounds[0]>=box[0]) && (currentBounds[2]>=box[1]) && (currentBounds[4]>=box[2])
+                                && (currentBounds[1]<=box[3]) && (currentBounds[3]<=box[4]) && (currentBounds[5]<=box[5]))
+                        {
+                            indices.push_back(i);
+                            count++;
+                        }
+                    }
+                }
+            }
+*/
+            else
+            {
+                cerr<<"Error, this type is not supported\n";
+            }
+
+
+            delete [] currentPoint;
+
+//	std::cout<<indices.size()<< "indices found \n";
+            return points;
+
+        }
+
 //void PostProcessingOperators::computeIndicesFromBoxROI(vtkUnstructuredGrid* inputMesh, double box[6],std::vector<unsigned int> &indices)
 //{
 //

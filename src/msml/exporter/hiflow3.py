@@ -39,6 +39,7 @@ from msml.model import *
 import jinja2
 from msml.exceptions import *
 
+import msml.ext.misc
 
 class MSMLHiFlow3ExporterWarning(MSMLWarning): pass
 
@@ -208,31 +209,36 @@ class HiFlow3Exporter(Exporter):
         fp = None
         dc = None
 
+        mesh_name = self.evaluate_node(obj.mesh.mesh)
+
+
         for cs in obj.constraints:
             for constraint in cs.constraints:
-                points = self.evaluate_node(constraint.indices)
+                indices = self.evaluate_node(constraint.indices)
+                points = msml.ext.misc.positionFromIndices(mesh_name, indices, 'points')
+
+                count = len(indices)
+                points_str = ','.join(map(str,points))
 
                 assert isinstance(constraint, ObjectElement)
                 if constraint.tag == "fixedConstraint":
-                    NumberOfFixedDirichletPoints = 0  # no idea
-                    displacement = 0  # no idea
-                    fc = FixedConstraint(NumberOfFixedDirichletPoints, points, displacement)
+                    #TODO third field i did not understand
+                    fdis = ','.join(["0"] * len(points))
+                    fc = FixedConstraint(count, points_str, "")
                 elif constraint.tag == "displacementConstraint":
-                    # TODO get values
-                    dDisplacementsList = [0, 0, 0]
-                    nFoPBCPoints = [0, 0, 0]
-                    dc = DisplacementConstraint(len(points), points, dDisplacementsList, nFoPBCPoints)
+                    #get displacment "a b c" = split => ["a", "b", "c"] = expand to amount points => join
+                    displacement = ','.join(count * list(constraint.displacement.split(" ")))
+                    dc = DisplacementConstraint(count, points_str, displacement)
                 elif constraint.tag == "force":
-
                     force_vector = constraint.force  # assume [5 3 3] kg * m/s^2
                     fp = ForceOrPressure(len(points),
                                          points,
-                                         ' '.join(force_vector * len(points)))
+                                         ','.join(force_vector * len(points)))
 
         filename = '%s_%s_bc.xml' % (self._msml_file.filename.namebase, obj.id)
-        with open(filename, 'w') as fp:
+        with open(filename, 'w') as h:
             content = BCDATA_TEMPLATE.render(fp=fp, fc=fc, dc=dc)
-            fp.write(content)
+            h.write(content)
         return filename
 
         #

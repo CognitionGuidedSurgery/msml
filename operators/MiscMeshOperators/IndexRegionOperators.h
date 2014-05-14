@@ -66,6 +66,8 @@ namespace MSML {
 
         LIBRARY_API vector<unsigned int> computeIndicesFromBoxROI(string filename, vector<double> box, string type);
         LIBRARY_API vector<unsigned int> computeIndicesFromMaterialId(string filename, int id, string type);
+        LIBRARY_API vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type);
+
 //void computeIndicesFromBoxROI(vtkUnstructuredGrid* inputMesh, double box[6],IndicesListType &indices);
     }
 }
