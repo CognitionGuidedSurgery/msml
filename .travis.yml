@@ -7,8 +7,8 @@ before_install:
   - uname -r
   
 install:
-  
-before_script: 
-  
-script:
   - share/install_ubuntu12.04.sh  
+
+script:
+  - share/run_test.sh
+

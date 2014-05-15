@@ -52,17 +52,8 @@ cd cbuild
 #VCG not valid
 cmake -DVTK_DIR=/usr/bin/ -DMODULES_VCGOperators=OFF -DVCG_INCLUDE_DIR:PATH="/usr/include/" ../operators
 
-make -j 4
+make -j 2
 cd ..
 
 sudo pip install nose coveralls
 sudo pip install -r requirements.txt --use-mirrors
-
-export PYTHONPATH=$(pwd)/src/
-echo "Python Path: $PYTHONPATH"
-
-cd src/msmltest
-nosetests
-#python ./test_analytics_export_rst.py
-#python ./test_factory.py 
-#python ./test_visitor_framework.py
