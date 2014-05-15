@@ -40,7 +40,6 @@ __date__ = "2014-01-25"
 
 from path import path
 import os
-from msml.model.alphabet import Alphabet, PythonOperator, Slot, SharedObjectOperator, ShellOperator
 
 # msml alphabet search path
 alphabet_search_paths = list()
@@ -75,8 +74,8 @@ def load_user_file(loc = "~/.config/msmlrc.py"):
         import sys
         #Import release and debug paths here?
         sys.path.append(C.operators_path)
-        sys.path.append(C.operators_path_debug)
-        sys.path.append(C.operators_path_release)
+        #sys.path.append(C.operators_path_debug)
+        #sys.path.append(C.operators_path_release)
 
         #Add windows paths to python path - Python sometimes only checks this directories for dependencies (e.g. boost dlls)
         win_path = os.environ.get('path')
@@ -105,37 +104,14 @@ def load_alphabet(fil = "alphabet.cache"):
     :param fil:
     :return: Alphabet
     """
+    import msml.model.alphabet.Alphabet
+
     p = path(fil).expanduser().expandvars()
 
     if p.exists():
         global current_alphabet
-        current_alphabet = Alphabet.load(p);
+        current_alphabet = msml.model.alphabet.Alphabet.load(p)
         return current_alphabet
     else:
         print("WARNING: alphabet file »%s« not found, please run msml.py alphabet" % fil)
         return None
-
-def _debug_install_operators():
-    global current_alphabet
-    current_alphabet = Alphabet()
-
-    op_square = PythonOperator("square", [Slot('n', 'int', None, True)],
-                                         [Slot('n', 'int', None, True)],
-                                         runtime = {'exec':'python', 'module': 'test', 'function': 'square'})
-
-    op_square.function = lambda n: int(n) ** 2
-
-    op_output = PythonOperator("output", [Slot('object', '*', None, True)],
-                                         runtime = {'exec':'python', 'module': 'pprint', 'function': 'pprint'})
-
-    op_output.bind_function()
-    
-    op_ctype = SharedObjectOperator("ctime", None, [Slot('time', 'int', None, True)],
-                        runtime = {'exec':'so', 'file': 'libc.so.6', 'symbol': 'time'})
-    op_ctype.bind_function()
-
-    op_id = ShellOperator("id", [Slot('name', 'string', None, True)],
-                                         runtime = {'exec':'sh', 'template' : 'id {name}'})
-
-    current_alphabet.append((op_square, op_output, op_ctype, op_id))
-

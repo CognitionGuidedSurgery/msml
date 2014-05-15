@@ -21,11 +21,6 @@ REF_DIR = MSML_ROOT / "src/msmltest/references"
 TMP_DIR = MSML_ROOT / "src/msmltest/tmp"
 INP_DIR = MSML_ROOT / "src/msmltest/input"
 
-import os
-
-def fcmp(a,b):
-    print ("diff -b %s %s" %(a,b))
-    return os.system("diff -b %s %s" %(a,b)) == 0
 
 class OperatorTest(TestCase):
     def test_tetgen(self):
@@ -36,7 +31,7 @@ class OperatorTest(TestCase):
         P.CreateVolumeMeshPython(str(input_file),
                                  str(output_file), False)
 
-        self.assertTrue(fcmp(ref_file, output_file),
+        self.assertTrue(filecmp.cmp(ref_file, output_file),
                         "%s has not the same contents as %s" % (output_file, ref_file))
 
     def test_tetgen_sorts(self):
@@ -66,6 +61,6 @@ class OperatorTest(TestCase):
         M.ConvertVTKToVTUPython(str(input_file), str(output_file))
 
         self.assertTrue(
-            fcmp(output_file, reference_file),
+            filecmp.cmp(output_file, reference_file, False),
             "%s has not the same contents as %s" % (output_file, reference_file)
         )
