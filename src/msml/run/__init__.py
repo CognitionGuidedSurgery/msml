@@ -275,7 +275,7 @@ def get_python_conversion_operator(slotA, slotB):
 
 def create_conversion_task(slotA, slotB):
     fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
-    if not fn:
+    if fn is None:
         raise MSMLError("Could not find an automatic Converter for %s to %s" % (slotA, slotB))
 
     pyop = get_python_conversion_operator(slotA, slotB)

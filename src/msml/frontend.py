@@ -33,6 +33,12 @@ Frontend - cli interface of msml
 """
 
 from __future__ import print_function
+from .env import *
+
+#need first step caused of sys.path
+load_envconfig()
+
+
 
 from collections import OrderedDict
 from msml.run.GraphDotWriter import *

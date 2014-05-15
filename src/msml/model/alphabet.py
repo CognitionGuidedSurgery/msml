@@ -369,6 +369,7 @@ class PythonOperator(Operator):
             warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
                  MSMLUnknownModuleWarning, 0)
         except AttributeError, e:
+            print(dir(mod))
             warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name),
                  MSMLUnknownFunctionWarning, 0)
 
