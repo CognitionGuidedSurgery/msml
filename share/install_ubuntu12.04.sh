@@ -43,7 +43,8 @@ sudo apt-get install -y libtet1.4.2 libtet1.4.2-dev \
 			libboost-filesystem-dev libboost-python-dev \
 			libboost-program-options-dev libboost-graph-dev libboost-iostreams-dev \
 			libcgal-dev \
-			libvtk6 libvtk6-dev
+			libvtk6 libvtk6-dev \
+			swig
 
 echo "START with CMake:"
 mkdir cbuild
