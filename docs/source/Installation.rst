@@ -5,7 +5,7 @@ MSML uses a lot of other libraries for his native operators and requires some Py
 Following libraries are required:
 
 * `Visualization Toolit <http://vtk.org>`_ (required)
-* `Tetgen http://wias-berlin.de/software/tetgen/>`_ (optional)
+* `Tetgen <http://wias-berlin.de/software/tetgen/>`_ (optional)
 * `Computational Geometry Algorithms Library (CGAL) <https://www.cgal.org/>`_ (optional)
 * `VCG Library <http://vcg.isti.cnr.it/~cignoni/newvcglib/html/>`_ (optional)
 
