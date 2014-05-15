@@ -7,8 +7,8 @@
 
         <style>h1 {display:none;} .jumbotron h1 {display:block;}</style>
 
-msml - medical markup language
-==============================
+msml - medical simulation markup language
+=========================================
 
 .. raw:: html
 
@@ -36,11 +36,11 @@ msml - medical markup language
         <div class="container">
         <div class="row">
                  <div class="col-md-5">
-                    <img src="http://placehold.it/350x250" />
+                    <img src="_static/msml-logo3d.png" width="350" height="250" />
                  </div>
 
                  <div class="col-md-7">
-                        <h1>msml</h1>
+                        <!-- <h1>msml</h1> -->
 
 
 medical simulation markup language
@@ -51,7 +51,7 @@ MSML was created in the SFB125_ in a coorperation between KIT_ and DKFZ_.
 
 .. raw:: html
 
-                </div>
+                </div> 
         </div>
         </div>
    </div>
@@ -59,38 +59,44 @@ MSML was created in the SFB125_ in a coorperation between KIT_ and DKFZ_.
    <div class="container-fluid">
       <div class="row">
         <div class="col-xs-4">
-            <h3><a href="/about.html">About</a></h3>
-            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen
+            <h3><a href="/About.html">About</a></h3>
         </div>
         <div class="col-xs-4">
             <h3><a href="/Installation.html">Installation</a></h3>
-            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen
         </div>
         <div class="col-xs-4">
             <h3><a href="GettingStarted.html">Getting Started</a></h3>
-            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen
         </div>
       </div>
    </div>
 
    <div class="container-fluid">
       <div class="row">
+        <h3>Features</h3>
+        <ul>
+            <li>type safety</li>
+            <li>automatic conversion between file formats and data types</li>
+            <li>parallelism of task</li>
+        </ul>
+      </div>
+
+      <div class="row">
         <div class="col-xs-4">
-            <h3>PreProcessing</h3>
-            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen
+            <h3>Pre Processing</h3>
+            MSML provides a set of high level <a href="operators/index.html">operators</a> for getting your work done.
+            You can define easily your own in <a href="advanced/extendmsml.html#how-to-create-an-operator">C++ or Python</a>.
         </div>
         <div class="col-xs-4">
             <h3>Simulation</h3>
-            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen
+            MSML supports Abaqus, <a href="http://sofa-framework.org">Sofa</a> and <a href="http://hiflow3.org">Hiflow3</a> for running the simulation.
+            You can write your own <a href="advanced/extendmsml.html#how-to-create-an-operator">exporter</a> and benefit from the MSML ecosystem.
         </div>
         <div class="col-xs-4">
             <h3>Post Processing</h3>
-            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen
+            You can choose every <a href="operators/index.html">operator</a> to process the simulation results your data.
         </div>
       </div>
    </div>
-
-
 
 
 ..  <div>
