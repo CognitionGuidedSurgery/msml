@@ -16,6 +16,7 @@
 
 [![Build Status](https://travis-ci.org/CognitionGuidedSurgery/msml.svg?branch=master)](https://travis-ci.org/CognitionGuidedSurgery/msml)
 [![Build Status](https://drone.io/github.com/CognitionGuidedSurgery/msml/status.png)](https://drone.io/github.com/CognitionGuidedSurgery/msml/latest)
+[![Coverage Status](https://coveralls.io/repos/CognitionGuidedSurgery/msml/badge.png)](https://coveralls.io/r/CognitionGuidedSurgery/msml)
 
 # About
 

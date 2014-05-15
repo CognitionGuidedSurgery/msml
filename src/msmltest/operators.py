@@ -27,7 +27,7 @@ def fcmp(a,b):
     print ("diff -b %s %s" %(a,b))
     return os.system("diff -b %s %s" %(a,b)) == 0
 
-     def test_tetgen(self):
+    def test_tetgen(self):
         input_file = INP_DIR / 'Bunny6000Surface.vtk'
         ref_file = REF_DIR / 'test_tetgen_1.vtk'
         output_file = TMP_DIR / 'test_tetgen_1.vtk'
@@ -39,15 +39,15 @@ def fcmp(a,b):
                         "%s has not the same contents as %s" % (output_file, ref_file))
 
     def test_tetgen_sorts(self):
-          input_file = INP_DIR / 'Bunny6000Surface.vtk'
-          ref_file = REF_DIR / 'test_tetgen_2.vtk'
-          output_file = TMP_DIR / 'test_tetgen_2.vtk'
+        input_file = INP_DIR / 'Bunny6000Surface.vtk'
+        ref_file = REF_DIR / 'test_tetgen_2.vtk'
+        output_file = TMP_DIR / 'test_tetgen_2.vtk'
 
-          P.CreateVolumeMeshPython(MSMLString(input_file),
-                                   MSMLString(output_file), False)
+        P.CreateVolumeMeshPython(MSMLString(input_file),
+                                 MSMLString(output_file), False)
 
-          self.assertTrue(filecmp.cmp(ref_file, output_file),
-                          "%s has not the same contents as %s" % (output_file, ref_file))
+        self.assertTrue(filecmp.cmp(ref_file, output_file),
+                        "%s has not the same contents as %s" % (output_file, ref_file))
 
     def test_boxROIToIndexOperators(self):
         input_file = str(INP_DIR / 'bunnyVolumeMesh.vtk')
