@@ -274,13 +274,29 @@ def get_python_conversion_operator(slotA, slotB):
 
 
 def create_conversion_task(slotA, slotB):
+    """
+
+    :param slotA:
+    :type slotA: Reference.Ref
+    :param slotB:
+    :type slotB: Reference.Ref
+    :return:
+    """
+
     fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
     if fn is None:
         raise MSMLError("Could not find an automatic Converter for %s to %s" % (slotA, slotB))
 
+    def get_id(slot):
+        if isinstance(slot.task, Task):
+            return slot.task.id
+        if isinstance(slot.task, MSMLVariable):
+            return slot.task.name
+
+
     pyop = get_python_conversion_operator(slotA, slotB)
     pyop._function = fn
-    attrib = {'id': random_var_name(), 'i': None}
+    attrib = {'id': get_id(slotA), 'i': None}
     task = Task(pyop.name, attrib)
     task.operator = pyop
     return task

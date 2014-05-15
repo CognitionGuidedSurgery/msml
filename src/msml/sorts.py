@@ -339,7 +339,7 @@ try:
         :rtype: VTU
         """
 
-        name = "%s_auto_converted.vtu"
+        name = "%s_auto_converted.vtu" % vtk
         ConvertVTKToVTUPython(vtk, name)
         return VTU(name)
 
