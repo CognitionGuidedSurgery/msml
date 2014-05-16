@@ -1,3 +1,209 @@
+  * element_
+
+    * description_
+    * parameters_
+
+      * arg_
+
+        * meta_
+
+      * struct_
+
+        * arg_
+
+          * meta_
+
+
+
+    * inputs_
+
+      * arg_
+
+        * meta_
+
+      * struct_
+
+        * arg_
+
+          * meta_
+
+
+
+
+  * msml_
+
+    * variables_
+
+      * var_
+      * file_
+
+    * scene_
+
+      * group_
+
+        * object_
+
+          * body_
+          * material_
+
+            * region_
+
+          * constraints_
+
+            * constraint_
+
+          * mesh_
+
+            * linearTet_
+            * quadraticTet_
+            * triangularTet_
+
+          * sets_
+
+            * nodes_
+
+              * indexgroup_
+
+            * elements_
+
+              * indexgroup_
+
+            * surfaces_
+
+              * indexgroup_
+
+
+          * output_
+
+            * arg_
+
+              * meta_
+
+            * struct_
+
+              * arg_
+
+                * meta_
+
+
+
+
+
+      * object_
+
+        * body_
+        * material_
+
+          * region_
+
+        * constraints_
+
+          * constraint_
+
+        * mesh_
+
+          * linearTet_
+          * quadraticTet_
+          * triangularTet_
+
+        * sets_
+
+          * nodes_
+
+            * indexgroup_
+
+          * elements_
+
+            * indexgroup_
+
+          * surfaces_
+
+            * indexgroup_
+
+
+        * output_
+
+          * arg_
+
+            * meta_
+
+          * struct_
+
+            * arg_
+
+              * meta_
+
+
+
+
+
+    * workflow_
+    * environment_
+
+      * solver_
+      * simulation_
+
+        * step_
+
+
+
+  * operator_
+
+    * runtime_
+
+      * python_
+      * sh_
+      * so_
+
+    * input_
+
+      * arg_
+
+        * meta_
+
+      * struct_
+
+        * arg_
+
+          * meta_
+
+
+
+    * output_
+
+      * arg_
+
+        * meta_
+
+      * struct_
+
+        * arg_
+
+          * meta_
+
+
+
+    * parameters_
+
+      * arg_
+
+        * meta_
+
+      * struct_
+
+        * arg_
+
+          * meta_
+
+
+
+    * annotation_
+
+      * entry_
+
+
+
+
 .. annotation_
 
 annotation
@@ -9,6 +215,10 @@ annotation
 
 
 :Elements SEQUENCE:
+  * entry_ {0-0}
+
+:Parents: 
+  * operator_ 
 
 .. arg_
 
@@ -42,6 +252,14 @@ arg
 
 
 :Elements SEQUENCE:
+  * meta_ {0-0}
+
+:Parents: 
+  * struct_ 
+  * inputs_ 
+  * output_ 
+  * input_ 
+  * parameters_ 
 
 .. body_
 
@@ -54,6 +272,9 @@ body
 
 
 :Elements: *any element*
+
+:Parents: 
+  * object_ 
 
 .. constraint_
 
@@ -76,6 +297,9 @@ constraint
 
 :Elements: *any element*
 
+:Parents: 
+  * constraints_ 
+
 .. constraints_
 
 constraints
@@ -87,6 +311,10 @@ constraints
 
 
 :Elements SEQUENCE:
+  * constraint_ {0-0}
+
+:Parents: 
+  * object_ 
 
 .. description_
 
@@ -98,6 +326,10 @@ description
 
 
 
+:Elements: none
+
+:Parents: 
+  * element_ 
 
 .. element_
 
@@ -123,6 +355,8 @@ element
   * parameters_ {0-1}
   * inputs_ {0-1}
 
+:Parents: None
+
 .. elements_
 
 elements
@@ -134,6 +368,10 @@ elements
 
 
 :Elements SEQUENCE:
+  * indexgroup_ {0-0}
+
+:Parents: 
+  * sets_ 
 
 .. entry_
 
@@ -154,7 +392,10 @@ entry
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * annotation_ 
 
 .. environment_
 
@@ -169,6 +410,9 @@ environment
 :Elements SEQUENCE:
   * solver_ {1-1}
   * simulation_ {1-1}
+
+:Parents: 
+  * msml_ 
 
 .. file_
 
@@ -197,7 +441,10 @@ file
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * variables_ 
 
 .. group_
 
@@ -212,6 +459,10 @@ group
 :Elements SEQUENCE of CHOICE:
   * group_ {1-1}
   * object_ {1-1}
+
+:Parents: 
+  * scene_ 
+  * group_ 
 
 .. indexgroup_
 
@@ -232,7 +483,12 @@ indexgroup
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * surfaces_ 
+  * nodes_ 
+  * elements_ 
 
 .. input_
 
@@ -248,6 +504,9 @@ input
   * arg_ {1-1}
   * struct_ {1-1}
 
+:Parents: 
+  * operator_ 
+
 .. inputs_
 
 inputs
@@ -261,6 +520,9 @@ inputs
 :Elements SEQUENCE of CHOICE:
   * arg_ {1-1}
   * struct_ {1-1}
+
+:Parents: 
+  * element_ 
 
 .. linearTet_
 
@@ -281,7 +543,10 @@ linearTet
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * mesh_ 
 
 .. material_
 
@@ -294,6 +559,10 @@ material
 
 
 :Elements SEQUENCE:
+  * region_ {0-0}
+
+:Parents: 
+  * object_ 
 
 .. mesh_
 
@@ -309,6 +578,9 @@ mesh
   * linearTet_ {1-1}
   * quadraticTet_ {1-1}
   * triangularTet_ {1-1}
+
+:Parents: 
+  * object_ 
 
 .. meta_
 
@@ -329,7 +601,10 @@ meta
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * arg_ 
 
 .. msml_
 
@@ -347,6 +622,8 @@ msml
   * workflow_ {0-1}
   * environment_ {0-1}
 
+:Parents: None
+
 .. nodes_
 
 nodes
@@ -358,6 +635,10 @@ nodes
 
 
 :Elements SEQUENCE:
+  * indexgroup_ {0-0}
+
+:Parents: 
+  * sets_ 
 
 .. object_
 
@@ -382,6 +663,10 @@ object
   * sets_ {0-1}
   * output_ {0-1}
 
+:Parents: 
+  * scene_ 
+  * group_ 
+
 .. operator_
 
 operator
@@ -404,6 +689,8 @@ operator
   * parameters_ {0-1}
   * annotation_ {0-1}
 
+:Parents: None
+
 .. output_
 
 output
@@ -418,6 +705,10 @@ output
   * arg_ {1-1}
   * struct_ {1-1}
 
+:Parents: 
+  * operator_ 
+  * object_ 
+
 .. parameters_
 
 parameters
@@ -431,6 +722,10 @@ parameters
 :Elements SEQUENCE of CHOICE:
   * arg_ {1-1}
   * struct_ {1-1}
+
+:Parents: 
+  * operator_ 
+  * element_ 
 
 .. python_
 
@@ -451,7 +746,10 @@ python
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * runtime_ 
 
 .. quadraticTet_
 
@@ -472,7 +770,10 @@ quadraticTet
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * mesh_ 
 
 .. region_
 
@@ -495,6 +796,9 @@ region
 
 :Elements: *any element*
 
+:Parents: 
+  * material_ 
+
 .. runtime_
 
 runtime
@@ -510,6 +814,9 @@ runtime
   * sh_ {1-1}
   * so_ {1-1}
 
+:Parents: 
+  * operator_ 
+
 .. scene_
 
 scene
@@ -523,6 +830,9 @@ scene
 :Elements SEQUENCE of CHOICE:
   * group_ {1-1}
   * object_ {1-1}
+
+:Parents: 
+  * msml_ 
 
 .. sets_
 
@@ -538,6 +848,9 @@ sets
   * nodes_ {0-1}
   * elements_ {0-1}
   * surfaces_ {0-1}
+
+:Parents: 
+  * object_ 
 
 .. sh_
 
@@ -562,7 +875,10 @@ sh
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * runtime_ 
 
 .. simulation_
 
@@ -575,6 +891,10 @@ simulation
 
 
 :Elements SEQUENCE:
+  * step_ {0-0}
+
+:Parents: 
+  * environment_ 
 
 .. so_
 
@@ -595,7 +915,10 @@ so
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * runtime_ 
 
 .. solver_
 
@@ -616,7 +939,10 @@ solver
   * *timeIntegration* : `string` of [dynamicImplicitEuler, Newmark]    NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * environment_ 
 
 .. step_
 
@@ -641,7 +967,10 @@ step
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * simulation_ 
 
 .. struct_
 
@@ -663,6 +992,13 @@ struct
 
 
 :Elements SEQUENCE:
+  * arg_ {0-0}
+
+:Parents: 
+  * inputs_ 
+  * output_ 
+  * input_ 
+  * parameters_ 
 
 .. surfaces_
 
@@ -675,6 +1011,10 @@ surfaces
 
 
 :Elements SEQUENCE:
+  * indexgroup_ {0-0}
+
+:Parents: 
+  * sets_ 
 
 .. triangularTet_
 
@@ -695,7 +1035,10 @@ triangularTet
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * mesh_ 
 
 .. var_
 
@@ -724,7 +1067,10 @@ var
     NO DOCUMENTATION
 
 
-:Elements: *any element*
+:Elements: none
+
+:Parents: 
+  * variables_ 
 
 .. variables_
 
@@ -740,6 +1086,9 @@ variables
   * var_ {1-1}
   * file_ {1-1}
 
+:Parents: 
+  * msml_ 
+
 .. workflow_
 
 workflow
@@ -751,4 +1100,7 @@ workflow
 
 
 :Elements: *any element*
+
+:Parents: 
+  * msml_ 
 
