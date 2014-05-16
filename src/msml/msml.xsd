@@ -140,20 +140,21 @@
                              maxOccurs="1">
                     </element>
                     <element name="sets" type="msml:sets_t" minOccurs="0"
-                             maxOccurs="1">
-                    </element>
-                    <element name="output" minOccurs="0" maxOccurs="1">
-                        <complexType>
-                            <sequence>
-                                <any processContents="lax"/>
-                            </sequence>
-                            <anyAttribute/>
-                        </complexType>
-                    </element>
+                             maxOccurs="1"/>
+                    <element name="output" minOccurs="0" maxOccurs="1" type="msml:object_output_t"/>
                 </all>
                 <attribute name="id" type="string"/>
             </extension>
         </complexContent>
+    </complexType>
+
+    <complexType name="object_output_t">
+        <sequence minOccurs="0" maxOccurs="unbounded">
+            <choice>
+                <any processContents="lax"/>
+            </choice>
+        </sequence>
+        <anyAttribute/>
     </complexType>
 
     <complexType name="group_t">
@@ -175,8 +176,6 @@
     <complexType name="scene_t">
         <complexContent>
             <extension base="msml:group_t">
-
-
             </extension>
         </complexContent>
     </complexType>
@@ -198,10 +197,9 @@
             <simpleType>
                 <restriction base="string">
                     <enumeration value="constraint"/>
-                    <enumeration value="mesh"/>
                     <enumeration value="basic"/>
-                    <enumeration value="indexgroup"/>
                     <enumeration value="material"/>
+                    <enumeration value="output"/>
                 </restriction>
             </simpleType>
         </attribute>
@@ -258,9 +256,13 @@
 
     <complexType name="workflow_t">
         <sequence>
-            <any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+            <choice>
+                <any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+            </choice>
         </sequence>
     </complexType>
+
+
     <complexType name="environment_t">
         <sequence>
             <element name="solver">
@@ -346,36 +348,36 @@
         <anyAttribute/>
     </complexType>
 
-    <complexType name="material_type"/>
+    <!--<complexType name="material_type"/>-->
+
+    <complexType name="region_t">
+        <sequence minOccurs="1" maxOccurs="unbounded">
+            <choice>
+                <any processContents="skip"/>
+            </choice>
+        </sequence>
+        <attribute name="id" type="string" use="required"/>
+        <attribute name="indices" type="string" use="required"/>
+    </complexType>
 
     <complexType name="material_t">
         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element name="region" minOccurs="0" maxOccurs="unbounded">
-                <complexType>
-                    <sequence minOccurs="1" maxOccurs="unbounded">
-                        <choice>
-                            <any processContents="skip"/>
-                        </choice>
-                    </sequence>
-                    <attribute name="id" type="string" use="required"/>
-                    <attribute name="indices" type="string" use="required"/>
-                </complexType>
-            </element>
+            <element name="region" minOccurs="0" maxOccurs="unbounded" type="msml:region_t"/>
         </sequence>
         <anyAttribute/>
     </complexType>
 
+    <complexType name="constraint_t">
+        <sequence>
+            <any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </sequence>
+        <attribute name="name" type="string"/>
+        <attribute name="forStep" type="string"/>
+    </complexType>
+
     <complexType name="constraints_t">
         <sequence minOccurs="1" maxOccurs="unbounded">
-            <element name="constraint" minOccurs="1" maxOccurs="unbounded">
-                <complexType>
-                    <sequence>
-                        <any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-                    </sequence>
-                    <attribute name="name" type="string"/>
-                    <attribute name="forStep" type="string"/>
-                </complexType>
-            </element>
+            <element name="constraint" minOccurs="1" maxOccurs="unbounded" type="msml:constraint_t"/>
         </sequence>
     </complexType>
 

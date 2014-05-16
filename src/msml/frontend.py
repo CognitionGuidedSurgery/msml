@@ -71,7 +71,7 @@ OPTIONS = """
 Usage:
   msml exec     [-w] [options] [<file>...]
   msml show     [options] <file>
-  msml writexsd [-a DIR] XSDFile
+  msml writexsd <XSDFile>
   msml check    [<file>...]
   msml validate
 
@@ -226,7 +226,12 @@ class App(object):
         return alphabet
 
     def writexsd(self):
-        print("writexsd not implemented")
+        import msml.analytics.schema_creator
+
+        content = msml.analytics.schema_creator.xsd(self.alphabet)
+        with open(self._options['<XSDFile>'],'w') as fp:
+            fp.write(content)
+            print(content)
 
     def check_file(self):
         for f in self.files:

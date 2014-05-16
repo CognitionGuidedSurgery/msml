@@ -43,6 +43,7 @@ from ..sorts import conversion
 
 
 
+
 # from msml.model.alphabet import Argument cycle
 from msml.sorts import get_sort
 
@@ -69,34 +70,7 @@ def xor(l):
     return reduce(lambda x, y: x ^ y, map(bool, l), False)
 
 
-Argument = namedtuple('Argument', 'name,format,type,required')
-
-
-class struct(dict):
-    def __getattr__(self, attr):
-        a = self[attr]
-        if isinstance(a, dict):
-            return struct(a)
-        return a
-
-    # __getattr__= dict.__getitem__
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
-
-
-def structure(name, field_names):
-    class _allset(object):
-        def __init__(self, **kwargs):
-            self.__dict__.update(kwargs)
-
-    return type(name, (_allset,), {f: None for f in field_names.split('[ ,]')})
-
-
 class MSMLFile(object):
-    """
-
-    """
-
     def __init__(self, variables=None, workflow=None, scene=None, env=None, output=None):
         if variables:
             self._variables = {v.name: v for v in variables}
@@ -209,13 +183,16 @@ class MSMLFile(object):
         self._variables[var.name] = var;
 
     def find_simulation_step(self, name):
+        """Tries to find the simulation step with the given `name`
+
+        :param name: name of the simulation step
+        :type name: str
+        :rtype: NoneType or msml.model.base.Environment.Simulation.Step
+        """
         name = name.strip("{$}")
-        for env in self.env['environment']:
-            if 'simulation' in env:
-                for sstep in env['simulation']:
-                    if sstep['@name'] == name:
-                        return sstep
-        #TODO WARNING! sim step not found
+        for step in self.env.simulation:
+            if step.name == name:
+                return step
         return None
 
 
@@ -243,11 +220,17 @@ class Workflow(object):
 
 
 class MSMLEnvironment(object):
-    """<solver linearSolver="iterativeCG" processingUnit="CPU"
+    """
+
+    .. code-block: xml
+
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
             <step name="initial" dt="0.05" iterations="100"/>
-        </simulation>"""
+        </simulation>
+
+    """
 
     class Simulation(list):
         class Step(object):
@@ -297,7 +280,9 @@ class MSMLEnvironment(object):
         self.simulation = MSMLEnvironment.Simulation()
         self.solver = MSMLEnvironment.Solver()
 
+
 from ..log import report
+
 
 class MSMLVariable(object):
     def __init__(self, name, physical=None, logical=None, value=None):
@@ -314,14 +299,13 @@ class MSMLVariable(object):
             report(s, 'F', 666)
             raise MSMLError(s)
 
-        self.\
+        self. \
             sort = get_sort(self.physical_type, self.logical_type)
         if not isinstance(self.value, self.sort.physical):
-            report("Need convert value of %s" % self, 'I',6161)
+            report("Need convert value of %s" % self, 'I', 6161)
             from_type = type(self.value)
             converter = conversion(from_type, self.sort)
             self.value = converter(self.value)
-
 
 
     def __str__(self):
@@ -338,7 +322,6 @@ class MSMLVariable(object):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self._find_sort()
-
 
 
 class MSMLFileVariable(object):
@@ -771,10 +754,6 @@ class IndexGroup(object):
 
 
 class Mesh(object):
-    """
-
-    """
-
     def __init__(self, type="linear", id=None, mesh=None):
         self.type = type
         self.id = id
@@ -782,9 +761,6 @@ class Mesh(object):
 
 
 class MaterialRegion(IndexGroup, list):
-    """
-
-    """
     def __init__(self, id, indices, elements=None):
         IndexGroup.__init__(self, id, indices)
         list.__init__(self, elements if elements else [])
