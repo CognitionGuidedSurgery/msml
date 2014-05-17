@@ -46,7 +46,7 @@ from ..exceptions import *
 from .alphabet import Alphabet, Operator, PythonOperator, SharedObjectOperator, ShellOperator, \
     Slot, ObjectAttribute, OAMaterial, OAConstraint, OAOutput
 
-from .base import MSMLFile, MSMLVariable, struct, \
+from .base import MSMLFile, MSMLVariable, \
     MSMLFileVariable, Workflow, Task, ObjectElement, SceneObject, \
     ObjectConstraints, SceneSets, IndexGroup, Mesh, MaterialRegion, \
     Reference, parse_attribute_value, random_var_name, Constant, MSMLEnvironment

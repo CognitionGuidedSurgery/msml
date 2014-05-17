@@ -230,7 +230,7 @@ class SofaExporter(XMLExporter):
                     for i in indices_int:
                         density[i] = currentDensity
                 else:
-                    warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
+                    warn("Material Type not supported %s" % currentMaterialType, MSMLSOFAExporterWarning)
 
         keylist = density.keys()
         keylist.sort()
