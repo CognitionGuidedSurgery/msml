@@ -494,7 +494,10 @@ def element_factory(element_node):
 
     obj = clazz(name=name, quantity=quantity)
 
-    description = element_node.find('description').text.strip()
+    description = element_node.find('description').text
+
+    if description is not None:
+        description = description.strip()
 
     input_node = element_node.find('input')
     parameter_node = element_node.find('parameters')

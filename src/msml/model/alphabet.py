@@ -193,7 +193,18 @@ class OAOutput(ObjectAttribute):
 
 
 class OAConstraint(ObjectAttribute):
-    pass
+    def validate(self):
+        """validates a Object Constraints.
+
+        :constraints: * indices attribute have to present
+        :rtype: bool
+        """
+
+        if 'indices' in self.parameters:
+            return True
+        else:
+            report("OAConstraint: %s does not have an indices attribute defined" % self.name, 'E', 182)
+            return False
 
 
 class OAMaterial(ObjectAttribute):

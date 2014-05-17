@@ -2,9 +2,7 @@ from __future__ import print_function
 
 __author__ = 'weigl'
 
-
 from lxml import etree
-from warnings import warn
 
 from .visitor import *
 import math
@@ -12,6 +10,7 @@ import math
 
 class MSMLSOFAExporterWarning(Warning):
     pass
+
 
 def SubElement(root, tag, **kwargs):
     skwargs = {k: str(v) for k, v in kwargs.items()}
@@ -245,7 +244,7 @@ class SofaVisitor(Visitor):
 
             indices_int = [int(i) for i in indices.split(",")]
 
-            #Get all materials
+            # Get all materials
             for material in matregion:
                 assert isinstance(material, ObjectElement)
 
@@ -277,7 +276,7 @@ class SofaVisitor(Visitor):
         poissons_str = _to_str(poissons)
 
 
-        #merge all different materials to single forcefield/density entries.
+        # merge all different materials to single forcefield/density entries.
         if _object.find("MeshTopology") is not None:
 
             SubElement(_object, "TetrahedronFEMForceField",
@@ -313,7 +312,7 @@ class SofaVisitor(Visitor):
             filename = self.working_dir / request.id
             if request.tag == "displacementOutputRequest":
                 if _object.find("MeshTopology") is not None:
-                    #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
+                    # dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
                     exportEveryNumberOfSteps = request.get("timestep")
 
                     dispOutputNode = SubElement(_object, "VTKExporter",
@@ -343,13 +342,13 @@ class SofaVisitor(Visitor):
                     SubElement(_object, "ExtendedVTKExporter",
                                filename=filename,
                                exportEveryNumberOfSteps=exportEveryNumberOfSteps,
-                               #todo export material => allows extraction of surfaces in post processing
+                               # todo export material => allows extraction of surfaces in post processing
                                tetras=0,
                                quadraticTetras=1,
                                listening="true",
                                exportAtEnd="true")
 
-                    #TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
+                    # TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
                 else:
                     warn(MSMLSOFAExporterWarning, "Topolgy type not supported")
 

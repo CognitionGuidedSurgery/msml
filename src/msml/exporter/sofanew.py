@@ -203,40 +203,42 @@ class SofaExporter(XMLExporter):
         poissons = {}
         density = {}
 
+
         for matregion in msmlObject.material:
             assert isinstance(matregion, MaterialRegion)
             indices_key = matregion.indices
             indices_vec = self.evaluate_node(indices_key)
             indices = '%s' % ', '.join(map(str, indices_vec))
 
+
             indices_int = [int(i) for i in indices.split(",")]
+            indices_int.sort()
 
             #Get all materials
             for material in matregion:
                 assert isinstance(material, ObjectElement)
+                currentMaterialType = material.tag
 
-                currentMaterialType = material.attributes['__tag__']
-                if currentMaterialType == "indexgroup":
-                    continue
-
-                if currentMaterialType == "linearElastic":
+                if currentMaterialType == "linearElasticMaterial":
                     currentYoungs = material.attributes["youngModulus"]
                     currentPoissons = material.attributes["poissonRatio"]  # not implemented in sofa yet!
                     for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
                         youngs[i] = currentYoungs
                         poissons[i] = currentPoissons
                 elif currentMaterialType == "mass":
-                    currentDensity = material.attributes["density"]
+                    currentDensity = material.attributes["massDensity"]
                     for i in indices_int:
                         density[i] = currentDensity
                 else:
                     warn("Material Type not supported %s" % currentMaterialType, MSMLSOFAExporterWarning)
 
-        keylist = density.keys()
-        keylist.sort()
 
-        _select = lambda x: (x[k] for k in keylist)
-        _to_str = lambda x: ' '.join(_select(x))
+
+        def _to_str(map):
+            keys = list(map.keys())
+            keys.sort()
+            sorted_values = (map[k] for k in keys)
+            return ' '.join(sorted_values)
 
         density_str = _to_str(density)
         youngs_str = _to_str(youngs)
@@ -248,7 +250,7 @@ class SofaExporter(XMLExporter):
             elasticNode = self.sub("TetrahedronFEMForceField", objectNode,
                                    template=self._processing_unit, name="FEM",
                                    listening="true", youngModulus=youngs_str,
-                                   poissonRatio=poissons[keylist[0]])
+                                   poissonRatio=poissons[indices_int[0]])
             self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)

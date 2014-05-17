@@ -40,11 +40,6 @@ from path import path
 
 from msml.exceptions import *
 from ..sorts import conversion
-
-
-
-
-# from msml.model.alphabet import Argument cycle
 from msml.sorts import get_sort
 
 
@@ -55,22 +50,32 @@ __date__ = "2014-01-25"
 def xor(l):
     """
     xor on iterables
+
     >>> l1 = [0, 1 , 0]
     >>> l2 = [1, 1 , 0]
     >>> l3 = [1, 1 , 1]
     >>> xor(l1)
     True
-
     >>> xor(l2)
     False
-
     >>> xor(l3)
     True
+
+
+    :returns: True if an odd numbers of True values within the ``l``
     """
     return reduce(lambda x, y: x ^ y, map(bool, l), False)
 
 
 class MSMLFile(object):
+    """Main model of this project.
+
+    It holds the datastructure for an whole file.
+    Consists of variables, workflow, scene and environment settings.
+    It provides function for validation and reference bind between workflow, scene and variables.
+
+    """
+
     def __init__(self, variables=None, workflow=None, scene=None, env=None, output=None):
         if variables:
             self._variables = {v.name: v for v in variables}
@@ -87,24 +92,43 @@ class MSMLFile(object):
 
     @property
     def variables(self):
+        """
+        :type: dict[str, MSMLVariable]
+        :return:
+        """
         return self._variables
 
     @property
     def workflow(self):
+        """
+        :type: Workflow
+        :return:
+        """
         return self._workflow
 
     @property
     def scene(self):
+        """
+        :type: list[ SceneObject ]
+        :return:
+        """
         return self._scene
 
     @property
     def env(self):
+        """
+        :type: MSMLEnvironment
+        :return:
+        """
         return self._env
 
     @property
     def output(self):
+        """
+        :type: list[ObjectElement]
+        :return:
+        """
         return self._output
-
 
     @property
     def exporter(self):
@@ -115,28 +139,60 @@ class MSMLFile(object):
         self._exporter = exp
 
     def exists_var(self, name):
+        """checks if variable with ``name`` exists
+
+
+        :param name: name of a variable
+        :type name: str
+
+        :return:
+        :rtype: bool
+        """
         return name in self._variables
 
     def get_var(self, name):
+        """ returns a variable with name if it exists
+
+        :param name:
+        :return:
+        """
         return self._variables[name]
 
     def validate(self, alphabet=None):
+        """validates the given MSMLFile.
+        Delegate this to his children.
+
+        :param alphabet:
+        :rtype: bool
+        :return:
+        """
         if not alphabet:
             import msml.env
 
             alphabet = msml.env.current_alphabet
 
-        self._workflow.bind_operators(alphabet)
-        self._workflow.link(alphabet, self)
+        b = all(call_method_list(self.scene, "bind", alphabet))
 
-        # exporter can link his variables against msml file
-        self._exporter.link()
-
-        self._workflow.check_arguments()
-        return True
+        self.workflow.bind_operators(alphabet)
+        self.workflow.link(alphabet, self)
+        call_method_list(self.scene, "validate")
+        self.exporter.link()
+        a = self.workflow.check_arguments()
+        return a and b
 
     def lookup(self, ref, outarg=True):
-        "lookup a reference, consists of task id and output arg"
+        """Lookup a ``reference``.
+        In ``reference`` the ``task`` has to be set. The user get a warnung if the reference is ambiguous.
+        The lookup order is: task, variable, exporter.
+
+        :param ref: an open reference 
+        :type ref: Reference
+        :param outarg: specifies to look for an input (+ parameters) or output slot
+        :type outarg: bool
+        :return: the closed reference or None
+        :rtype: Reference or None
+        """
+
 
         def lookup_exporter():
             return self._exporter.lookup(ref, outarg)
@@ -148,7 +204,7 @@ class MSMLFile(object):
                 op = task.operator
                 args = op.output if outarg else op.input + op.parameters
                 if ref.slot:
-                    #choose slot
+                    # choose slot
                     return task, args[ref]
                 else:
                     # choose first from output/input
@@ -169,7 +225,7 @@ class MSMLFile(object):
 
         first_true = looked_up[0] or looked_up[1] or looked_up[2]
         if not xor(looked_up):
-            #raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
+            # raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
             #relaxed /weigl
             warnings.warn("reference %s is ambigous. Found: %s" % (ref, looked_up))
 
@@ -180,7 +236,13 @@ class MSMLFile(object):
 
 
     def add_variable(self, var):
-        self._variables[var.name] = var;
+        """adds the given ``var`` to the list of variables
+        This call replaces a variable with the same name.
+        :param var: a new variable
+        :type var: MSMLVariable
+        :return: None
+        """
+        self._variables[var.name] = var
 
     def find_simulation_step(self, name):
         """Tries to find the simulation step with the given `name`
@@ -347,7 +409,20 @@ class MSMLFileVariable(object):
 
 
 class Constant(object):
-    """A `constant` value within attribute values.
+    """A constant value within attribute values.
+
+    .. note::
+
+       ``<op-name a="c">``
+
+       The attribute ``a`` will be coded as an :py:class:`Constant` with value ``c``.
+
+    This class will be created py :py:func:`parse_attribute_value`
+
+    .. seealso::
+
+        :py:func:`parse_parse_attribute_value`
+
     """
 
     def __init__(self, value):
@@ -355,7 +430,7 @@ class Constant(object):
 
     @property
     def value(self):
-        """the value of this constant, readonly """
+        """the value of this constant, **readonly**"""
         return self._value
 
 
@@ -437,7 +512,7 @@ def random_var_name():
     return "_gen_%03d_" % random_var_name.current_number
 
 
-random_var_name.current_number = 0  #start with zero
+random_var_name.current_number = 0  # start with zero
 
 
 def is_generated_name(name):
@@ -518,7 +593,7 @@ class Task(object):
                 ref.link_from_task(outtask, outarg)
 
                 try:
-                    #ref.link_to_task(self, self.operator.input[key])
+                    # ref.link_to_task(self, self.operator.input[key])
                     if key in self.operator.input:
                         ref.link_to_task(self, self.operator.input[key])
                     else:
@@ -544,7 +619,7 @@ class Task(object):
             raise BindError("self.operator is not bound to an operator (call Workflow.bind_operator?)")
 
             # if self.id:
-            #    raise MSMLError("Task does not have an <id> attribute")
+            # raise MSMLError("Task does not have an <id> attribute")
 
             # for arg in self.arguments.values():
             #    if arg.inarg.required and arg.outarg is None:
@@ -559,13 +634,25 @@ class Task(object):
 
 
 class SceneObjectSets(object):
+    """
+
+    """
+
     def __init__(self, elements=None, nodes=None, surfaces=None):
         self.elements = elements
         self.nodes = nodes
         self.surfaces = surfaces
 
 
+def call_method_list(seq, method, *args):
+    return map(lambda element: getattr(element, method)(*args), seq)
+
+
 class SceneObject(object):
+    """
+
+    """
+
     def __init__(self, oid, mesh=None, sets=SceneObjectSets(), material=None, constraints=None):
         self._id = oid
         self._mesh = mesh if mesh else Mesh()
@@ -573,6 +660,28 @@ class SceneObject(object):
         self._constraints = constraints if constraints else list()
         self._sets = sets
         self._output = list()
+
+    def bind(self, alphabet):
+        """
+
+        :return:
+        """
+        call_method_list(self.material, 'bind', alphabet)
+        call_method_list(self.constraints, 'bind', alphabet)
+        call_method_list(self.output, 'bind', alphabet)
+
+    def validate(self):
+        """
+        :return:
+        :rtype: bool
+        """
+
+        a = self.mesh.validate()
+        b = call_method_list(self.material, 'validate')
+        c = call_method_list(self.constraints, 'validate')
+        d = call_method_list(self.output, 'validate')
+
+        return all([a] + b + c + d)
 
     @property
     def id(self):
@@ -592,6 +701,10 @@ class SceneObject(object):
 
     @property
     def mesh(self):
+        """
+        :type: Mesh
+        :return:
+        """
         return self._mesh
 
     @mesh.setter
@@ -632,21 +745,20 @@ class SceneObject(object):
         self._material = mat
 
 
-from abc import abstractmethod
-
-
-class SceneGroup(object):
-    "unused"
-
-    @abstractmethod
-    def __init__(self):
-        pass
-
-
 class ObjectElement(object):
+    """This class describe an instance of an :py:class:`ObjectAttribute`
+
+    """
+
     def __init__(self, attrib={}, meta=None):
         self.attributes = attrib
+        """a dictionary of the given xml attributes
+        :type: dict
+        """
         self.meta = meta
+        """the given ObjectAttribute template
+        :type: ObjectAttribute
+        """
 
     def __getattr__(self, item):
         return self.get(item, None)
@@ -660,16 +772,35 @@ class ObjectElement(object):
         self.meta = alphabet.get(self.__tag__)
 
     def validate(self):
-        if self.meta is None:
-            raise MSMLError("for %s is no meta defined" % self.__tag__)
+        """
 
-        for key, value in self.attributes:
+        :return:
+        """
+        b, c = True, True
+        if self.meta is None:
+            raise MSMLError("for %s is no meta defined. The element %s is not part of the givne MSML Alphabet" % (
+            self.__tag__, self.__tag__))
+
+        for key, value in self.attributes.items():
+            if key == "__tag__":
+                continue
+
             if key not in self.meta.parameters:
-                warnings.warn(MSMLWarning,
-                              "Paramter %s of Element %s is not specify in definition." % (key, self.meta.name))
+                report("Parameter %s of Element %s is not specified in definition." % (key, self.meta.name), 'E')
+                b = False
+
+        for key, value in self.meta.parameters.items():
+            if key not in self.attributes and value.required:
+                report("Parameter %s of Definiton %s is not specified in msml file." % (key, self.id or self.meta.name),
+                       'F')
+                c = False
+
+        return b and c
 
     @property
     def tag(self):
+        """:return: the element (tag) name, this is the same as the `ObjectAttribute.name` in `self.meta`
+        """
         return self.attributes['__tag__']
 
     @tag.setter
@@ -685,6 +816,11 @@ class ObjectElement(object):
         self._meta = new
 
     def _get(self, attribute):
+        """
+
+        :param attribute:
+        :return:
+        """
         if attribute in self.attributes:
             return self.attributes[attribute]
         else:
@@ -693,6 +829,12 @@ class ObjectElement(object):
         raise KeyError("Could not find %s in ObjectElement attributes or a parameter default")
 
     def get(self, attribute, default=None):
+        """
+
+        :param attribute:
+        :param default:
+        :return:
+        """
         try:
             return self._get(attribute)
         except KeyError:
@@ -700,10 +842,26 @@ class ObjectElement(object):
 
 
 class ObjectConstraints(object):
+    """Constraints for a timestep (``for_step``)
+    """
+
     def __init__(self, name, forStep="initial"):
         self._name = name
         self._forStep = forStep
         self._constraints = []
+
+    def bind(self, alphabet):
+        """binds all constraints to the given ``alphabet``
+        :type alphabet: msml.model.alphabet.Alphabet
+        :return: None
+        """
+        call_method_list(self.constraints, 'bind', alphabet)
+
+    def validate(self):
+        """validates all constraints
+        :return: True iff. all constraints valid, and ``for_step`` is set
+        """
+        return all(map(lambda x: x.validate(), self.constraints))
 
     @property
     def index_group(self):
@@ -714,6 +872,10 @@ class ObjectConstraints(object):
 
     @property
     def name(self):
+        """
+        :type: str
+        :return:
+        """
         return self._name
 
     @name.setter
@@ -722,6 +884,10 @@ class ObjectConstraints(object):
 
     @property
     def for_step(self):
+        """
+        :type: str
+        :return:
+        """
         return self._forStep
 
     @for_step.setter
@@ -730,6 +896,10 @@ class ObjectConstraints(object):
 
     @property
     def constraints(self):
+        """
+        :type: list[ObjectElement]
+        :return:
+        """
         return self._constraints
 
     @constraints.setter
@@ -737,30 +907,119 @@ class ObjectConstraints(object):
         self._constraints = v
 
     def add_constraint(self, *constraints):
+        """add ``constraints`` to this object
+        ;type constraints: ObjectElement
+        :param constraints:
+        :return:
+        """
         self._constraints += constraints
 
 
 class SceneSets(object):
-    def __init__(self, nodes=list(), surfaces=list(), elements=list()):
-        self.nodes = nodes
-        self.surfaces = surfaces
-        self.elements = elements
+    """Represents the sets with an :py:class:`SceneObject`
+    """
+
+    def __init__(self, nodes=None, surfaces=None, elements=None):
+        self.nodes = nodes or list()
+        self.surfaces = surfaces or list()
+        self.elements = elements or list()
 
 
 class IndexGroup(object):
+    """The indexgroup element
+
+    .. code-block:: xml
+
+        <indexgroup id="" indices="" />
+
+    """
+
     def __init__(self, id, indices):
         self.id = id
         self.indices = indices
 
 
 class Mesh(object):
-    def __init__(self, type="linear", id=None, mesh=None):
+    """Represent the given mesh within the <object> node:
+
+    .. code-block:: xml
+
+        <mesh>
+            <*type* id="" mesh="" />
+        <mesh>
+
+
+    """
+
+    def __init__(self, type="linear", id=None, value=None):
+        """
+        :param str type: type of the mesh (one of ``linear``, ``quadratic``)
+        :param str id: id of the mesh
+        :param str value: value of the mesh (a reference or a reference string)
+        """
         self.type = type
         self.id = id
-        self.mesh = mesh
+        self.value = value
+
+    @property
+    def mesh(self):
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
 
 
 class MaterialRegion(IndexGroup, list):
+    """Represents an material region from an MSMLFile within an SceneObject
+
+    .. code-block:: xml
+
+        <material>
+            <region id="" indices="">
+                [object elements]
+            </region>
+        </material>
+
+    .. seealso::
+
+       :py:class:`SceneObject`
+
+    """
+
     def __init__(self, id, indices, elements=None):
         IndexGroup.__init__(self, id, indices)
         list.__init__(self, elements if elements else [])
+
+    def bind(self, alphabet):
+        """binds all sub elements to the corresponding :py:class:`msml.model.alphabet.ObjectAttribute`
+
+        :param alphabet: the current alphabet
+        :type alphabet: msml.model.alphabet.Alphabet
+        :return: None
+        """
+        call_method_list(self, 'bind', alphabet)
+
+    def validate(self):
+        """
+        :type: bool
+        :return: True iff. all sub elements are valid and the region is valid.
+        """
+        b = self.indices is not None and self.indices != ""
+        if not b:
+            report("MaterialRegion has no id value", 'E')
+
+        a = self.indices is not None and self.indices != ""
+        if not a:
+            report("MaterialRegion %s has no indices" % self.id, 'E')
+        return a and b and all(map(lambda x: x.validate(), self))
