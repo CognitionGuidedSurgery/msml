@@ -186,11 +186,6 @@ bool ConvertVTKToVTU(const char* infile, const char* outfile )
 	vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
 	// OR: ?!
 	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
-#if VTK_MAJOR_VERSION <= 5
-    // no counter part
-#else
-	writer->SetFileTypeToBinary();
-#endif
 	writer->SetFileName(outfile);
 	__SetInput(writer, reader->GetOutput());
 	// OR: ?!
