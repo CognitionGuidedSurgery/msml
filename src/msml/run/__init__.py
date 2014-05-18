@@ -35,7 +35,6 @@ import warnings
 from path import path
 
 from .memory import Memory
-from msml.log import report
 from msml.model import *
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
@@ -238,16 +237,21 @@ def inject_implict_conversion(dag):
             report("Reference %s is invalid. Try to implicit conversion" % ref, 'I', 1561)
             task = create_conversion_task(ref.linked_from, ref.linked_to)
 
+            # add new task
             dag.add_node(task)
+
+            #remove the old edge
             dag.remove_edge(a, b)
 
+            # from Task to Converter
             _a_t = Reference(ref.task, ref.slot)
             _a_t.linked_from = ref.linked_from
             _a_t.link_to_task(task, task.operator.input['i'])
 
             _t_b = Reference(ref.task, ref.slot)
             _t_b.linked_to = ref.linked_to
-            _t_b.link_from_task(task, task.operator.output['o'])
+            _t_b.link_from_task(task, task.operator.output[task.operator.output.keys()[0]])
+
 
             task.arguments['i'] = _a_t
             b.arguments[ref.linked_to.name] = _t_b
@@ -265,10 +269,17 @@ from ..model import PythonOperator, Task, Slot
 
 def get_python_conversion_operator(slotA, slotB):
     r = {'function': '<automatic-converter>', 'module': '<module-name>'}
+
+    pA = slotA.arginfo.sort.physical
+    lA = slotA.arginfo.sort.logical
+
+    pB = slotB.arginfo.sort.physical
+    lB = slotB.arginfo.sort.logical
+
     pyop = PythonOperator(
-        "converter_%s_%s" % (slotA.arginfo.sort.physical.__name__, slotB.arginfo.sort.physical.__name__),
-        input=[Slot("i", slotA.arginfo.sort.physical, slotA.arginfo.sort.logical)],
-        output=[Slot("o", slotB.arginfo.sort.physical, slotB.arginfo.sort.logical)], runtime=r)
+        "converter_%s_%s" % (pA.__name__, pB.__name__),
+        input=[Slot("i", pA, lA)],
+        output=[Slot(slotB.name, pB, lB)], runtime=r)
 
     return pyop
 
@@ -296,6 +307,8 @@ def create_conversion_task(slotA, slotB):
 
     pyop = get_python_conversion_operator(slotA, slotB)
     pyop._function = fn
+
+    # the new task override the old one memory values
     attrib = {'id': get_id(slotA), 'i': None}
     task = Task(pyop.name, attrib)
     task.operator = pyop

@@ -30,6 +30,7 @@
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 
+#include "IOHelper.h"
 
 //#include <boost/graph/sequential_vertex_coloring.hpp>
 //#include <boost/graph/adjacency_list.hpp>
@@ -181,13 +182,7 @@ namespace MSML {
         vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type) {
             vector<double> points;
 
-
-            vtkSmartPointer<vtkUnstructuredGridReader> reader =
-                vtkSmartPointer<vtkUnstructuredGridReader>::New();
-            reader->SetFileName(filename.c_str());
-            reader->Update();
-
-            vtkUnstructuredGrid* theMesh = reader->GetOutput();
+            vtkUnstructuredGrid* theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
 
             vtkPoints* thePoints = theMesh->GetPoints();
             double* currentPoint = new double[3];

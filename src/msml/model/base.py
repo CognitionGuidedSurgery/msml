@@ -478,7 +478,7 @@ class Reference(object):
                 return a.name
 
         if self.linked:
-            return "<Reference+: %s -> %s>" % (self.linked_to.arginfo, self.linked_to.arginfo)
+            return "<Reference+: %s -> %s>" % (self.linked_from.arginfo, self.linked_to.arginfo)
 
         else:
             return "<Reference-: %s.%s>" % (self.task, self.slot)
