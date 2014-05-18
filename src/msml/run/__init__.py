@@ -168,7 +168,13 @@ class LinearSequenceExecuter(Executer):
         report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
         result = task.operator(**kwargs)
         report('--Executing operator of task {} done'.format(task), 'I', '002')
-        self._memory[task.id] = result
+
+        if task.id in self._memory and isinstance(self._memory[task.id], dict):
+            # converter case, only update the change values
+            self._memory[task.id].update(result)
+        else:
+            # set the values into memory
+            self._memory[task.id] = result
 
 
     def gather_arguments(self, task):
