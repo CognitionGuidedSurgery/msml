@@ -5,7 +5,7 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 #   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
@@ -33,24 +33,29 @@ Environment things, such as defining alphabet search path,
 defining msml-wide options and user configuration
 """
 
-
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
+import os
 
 from path import path
-import os
+
 
 # msml alphabet search path
 alphabet_search_paths = list()
 
 # the current alphabet
-current_alphabet = None
+CURRENT_ALPHABET = None
 
 # path where the msml file resides
 msml_file_path = None
 
+
 def load_envconfig():
+    """
+
+    :return:
+    """
     env_path = path(__file__)
 
     #for local non installation
@@ -71,7 +76,7 @@ def load_envconfig():
             sys.path.append(currentPath)
 
 
-def load_user_file(loc = "~/.config/msmlrc.py"):
+def load_user_file(loc="~/.config/msmlrc.py"):
     """load user rc file.
 
     The user can load custom python code into the msml workflow with the rc file.
@@ -85,7 +90,8 @@ def load_user_file(loc = "~/.config/msmlrc.py"):
     global alphabet_search_paths
     loc = path(loc).expanduser()
     if loc.exists():
-        execfile(loc, {"alphabet_search_path" : alphabet_search_paths})
+        execfile(loc, {"alphabet_search_path": alphabet_search_paths})
+
 
 def gather_alphabet_files():
     """finds all xml files in the `alphabet_search_paths`
@@ -98,23 +104,23 @@ def gather_alphabet_files():
         if loc.isfile():
             files.append(loc)
         else:
-            files += loc.walkfiles("*.xml" , errors= 'warn')
+            files += loc.walkfiles("*.xml", errors='warn')
     return files
 
 
-def load_alphabet(fil = "alphabet.cache"):
+def load_alphabet(fil="alphabet.cache"):
     """Loads an alphabet from a pickled file
     :param fil:
     :return: Alphabet
     """
     import msml.model.alphabet.Alphabet
 
-    p = path(fil).expanduser().expandvars()
+    filename = path(fil).expanduser().expandvars()
 
-    if p.exists():
-        global current_alphabet
-        current_alphabet = msml.model.alphabet.Alphabet.load(p)
-        return current_alphabet
+    if filename.exists():
+        global CURRENT_ALPHABET
+        CURRENT_ALPHABET = msml.model.alphabet.Alphabet.load(filename)
+        return CURRENT_ALPHABET
     else:
         print("WARNING: alphabet file »%s« not found, please run msml.py alphabet" % fil)
         return None

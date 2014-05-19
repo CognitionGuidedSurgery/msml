@@ -41,7 +41,7 @@ from msml.sortdef import *
 class OperatorQuery(object):
     def __init__(self, alphabet=None):
         if alphabet is None:
-            alphabet = msml.env.current_alphabet
+            alphabet = msml.env.CURRENT_ALPHABET
         self.results = alphabet.operators.values()
 
 
@@ -126,7 +126,7 @@ def names(operators):
 import msml.frontend
 
 msml.frontend.App()
-op = msml.env.current_alphabet.operators.values()
+op = msml.env.CURRENT_ALPHABET.operators.values()
 print names(filter(hasInputOfType(msml.sortdef.VTK), op))
 
 print names(filter(

@@ -169,7 +169,7 @@ class MSMLFile(object):
         if not alphabet:
             import msml.env
 
-            alphabet = msml.env.current_alphabet
+            alphabet = msml.env.CURRENT_ALPHABET
 
         b = all(call_method_list(self.scene, "bind", alphabet))
 
@@ -767,7 +767,7 @@ class ObjectElement(object):
         if not alphabet:
             import msml.env
 
-            alphabet = msml.env.current_alphabet
+            alphabet = msml.env.CURRENT_ALPHABET
 
         self.meta = alphabet.get(self.__tag__)
 

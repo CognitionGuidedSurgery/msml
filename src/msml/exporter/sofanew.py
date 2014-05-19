@@ -91,7 +91,7 @@ class SofaExporter(XMLExporter):
         "should execute the external tool and set the memory"
         filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
         with open(filenameSofaBatch, 'w') as f:
-            timeSteps = (int)(self._msml_file.env.simulation[0].iterations)  #only one step supported
+            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
             f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
                 timeSteps) + ' ' + self.export_file + '.simu \n')
 

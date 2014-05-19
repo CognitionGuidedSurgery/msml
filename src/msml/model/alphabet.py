@@ -278,7 +278,7 @@ class Slot(object):
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
             report("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type),
-                   type="E", number=156)
+                   kind="E", number=156)
             self.sort = None
 
 

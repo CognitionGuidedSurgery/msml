@@ -244,7 +244,7 @@ ELEMENT_DEFAULT_VALIDATORS+= (TypeValidator("parameters"), ElementDescriptionVal
 
 def check_element_completeness(alphabet = None, validators = None):
     if alphabet is None:
-        alphabet = msml.env.current_alphabet
+        alphabet = msml.env.CURRENT_ALPHABET
 
     if validators is None:
         validators = ELEMENT_DEFAULT_VALIDATORS

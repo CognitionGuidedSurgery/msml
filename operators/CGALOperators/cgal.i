@@ -3,5 +3,5 @@
 #include "CGALOperators.h"
 %}
 
-%include "../MSML_Operators.h"
+%include "../std.i"
 %include "CGALOperators.h"

@@ -115,7 +115,7 @@ class App(object):
         self._load_alphabet()
 
         if not self._novalidate:
-            msml.env.current_alphabet.validate()
+            msml.env.CURRENT_ALPHABET.validate()
 
     @property
     def output_dir(self):
@@ -172,7 +172,7 @@ class App(object):
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
         if not self._novalidate:
-            mfile.validate(msml.env.current_alphabet)
+            mfile.validate(msml.env.CURRENT_ALPHABET)
 
 
     def show(self, msml_file = None):
@@ -221,7 +221,7 @@ class App(object):
         # debug
         #        alphabet.print_nice()
 
-        msml.env.current_alphabet = alphabet
+        msml.env.CURRENT_ALPHABET = alphabet
         self._alphabet = alphabet
         return alphabet
 

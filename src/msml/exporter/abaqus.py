@@ -117,7 +117,7 @@ class AbaqusExporter(XMLExporter):
 
                 #theFilename = self.startDataNodeEvaluation( currentMeshNode)
 
-                thealphabet = msml.env.current_alphabet
+                thealphabet = msml.env.CURRENT_ALPHABET
                 abaqusConverter = thealphabet.get("vtk-mesh-to-abaqus-mesh-str")
                 #testMesh = abaqusConverter.input["inputMesh"]
                 #abaqusConverter.input["inputMesh"].value = meshFilename

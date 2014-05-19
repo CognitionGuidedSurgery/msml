@@ -163,6 +163,7 @@ class LinearSequenceExecuter(Executer):
         self.define_var(node.name, node.value)
 
 
+
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
         report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
