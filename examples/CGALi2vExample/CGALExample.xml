@@ -5,8 +5,8 @@
     <variables>
         <var name="input_vol_mesh" value="3Dircadb0101Labeled.vtk" logical="linearMesh"
              physical="file.vtk"/>
-        <var name="input_image" value="3Dircadb0101Labeled.vti" logical="linearMesh"
-             physical="file.vtk"/>
+        <var name="input_image" value="3Dircadb0101Labeled.vti" logical="segmentationImage"
+             physical="file.vti"/>
     </variables>
 
     <scene>
@@ -29,8 +29,8 @@
 
             <material>
                 <region id="Material" indices="${bodyToIndexGroup}">
-                    <linearElastic youngModulus="80000" poissonRatio="0.49"/>
-                    <mass density="0.10"/>
+                    <linearElasticMaterial youngModulus="80000" poissonRatio="0.49"/>
+                    <mass name="abc" massDensity="1000"/>
                 </region>
             </material>
 
