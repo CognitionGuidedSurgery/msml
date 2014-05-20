@@ -177,7 +177,7 @@ class MSMLFile(object):
         self.workflow.link(alphabet, self)
         call_method_list(self.scene, "validate")
         self.exporter.link()
-        a = self.workflow.check_arguments()
+        a = self.workflow.validate()
         return a and b
 
     def lookup(self, ref, outarg=True):
@@ -262,6 +262,14 @@ class Workflow(object):
     def __init__(self, tasks=[]):
         self._tasks = {t.id: t for t in tasks}
 
+    @property
+    def tasks(self):
+        """
+        :type: dict[str,Task]
+        :return:
+        """
+        return self._tasks
+
     def add_task(self, task):
         self._tasks[task.id] = task
 
@@ -273,11 +281,19 @@ class Workflow(object):
             t.bind(alphabet)
 
     def link(self, alphabet, msmlfile):
+        """Link all tasks input and paramters slots to output slots and variables form the given msml file.
+
+        :param alphabet: the current alphabet
+        :type alphabet: msml.model.alphabet.Alphabet
+        :param msmlfile: the msmlfile, to which the workflow belongs
+        :type msmlfile: MSMLFile
+        :return:
+        """
         for t in self._tasks.values():
             t.link(alphabet, msmlfile)
 
-    def check_arguments(self):
-        "checks if all tasks match the operator definition"
+    def validate(self):
+        """checks if all tasks match the operator definition"""
         return all(map(lambda x: x.validate(), self._tasks.values()))
 
 
@@ -295,7 +311,23 @@ class MSMLEnvironment(object):
     """
 
     class Simulation(list):
+        """
+
+        ..code-block::
+
+            <simulation>
+
+            </simulaiton>
+
+        """
         class Step(object):
+            """
+
+            .. code-block::
+
+                <step name="" dt="" iterations="" />
+
+            """
             def __init__(self, name="initial", dt=0.05, iterations=100):
                 self.name = name
                 self._dt = None
@@ -320,23 +352,51 @@ class MSMLEnvironment(object):
             def iterations(self, iterations):
                 self._iterations = int(iterations)
 
-
         def __init__(self, *args):
             list.__init__(self, *args)
 
         def add_step(self, name="initial", dt=0.05, iterations=100):
+            """Add a new step to the Simlation
+            :param name: step name
+            :type str:
+            :param dt: delta T
+            :type dt: float
+            :param iterations: number of iterations
+            :type iterations: int
+            :return:
+            """
             self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
 
     class Solver(object):
+        """Represents the solver xml tag.
+        """
         def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler",
                      preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2):
             self.linearSolver = linearSolver
+            """Linear Solver
+            :type: str
+            """
             self.processingUnit = processingUnit
+            """CPU or GPU
+            :type: str
+            """
             self.timeIntegration = timeIntegration
-
+            """time integration step
+            :type: str
+            """
             self.preconditioner = preconditioner
+            """hiflow specific, pre conditioner
+            :type: str
+            """
+
             self.dampingRayleighRatioMass = dampingRayleighRatioMass
+            """hiflow specific
+            :type: str
+            """
             self.dampingRayleighRatioStiffness = dampingRayleighRatioStiffness
+            """hiflow specific
+            :type: str
+            """
 
     def __init__(self):
         self.simulation = MSMLEnvironment.Simulation()
@@ -347,7 +407,27 @@ from ..log import report
 
 
 class MSMLVariable(object):
+    """Represents an MSMLVariable.
+    An execution of an variable results in setting the appropriate value into
+     the exectioner's memory.
+    """
+
     def __init__(self, name, physical=None, logical=None, value=None):
+        """creates a variable with the given ``name``, ``logical`` and ``physical`` type and ``value``
+
+        The value gets automatic transformed into the physical type.
+
+        If no physical type is given, it will determined by the value.
+
+        :param name:
+        :type name: str
+        :param physical:
+        :type physical: str or type
+        :param logical:
+        :param value:
+        :type value: object
+        :return:
+        """
         self.name = name
         self.physical_type = physical
         self.logical_type = logical
@@ -361,14 +441,12 @@ class MSMLVariable(object):
             report(s, 'F', 666)
             raise MSMLError(s)
 
-        self. \
-            sort = get_sort(self.physical_type, self.logical_type)
+        self.sort = get_sort(self.physical_type, self.logical_type)
         if not isinstance(self.value, self.sort.physical):
             report("Need convert value of %s" % self, 'I', 6161)
             from_type = type(self.value)
             converter = conversion(from_type, self.sort)
             self.value = converter(self.value)
-
 
     def __str__(self):
         return "<var %s : %s = %s>" % (self.name, self.sort, self.value)
@@ -461,14 +539,16 @@ class Reference(object):
         return self.linked and self.linked_from.arginfo.sort <= self.linked_to.arginfo.sort
 
     def link_from_task(self, task, slot):
+        """sets the outgoing task and slot"""
         self.linked_from = Reference.ref(task, slot.name, slot)
 
     def link_from_variable(self, variable):
+        """sets the outgoing slot from an variable"""
         self.linked_from = Reference.ref(variable, variable.name, variable)
 
     def link_to_task(self, task, slot):
+        """set the ingoging slot"""
         self.linked_to = Reference.ref(task, slot.name, slot)
-
 
     def __str__(self):
         def _id(a):
@@ -489,7 +569,8 @@ def parse_attribute_value(value):
     >>> parse_attribute_value("${abc}") # => Reference
     >>> parse_attribute_value("abc") # => Constant
 
-    :param str value: value of a xml attribute
+    :param value: value of a xml attribute
+    :type value: str
     :return: Constant | Reference
     """
     if isinstance(value, str):
@@ -524,12 +605,19 @@ def is_generated_name(name):
 
 
 class Task(object):
-    """
-
+    """A task object is a node in the execution graph.
+    It holds his input arguments and the corresponding operator from the alphabet.
+    It can be called with an \*\*kwargs argument of the input parameters form ``self.arguments``.
     """
     ID_ATTRIB = "id"
 
     def __init__(self, name, attrib):
+        """
+
+        :type name: str
+        :param attrib: has to contain the ``'id'`` value of this task
+        :type attrib: dict[str, object]
+        """
         self.name = name
         self.id = attrib[Task.ID_ATTRIB]
         del attrib[Task.ID_ATTRIB]
@@ -542,9 +630,13 @@ class Task(object):
         return "{Task %s (%s)}" % (self.id, self.name)
 
     def bind(self, alphabet):
+        """binds this task to an operator from the given ``alphabet``
+        """
         self.operator = alphabet.get(self.name)
 
     def link(self, alphabet, msmlfile):
+        """links the input and parameter arguments to the output slots
+        """
         self.arguments = {}
         for key, value in self.attributes.items():
             if isinstance(value, Reference):
@@ -579,13 +671,9 @@ class Task(object):
                 else:
                     report("Lookup after %s does not succeeded" % value, 'E')
             elif isinstance(value, Constant):
-                var = MSMLVariable(random_var_name(), value=value.value)
-                # get type and format from input/parameter
-
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
-                if slot:
-                    var.logical_type = slot.logical_type
-                    var.physical_type = slot.physical_type
+                var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
+                # get type and format from input/parameter
 
                 msmlfile.add_variable(var)
                 ref = Reference(var.name, None)
@@ -618,16 +706,23 @@ class Task(object):
         if not self.operator:
             raise BindError("self.operator is not bound to an operator (call Workflow.bind_operator?)")
 
-            # if self.id:
-            # raise MSMLError("Task does not have an <id> attribute")
+        if not self.id:
+            raise MSMLError("Task does not have an <id> attribute")
 
-            # for arg in self.arguments.values():
-            #    if arg.inarg.required and arg.outarg is None:
-            #        raise MSMLError("task for operator %s misses attribute %s " % (self.operator.name, arg.attribute))
+        for name, slot in self.operator.input.items():
+           if name not in self.attributes:
+               report("task %s for operator %s misses input attribute %s " % (
+                   self.id, self.operator.name, name),'E')
 
-            #        for k in self.attrib:
-            #            if k not in self.operator and k != Task.ID_ATTRIB:
-            #                raise MSMLError("attrib %s is unknown for operator %s" % (k, self.operator.name))
+        for name, slot in self.operator.parameters.items():
+            if name not in self.attributes:
+                report("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name), 'E')
+
+        for k in self.attributes:
+            if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
+                report("attrib %s is unknown for operator %s in task %s" % (
+                    k, self.operator.name, self.id),'I')
 
     def get_default(self):
         pass
