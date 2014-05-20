@@ -47,6 +47,9 @@ SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 # Find Boost
 FIND_PACKAGE(Boost COMPONENTS program_options filesystem iostreams REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+set(Boost_USE_STATIC_LIBS OFF)
+add_definitions( -DBOOST_ALL_DYN_LINK )
+LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
 
 #message("Include dirs of Boost : " ${Boost_INCLUDE_DIR} )
 #message("cmake module path: " ${CMAKE_MODULE_PATH} )
@@ -149,7 +152,7 @@ MACRO(MSML_LIBRARY)
     )
   
   IF(WIN32 AND NOT CYGWIN)
-    ADD_LIBRARY(${ML_NAME} STATIC ${ML_SOURCES})
+    ADD_LIBRARY(${ML_NAME} SHARED ${ML_SOURCES})
   ELSE()
     ADD_LIBRARY(${ML_NAME} SHARED ${ML_SOURCES})
   ENDIF()
