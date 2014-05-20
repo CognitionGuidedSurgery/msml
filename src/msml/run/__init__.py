@@ -40,6 +40,7 @@ from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
 from msml.run.GraphDotWriter import GraphDotWriter
 
+import msml.sortdef
 
 class Executer(object):
     """Describe the interface of an Executer.
@@ -67,13 +68,12 @@ def contains(a, b):
 def initialize_file_literals(first_bucket):
     def var_is_file(var):
         if isinstance(var, MSMLVariable):
-            # TODO better predicate if sort logic defined /weigl
-            return contains("file", var.logical_type) or contains("file", var.physical_type)
+            return issubclass(var.sort.physical, msml.sortdef.InFile)
+            #return contains("file", var.logical_type) or contains("file", var.physical_type)
         return False
 
     def abs_value(var):
         import os.path
-
         var.value = os.path.abspath(var.value)
         return var
 
