@@ -65,8 +65,10 @@ def load_envconfig():
     import msml.envconfig as C
     import sys
 
-    #Import release and debug paths here?
+    #Import release and debug paths here !
     sys.path.append(C.operators_path)
+    sys.path.append(C.operators_path_release)
+    sys.path.append(C.operators_path_debug)
 
     #Add windows paths to python path - Python sometimes only checks this directories for dependencies (e.g. boost dlls)
     win_path = os.environ.get('path')
