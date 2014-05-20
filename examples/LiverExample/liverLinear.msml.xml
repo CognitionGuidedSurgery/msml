@@ -28,8 +28,8 @@
 
             <material>
                 <region id="liverMaterial" indices="${bodyToIndexGroup}">
-                    <linearElastic youngModulus="3000" poissonRatio="0.49"/>
-                    <mass density="0.6"/>
+                    <linearElasticMaterial youngModulus="3000" poissonRatio="0.49"/>
+                    <mass name="abc" massDensity="0.6"/>
                 </region>
             </material>
 
@@ -40,7 +40,7 @@
             </constraints>
 
             <output>
-                <displacementOutputRequest id="LiverXSTet4Def" timestep="1"/>
+                <displacement id="LiverXSTet4Def" timestep="1"/>
             </output>
         </object>
     </scene>
