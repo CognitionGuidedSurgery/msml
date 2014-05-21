@@ -325,6 +325,7 @@ register_conversion(str, get_sort("VTK"), VTK, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
+register_conversion(str, get_sort('VTI'), VTI, 100)
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
 
