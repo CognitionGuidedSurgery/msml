@@ -17,19 +17,19 @@
 
             <material>
                 <region id="patMaterial01" indices="${bodyToIndexGroup}">
-                    <linearElastic youngModulus="100" poissonRatio="0.4"/>
+                    <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
                     <mass density="0.001"/>
                 </region>
                 <region id="patMaterial02" indices="${bonesToIndexGroup}">
-                    <linearElastic youngModulus="19000" poissonRatio="0.4"/>
+                    <linearElasticMaterial youngModulus="19000" poissonRatio="0.4"/>
                     <mass density="0.001"/>
                 </region>
                 <region id="patMaterial03" indices="${lung1ToIndexGroup}">
-                    <linearElastic youngModulus="100" poissonRatio="0.4"/>
+                    <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
                     <mass density="0.001"/>
                 </region>
                 <region id="patMaterial04" indices="${lung2ToIndexGroup}">
-                    <linearElastic youngModulus="100" poissonRatio="0.4"/>
+                    <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
                     <mass density="0.001"/>
                 </region>
             </material>
@@ -43,7 +43,7 @@
             </constraints>
 
             <output>
-                <displacementOutputRequest id="disp" timestep="1"/>
+                <displacement id="disp" timestep="1"/>
             </output>
         </object>
     </scene>

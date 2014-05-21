@@ -50,8 +50,9 @@ class Executer(object):
 
 
     """
-    # TODO define interface /weigl
-    pass
+    def __init__(self, msmlfile): pass
+    def run(self): pass
+    def init_memory(self, content): pass
 
 
 def contains(a, b):

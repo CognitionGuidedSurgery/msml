@@ -433,16 +433,16 @@ class MSMLVariable(object):
         self.logical_type = logical
         self.value = value
 
-        if not self.physical_type and self.value:
+        if not self.physical_type and self.value is not None:
             self.physical_type = type(self.value)
 
-        if not self.physical_type:
+        if not self.physical_type and self.value is None:
             s = 'Try to initialize a variable without physical type and value'
             report(s, 'F', 666)
             raise MSMLError(s)
 
         self.sort = get_sort(self.physical_type, self.logical_type)
-        if not isinstance(self.value, self.sort.physical):
+        if not isinstance(self.value, self.sort.physical) and self.value is not None:
             report("Need convert value of %s" % self, 'I', 6161)
             from_type = type(self.value)
             converter = conversion(from_type, self.sort)

@@ -103,8 +103,9 @@ class SortsDefinition(object):
         try:
             return self.physical_cache[fmtstr]
         except KeyError as e:
-            report("physical type %s requested, but does not exist" % fmtstr, 'E', 162)
-            raise BaseException()
+            s="physical type %s requested, but does not exist" % fmtstr
+            report(s, 'E', 162)
+            raise BaseException(s)
 
 
     def register_logical(self, clazz, name=None):
@@ -342,6 +343,7 @@ try:
 
         name = "%s_auto_converted.vtu" % vtk
         ConvertVTKToVTUPython(vtk, name)
+
         return VTU(name)
 
     register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)

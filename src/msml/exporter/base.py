@@ -28,6 +28,8 @@
 
 __author__ = 'Alexander Weigl'
 
+import msml.sortdef
+
 import warnings
 
 from ..model import *
@@ -70,7 +72,7 @@ class Exporter(object):
                 assert isinstance(o, ObjectElement)
                 if o.id == obj:
                     # TODO define type/Format of this output
-                    return self, ExporterOutputVariable(obj)
+                    return self, ExporterOutputVariable(obj, physical=msml.sortdef.VTK)
 
 
     def gather_output(self):
