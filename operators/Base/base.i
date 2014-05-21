@@ -1,31 +1,8 @@
 %module BasePython
 %{
-#include <stdio.h>
-#include <iostream>
-
-FILE* outbak;
-
-void begin_capture(int out) {
-    std::cout.sync_with_stdio(true);
-    outbak = stdout;
-    stdout = fdopen(out, "w");;
-    std::cout.sync_with_stdio(true);
-}
-
-void end_capture() {
-    stdout = outbak;
-}
-
-void test_echo() {
-    std::cout << "This is Sparta!" << std::endl;
-    fprintf(stdout,"This is Sparta!");
-}
-
+#include <vector>
+#include <string>
 %}
-
-void test_echo();
-void begin_capture(int);
-void end_capture();
 
 %include "std_vector.i"
 namespace std {
