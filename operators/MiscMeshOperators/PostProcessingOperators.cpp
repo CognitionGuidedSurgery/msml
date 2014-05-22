@@ -732,7 +732,7 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* outputDefImage, vtkImageDa
     }
 }
 
-std::string GenerateDVFPython(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids)
+std::string GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids)
 {
     if (multipleReferenceGrids)
     {

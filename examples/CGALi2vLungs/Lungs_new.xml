@@ -18,21 +18,22 @@
             <material>
                 <region id="patMaterial01" indices="${bodyToIndexGroup}">
                     <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                    <mass massDensity="0.001"/>
                 </region>
                 <region id="patMaterial02" indices="${bonesToIndexGroup}">
                     <linearElasticMaterial youngModulus="19000" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                    <mass massDensity="0.001"/>
                 </region>
                 <region id="patMaterial03" indices="${lung1ToIndexGroup}">
                     <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                    <mass massDensity="0.001"/>
                 </region>
                 <region id="patMaterial04" indices="${lung2ToIndexGroup}">
                     <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                    <mass massDensity="0.001"/>
                 </region>
             </material>
+            
 
             <constraints>
                 <constraint forStep="${initial}" name="1">
@@ -86,7 +87,7 @@
 
         <paraview id="a" data="${disp}"/>
         <!-- nonsense -->
-        <generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${combo_mesh}" multipleReferenceGrids="false"
+        <generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${surfaceExtraction}" multipleReferenceGrids="false"
                      DVFFilename="dvf01.vtk"/>
     </workflow>
 

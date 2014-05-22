@@ -167,7 +167,7 @@ Post Processing
 
 
 
-.. cpp:function:: std::string GenerateDVFPython(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids)
+.. cpp:function:: std::string GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids)
 
     :param  const char* referenceGridFilename:
     :param  const char* outputDVFFilename:
@@ -278,7 +278,7 @@ LIBRARY_API void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnst
 LIBRARY_API void MergeMeshes(vtkUnstructuredGrid* pointsMesh, vtkUnstructuredGrid* cellsMesh, vtkUnstructuredGrid* outputMesh);
 LIBRARY_API void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, const char* outputMeshFilename);
 
-LIBRARY_API std::string GenerateDVFPython(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids);
+LIBRARY_API std::string GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids);
 LIBRARY_API void GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename);
 LIBRARY_API void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkImageData* outputDVF, vtkUnstructuredGrid* deformedGrid);
 
