@@ -411,7 +411,7 @@ class SofaExporter(XMLExporter):
         for request in msmlObject.output:
             assert isinstance(request, ObjectElement)
             filename = self.working_dir / request.id
-            if request.tag == "displacementOutputRequest":
+            if request.tag == "displacement":
                 if objectNode.find("MeshTopology") is not None:
                     #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
                     exportEveryNumberOfSteps = request.get("timestep")

@@ -633,10 +633,13 @@ class Task(object):
         """binds this task to an operator from the given ``alphabet``
         """
         self.operator = alphabet.get(self.name)
+        if (self.operator is  None):
+            raise BindError("unknown operator:{name}".format(name=self.name))
 
     def link(self, alphabet, msmlfile):
         """links the input and parameter arguments to the output slots
         """
+
         self.arguments = {}
         for key, value in self.attributes.items():
             if isinstance(value, Reference):
