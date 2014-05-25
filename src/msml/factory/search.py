@@ -1,12 +1,12 @@
-# region <gplv3>
+# region gplv3preamble
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-# Medicine Meets Virtual Reality (MMVR) 2014
+#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+#   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -24,7 +24,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# endregion <gplv3>
+# endregion
 
 __author__ = 'Alexander Weigl'
 __date__ = "2014-05-10"
