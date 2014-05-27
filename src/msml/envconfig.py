@@ -1,7 +1,7 @@
 # stub, automatically generated
-operators_path = "/home/weigl/workspace/msml/cbuild/bin"
-operators_path_release = "/home/weigl/workspace/msml/cbuild/bin/Release/"
-operators_path_debug = "/home/weigl/workspace/msml/cbuild/bin/Debug/"
+operators_path = "/local_home/suwelack/workspace/msmlGithub/bin"
+operators_path_release = "/local_home/suwelack/workspace/msmlGithub/bin/Release/"
+operators_path_debug = "/local_home/suwelack/workspace/msmlGithub/bin/Debug/"
 
 SOFA_EXECUTABLE = "/usr/bin/sofaBatch"
 HIFLOW_EXECUTABLE = "/usr/local/include/hiflow3"
