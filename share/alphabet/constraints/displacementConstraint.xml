@@ -12,22 +12,11 @@
         <arg name="time" physical="float">
             <meta key="doc" value="Set time."/>
         </arg>
-<<<<<<< HEAD
-        <arg name="indices" physical="vector.int">
-            <meta key="doc" value="Set indices of fixed points separated by spaces."/>
-
-        </arg>
-
-
-        <arg name="displacement" physical="vector.int">
-            <meta key="doc" value="State the displacement of the point."/>
-=======
         <arg name="indices" physical="vector.float">
             <meta key="doc" value="Set indices of displaced points separated by spaces."/>
         </arg>
         <arg name="displacement" physical="vector.float">
             <meta key="doc" value="Set the displacement vector (DIM = 3) of the points given in the indices."/>
->>>>>>> alphabet/constraints fixed
         </arg>
     </parameters>
 </msml:element>
