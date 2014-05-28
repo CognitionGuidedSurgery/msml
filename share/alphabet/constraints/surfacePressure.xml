@@ -10,16 +10,16 @@
 
 
     <parameters>
-        <arg name="time" physical="int">
-            <meta key="doc" value="Set time  "/>
+        <arg name="time" physical="float">
+            <meta key="doc" value="Set time."/>
         </arg>
 
-        <arg name="indices" physical="int">
-            <meta key="doc" value="Set indices of fixed points separated by spaces."/>
+        <arg name="indices" physical="vector.float">
+            <meta key="doc" value="Set indices of points where force/pressure acts separated by spaces."/>
         </arg>
 
-        <arg name="pressure" physical="int">
-            <meta key="doc" value="	State the pressure of the triangle."/>
+        <arg name="pressure" physical="float">
+            <meta key="doc" value="Set force/pressure (which acts orthogonally) on the facets. Note: not a vector. T.b. changed?!"/>
         </arg>
 
     </parameters>
