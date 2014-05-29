@@ -7,6 +7,16 @@
                 function="ColorMeshPython"/>
     </runtime>
 
+    <annotation>
+        <entry key="check.output" value="True" />
+        <entry key="check.output.arguments" value="mesh"/>
+        <entry key="check.output.generated" value="coloredMesh"/>
+
+        <entry key="filename-generator" value="True" />
+        <entry key="filename-generator.for" value="coloredMesh" />
+        <entry key="filename-generator.for.coloredMesh" value="{mesh}_colored.vtk" />
+    </annotation>
+
     <input>
         <arg name="mesh"
              logical="Mesh"
@@ -23,5 +33,4 @@
         <arg name="coloredMesh"
              physical="str"/>
     </parameters>
-
 </msml:operator>

@@ -55,6 +55,7 @@ class Executer(object):
     def init_memory(self, content): pass
 
 
+
 def contains(a, b):
     if isinstance(b, type):
         b = b.__name__
