@@ -589,11 +589,8 @@ def random_var_name():
     """generate a random variable name
     :return: str
     """
-    random_var_name.current_number += 1
-    return "_gen_%03d_" % random_var_name.current_number
-
-
-random_var_name.current_number = 0  # start with zero
+    import msml.generators
+    return msml.generators.generate_variable()
 
 
 def is_generated_name(name):
@@ -627,7 +624,7 @@ class Task(object):
         self.arguments = {}
 
     def __str__(self):
-        return "{Task %s (%s)}" % (self.id, self.name)
+        return "<Task %s (%s)>" % (self.id, self.name)
 
     def bind(self, alphabet):
         """binds this task to an operator from the given ``alphabet``

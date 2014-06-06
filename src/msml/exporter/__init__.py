@@ -51,6 +51,7 @@ from .hiflow3 import HiFlow3Exporter
 # Register for common Exporters
 __REGISTER = {'base': Exporter,
               "nabaqus": NAbaqusExporter, 'nsofa': NSofaExporter,
+              "abaqus": NAbaqusExporter, 'sofa': NSofaExporter,
               'hiflow3': HiFlow3Exporter,
 
 }

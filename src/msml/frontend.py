@@ -35,6 +35,7 @@ Frontend - cli interface of msml
 from __future__ import print_function
 from .env import *
 
+from msml.log import report
 #need first step caused of sys.path
 load_envconfig()
 
@@ -74,14 +75,14 @@ Usage:
   msml writexsd <XSDFile>
   msml check    [<file>...]
   msml validate
-
+  msml expy     [options] [<file>...]
 
 #for future: msml devel kit, creation of operator templates and element templates
   msml operator init    <folder> [<name>]
   msml operator compile <folder>
   msml element  init    <file>
 
-Options:  
+Options:
  -v, --verbose              verbose information on stdout [default: false]
  -o, --output=DIR           output file
  --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
@@ -96,11 +97,23 @@ Options:
 
 class App(object):
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
-                 add_opeator_path=None, memory_init_file=None, output_dir = None, options={}):
+                 add_operator_path=None, memory_init_file=None, output_dir = None, options={}):
+        """
+
+        :param novalidate:
+        :param files:
+        :param exporter:
+        :param add_search_path:
+        :param add_operator_path:
+        :param memory_init_file:
+        :param output_dir:
+        :param options:
+        :return:
+        """
         self._exporter = options.get("--exporter") or exporter or "sofa"
         self._files = options.get('<file>') or files or list()
         self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
-        self._additional_operator_search_path = options.get('--operator-path') or add_opeator_path or list()
+        self._additional_operator_search_path = options.get('--operator-path') or add_operator_path or list()
         self._options = options
         self.output_dir = output_dir or options.get('--output')
         self._novalidate = novalidate
@@ -174,23 +187,27 @@ class App(object):
         if not self._novalidate:
             mfile.validate(msml.env.CURRENT_ALPHABET)
 
-
     def show(self, msml_file = None):
         if not msml_file:
             msml_file = self._load_msml_file(self.files[0])
+        elif isinstance(msml_file, str) or \
+             isinstance(msml_file, unicode):
+            msml_file = self._load_msml_file(msml_file)
+
         self._prepare_msml_model(msml_file)
         graphb = DefaultGraphBuilder(msml_file, msml_file.exporter)
         writer = GraphDotWriter(graphb.dag)
 
         newname = "%s.dot" % path(msml_file.filename).namebase
+        newname = path(newname).abspath()
         with open(newname, 'w') as w:
             w.write(writer())
-        print("File %s written." % newname)
+        report("File %s written." % newname)
 
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)
-        print("Execute: %s in %s" % (fil, fil.dirname))
-        self.execute_msml(mfile)
+        report("Execute: %s in %s" % (fil, fil.dirname))
+        return self.execute_msml(mfile)
 
 
     def execute_msml(self, msml_file):
@@ -209,6 +226,13 @@ class App(object):
         files = self.files
         for fil in files:
             self.execute_msml_file(path(fil))
+
+    def expy(self):
+        import msml.run.exportpy
+        for fil in self.files:
+            msml_file = self._load_msml_file(fil)
+            self._prepare_msml_model(msml_file)
+            msml.run.exportpy.exportpy(msml_file)
 
     def _load_alphabet(self):
         log.report("READING alphabet...", 'I')
@@ -251,6 +275,7 @@ class App(object):
     def _exec(self):
         COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution,
                                 'validate': self.validate,
+                                'expy':self.expy,
                                 'writexsd': self.writexsd,
                                 'check': self.check_file})
 

@@ -49,7 +49,7 @@ class Exporter(object):
         """
         assert isinstance(msml_file, MSMLFile)
         self._msml_file = msml_file
-        self.name = 'exporter'
+        self.name = 'base'
         self._output_types_for_tags = {}
 
         self._output = {}

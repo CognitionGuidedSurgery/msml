@@ -223,7 +223,7 @@ class Slot(object):
     Proxy for meta data.
 
     """
-    #: slot type is not set
+    # : slot type is not set
     SLOT_TYPE_UNKNOWN = -1
 
     #: slot is an input
@@ -391,7 +391,7 @@ class Operator(object):
 # return issubtype(V, T)
 #
 # def _execute(self, *args, **kwargs):
-#         sig = signature(self.func)
+# sig = signature(self.func)
 #         fargs = sig.bind_partial(*args)  # , **kwargs)
 #
 #         if self.check_types(args, kwargs):
@@ -407,6 +407,7 @@ class PythonOperator(Operator):
     """Operator for Python functions.
 
     """
+
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         """
         :param runtime: should include the key: "function" and "module"
@@ -436,7 +437,9 @@ class PythonOperator(Operator):
         args = [kwargs.get(x, None) for x in self.acceptable_names()]
         r = self._function(*args)
 
-        if len(self.output) == 1:
+        if len(self.output) == 0:
+            results = None
+        elif len(self.output) == 1:
             results = {self.output_names()[0]: r}
         else:
             results = dict(zip(self.output_names(), r))
@@ -469,6 +472,7 @@ class ShellOperator(Operator):
     """ShellOperator
 
     """
+
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
 
@@ -483,6 +487,7 @@ class ShellOperator(Operator):
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""
+
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
 

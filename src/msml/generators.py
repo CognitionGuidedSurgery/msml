@@ -7,7 +7,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -32,50 +32,42 @@
 """
 
 __author__ = "Alexander Weigl"
-__date__ = "2014-05-05"
-
-import inspect
-import os.path
-
-__all__ = ['report']
-
-COLOR_TABLE = {'I': 94, 'W': 33, 'E': 31, 'D': 90, 'F': 35}
-
-FORMAT = "{color}{type}-{number}: {msg} {grey}(from {file}:{lineno}){nocolor}"
+__date__ = "2014-06-06"
 
 
-def report(msg, kind="W", number=0, filename=None, lineno=-1):
-    """prints a report information on stdout
+class IdentifierGenerator(object):
+    def __init__(self, prefix="", suffix=""):
+        self.prefix = prefix
+        self.suffix = suffix
+        self._counter = 0
 
-    if `filename` is empty, the method tries to find the source of the caller.
+    def __call__(self):
+        self._counter += 1
+        return "%s%d%s" % (self.prefix, self._counter, self.suffix)
 
-    :param msg: Message
-    :type msg: str
-    :param kind: I, W, E, D, F -- kind of message
-    :param number: some random error number
-    :param filename: a filename (location of event)
-    :param lineno: a line number (location of event)
-    :return:
-    """
-    if not filename:
-        frame = inspect.stack()[1][0]
-        info = inspect.getframeinfo(frame)
+    def reset(self):
+        self._counter = 0
 
-        color = COLOR_TABLE.get(kind, 0)
+    def has_generated(self, value):
+        """
 
-        filename = os.path.basename(info.filename)
-        lineno = info.lineno
-        if filename == "__init__.py":
-            filename = os.path.join(os.path.basename(
-                os.path.dirname(info.filename)), filename)
+        :param value:
+        :type value: str
+        :return:
+        """
+        if value.startswith(self.prefix) and value.endswith(self.suffix):
+            try:
+                cntval = int(value[len(self.prefix): - len(self.suffix)])
+                return cntval <= self._counter
+            except:
+                pass
+        return False
 
-    print FORMAT.format(
-        type=kind,
-        number=number,
-        lineno=lineno,
-        file=filename,
-        msg=msg,
-        color="\x1b[%dm" % color,
-        nocolor="\x1b[0m",
-        grey="\x1b[37m"
-    )
+
+generate_task_id = IdentifierGenerator("converter_task_")
+generate_variable = IdentifierGenerator("gen_", '_')
+
+
+def reset_all():
+    generate_task_id.reset()
+    generate_variable.reset()
