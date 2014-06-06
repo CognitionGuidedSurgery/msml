@@ -176,10 +176,26 @@ def _attributes(node, attribs, **defaults):
     else:
         return (_get(x) for x in attribs)
 
+import itertools
+
+def _parse_task(task_node):
+    if task_node is None:
+        return []
+    else:
+        attrib = dict(task_node.attrib)
+        task = Task(name=_tag_name(task_node.tag), attrib=attrib)
+        sub = list(itertools.chain(*map(_parse_task, task_node.iterchildren())))
+        task.sub_tasks = sub
+        return [task] + sub
+
 
 def msml_file_factory(msml_node):
     def _parse_variables(var_node):
         vars = []
+
+        if var_node is None:
+            return vars
+
         for n_var in var_node.iterchildren():
             get = lambda x: _except_none(n_var.attrib, x)
             name = get('name')
@@ -197,9 +213,10 @@ def msml_file_factory(msml_node):
 
     def _parse_workflow(wf_node):
         wf = Workflow()
-        for n_task in wf_node.iterchildren():
-            attrib = dict(n_task.attrib)
-            wf.add_task(Task(name=_tag_name(n_task.tag), attrib=attrib))
+        tasks = map(_parse_task, wf_node.iterchildren())
+        for t in tasks:
+            for s in t:
+                wf.add_task(s)
         return wf
 
     def _parse_elements(parent_node):
@@ -294,9 +311,9 @@ def msml_file_factory(msml_node):
                 return list()
 
             def _parse_region(reg_node):
-                ident, ind = _attributes(reg_node, ['id','indices'])
+                ident, ind = _attributes(reg_node, ['id', 'indices'])
                 elements = list(_parse_elements(reg_node))
-                return MaterialRegion(ident, ind,elements)
+                return MaterialRegion(ident, ind, elements)
 
             return map(_parse_region, mat_node.iterchildren())
 
