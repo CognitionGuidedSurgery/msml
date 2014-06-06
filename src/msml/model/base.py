@@ -616,15 +616,38 @@ class Task(object):
         :type attrib: dict[str, object]
         """
         self.name = name
-        self.id = attrib[Task.ID_ATTRIB]
-        del attrib[Task.ID_ATTRIB]
+        self._id = attrib.pop(Task.ID_ATTRIB, None)
 
         self.attributes = {k: parse_attribute_value(value) for k, value in attrib.items()}
         self.operator = None
+
+        self.sub_tasks = None
         self.arguments = {}
+
+        self._bound = False
+
+    @property
+    def bound(self): return self._bound
+
+    @property
+    def id(self):
+        """``id`` of this task if set, If none ``ìd`` is set, it will generate one.
+        :returns:
+        :rtype: str
+        """
+        if not self._id:
+            self._id = random_var_name() +  self.name
+        return self._id
+
+
+    @id.setter
+    def id(self, v): self._id = v
+
 
     def __str__(self):
         return "<Task %s (%s)>" % (self.id, self.name)
+
+
 
     def bind(self, alphabet):
         """binds this task to an operator from the given ``alphabet``
@@ -632,6 +655,18 @@ class Task(object):
         self.operator = alphabet.get(self.name)
         if (self.operator is  None):
             raise BindError("unknown operator:{name}".format(name=self.name))
+
+        # if this tasks has sub tasks.
+        if self.sub_tasks:
+            i = 0
+            # align input and sub_tasks, skip already set inputs
+            for ipt in self.operator.input:
+                if ipt in self.attributes: # input is set by user
+                    continue
+
+                self.attributes[ipt] = Reference(self.sub_tasks[i].id)
+                i += 1
+
 
     def link(self, alphabet, msmlfile):
         """links the input and parameter arguments to the output slots
