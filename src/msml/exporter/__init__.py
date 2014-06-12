@@ -42,8 +42,6 @@ __date__ = "2013-12-13"
 __updated__ = "2014-02-26"
 
 from .base import *
-from .sofa import SofaExporter
-from .abaqus import AbaqusExporter
 from .abaqusnew import AbaqusExporter as NAbaqusExporter
 from .sofanew import SofaExporter as NSofaExporter
 from .hiflow3 import HiFlow3Exporter
