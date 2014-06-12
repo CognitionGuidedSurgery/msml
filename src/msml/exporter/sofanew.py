@@ -397,6 +397,7 @@ class SofaExporter(XMLExporter):
         theGravity = "0 0 -9.81"  # TODO find gravity in msmlfile > env > simulation stepNode.get("gravity")
         if theGravity is None:
             theGravity = '0 -9.81 0'
+            
         root.set("gravity", theGravity)
         return root
 

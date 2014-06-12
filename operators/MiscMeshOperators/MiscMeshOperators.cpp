@@ -24,6 +24,7 @@
 // ****************************************************************************
 #include "MiscMeshOperators.h"
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 
 #include <string.h>
@@ -668,6 +669,18 @@ std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython(std::strin
 
 }
 
+std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName)
+{
+	//load the vtk  mesh
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	  reader->SetFileName(inputMesh.c_str());
+	  reader->Update();
+	  std::string output = ConvertVTKMeshToFeBioMeshString( reader->GetOutput(),   partName,  materialName);
+	  return output;
+
+}
+
 std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName)
 {
 	std::stringstream out;
@@ -729,6 +742,64 @@ std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshString( vtkUnstructured
 	 //end part
 	 out<<"*End Part\n";
 
+	return out.str();
+}
+
+std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName)
+{
+	std::stringstream out;
+	 //write Geometry
+	 out << "<Geometry>\n";
+
+	 //nodes
+	 out << "<Nodes>\n";
+	 double* currentPoint;
+	 for(int i=0; i<inputMesh->GetNumberOfPoints(); i++)
+	 {
+		 currentPoint = inputMesh->GetPoint(i);
+		 out<<"<node id=\""<<i+1<<"\">"<< std::setprecision(7) << std::scientific;
+		 if(currentPoint[0] < 0 ){
+			out<<currentPoint[0] << ",";
+		 }else{
+			out<< " " << currentPoint[0] << ",";
+		 }
+		  if(currentPoint[1] < 0 ){
+			out<<currentPoint[1] << ",";
+		 }else{
+			out<< " " << currentPoint[1] << ",";
+		 }
+		 if(currentPoint[2] < 0 ){
+			out<<currentPoint[2];
+		 }else{
+			out<< " " << currentPoint[2];
+		 }
+		out<< "</node>"<<"\n";
+	 }
+	 
+	 out << "</Nodes>\n";
+	 //elements
+	 out << "<Elements>\n";
+	 vtkIdType* currentCellPoints;
+	 vtkIdType numberOfNodesPerElement;
+	 vtkIdType cellType = inputMesh->GetCellType(0);
+	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
+	 {
+		 inputMesh->GetCellPoints(i, numberOfNodesPerElement,currentCellPoints);
+		 if(numberOfNodesPerElement == 4) {
+			 out<<"<tet4 id=\""<<i+1<<"\" mat=\"1\">";
+		 }
+		 for(int j=0;j<numberOfNodesPerElement;j++)
+		 {
+			if(j == numberOfNodesPerElement-1){
+				out<<currentCellPoints[j]+1;
+			} else{
+				out<<currentCellPoints[j]+1<<",";
+			}
+		 }
+		 out<<"</tet4>\n";
+	 }
+	 out << "</Elements>\n";
+	 out << "</Geometry>\n";
 	return out.str();
 }
 

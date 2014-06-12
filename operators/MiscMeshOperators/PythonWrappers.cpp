@@ -162,6 +162,7 @@ BOOST_PYTHON_MODULE(MiscMeshOperatorsPython)
 
 	def("ExtractAllSurfacesByMaterial", &MiscMeshOperators::ExtractAllSurfacesByMaterial);
   def("convertVTKMeshToAbaqusMeshString", &MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython);
+   def("convertVTKMeshToFeBioMeshString", &MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython);
 	def("projectSurfaceMesh", &MiscMeshOperators::ProjectSurfaceMeshPython);
 	def("extractSurfaceMesh", &MiscMeshOperators::ExtractSurfaceMeshPython);
 	def("convertVtkToInp", &MiscMeshOperators::VTKToInpPython);

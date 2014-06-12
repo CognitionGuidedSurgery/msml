@@ -69,6 +69,7 @@ __all__ = ['colorMeshFromComparison',
            'computeIndicesFromMaterialId',
            'convertSTLToVTK',
            'convertVTKMeshToAbaqusMeshString',
+           'convertVTKMeshToFeBioMeshString',
            'convertVTKPolydataToUnstructuredGrid',
            'convertVTKToSTL',
            'convertVtkToInp',
@@ -131,6 +132,10 @@ def convertSTLToVTK(*args ):
 
 def convertVTKMeshToAbaqusMeshString(*args ):
     return cpp.convertVTKMeshToAbaqusMeshString(*args )
+
+
+def convertVTKMeshToFeBioMeshString(*args ):
+    return cpp.convertVTKMeshToFeBioMeshString(*args )
 
 
 def convertVTKPolydataToUnstructuredGrid(*args ):

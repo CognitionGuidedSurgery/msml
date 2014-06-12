@@ -1,4 +1,4 @@
 # stub, automatically generated
-operators_path = "/home/weigl/workspace/msml/build/bin"
-operators_path_release = "/home/weigl/workspace/msml/build/bin/Release/"
-operators_path_debug = "/home/weigl/workspace/msml/build/bin/Debug/"
+operators_path = "C:/MSMLBin/bin"
+operators_path_release = "C:/MSMLBin/bin/Release/"
+operators_path_debug = "C:/MSMLBin/bin/Debug/"

@@ -44,6 +44,7 @@ __updated__ = "2014-02-26"
 from .base import *
 from .sofa import SofaExporter
 from .abaqus import AbaqusExporter
+from .febio import FeBioExporter
 from .abaqusnew import  AbaqusExporter as NAbaqusExporter
 from .sofanew import SofaExporter as NSofaExporter
 from .hiflow3 import HiFlow3Exporter
@@ -51,7 +52,7 @@ from .hiflow3 import HiFlow3Exporter
 # Register for common Exporters
 __REGISTER = {'base': Exporter, 'sofa': SofaExporter, 'abaqus': AbaqusExporter,
               "nabaqus": NAbaqusExporter, 'nsofa' : NSofaExporter,
-              'hiflow3': HiFlow3Exporter,
+              'hiflow3': HiFlow3Exporter, 'febio' : FeBioExporter,
 
               }
 
