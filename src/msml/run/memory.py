@@ -81,6 +81,6 @@ class Memory(object):
     def lookup(self, reference):
         if isinstance(reference, str):
             reference = parse_attribute_value(reference)
-        return self[reference.task][reference.slot]
+        return self[reference.linked_from.task.id][reference.linked_from.name]
 
 

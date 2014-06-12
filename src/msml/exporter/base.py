@@ -28,10 +28,9 @@
 
 __author__ = 'Alexander Weigl'
 
-import msml.sortdef
-
 import warnings
 
+import msml.sortdef
 from ..model import *
 
 
@@ -59,7 +58,7 @@ class Exporter(object):
         """Output slots
         :type dict[str, Slot]"""
 
-        self._input  = {}
+        self._input = {}
         """Input slots
         :type dict[str, Slot]"""
 
@@ -123,13 +122,19 @@ class Exporter(object):
             for ig in (scene_obj.sets.nodes + scene_obj.sets.elements + scene_obj.sets.surfaces):
                 name = self.get_input_set_name(ig)
                 self._input[name] = Slot(name, 'vector.int', 'Indices',
-                        default=parse_attribute_value(ig.indices), parent=self)
+                                         default=parse_attribute_value(ig.indices), parent=self)
 
             for mr in scene_obj.material:
                 ind = mr.indices
                 name = self.get_input_material_name(mr)
-                self._input[name] = Slot('mr_%s_indexgroup' % mr.id, 'vector.int',
-                                                               default=parse_attribute_value(ind), parent=self)
+                self._input[name] = Slot(name, 'vector.int', default=parse_attribute_value(ind), parent=self)
+
+            for cs in scene_obj.constraints:
+                for const in cs.constraints:
+                    ind = const.indices
+                    name = self.get_input_constraint_name(const)
+                    self._input[name] = Slot(name, 'vector.int', default=parse_attribute_value(ind), parent=self)
+
 
     def get_input_mesh_name(self, mesh):
         """ generates the name for an output request within an object declaration
@@ -157,6 +162,14 @@ class Exporter(object):
         :return: a name for the indices input slot for the given material region
         """
         return 'mr_%s_indexgroup' % region.id
+
+    def get_input_constraint_name(self, const):
+        """generates the input for a given :py:class:`OAConstraint`
+        :param const:
+        :type msml.model.OAConstraint
+        :return:
+        """
+        return "constraint_%s" % const
 
     def link(self):
         self.arguments = {}
@@ -217,6 +230,7 @@ class Exporter(object):
         """
         self._executer = executer
         self._memory = self._executer._memory
+        """:type msml.run.memory.Memory"""
 
     def render(self):
         """
@@ -241,6 +255,28 @@ class Exporter(object):
             resultExpression = expression
 
         return resultExpression
+
+    def get_value_from_memory(self, reference):
+        """
+
+        :param reference:
+        :return:
+        """
+
+        if isinstance(reference, str):
+            return self.get_value_from_memory(self.arguments[reference])
+        elif isinstance(reference, Mesh):
+            return self.get_value_from_memory(self.get_input_mesh_name(reference))
+        elif isinstance(reference, MaterialRegion):
+            return self.get_value_from_memory(self.get_input_material_name(reference))
+        elif isinstance(reference, IndexGroup):
+            return self.get_value_from_memory(self.get_input_set_name(reference))
+        elif isinstance(reference, ObjectElement):
+            return self.get_input_constraint_name(reference)
+        elif isinstance(reference, Reference):
+            return self._memory.lookup(reference)
+        else:
+            raise MSMLException("no suitable reference was given (%s)" % reference)
 
 
 class XMLExporter(Exporter): pass
