@@ -110,12 +110,14 @@ class FeBioExporter(XMLExporter):
 
             self.createControl(self.node_root, msmlObject)
             # TODO this should be obselete with automical converters
-            #self.createMaterialRegions(self.node_root, msmlObject)
+            self.createMaterialRegions(self.node_root, msmlObject)
             import msml.ext.misc
             theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, 'Neo-Hooke')
             #meshTree = etree.fromstring(theInpString);
             self.node_root.append(etree.fromstring(theInpString))
             
+            self.createConstraintRegions(msmlObject)
+            self.createOutput()
             #febfile.write(theInpString)
             
             #create object, the mesh, material regions and constraints
@@ -126,7 +128,6 @@ class FeBioExporter(XMLExporter):
             #self.createMaterialRegions(objectNode, msmlObject)
 
             #create simulation steps
-            #self.createConstraintRegions(objectNode, msmlObject)
 
             #creat post processing request
             #self.createPostProcessingRequests(objectNode, msmlObject)
@@ -202,14 +203,12 @@ class FeBioExporter(XMLExporter):
     def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
-        youngs = {}
-        poissons = {}
-        density = {}
-
-        for matregion in msmlObject.material:
-            assert isinstance(matregion, MaterialRegion)
-            indexGroupNode = matregion.get_indices()
-
+        materialNode = self.sub("Material", self.node_root)
+        
+        for k in range(len(msmlObject.material)):
+            assert isinstance(msmlObject.material[k], MaterialRegion)
+            indexGroupNode = msmlObject.material[k].get_indices()
+            matregionId = msmlObject.material[k].id
             assert isinstance(indexGroupNode, ObjectElement)
 
             indices_key = indexGroupNode.attributes["indices"]
@@ -217,37 +216,40 @@ class FeBioExporter(XMLExporter):
             indices = '%s' % ', '.join(map(str, indices_vec))
 
             indices_int = [int(i) for i in indices.split(",")]
-
             #Get all materials
-            for material in matregion:
-                assert isinstance(material, ObjectElement)
+            for i in range(len(msmlObject.material[k])):
+                assert isinstance(msmlObject.material[k][i], ObjectElement)
 
-                currentMaterialType = material.attributes['__tag__']
+                currentMaterialType = msmlObject.material[k][i].attributes['__tag__']
                 if currentMaterialType == "indexgroup":
                     continue
 
                 if currentMaterialType == "linearElastic":
-                    currentYoungs = material.attributes["youngModulus"]
-                    currentPoissons = material.attributes["poissonRatio"]  # not implemented in sofa yet!
-                    for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
-                        youngs[i] = currentYoungs
-                        poissons[i] = currentPoissons
+                    currentYoungs = msmlObject.material[k][i].attributes["youngModulus"]
+                    currentPoissons = msmlObject.material[k][i].attributes["poissonRatio"]
                 elif currentMaterialType == "mass":
-                    currentDensity = material.attributes["density"]
-                    for i in indices_int:
-                        density[i] = currentDensity
+                    currentDensity = msmlObject.material[k][i].attributes["density"]
                 else:
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
-        keylist = density.keys()
-        keylist.sort()
+            
+            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="neo-Hookean" )
+            self.sub("density", materialRegionNode).text = str(currentDensity)
+            self.sub("E", materialRegionNode).text = str(currentYoungs)
+            self.sub("v", materialRegionNode).text = str(currentPoissons)
 
-        _select = lambda x: (x[k] for k in keylist)
-        _to_str = lambda x: ' '.join(_select(x))
 
-        density_str = _to_str(density)
-        youngs_str = _to_str(youngs)
-        poissons_str = _to_str(poissons)
+#===============================================================================
+#         keylist = density.keys()
+#         keylist.sort()
+# 
+#         _select = lambda x: (x[k] for k in keylist)
+#         _to_str = lambda x: ' '.join(_select(x))
+# 
+#         density_str = _to_str(density)
+#         youngs_str = _to_str(youngs)
+#         poissons_str = _to_str(poissons)
+#===============================================================================
 
 
         #merge all different materials to single forcefield/density entries.
@@ -274,124 +276,23 @@ class FeBioExporter(XMLExporter):
         #=======================================================================
 
 
-    def createConstraintRegions(self, objectNode, msmlObject):
+    def createConstraintRegions(self, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-
+        boundaryNode = self.sub("Boundary", self.node_root)
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
             assert isinstance(constraint_set, ObjectConstraints)
-
             for constraint in constraint_set.constraints:
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
                 indices_vec = self.evaluate_node(constraint.indices)
-                indices = '%s' % ', '.join(map(str, indices_vec))
-
+                print(map(str, indices_vec))
                 if currentConstraintType == "fixedConstraint":
-                    constraintNode = self.sub("FixedConstraint", objectNode,
-                                              name=constraint.id or constraint_set.name,
-                                              indices=indices)
-
-                    #elasticNode.set("setPoissonRatio", material.get("poissonRatio"))
-
-                    #check if child is present
-
-                    #if so, check operator compatibility
-
-                    #execute operator
-
-                    #check if mesh is in MSML folder
-
-                    #if not -> copy
+                    fixedConstraintNode = self.sub("fix", boundaryNode)
+                    bc = "xyz"
+                    for index in map(str, indices_vec):
+                        self.sub("node", fixedConstraintNode, id=int(index)+1, bc=bc)
                 elif currentConstraintType == "surfacePressure":
-                    constraintNode = self.sub("Node", objectNode, name="SurfaceLoad")
-
-                    self.sub("MeshTopology", constraintNode,
-                             name="SurfaceTopo",
-                             position="@LOADER.position",
-                             triangles="@LOADER.triangles", quads="@LOADER.quads")
-
-                    self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
-                             position="@SurfaceTopo.position")
-
-                    surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
-                                                             template="Vec3f",
-                                                             name="surfacePressure",
-                                                             pulseMode="1",
-                                                             pressureSpeed=str(float(
-                                                                 constraint.pressure) / 10.0),
-                                                             pressure=constraint.get("pressure"),
-                                                             triangleIndices=indices)
-
-                    self.sub("BarycentricMapping", constraintNode,
-                             template="undef, Vec3f",
-                             name="barycentricMapSurfacePressure",
-                             input="@..", output="@.")
-
-                elif currentConstraintType == "springMeshToFixed":
-
-                    constraintNode = self.sub("Node",objectNode, name="springMeshToFixed")
-                    mechObj = self.sub("MechanicalObject", constraintNode, template="Vec3f",
-                                       name="pointsInDeformingMesh",
-                                       position=constraint.get("movingPoints"))
-
-                    self.sub("BarycentricMapping", constraintNode,
-                             template="undef, Vec3f",
-                             name="barycentricMapSpringMeshToFixed",
-                             input="@..",
-                             output="@.")
-
-                    displacedLandLMarks = self.sub(constraintNode, "Node",
-                                                   name="fixedPointsForSpringMeshToFixed")
-                    mechObj = self.sub(displacedLandLMarks, "MechanicalObject",
-                                       template="Vec3f",
-                                       name="fixedPoints")
-
-                    mechObj.set("position", constraint.get("fixedPoints"))
-
-                    forcefield = self.sub("RestShapeSpringsForceField", constraintNode,
-                                          template="Vec3f",
-                                          name="Springs",
-                                          external_rest_shape="fixedPointsForSpringMeshToFixed/fixedPoints",
-                                          drawSpring="true",
-                                          stiffness=constraint.get("stiffness"),
-                                          rayleighStiffnes=constraint.get("rayleighStiffnes"))
-
-                elif currentConstraintType == "supportingMesh":
-
-                    constraintNode = self.sub("Node", name="support_" + constraint.get("name"))
-                    loaderNode = self.sub("MeshVTKLoader", constraintNode,
-                                          name="LOADER_supportmesh",
-                                          createSubelements="0",
-                                          filename=constraint.get("filename"))
-
-                    self.sub("MechanicalObject", constraintNode,
-                             name="dofs",
-                             src="@LOADER_supportmesh",
-                             template="Vec3f",
-                             translation="0 0 0")
-
-                    self.sub("MeshTopology", constraintNode,
-                             name="topo",
-                             src="@LOADER_supportmesh")
-
-                    forcefield = self.sub("TetrahedronFEMForceField", constraintNode, listening="true",
-                                          name="FEM", template="Vec3f",
-                                          youngModulus=constraint.get("youngModulus"),
-                                          poissonRatio=constraint.get("poissonRatio"))
-
-                    self.sub("TetrahedronSetGeometryAlgorithms", constraintNode,
-                             name="aTetrahedronSetGeometryAlgorithm",
-                             template="Vec3f")
-
-                    diagonalMass = self.sub("DiagonalMass", constraintNode,
-                                            name="meshMass",
-                                            massDensity=constraint.get("massDensity"))
-
-                    self.sub("BarycentricMapping", constraintNode,
-                             input="@..",
-                             name="barycentricMap",
-                             output="@.",
-                             template="undef, Vec3f")
+                    print("Pressure")
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
@@ -407,6 +308,7 @@ class FeBioExporter(XMLExporter):
         dt = self._msml_file.env.simulation[0].dt
         step_size = self.sub("step_size", controlNode)
         step_size.text = str(dt) 
+        # msml doesn't support attributes below
         #=======================================================================
         # max_refs = self.sub("max_refs", controlNode)
         # max_refs.text = "15"
@@ -432,61 +334,20 @@ class FeBioExporter(XMLExporter):
         #=======================================================================
         analysisType = "static"
         analysis = self.sub("analysis", controlNode, type = analysisType)
-        return controlNode
-
 
     def createScene(self):
         version = "1.2"  
         root = etree.Element("febio_spec", version=version)
         return root
-
-
-    def createPostProcessingRequests(self, objectNode, msmlObject):
-        for request in msmlObject.output:
-            assert isinstance(request, ObjectElement)
-            filename = self.working_dir / request.id
-            if request.tag == "displacementOutputRequest":
-                if objectNode.find("MeshTopology") is not None:
-                    #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
-                    exportEveryNumberOfSteps = request.get("timestep")
-
-                    dispOutputNode = self.sub("VTKExporter", objectNode,
-                                              filename=filename,
-                                              exportEveryNumberOfSteps=exportEveryNumberOfSteps,
-                                              XMLformat=1,
-                                              edges=0,
-                                              #todo export material => allows extraction of surfaces in post processing
-                                              tetras=1,
-                                              triangles=0,
-                                              listening="true",
-                                              exportAtEnd="true")
-
-                    timeSteps = self._msml_file.env.simulation[0].iterations
-
-                    #exportEveryNumberOfSteps = 1 in SOFA means export every second time step.
-                    #exportEveryNumberOfSteps = 0 in SOFA means do not export.
-                    if exportEveryNumberOfSteps == 0:
-                        lastNumber = 1
-                    else:
-                        lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
-
-                    filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    self._memory['SOFAExporter'] = {request.id : filenameLastOutput}
-                    dispOutputNode.set("filename", filename+ ".vtu")
-
-                elif objectNode.find("QuadraticMeshTopology") is not None:
-                    dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
-                                              filename=filename,
-                                              exportEveryNumberOfSteps=exportEveryNumberOfSteps,
-                                              #todo export material => allows extraction of surfaces in post processing
-                                              tetras=0,
-                                              quadraticTetras=1,
-                                              listening="true",
-                                              exportAtEnd="true")
-
-                    #TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
-                else:
-                    warn(MSMLSOFAExporterWarning, "Topolgy type not supported")
+    
+    def createOutput(self):
+        type = "febio"
+        type2 = "displacement"
+        type3 = "stress"  
+        outputNode = self.sub("Output", self.node_root)
+        plotfileNode = self.sub("plotfile", outputNode, type = type)
+        self.sub("var", plotfileNode, type = type2)
+        self.sub("var", plotfileNode, type = type3)
 
     def sub(self, tag, root=None, **kwargs):
         skwargs = {k: str(v) for k, v in kwargs.items()}
