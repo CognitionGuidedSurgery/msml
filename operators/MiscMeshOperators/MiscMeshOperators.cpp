@@ -26,6 +26,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
+#include <vector>
 
 #include <string.h>
 
@@ -669,14 +671,14 @@ std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython(std::strin
 
 }
 
-std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName)
+std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName, std::vector<unsigned int> VecUInt)
 {
 	//load the vtk  mesh
 	vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	  reader->SetFileName(inputMesh.c_str());
 	  reader->Update();
-	  std::string output = ConvertVTKMeshToFeBioMeshString( reader->GetOutput(),   partName,  materialName);
+	  std::string output = ConvertVTKMeshToFeBioMeshString( reader->GetOutput(),   partName, VecUInt);
 	  return output;
 
 }
@@ -745,12 +747,11 @@ std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshString( vtkUnstructured
 	return out.str();
 }
 
-std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName)
+std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::vector<unsigned int> VecUInt)
 {
-	std::stringstream out;
+	 std::stringstream out;
 	 //write Geometry
 	 out << "<Geometry>\n";
-
 	 //nodes
 	 out << "<Nodes>\n";
 	 double* currentPoint;
@@ -786,7 +787,12 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 	 {
 		 inputMesh->GetCellPoints(i, numberOfNodesPerElement,currentCellPoints);
 		 if(numberOfNodesPerElement == 4) {
-			 out<<"<tet4 id=\""<<i+1<<"\" mat=\"1\">";
+			 out<<"<tet4 id=\""<<i+1<<"\" ";
+		 }
+		 if(std::find(VecUInt.begin(), VecUInt.end(), 0) != VecUInt.end()) {
+		  out<<"mat=\"1\">";
+		 } else {
+	      out<<"mat=\"0\">";
 		 }
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {

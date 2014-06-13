@@ -110,14 +110,15 @@ class FeBioExporter(XMLExporter):
 
             self.createControl(self.node_root, msmlObject)
             # TODO this should be obselete with automical converters
-            self.createMaterialRegions(self.node_root, msmlObject)
+            materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
             import msml.ext.misc
-            theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, 'Neo-Hooke')
+            theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, materialIndices)
             #meshTree = etree.fromstring(theInpString);
             self.node_root.append(etree.fromstring(theInpString))
             
             self.createConstraintRegions(msmlObject)
             self.createOutput()
+            
             #febfile.write(theInpString)
             
             #create object, the mesh, material regions and constraints
@@ -237,44 +238,9 @@ class FeBioExporter(XMLExporter):
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
-
-
-#===============================================================================
-#         keylist = density.keys()
-#         keylist.sort()
-# 
-#         _select = lambda x: (x[k] for k in keylist)
-#         _to_str = lambda x: ' '.join(_select(x))
-# 
-#         density_str = _to_str(density)
-#         youngs_str = _to_str(youngs)
-#         poissons_str = _to_str(poissons)
-#===============================================================================
-
-
-        #merge all different materials to single forcefield/density entries.
-        #=======================================================================
-        # if objectNode.find("MeshTopology") is not None:
-        #     elasticNode = self.sub("TetrahedronFEMForceField", objectNode,
-        #                            template=self._processing_unit, name="FEM",
-        #                            listening="true", youngModulus=youngs_str,
-        #                            poissonRatio=poissons[keylist[0]])
-        #     self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
-        #              name="aTetrahedronSetGeometryAlgorithm",
-        #              template=self._processing_unit)
-        #     massNode = self.sub("DiagonalMass", name="meshMass")
-        #     massNode.set("massDensity", density_str)
-        # elif objectNode.find("QuadraticMeshTopology") is not None:
-        #     eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
-        #                             template=self._processing_unit, name="FEM", listening="true",
-        #                             setYoungModulus=youngs_str,
-        #                             setPoissonRatio=poissons[keylist[0]])  # TODO
-        #     emassNode = self.sub("QuadraticMeshMatrixMass", objectNode,
-        #                          name="meshMass", massDensity=density_str)
-        # else:
-        #     warn(MSMLSOFAExporterWarning, "Current mesh topology not supported")
-        #=======================================================================
-
+        
+        return indices_vec
+            
 
     def createConstraintRegions(self, msmlObject):
         assert isinstance(msmlObject, SceneObject)
@@ -285,7 +251,6 @@ class FeBioExporter(XMLExporter):
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
                 indices_vec = self.evaluate_node(constraint.indices)
-                print(map(str, indices_vec))
                 if currentConstraintType == "fixedConstraint":
                     fixedConstraintNode = self.sub("fix", boundaryNode)
                     bc = "xyz"

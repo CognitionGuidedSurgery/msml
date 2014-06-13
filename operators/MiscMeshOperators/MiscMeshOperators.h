@@ -119,8 +119,8 @@ public:
 	LIBRARY_API static std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName);
 	LIBRARY_API static std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName);
 
-	LIBRARY_API static std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName);
-	LIBRARY_API static std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName);
+	LIBRARY_API static std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::vector<unsigned int> VecUInt);
+	LIBRARY_API static std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName, std::vector<unsigned int> VecUInt);
 
 	LIBRARY_API  static std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh);
 	LIBRARY_API  static bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
