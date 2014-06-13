@@ -98,8 +98,6 @@ class FeBioExporter(XMLExporter):
 
 
     def write_feb(self):
-       # assert isinstance(febfile, file)
-
         self.node_root = self.createScene()
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
@@ -109,32 +107,16 @@ class FeBioExporter(XMLExporter):
             meshFilename = self.evaluate_node(meshValue)
 
             self.createControl(self.node_root, msmlObject)
-            # TODO this should be obselete with automical converters
+   
             materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
             import msml.ext.misc
             theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, materialIndices)
-            #meshTree = etree.fromstring(theInpString);
+           
             self.node_root.append(etree.fromstring(theInpString))
             
             self.createConstraintRegions(msmlObject)
+            
             self.createOutput()
-            
-            #febfile.write(theInpString)
-            
-            #create object, the mesh, material regions and constraints
-            #objectNode = self.createObject(self.node_root, msmlObject)
-
-            #physicsElementNode = msmlObject.find("material")
-            #self.createMeshTopology(objectNode, msmlObject)
-            #self.createMaterialRegions(objectNode, msmlObject)
-
-            #create simulation steps
-
-            #creat post processing request
-            #self.createPostProcessingRequests(objectNode, msmlObject)
-
-            #add solver
-        #self.createSolvers()
 
         return etree.ElementTree(self.node_root)
 

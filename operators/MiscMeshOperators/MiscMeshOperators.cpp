@@ -789,10 +789,10 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 		 if(numberOfNodesPerElement == 4) {
 			 out<<"<tet4 id=\""<<i+1<<"\" ";
 		 }
-		 if(std::find(VecUInt.begin(), VecUInt.end(), 0) != VecUInt.end()) {
+		 if(std::find(VecUInt.begin(), VecUInt.end(), i) != VecUInt.end()) {
 		  out<<"mat=\"1\">";
 		 } else {
-	      out<<"mat=\"0\">";
+	      out<<"mat=\"1\">";
 		 }
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {
