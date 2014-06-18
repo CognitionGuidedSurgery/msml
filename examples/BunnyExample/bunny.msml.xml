@@ -4,7 +4,7 @@
 
     <variables>
         <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" logical="Mesh"
-             physical="file.vtk"/>
+             physical="str"/>
         <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="Mesh"
              physical="file.vtk"/>
     </variables>

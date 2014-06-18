@@ -36,13 +36,15 @@ sys.path.insert(0, os.path.abspath('_ext'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx',
               'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'edit_on_github', 
+              'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'edit_on_github', 'sphinx.ext.autosummary',
               'sphinxcontrib.napoleon']
 
 
 edit_on_github_project = "CognitionGuidedSurgery/msml"
 edit_on_github_branch = "master/docs/source"
 
+
+autosummary_generate=True
 
 todo_include_todos = True
 

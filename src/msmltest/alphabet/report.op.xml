@@ -1,0 +1,19 @@
+<msml:operator
+        xmlns:msml="http://sfb125.de/msml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://sfb125.de/msml"
+        name="report">
+    <runtime>
+        <python module="test_operators" function="report" />
+    </runtime>
+
+    <input>
+        <arg name="level" physical="str" />
+        <arg name="message" physical="str"/>
+        <arg name="value" physical="str"/>
+    </input>
+
+    <output>
+    </output>
+
+</msml:operator>

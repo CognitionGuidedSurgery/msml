@@ -36,11 +36,13 @@ from path import path
 
 from .memory import Memory
 from msml.model import *
+from msml.log import report
+from msml.generators import generate_task_id
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
 from msml.run.GraphDotWriter import GraphDotWriter
-
 import msml.sortdef
+
 
 class Executer(object):
     """Describe the interface of an Executer.
@@ -50,8 +52,11 @@ class Executer(object):
 
 
     """
+
     def __init__(self, msmlfile): pass
+
     def run(self): pass
+
     def init_memory(self, content): pass
 
 
@@ -70,11 +75,12 @@ def initialize_file_literals(first_bucket):
     def var_is_file(var):
         if isinstance(var, MSMLVariable):
             return issubclass(var.sort.physical, msml.sortdef.InFile)
-            #return contains("file", var.logical_type) or contains("file", var.physical_type)
+            # return contains("file", var.logical_type) or contains("file", var.physical_type)
         return False
 
     def abs_value(var):
         import os.path
+
         var.value = os.path.abspath(var.value)
         return var
 
@@ -98,7 +104,6 @@ class LinearSequenceExecuter(Executer):
             self._memory.load_memory_file(content)
         elif content:
             warnings.warn("init_memory handles only filenames", MSMLWarning)
-
 
     def define_var(self, name, value=None):
         """defines a variable in the current memory.
@@ -162,7 +167,6 @@ class LinearSequenceExecuter(Executer):
 
         """
         self.define_var(node.name, node.value)
-
 
 
     def _execute_operator_task(self, task):
@@ -248,7 +252,7 @@ def inject_implict_conversion(dag):
             # add new task
             dag.add_node(task)
 
-            #remove the old edge
+            # remove the old edge
             dag.remove_edge(a, b)
 
             # from Task to Converter
@@ -258,8 +262,10 @@ def inject_implict_conversion(dag):
 
             _t_b = Reference(ref.task, ref.slot)
             _t_b.linked_to = ref.linked_to
-            _t_b.link_from_task(task, task.operator.output[task.operator.output.keys()[0]])
+            _t_b.link_from_task(task, task.operator.output['o'])
 
+            # override converted value
+            # _t_b.link_from_task(task, task.operator.output[task.operator.output.keys()[0]])
 
             task.arguments['i'] = _a_t
             b.arguments[ref.linked_to.name] = _t_b
@@ -287,9 +293,10 @@ def get_python_conversion_operator(slotA, slotB):
     pyop = PythonOperator(
         "converter_%s_%s" % (pA.__name__, pB.__name__),
         input=[Slot("i", pA, lA)],
-        output=[Slot(slotB.name, pB, lB)], runtime=r)
+        output=[Slot('o', pB, lB)], runtime=r)
 
     return pyop
+
 
 
 def create_conversion_task(slotA, slotB):
@@ -306,18 +313,11 @@ def create_conversion_task(slotA, slotB):
     if fn is None:
         raise MSMLError("Could not find an automatic Converter for %s to %s" % (slotA, slotB))
 
-    def get_id(slot):
-        if isinstance(slot.task, Task):
-            return slot.task.id
-        if isinstance(slot.task, MSMLVariable):
-            return slot.task.name
-
-
     pyop = get_python_conversion_operator(slotA, slotB)
     pyop._function = fn
 
     # the new task override the old one memory values
-    attrib = {'id': get_id(slotA), 'i': None}
+    attrib = {'id': generate_task_id(), 'i': None}
     task = Task(pyop.name, attrib)
     task.operator = pyop
     return task

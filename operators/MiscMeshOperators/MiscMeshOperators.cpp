@@ -74,6 +74,8 @@
 
 #include <vtkDataSetSurfaceFilter.h>
 #include "vtkLongLongArray.h"
+#include "vtkDoubleArray.h"
+
 
 #include <vtkUnstructuredGridGeometryFilter.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -89,6 +91,11 @@
 #include "vtkFillHolesFilter.h"
 #include "vtkCleanPolyData.h"
 #include "vtkAppendFilter.h"
+
+#include "vtkTetra.h"
+#include "vtkTriangle.h"
+#include "vtkGenericCell.h"
+#include "vtkCellLocator.h"
 
 
 #include <vtkThreshold.h>
@@ -855,179 +862,179 @@ bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstruc
 
 }
 
-std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
-{
-    std::cout<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<<"\n";
-    bool result = ProjectSurfaceMesh(infile.c_str(), outfile.c_str(), referenceMesh.c_str());
-    return outfile;
-}
-
-
-bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh )
-{
-    vtkSmartPointer<vtkPolyDataReader> reader =
-        vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-    vtkPolyData* currentGrid = reader->GetOutput();
-
-    //load surface model to solid
-    vtkPolyDataReader* readerSTL = vtkPolyDataReader::New();
-    readerSTL->SetFileName(referenceMesh);
-    readerSTL->Update();
-
-    vtkPolyData* reference = readerSTL->GetOutput();
-
-    //	vtkSmartPointer<vtkPolyData> mesh =
-    //	 vtkSmartPointer<vtkPolyData>::New();
-
-    ProjectSurfaceMesh(currentGrid,  reference);
-
-    //write output
-    vtkSmartPointer<vtkPolyDataWriter> writer =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    writer->SetFileName(outfile);
-    writer->SetFileTypeToBinary();
-    __SetInput(writer,currentGrid);
-    writer->Write();
-
-    return true;
-}
-
-bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
-{
-    //	inputMesh->BuildCells();
-    //
-    ////	//first add a point data id to each point
-    ////	vtkPoints* thePoints = inputMesh->GetPoints();
-    ////	vtkCellArray* theCells = inputMesh->GetCells();
-    ////	vtkIdType numberOfPoints = thePoints->GetNumberOfPoints();
-    ////	vtkIdType numberOfCells = theCells->GetNumberOfCells();
-    ////
-    ////	vtkSmartPointer<vtkLongLongArray> pointIds =
-    ////	  vtkSmartPointer<vtkLongLongArray>::New();
-    ////	pointIds->SetNumberOfComponents(1);
-    ////	pointIds->SetName("pointIds");
-    ////
-    ////
-    ////	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
-    ////	{
-    ////	pointIds->InsertNextTuple1(i);
-    ////	}
-    ////
-    ////	inputMesh->GetPointData()->SetGlobalIds(pointIds);
-    ////
-    ////
-    ////	//extract the surface
-    ////	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
-    ////		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-    ////	geom->SetInput(inputMesh);
-    ////	geom->PassThroughPointIdsOn();
-    ////	geom->SetOriginalPointIdsName("pointIds");
-    ////	geom->Update();
-    //
-    //
-    //	//initialize collision detection
-    //
-    //
-    //
-    //	DT_ShapeHandle meshShapeHandle = DT_NewComplexShape(0);
-    //	vtkIdType* currentCellPoints;
-    //	vtkIdType numberOfNodes=3;
-    //	float currentVertex[3];
-    //	double currentVTKVertex[3];
-    //
-    //	referenceMesh->BuildCells();
-    //
-    //	std::cout<<"Add reference surface mesh to solid \n";
-    //
-    //	for(int i=0; i<referenceMesh->GetNumberOfCells(); i++)
-    //	{
-    //	 referenceMesh->GetCellPoints(i, numberOfNodes,currentCellPoints);
-    //	 if(numberOfNodes != 3)
-    //		 std::cerr<<"WTF:Number of nodes not 3 \n";
-    //
-    //	 DT_Begin();
-    //
-    //	 for(int j=0; j<numberOfNodes; j++)
-    //	 {
-    //		 referenceMesh->GetPoint(currentCellPoints[j], currentVTKVertex);
-    //		 currentVertex[0] = currentVTKVertex[0];
-    //		 currentVertex[1] = currentVTKVertex[1];
-    //		 currentVertex[2] = currentVTKVertex[2];
-    //		 DT_Vertex(currentVertex);
-    //	 }
-    //
-    //	 DT_End();
-    //
-    //	}
-    //
-    //	DT_EndComplexShape();
-    //
-    //	DT_ObjectHandle meshObjectHandle = DT_CreateObject(0,meshShapeHandle);
-    //
-    //
-    //
-    //	//iterate over all surface point
-    ////	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
-    ////
-    //	vtkPoints* thePointsSurface = inputMesh->GetPoints();
-    ////	vtkCellArray* theCellsSurface = surfaceGrid->GetCells();
-    //	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
-    ////	vtkIdType numberOfCellsSurface = theCellsSurface->GetNumberOfCells();
-    //
-    //
-    //
-    //	std::vector<DT_ShapeHandle> pointShapeHandles;
-    //	pointShapeHandles.resize(numberOfPointsSurface);
-    //	std::vector<DT_ObjectHandle> pointObjectHandles;
-    //	pointObjectHandles.resize(numberOfPointsSurface);
-    //	DT_ShapeHandle currentShapeHandle;
-    //	DT_ObjectHandle currentObjectHandle;
-    //
-    //
-    //	std::cout<<"Add quadratic surface points to solid \n";
-    //
-    //	for(int i=0; i<numberOfPointsSurface; i++)
-    //	{
-    //	thePointsSurface->GetPoint(i,currentVTKVertex);
-    //	currentVertex[0]=currentVTKVertex[0];
-    //	currentVertex[1]=currentVTKVertex[1];
-    //	currentVertex[2]=currentVTKVertex[2];
-    //
-    //	pointShapeHandles[i] = DT_NewPoint(currentVertex);
-    //	DT_EndComplexShape();
-    //	pointObjectHandles[i] = DT_CreateObject(0,pointShapeHandles[i]);
-    //
-    //	}
-    //
-    //	//for each surface point: project
-    //
-    //	float currentPointOnMesh[3];
-    //	float currentTempPoint[3];
-    //
-    //	//vtkLongLongArray* globalIdsSurface = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");//->GetPointData()->get->GetScalars("pointIds");
-    //
-    //	std::cout<<"Numberof surface points: "<<numberOfPointsSurface<<"\n";
-    //
-    //	std::cout<<"Query nearest point on surface \n";
-    //
-    //	for(int i=0; i<numberOfPointsSurface; i++)
-    //	{
-    //	currentObjectHandle = pointObjectHandles[i];
-    //
-    //	//std::cout<<"CurrentSurfacePointId: "<<i<<" globalID: "<<globalIdsSurface->GetValue(i)<<"\n";
-    //
-    //	DT_GetClosestPair(meshObjectHandle,currentObjectHandle,currentPointOnMesh,currentTempPoint);
-    //
-    //
-    //	thePointsSurface->SetPoint(i,  currentPointOnMesh[0],currentPointOnMesh[1],currentPointOnMesh[2] );
-    //
-    //	}
-    //
-    //	std::cout<<"Save output\n";
-    return true;
-}
+//std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
+//{
+//    std::cout<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<<"\n";
+//    bool result = ProjectSurfaceMesh(infile.c_str(), outfile.c_str(), referenceMesh.c_str());
+//    return outfile;
+//}
+//
+//
+//bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh )
+//{
+//    vtkSmartPointer<vtkPolyDataReader> reader =
+//        vtkSmartPointer<vtkPolyDataReader>::New();
+//    reader->SetFileName(infile);
+//    reader->Update();
+//    vtkPolyData* currentGrid = reader->GetOutput();
+//
+//    //load surface model to solid
+//    vtkPolyDataReader* readerSTL = vtkPolyDataReader::New();
+//    readerSTL->SetFileName(referenceMesh);
+//    readerSTL->Update();
+//
+//    vtkPolyData* reference = readerSTL->GetOutput();
+//
+//    //	vtkSmartPointer<vtkPolyData> mesh =
+//    //	 vtkSmartPointer<vtkPolyData>::New();
+//
+//    ProjectSurfaceMesh(currentGrid,  reference);
+//
+//    //write output
+//    vtkSmartPointer<vtkPolyDataWriter> writer =
+//        vtkSmartPointer<vtkPolyDataWriter>::New();
+//    writer->SetFileName(outfile);
+//    writer->SetFileTypeToBinary();
+//    __SetInput(writer,currentGrid);
+//    writer->Write();
+//
+//    return true;
+//}
+//
+//bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
+//{
+//    //	inputMesh->BuildCells();
+//    //
+//    ////	//first add a point data id to each point
+//    ////	vtkPoints* thePoints = inputMesh->GetPoints();
+//    ////	vtkCellArray* theCells = inputMesh->GetCells();
+//    ////	vtkIdType numberOfPoints = thePoints->GetNumberOfPoints();
+//    ////	vtkIdType numberOfCells = theCells->GetNumberOfCells();
+//    ////
+//    ////	vtkSmartPointer<vtkLongLongArray> pointIds =
+//    ////	  vtkSmartPointer<vtkLongLongArray>::New();
+//    ////	pointIds->SetNumberOfComponents(1);
+//    ////	pointIds->SetName("pointIds");
+//    ////
+//    ////
+//    ////	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
+//    ////	{
+//    ////	pointIds->InsertNextTuple1(i);
+//    ////	}
+//    ////
+//    ////	inputMesh->GetPointData()->SetGlobalIds(pointIds);
+//    ////
+//    ////
+//    ////	//extract the surface
+//    ////	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
+//    ////		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
+//    ////	geom->SetInput(inputMesh);
+//    ////	geom->PassThroughPointIdsOn();
+//    ////	geom->SetOriginalPointIdsName("pointIds");
+//    ////	geom->Update();
+//    //
+//    //
+//    //	//initialize collision detection
+//    //
+//    //
+//    //
+//    //	DT_ShapeHandle meshShapeHandle = DT_NewComplexShape(0);
+//    //	vtkIdType* currentCellPoints;
+//    //	vtkIdType numberOfNodes=3;
+//    //	float currentVertex[3];
+//    //	double currentVTKVertex[3];
+//    //
+//    //	referenceMesh->BuildCells();
+//    //
+//    //	std::cout<<"Add reference surface mesh to solid \n";
+//    //
+//    //	for(int i=0; i<referenceMesh->GetNumberOfCells(); i++)
+//    //	{
+//    //	 referenceMesh->GetCellPoints(i, numberOfNodes,currentCellPoints);
+//    //	 if(numberOfNodes != 3)
+//    //		 std::cerr<<"WTF:Number of nodes not 3 \n";
+//    //
+//    //	 DT_Begin();
+//    //
+//    //	 for(int j=0; j<numberOfNodes; j++)
+//    //	 {
+//    //		 referenceMesh->GetPoint(currentCellPoints[j], currentVTKVertex);
+//    //		 currentVertex[0] = currentVTKVertex[0];
+//    //		 currentVertex[1] = currentVTKVertex[1];
+//    //		 currentVertex[2] = currentVTKVertex[2];
+//    //		 DT_Vertex(currentVertex);
+//    //	 }
+//    //
+//    //	 DT_End();
+//    //
+//    //	}
+//    //
+//    //	DT_EndComplexShape();
+//    //
+//    //	DT_ObjectHandle meshObjectHandle = DT_CreateObject(0,meshShapeHandle);
+//    //
+//    //
+//    //
+//    //	//iterate over all surface point
+//    ////	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
+//    ////
+//    //	vtkPoints* thePointsSurface = inputMesh->GetPoints();
+//    ////	vtkCellArray* theCellsSurface = surfaceGrid->GetCells();
+//    //	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
+//    ////	vtkIdType numberOfCellsSurface = theCellsSurface->GetNumberOfCells();
+//    //
+//    //
+//    //
+//    //	std::vector<DT_ShapeHandle> pointShapeHandles;
+//    //	pointShapeHandles.resize(numberOfPointsSurface);
+//    //	std::vector<DT_ObjectHandle> pointObjectHandles;
+//    //	pointObjectHandles.resize(numberOfPointsSurface);
+//    //	DT_ShapeHandle currentShapeHandle;
+//    //	DT_ObjectHandle currentObjectHandle;
+//    //
+//    //
+//    //	std::cout<<"Add quadratic surface points to solid \n";
+//    //
+//    //	for(int i=0; i<numberOfPointsSurface; i++)
+//    //	{
+//    //	thePointsSurface->GetPoint(i,currentVTKVertex);
+//    //	currentVertex[0]=currentVTKVertex[0];
+//    //	currentVertex[1]=currentVTKVertex[1];
+//    //	currentVertex[2]=currentVTKVertex[2];
+//    //
+//    //	pointShapeHandles[i] = DT_NewPoint(currentVertex);
+//    //	DT_EndComplexShape();
+//    //	pointObjectHandles[i] = DT_CreateObject(0,pointShapeHandles[i]);
+//    //
+//    //	}
+//    //
+//    //	//for each surface point: project
+//    //
+//    //	float currentPointOnMesh[3];
+//    //	float currentTempPoint[3];
+//    //
+//    //	//vtkLongLongArray* globalIdsSurface = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");//->GetPointData()->get->GetScalars("pointIds");
+//    //
+//    //	std::cout<<"Numberof surface points: "<<numberOfPointsSurface<<"\n";
+//    //
+//    //	std::cout<<"Query nearest point on surface \n";
+//    //
+//    //	for(int i=0; i<numberOfPointsSurface; i++)
+//    //	{
+//    //	currentObjectHandle = pointObjectHandles[i];
+//    //
+//    //	//std::cout<<"CurrentSurfacePointId: "<<i<<" globalID: "<<globalIdsSurface->GetValue(i)<<"\n";
+//    //
+//    //	DT_GetClosestPair(meshObjectHandle,currentObjectHandle,currentPointOnMesh,currentTempPoint);
+//    //
+//    //
+//    //	thePointsSurface->SetPoint(i,  currentPointOnMesh[0],currentPointOnMesh[1],currentPointOnMesh[2] );
+//    //
+//    //	}
+//    //
+//    //	std::cout<<"Save output\n";
+//    return true;
+//}
 
 std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution)
 {
@@ -1270,5 +1277,418 @@ std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstruct
     return outputPositions;
 
 }
+
+LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile)
+{
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+	 vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(infile.c_str());
+	reader->Update();
+
+	//deep copy
+	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGrid> outputMesh =
+	 vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+	ConvertLinearToQuadraticTetrahedralMesh(inputMesh, outputMesh);
+
+
+	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
+	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
+	writer->SetFileName(outfile.c_str());
+#if VTK_MAJOR_VERSION <= 5
+	writer->SetInput(outputMesh);
+#else
+	writer->SetInputData(outputMesh);
+#endif
+	writer->Write();
+
+	return true;
+}
+
+LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh)
+{
+
+
+	//get cells
+    vtkPoints* thePoints = inputMesh->GetPoints();
+    vtkCellArray* theCells = inputMesh->GetCells();
+    vtkIdType numberOfPoints = inputMesh->GetNumberOfPoints();
+    vtkIdType numberOfCells = inputMesh->GetNumberOfCells();
+
+
+    //set of pairs that are already mapped
+    typedef std::pair<unsigned int, unsigned int> PairType;
+    typedef std::map< PairType, unsigned int > MapType;
+    typedef std::pair< PairType, unsigned int > MapPairType;
+    MapType pointMap;
+
+    std::vector<PairType> edgeDefs;
+    edgeDefs.push_back(std::make_pair(0,1));
+    edgeDefs.push_back(std::make_pair(1,2));
+    edgeDefs.push_back(std::make_pair(2,0));
+    edgeDefs.push_back(std::make_pair(0,3));
+    edgeDefs.push_back(std::make_pair(3,1));
+    edgeDefs.push_back(std::make_pair(3,2));
+
+    double currentVTKPoint[3];
+    double currentVTKPoint1[3];
+    double currentVTKPoint2[3];
+
+	vtkSmartPointer<vtkPoints> newPoints =
+	 vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkCellArray> newCells =
+	 vtkSmartPointer<vtkCellArray>::New();
+
+
+
+
+    for(unsigned int i=0; i<numberOfCells; i++) // iterate over all triangles
+    {
+
+        vtkSmartPointer<vtkIdList> cellPointIds =
+            vtkSmartPointer<vtkIdList>::New();
+
+        vtkSmartPointer<vtkIdList> newCellPointIds =
+            vtkSmartPointer<vtkIdList>::New();
+
+        inputMesh->GetCellPoints(i, cellPointIds);
+
+        for(unsigned int j=0; j<4;j++) //original points
+        {
+        	unsigned int pointId = cellPointIds->GetId(j);
+        	PairType currentPair = std::make_pair(pointId, pointId);
+
+        	MapType::iterator it=pointMap.find(currentPair);
+
+        	unsigned int currentId;
+
+        	if(it != pointMap.end())
+        	{
+        		currentId = it->second;
+        	}
+        	else
+        	{
+				thePoints->GetPoint(pointId, currentVTKPoint);
+				currentId = newPoints->InsertNextPoint(currentVTKPoint[0], currentVTKPoint[1], currentVTKPoint[2]);
+
+				pointMap.insert(std::make_pair(currentPair, currentId));
+        	}
+
+        	newCellPointIds->InsertNextId(currentId);
+        }
+
+
+        for(unsigned int j=4; j<10;j++) //original points
+        {
+        	unsigned int pointId1 = cellPointIds->GetId(edgeDefs[j-4].first);
+        	unsigned int pointId2 = cellPointIds->GetId(edgeDefs[j-4].second);
+        	PairType currentPair = std::make_pair( pointId1, pointId2);
+        	PairType currentPair2 = std::make_pair( pointId2, pointId1);
+
+        	MapType::iterator it1=pointMap.find(currentPair);
+        	MapType::iterator it2=pointMap.find(currentPair2);
+
+        	unsigned int currentId;
+
+        	if(it1 != pointMap.end() || it2 != pointMap.end())
+        	{
+        		if(it1 != pointMap.end())
+        			currentId = it1->second;
+        		else
+        			currentId = it2->second;
+        	}
+        	else
+        	{
+
+				thePoints->GetPoint(pointId1, currentVTKPoint1);
+				thePoints->GetPoint(pointId2, currentVTKPoint2);
+
+				currentVTKPoint[0] = (currentVTKPoint1[0] + currentVTKPoint2[0])/2;
+				currentVTKPoint[1] = (currentVTKPoint1[1] + currentVTKPoint2[1])/2;
+				currentVTKPoint[2] = (currentVTKPoint1[2] + currentVTKPoint2[2])/2;
+
+				currentId = newPoints->InsertNextPoint(currentVTKPoint[0], currentVTKPoint[1], currentVTKPoint[2]);
+				pointMap.insert(std::make_pair(currentPair, currentId));
+
+        	}
+
+
+        	newCellPointIds->InsertNextId(currentId);
+        }
+
+        newCells->InsertNextCell(newCellPointIds);
+
+    }
+
+
+    outputMesh->SetPoints(newPoints);
+    outputMesh->SetCells(VTK_QUADRATIC_TETRA, newCells);
+
+
+
+	return true;
+}
+
+LIBRARY_API  bool ProjectSurfaceMesh(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
+{
+
+	vtkSmartPointer<vtkPolyDataReader> reader =
+	 vtkSmartPointer<vtkPolyDataReader>::New();
+	reader->SetFileName(referenceMeshFile.c_str());
+	reader->Update();
+
+	//deep copy
+	vtkPolyData* referenceMesh = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
+	 vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader2->SetFileName(inputVolumeMeshFile.c_str());
+	reader2->Update();
+
+	//deep copy
+	vtkUnstructuredGrid* inputMesh = reader2->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGrid> outputMesh =
+	 vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+	ProjectSurfaceMesh(inputMesh, outputMesh, referenceMesh);
+
+
+	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
+	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
+	writer->SetFileName(outputMeshFile.c_str());
+	#if VTK_MAJOR_VERSION <= 5
+		writer->SetInput(outputMesh);
+	#else
+		writer->SetInputData(outputMesh);
+	#endif
+	writer->Write();
+
+
+	return true;
+}
+
+LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh)
+{
+
+	std::cout<<"Start surface projection\n";
+	outputMesh->DeepCopy(inputMesh);
+
+	std::cout<<"deep copy finished\n";
+
+//	outputMesh->BuildCells();
+	//
+	//first add a point data id to each point
+	vtkPoints* thePoints = outputMesh->GetPoints();
+	vtkCellArray* theCells = outputMesh->GetCells();
+	vtkIdType numberOfPoints = outputMesh->GetNumberOfPoints();
+	vtkIdType numberOfCells = outputMesh->GetNumberOfCells();
+
+	vtkSmartPointer<vtkLongLongArray> pointIds =
+	  vtkSmartPointer<vtkLongLongArray>::New();
+	pointIds->SetNumberOfComponents(1);
+	pointIds->SetName("pointIds");
+
+	vtkSmartPointer<vtkLongLongArray> regionIds =
+	  vtkSmartPointer<vtkLongLongArray>::New();
+	regionIds->SetNumberOfComponents(1);
+	regionIds->SetName("regionIds");
+
+	vtkSmartPointer<vtkDoubleArray> displacements =
+	  vtkSmartPointer<vtkDoubleArray>::New();
+	displacements->SetNumberOfComponents(3);
+	displacements->SetName("displacements");
+
+	std::cout<<"filling tuples\n";
+
+	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
+	{
+		pointIds->InsertNextTuple1(i);
+		regionIds->InsertNextTuple1(0);
+
+		displacements->InsertNextTuple3(0,0,0);
+	}
+
+	outputMesh->GetPointData()->SetGlobalIds(pointIds);
+
+
+	//extract the surface
+	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
+		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
+	geom->SetInput(outputMesh);
+	geom->PassThroughPointIdsOn();
+	geom->SetOriginalPointIdsName("pointIds");
+	geom->Update();
+
+
+
+
+	//prepare octree data structure for reference mesh
+	referenceMesh->BuildCells();
+    vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+    cellLocatorRef->SetDataSet ( referenceMesh);
+    cellLocatorRef->BuildLocator();
+
+
+
+
+	//iterate over all surface point
+	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
+	vtkPoints* thePointsSurface = surfaceGrid->GetPoints();
+	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
+	vtkLongLongArray* realPointIds = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");
+
+    double currentPoint[3];
+    double currentClosestPoint[3];
+    double currentDisplacement[3];
+    vtkSmartPointer<vtkGenericCell> currentTriangle = vtkSmartPointer<vtkGenericCell>::New();
+    currentTriangle->SetCellTypeToTriangle();
+    vtkIdType currentCellId;
+    int currentSubId;
+    double currentDistance;
+
+
+
+	for(int i=0; i<numberOfPointsSurface; i++)
+	{
+		thePointsSurface->GetPoint ( i, currentPoint );
+
+
+        cellLocatorRef->FindClosestPoint ( currentPoint, currentClosestPoint,
+                                           currentTriangle, currentCellId,currentSubId,currentDistance );
+
+
+        unsigned int realPointId = realPointIds->GetTuple1(i);
+
+        thePoints->SetPoint(realPointId,  currentClosestPoint[0],currentClosestPoint[1],currentClosestPoint[2] );
+
+        currentDisplacement[0] = currentClosestPoint[0] - currentPoint[0];
+        currentDisplacement[1] = currentClosestPoint[1] - currentPoint[1];
+        currentDisplacement[2] = currentClosestPoint[2] - currentPoint[2];
+
+        displacements->SetTuple3(realPointId, currentDisplacement[0],currentDisplacement[1],currentDisplacement[2]);
+        regionIds->SetTuple1(realPointId, 1);
+	}
+
+	outputMesh->GetPointData()->SetScalars(regionIds);
+	outputMesh->GetPointData()->SetVectors(displacements);
+
+
+
+
+
+
+
+
+	return true;
+}
+
+std::vector<unsigned int> ExtractNodeSet(std::string inputVolumeMeshFile, std::string nodeSetName)
+{
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+	 vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(inputVolumeMeshFile.c_str());
+	reader->Update();
+
+	//deep copy
+	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+
+
+	std::vector<unsigned int> result = ExtractNodeSet(inputMesh, nodeSetName);
+
+	return result;
+
+}
+
+std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, std::string nodeSetName)
+{
+
+
+	std::vector<unsigned int> idList;
+
+	if(inputMeshFile->GetPointData()->HasArray(nodeSetName.c_str()))
+	{
+		vtkDataArray* nodeSet = inputMeshFile->GetPointData()->GetScalars(nodeSetName.c_str());
+
+		unsigned int numberOfNodes = nodeSet->GetNumberOfTuples();
+
+		for(int i=0; i<numberOfNodes; i++)
+		{
+			unsigned int myType = (unsigned int) nodeSet->GetTuple1(i);
+
+			if(myType)
+			{
+				idList.push_back(i);
+			}
+		}
+
+		return idList;
+	}
+	else
+	{
+		std::cout<<"Node set with name "<<nodeSetName<<" was not found\n";
+		return idList;
+	}
+
+
+}
+
+std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile,  std::string vectorFieldName, std::vector<unsigned int> nodeList)
+{
+
+		vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		 vtkSmartPointer<vtkUnstructuredGridReader>::New();
+		reader->SetFileName(inputVolumeMeshFile.c_str());
+		reader->Update();
+
+		//deep copy
+		vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+
+
+		std::vector<double> result = ExtractVectorField(inputMesh, vectorFieldName, nodeList);
+
+		return result;
+
+}
+
+std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std::string vectorFieldName, std::vector<unsigned int> nodeList)
+{
+	std::vector<double> vectorField;
+
+	if(inputMeshFile->GetPointData()->HasArray(vectorFieldName.c_str()))
+	{
+		vtkDataArray* vectorFieldArray = inputMeshFile->GetPointData()->GetVectors(vectorFieldName.c_str());
+		unsigned int numberOfNodes = nodeList.size();
+		unsigned int numberOfFieldValues = vectorFieldArray->GetNumberOfTuples();
+
+		if(numberOfNodes> numberOfFieldValues)
+		{
+			std::cout<<"Indices list and vector field does not match\n";
+			return vectorField;
+		}
+
+		double currentDisplacement[3];
+
+		for(int i=0; i<numberOfNodes; i++)
+		{
+			vectorFieldArray->GetTuple(nodeList[i], currentDisplacement);
+			vectorField.push_back( currentDisplacement[0] );
+			vectorField.push_back( currentDisplacement[1] );
+			vectorField.push_back( currentDisplacement[2] );
+		}
+
+		return vectorField;
+	}
+	else
+	{
+		std::cout<<"Vector field with name "<<vectorFieldName<<" was not found\n";
+		return vectorField;
+	}
+
+}
+
 }//end namepace MiscMeshOperators
 }//end namepace MSML

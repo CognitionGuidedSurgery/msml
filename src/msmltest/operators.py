@@ -27,6 +27,7 @@ def fcmp(a,b):
     print ("diff -b %s %s" %(a,b))
     return os.system("diff -b %s %s" %(a,b)) == 0
 
+class OperatorTest(TestCase):
     def test_tetgen(self):
         input_file = INP_DIR / 'Bunny6000Surface.vtk'
         ref_file = REF_DIR / 'test_tetgen_1.vtk'

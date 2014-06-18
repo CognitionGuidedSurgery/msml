@@ -12,7 +12,7 @@
         <arg name="time" physical="float">
             <meta key="doc" value="Set time."/>
         </arg>
-        <arg name="indices" physical="vector.int">
+        <arg name="indices" physical="vector.float">
             <meta key="doc" value="Set indices of fixed points separated by spaces."/>
         </arg> 
     </parameters>
