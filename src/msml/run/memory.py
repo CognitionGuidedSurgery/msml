@@ -31,7 +31,7 @@ __author__ = 'Alexander Weigl'
 
 import pprint
 
-from ..model.base import parse_attribute_value
+from ..model.base import parse_attribute_value, MSMLVariable
 
 
 class MemoryError(Exception):
@@ -81,6 +81,10 @@ class Memory(object):
     def lookup(self, reference):
         if isinstance(reference, str):
             reference = parse_attribute_value(reference)
+
+        if isinstance(reference.linked_from.task, MSMLVariable):
+            return self[reference.linked_from.task.name]
+
         return self[reference.linked_from.task.id][reference.linked_from.name]
 
 
