@@ -169,7 +169,7 @@ class Exporter(object):
         :type msml.model.OAConstraint
         :return:
         """
-        return "constraint_%s" % const
+        return "constraint_%s" % const.id
 
     def link(self):
         self.arguments = {}
@@ -272,7 +272,7 @@ class Exporter(object):
         elif isinstance(reference, IndexGroup):
             return self.get_value_from_memory(self.get_input_set_name(reference))
         elif isinstance(reference, ObjectElement):
-            return self.get_input_constraint_name(reference)
+            return self.get_value_from_memory(self.get_input_constraint_name(reference))
         elif isinstance(reference, Reference):
             return self._memory.lookup(reference)
         else:

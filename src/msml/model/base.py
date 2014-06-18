@@ -898,7 +898,7 @@ class ObjectElement(object):
         if 'id' not in self.attributes:
             import msml.generators
 
-            self.attributes['id'] = msml.generators.generate_identifier
+            self.attributes['id'] = msml.generators.generate_identifier()
 
     def __getattr__(self, item):
         return self.get(item, None)
