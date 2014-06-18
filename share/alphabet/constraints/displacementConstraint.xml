@@ -6,7 +6,7 @@
 
 
     <description>
-        Set fixed points
+        Set displacements
     </description>
 
     <parameters>
@@ -19,7 +19,7 @@
         </arg>
 
 
-        <arg name="displacement" physical="vector.int">
+        <arg name="displacement" physical="vector.float">
             <meta key="doc" value="State the displacement of the point."/>
         </arg>
     </parameters>

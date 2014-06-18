@@ -88,7 +88,7 @@ Options:
  -a, --alphabet-dir=DIR     loads an specific alphabet dir
  --operator-dir             path to search for additional python modules
  -x, --xsd-file=FILE        xsd-file
- -e VALUE, --exporter=VALUE    set the exporter (base, sofa, abaqus) [default: base]
+ -e VALUE, --exporter=VALUE    set the exporter (base, nsofa, nabaqus) [default: base]
  -m FILE, --vars=FILE       predefined the memory content
 
 """
