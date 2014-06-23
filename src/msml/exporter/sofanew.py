@@ -254,7 +254,7 @@ class SofaExporter(XMLExporter):
             self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)
-            massNode = self.sub("DiagonalMass", name="meshMass")
+            massNode = self.sub("DiagonalMass", objectNode, name="meshMass")
             massNode.set("massDensity", density_str)
         elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
