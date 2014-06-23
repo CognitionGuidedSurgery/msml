@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <sstream> 
-#include <GenerateModelsFromLabels.h>
+#include <VTKMeshgen.h>
 #include <IOHelper.h>
 
 using namespace MSML;
