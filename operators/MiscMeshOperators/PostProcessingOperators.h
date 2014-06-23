@@ -34,6 +34,7 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkImageData.h>
+#include <vtkCellLocator.h>
 
 #include <../MSML_Operators.h>
 
@@ -285,6 +286,11 @@ LIBRARY_API void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkImageData* o
 LIBRARY_API std::string ApplyDVFPython(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool multipleDVF, bool reverseDirection);
 LIBRARY_API void ApplyDVF(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool reverseDirection);
 LIBRARY_API void ApplyDVF(vtkImageData* refImage, vtkImageData* outputDefImage, vtkImageData* dvf, bool reverseDirection);
+
+LIBRARY_API std::string TransformMeshBarycentricPython(const char* referenceGridPath, const char* out_meshPath, const char* meshPath, const char* deformedGridPath);
+LIBRARY_API void TransformMeshBarycentric(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* out_mesh, vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* deformedGrid);
+  
+
 // member access
 
 
@@ -293,6 +299,7 @@ LIBRARY_API void ApplyDVF(vtkImageData* refImage, vtkImageData* outputDefImage, 
 
 std::string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename);
 std::string ApplyMultipleDVF(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool reverseDirection);
+void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef,vtkUnstructuredGrid* deformedGrid, float* vec_out);
 
 } //end namespace PostProcessingOperators
 } // end namespace MediAssist

@@ -1,4 +1,4 @@
-/*  =========================================================================
+#include <stdio.h>/*  =========================================================================
 
     Program:   The Medical Simulation Markup Language
     Module:    Operators, MiscMeshOperators
@@ -27,6 +27,7 @@
 // ****************************************************************************
 #include <vector>
 #include <limits>
+#include <map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,6 +87,8 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkImageData> VTKReadImage(const char* filename);
         LIBRARY_API vtkSmartPointer<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename);
         LIBRARY_API vtkSmartPointer<vtkPolyData> VTKReadPolyData(const char* filename);
+        LIBRARY_API vtkSmartPointer<vtkImageData> CTXReadImage(const char* filename);
+        LIBRARY_API std::map<std::string, std::string> ReadTextFileToMap(std::string file, char delim);
 
     }
 }

@@ -6,6 +6,7 @@
 #include "MiscMeshOperators.h"
 #include "PostProcessingOperators.h"
 #include "MappingOperators.h"
+#include "VTKMeshgen.h"
 
 %}
 
@@ -16,3 +17,4 @@
 %include "PostProcessingOperators.h"
 %include "MiscMeshOperators.h"
 %include "MappingOperators.h"
+%include "VTKMeshgen.h"

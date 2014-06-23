@@ -451,6 +451,9 @@ namespace MSML {
         LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName);
         LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName);
 
+        LIBRARY_API   std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh);
+        LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
+        LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
 
         LIBRARY_API   std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution);
         LIBRARY_API   bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution);

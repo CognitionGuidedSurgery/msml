@@ -862,179 +862,179 @@ bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstruc
 
 }
 
-//std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
-//{
-//    std::cout<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<<"\n";
-//    bool result = ProjectSurfaceMesh(infile.c_str(), outfile.c_str(), referenceMesh.c_str());
-//    return outfile;
-//}
-//
-//
-//bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh )
-//{
-//    vtkSmartPointer<vtkPolyDataReader> reader =
-//        vtkSmartPointer<vtkPolyDataReader>::New();
-//    reader->SetFileName(infile);
-//    reader->Update();
-//    vtkPolyData* currentGrid = reader->GetOutput();
-//
-//    //load surface model to solid
-//    vtkPolyDataReader* readerSTL = vtkPolyDataReader::New();
-//    readerSTL->SetFileName(referenceMesh);
-//    readerSTL->Update();
-//
-//    vtkPolyData* reference = readerSTL->GetOutput();
-//
-//    //	vtkSmartPointer<vtkPolyData> mesh =
-//    //	 vtkSmartPointer<vtkPolyData>::New();
-//
-//    ProjectSurfaceMesh(currentGrid,  reference);
-//
-//    //write output
-//    vtkSmartPointer<vtkPolyDataWriter> writer =
-//        vtkSmartPointer<vtkPolyDataWriter>::New();
-//    writer->SetFileName(outfile);
-//    writer->SetFileTypeToBinary();
-//    __SetInput(writer,currentGrid);
-//    writer->Write();
-//
-//    return true;
-//}
-//
-//bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
-//{
-//    //	inputMesh->BuildCells();
-//    //
-//    ////	//first add a point data id to each point
-//    ////	vtkPoints* thePoints = inputMesh->GetPoints();
-//    ////	vtkCellArray* theCells = inputMesh->GetCells();
-//    ////	vtkIdType numberOfPoints = thePoints->GetNumberOfPoints();
-//    ////	vtkIdType numberOfCells = theCells->GetNumberOfCells();
-//    ////
-//    ////	vtkSmartPointer<vtkLongLongArray> pointIds =
-//    ////	  vtkSmartPointer<vtkLongLongArray>::New();
-//    ////	pointIds->SetNumberOfComponents(1);
-//    ////	pointIds->SetName("pointIds");
-//    ////
-//    ////
-//    ////	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
-//    ////	{
-//    ////	pointIds->InsertNextTuple1(i);
-//    ////	}
-//    ////
-//    ////	inputMesh->GetPointData()->SetGlobalIds(pointIds);
-//    ////
-//    ////
-//    ////	//extract the surface
-//    ////	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
-//    ////		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-//    ////	geom->SetInput(inputMesh);
-//    ////	geom->PassThroughPointIdsOn();
-//    ////	geom->SetOriginalPointIdsName("pointIds");
-//    ////	geom->Update();
-//    //
-//    //
-//    //	//initialize collision detection
-//    //
-//    //
-//    //
-//    //	DT_ShapeHandle meshShapeHandle = DT_NewComplexShape(0);
-//    //	vtkIdType* currentCellPoints;
-//    //	vtkIdType numberOfNodes=3;
-//    //	float currentVertex[3];
-//    //	double currentVTKVertex[3];
-//    //
-//    //	referenceMesh->BuildCells();
-//    //
-//    //	std::cout<<"Add reference surface mesh to solid \n";
-//    //
-//    //	for(int i=0; i<referenceMesh->GetNumberOfCells(); i++)
-//    //	{
-//    //	 referenceMesh->GetCellPoints(i, numberOfNodes,currentCellPoints);
-//    //	 if(numberOfNodes != 3)
-//    //		 std::cerr<<"WTF:Number of nodes not 3 \n";
-//    //
-//    //	 DT_Begin();
-//    //
-//    //	 for(int j=0; j<numberOfNodes; j++)
-//    //	 {
-//    //		 referenceMesh->GetPoint(currentCellPoints[j], currentVTKVertex);
-//    //		 currentVertex[0] = currentVTKVertex[0];
-//    //		 currentVertex[1] = currentVTKVertex[1];
-//    //		 currentVertex[2] = currentVTKVertex[2];
-//    //		 DT_Vertex(currentVertex);
-//    //	 }
-//    //
-//    //	 DT_End();
-//    //
-//    //	}
-//    //
-//    //	DT_EndComplexShape();
-//    //
-//    //	DT_ObjectHandle meshObjectHandle = DT_CreateObject(0,meshShapeHandle);
-//    //
-//    //
-//    //
-//    //	//iterate over all surface point
-//    ////	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
-//    ////
-//    //	vtkPoints* thePointsSurface = inputMesh->GetPoints();
-//    ////	vtkCellArray* theCellsSurface = surfaceGrid->GetCells();
-//    //	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
-//    ////	vtkIdType numberOfCellsSurface = theCellsSurface->GetNumberOfCells();
-//    //
-//    //
-//    //
-//    //	std::vector<DT_ShapeHandle> pointShapeHandles;
-//    //	pointShapeHandles.resize(numberOfPointsSurface);
-//    //	std::vector<DT_ObjectHandle> pointObjectHandles;
-//    //	pointObjectHandles.resize(numberOfPointsSurface);
-//    //	DT_ShapeHandle currentShapeHandle;
-//    //	DT_ObjectHandle currentObjectHandle;
-//    //
-//    //
-//    //	std::cout<<"Add quadratic surface points to solid \n";
-//    //
-//    //	for(int i=0; i<numberOfPointsSurface; i++)
-//    //	{
-//    //	thePointsSurface->GetPoint(i,currentVTKVertex);
-//    //	currentVertex[0]=currentVTKVertex[0];
-//    //	currentVertex[1]=currentVTKVertex[1];
-//    //	currentVertex[2]=currentVTKVertex[2];
-//    //
-//    //	pointShapeHandles[i] = DT_NewPoint(currentVertex);
-//    //	DT_EndComplexShape();
-//    //	pointObjectHandles[i] = DT_CreateObject(0,pointShapeHandles[i]);
-//    //
-//    //	}
-//    //
-//    //	//for each surface point: project
-//    //
-//    //	float currentPointOnMesh[3];
-//    //	float currentTempPoint[3];
-//    //
-//    //	//vtkLongLongArray* globalIdsSurface = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");//->GetPointData()->get->GetScalars("pointIds");
-//    //
-//    //	std::cout<<"Numberof surface points: "<<numberOfPointsSurface<<"\n";
-//    //
-//    //	std::cout<<"Query nearest point on surface \n";
-//    //
-//    //	for(int i=0; i<numberOfPointsSurface; i++)
-//    //	{
-//    //	currentObjectHandle = pointObjectHandles[i];
-//    //
-//    //	//std::cout<<"CurrentSurfacePointId: "<<i<<" globalID: "<<globalIdsSurface->GetValue(i)<<"\n";
-//    //
-//    //	DT_GetClosestPair(meshObjectHandle,currentObjectHandle,currentPointOnMesh,currentTempPoint);
-//    //
-//    //
-//    //	thePointsSurface->SetPoint(i,  currentPointOnMesh[0],currentPointOnMesh[1],currentPointOnMesh[2] );
-//    //
-//    //	}
-//    //
-//    //	std::cout<<"Save output\n";
-//    return true;
-//}
+std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
+{
+    std::cout<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<<"\n";
+    bool result = ProjectSurfaceMesh(infile.c_str(), outfile.c_str(), referenceMesh.c_str());
+    return outfile;
+}
+
+
+bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh )
+{
+    vtkSmartPointer<vtkPolyDataReader> reader =
+        vtkSmartPointer<vtkPolyDataReader>::New();
+    reader->SetFileName(infile);
+    reader->Update();
+    vtkPolyData* currentGrid = reader->GetOutput();
+
+    //load surface model to solid
+    vtkPolyDataReader* readerSTL = vtkPolyDataReader::New();
+    readerSTL->SetFileName(referenceMesh);
+    readerSTL->Update();
+
+    vtkPolyData* reference = readerSTL->GetOutput();
+
+    //	vtkSmartPointer<vtkPolyData> mesh =
+    //	 vtkSmartPointer<vtkPolyData>::New();
+
+    ProjectSurfaceMesh(currentGrid,  reference);
+
+    //write output
+    vtkSmartPointer<vtkPolyDataWriter> writer =
+        vtkSmartPointer<vtkPolyDataWriter>::New();
+    writer->SetFileName(outfile);
+    writer->SetFileTypeToBinary();
+    __SetInput(writer,currentGrid);
+    writer->Write();
+
+    return true;
+}
+
+bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
+{
+    //	inputMesh->BuildCells();
+    //
+    ////	//first add a point data id to each point
+    ////	vtkPoints* thePoints = inputMesh->GetPoints();
+    ////	vtkCellArray* theCells = inputMesh->GetCells();
+    ////	vtkIdType numberOfPoints = thePoints->GetNumberOfPoints();
+    ////	vtkIdType numberOfCells = theCells->GetNumberOfCells();
+    ////
+    ////	vtkSmartPointer<vtkLongLongArray> pointIds =
+    ////	  vtkSmartPointer<vtkLongLongArray>::New();
+    ////	pointIds->SetNumberOfComponents(1);
+    ////	pointIds->SetName("pointIds");
+    ////
+    ////
+    ////	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
+    ////	{
+    ////	pointIds->InsertNextTuple1(i);
+    ////	}
+    ////
+    ////	inputMesh->GetPointData()->SetGlobalIds(pointIds);
+    ////
+    ////
+    ////	//extract the surface
+    ////	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
+    ////		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
+    ////	geom->SetInput(inputMesh);
+    ////	geom->PassThroughPointIdsOn();
+    ////	geom->SetOriginalPointIdsName("pointIds");
+    ////	geom->Update();
+    //
+    //
+    //	//initialize collision detection
+    //
+    //
+    //
+    //	DT_ShapeHandle meshShapeHandle = DT_NewComplexShape(0);
+    //	vtkIdType* currentCellPoints;
+    //	vtkIdType numberOfNodes=3;
+    //	float currentVertex[3];
+    //	double currentVTKVertex[3];
+    //
+    //	referenceMesh->BuildCells();
+    //
+    //	std::cout<<"Add reference surface mesh to solid \n";
+    //
+    //	for(int i=0; i<referenceMesh->GetNumberOfCells(); i++)
+    //	{
+    //	 referenceMesh->GetCellPoints(i, numberOfNodes,currentCellPoints);
+    //	 if(numberOfNodes != 3)
+    //		 std::cerr<<"WTF:Number of nodes not 3 \n";
+    //
+    //	 DT_Begin();
+    //
+    //	 for(int j=0; j<numberOfNodes; j++)
+    //	 {
+    //		 referenceMesh->GetPoint(currentCellPoints[j], currentVTKVertex);
+    //		 currentVertex[0] = currentVTKVertex[0];
+    //		 currentVertex[1] = currentVTKVertex[1];
+    //		 currentVertex[2] = currentVTKVertex[2];
+    //		 DT_Vertex(currentVertex);
+    //	 }
+    //
+    //	 DT_End();
+    //
+    //	}
+    //
+    //	DT_EndComplexShape();
+    //
+    //	DT_ObjectHandle meshObjectHandle = DT_CreateObject(0,meshShapeHandle);
+    //
+    //
+    //
+    //	//iterate over all surface point
+    ////	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
+    ////
+    //	vtkPoints* thePointsSurface = inputMesh->GetPoints();
+    ////	vtkCellArray* theCellsSurface = surfaceGrid->GetCells();
+    //	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
+    ////	vtkIdType numberOfCellsSurface = theCellsSurface->GetNumberOfCells();
+    //
+    //
+    //
+    //	std::vector<DT_ShapeHandle> pointShapeHandles;
+    //	pointShapeHandles.resize(numberOfPointsSurface);
+    //	std::vector<DT_ObjectHandle> pointObjectHandles;
+    //	pointObjectHandles.resize(numberOfPointsSurface);
+    //	DT_ShapeHandle currentShapeHandle;
+    //	DT_ObjectHandle currentObjectHandle;
+    //
+    //
+    //	std::cout<<"Add quadratic surface points to solid \n";
+    //
+    //	for(int i=0; i<numberOfPointsSurface; i++)
+    //	{
+    //	thePointsSurface->GetPoint(i,currentVTKVertex);
+    //	currentVertex[0]=currentVTKVertex[0];
+    //	currentVertex[1]=currentVTKVertex[1];
+    //	currentVertex[2]=currentVTKVertex[2];
+    //
+    //	pointShapeHandles[i] = DT_NewPoint(currentVertex);
+    //	DT_EndComplexShape();
+    //	pointObjectHandles[i] = DT_CreateObject(0,pointShapeHandles[i]);
+    //
+    //	}
+    //
+    //	//for each surface point: project
+    //
+    //	float currentPointOnMesh[3];
+    //	float currentTempPoint[3];
+    //
+    //	//vtkLongLongArray* globalIdsSurface = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");//->GetPointData()->get->GetScalars("pointIds");
+    //
+    //	std::cout<<"Numberof surface points: "<<numberOfPointsSurface<<"\n";
+    //
+    //	std::cout<<"Query nearest point on surface \n";
+    //
+    //	for(int i=0; i<numberOfPointsSurface; i++)
+    //	{
+    //	currentObjectHandle = pointObjectHandles[i];
+    //
+    //	//std::cout<<"CurrentSurfacePointId: "<<i<<" globalID: "<<globalIdsSurface->GetValue(i)<<"\n";
+    //
+    //	DT_GetClosestPair(meshObjectHandle,currentObjectHandle,currentPointOnMesh,currentTempPoint);
+    //
+    //
+    //	thePointsSurface->SetPoint(i,  currentPointOnMesh[0],currentPointOnMesh[1],currentPointOnMesh[2] );
+    //
+    //	}
+    //
+    //	std::cout<<"Save output\n";
+    return true;
+}
 
 std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution)
 {

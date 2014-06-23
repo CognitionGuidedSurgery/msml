@@ -712,6 +712,8 @@ class Task(object):
                     report("Lookup after %s does not succeeded" % value, 'E')
             elif isinstance(value, Constant):
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
+                #if empty
+                
                 var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
                 # get type and format from input/parameter
 
