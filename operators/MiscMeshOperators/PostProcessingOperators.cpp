@@ -556,6 +556,8 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
     __SetInput(writer, mergedGrid);
     writer->Write();
 }
+
+//find all files with the same name (without digit postfix) and any digit postfix.
 //TODO: Refactor+cleanup
 vector<pair<int, string>>* getAllFilesOfSeries(const char* filename)
 {
@@ -564,18 +566,18 @@ vector<pair<int, string>>* getAllFilesOfSeries(const char* filename)
     boost::filesystem::path extension = aPath.extension();
     boost::filesystem::path file = aPath.filename().stem();
     std::string aFilename = file.string();
-
+    
+    //how many digits? 
     int i=aFilename.length()-1;
     int numberOfDigits=0;
-
     while(i>0 && aFilename[i] >='0' && aFilename[i] <='9')
     {
         numberOfDigits++;
         i--;
     }
 
+    //find all files with the same name (without digit postfix) and any digit postfix.
     aFilename = aFilename.substr(0,aFilename.length()-numberOfDigits);
-
     for (int i=0; i<pow(10.0,(double)numberOfDigits); i++)
     {
         boost::filesystem::path curentPath = aPath.parent_path() / (aFilename + lexical_cast<string>(i) + extension.string());
@@ -649,10 +651,8 @@ void ApplyDVF(const char* referenceImage, const char* outputDeformedImage, const
     - In GenerateDVF: Make sure the DVF is sampled on the output grid (output grid = Ref grid).
     - In ApplyDVF: Set reverseDirection=true
 
-    -TODO: Areas outside definition zone of DVF are set to -99999 destroying up to an area of 1/2voxel size.
-    How about nearest (3) neighbor interplotation during DVF creation - if voxel center is outside the defromed grid?
+    - Areas outside definition zone of DVF or reference image are set to -1024
 */
-
 void ApplyDVF(vtkImageData* inputImage, vtkImageData* outputDefImage, vtkImageData* dvf, bool reverseDirection)
 {
     int* dims = inputImage->GetDimensions();
@@ -763,8 +763,6 @@ string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char
     return currenOutputFile;
 }
 
-
-
 void GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename)
 {
 
@@ -794,6 +792,7 @@ void GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilenam
 //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
+//Method: For each point in DVF: Find nearest point in reference mesh, calculate barycentric coordinates, find same point in deformed mesh, calculate displacment.
 void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkImageData* outputDVF, vtkUnstructuredGrid* deformedGrid)
 {
     float spacing = 5; //TODO use parameter
@@ -855,7 +854,36 @@ void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkImageData* outputDVF, vt
 
   }
 
-  string TransformMeshBarycentricPython(const char* referenceGridPath, const char* out_meshPath,  const char* meshPath, const char* deformedGridPath)
+string TransformMeshBarycentricPython(const char* referenceGridPath, const char* out_meshPath,  const char* meshPath, const char* deformedGridPath, bool multipleDeformedGridPath)
+  {
+    if (multipleDeformedGridPath)
+    {
+        return TransformMeshBarycentricMultiple(referenceGridPath, out_meshPath, meshPath, deformedGridPath);
+    }
+
+    else
+    {
+        TransformMeshBarycentric(referenceGridPath, out_meshPath, meshPath, deformedGridPath);
+        return (std::string) out_meshPath;
+    }
+  }
+
+std::string TransformMeshBarycentricMultiple(const char* referenceGridPath, const char* out_meshPath,  const char* meshPath, const char* deformedGridPath)
+{
+    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(deformedGridPath);
+    string currenOutputFile;
+    boost::filesystem::path aPath(out_meshPath);
+
+    for (int i=0; i<allRefs->size(); i++)
+    {
+        cout << "TransformMeshBarycentricMultiple " << currenOutputFile << std::endl;
+        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
+        currenOutputFile = curentPath.string();
+        TransformMeshBarycentric(referenceGridPath, currenOutputFile.c_str(), meshPath, allRefs->at(i).second.c_str());
+    }
+}
+
+string TransformMeshBarycentric(const char* referenceGridPath, const char* out_meshPath,  const char* meshPath, const char* deformedGridPath)
   {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridPath);
@@ -873,72 +901,70 @@ void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkImageData* outputDVF, vt
     return string(out_meshPath);
   }
 
-   //Generate the displacment vector field (DVF) from reference to deformed mesh - sampled in reference. 
-  //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
-  //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
-  // pDef - pRef = d     =>     pRef + d = pDef
-  void TransformMeshBarycentric(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* out_mesh, vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* deformedGrid)
-  {
-    out_mesh->DeepCopy(mesh);
+//Generate the displacment vector field (DVF) from reference to deformed mesh - sampled in reference. 
+//The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
+//To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
+// pDef - pRef = d     =>     pRef + d = pDef
+void TransformMeshBarycentric(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* out_mesh, vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* deformedGrid)
+{
+  out_mesh->DeepCopy(mesh);
     
-    //octree
-    vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
-    cellLocatorRef->SetDataSet(referenceGrid);
-    cellLocatorRef->BuildLocator();
+  //octree
+  vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocatorRef->SetDataSet(referenceGrid);
+  cellLocatorRef->BuildLocator();
 
-    for (int i=0; i<out_mesh->GetPoints()->GetNumberOfPoints();i++)
-    {
-      double p_mm[3];
-      out_mesh->GetPoints()->GetPoint(i, p_mm);
-      float vec[3];
-      PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
-      p_mm[0]=p_mm[0]+vec[0];
-      p_mm[1]=p_mm[1]+vec[1];
-      p_mm[2]=p_mm[2]+vec[2];
-      out_mesh->GetPoints()->SetPoint(i, p_mm);
-    }
-    out_mesh->GetPoints()->Modified();
-    out_mesh->Modified();
-    out_mesh->Update();
-  }
-
-  void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef,vtkUnstructuredGrid* deformedGrid, float* vec_out)
+  for (int i=0; i<out_mesh->GetPoints()->GetNumberOfPoints();i++)
   {
-    //locate containing cell in ref cube
-    //vtkIdType containingCellRefId = cellLocatorRef->FindCell(p_mm);
-
-    //locate closest cell.
-    vtkIdType containingCellRefId;
-    double closestPointInCell[3];
-    int subId=0;
-    double dist=0;
-    cellLocatorRef->FindClosestPoint(p_mm,  closestPointInCell, containingCellRefId, subId, dist);
-
-    //calculate bcords: The barycentric coordinate uses 4 coeff [0..1] to linear combine the vertices of the cell to represent a point inside the cell. 
-    vtkTetra*  containingCellRef = (vtkTetra*) referenceGrid->GetCell(containingCellRefId);
-    double bcords[4];
-    double x0[3]; double x1[3]; double x2[3]; double x3[3];
-    vtkPoints* cellPoints = containingCellRef->GetPoints();
-    cellPoints->GetPoint(0, x0);
-    cellPoints->GetPoint(1, x1);
-    cellPoints->GetPoint(2, x2);
-    cellPoints->GetPoint(3, x3);
-    containingCellRef->BarycentricCoords(p_mm, x0, x1, x2, x3, bcords);
-
-    //apply bcords with deformed nodes to calculate the
-    //cell id in reference and deformed mesh must be equal
-    vtkTetra*  containingCellDef = (vtkTetra*) deformedGrid->GetCell(containingCellRefId); 
-    cellPoints = containingCellDef->GetPoints();
-    cellPoints->GetPoint(0, x0);
-    cellPoints->GetPoint(1, x1);
-    cellPoints->GetPoint(2, x2);
-    cellPoints->GetPoint(3, x3);
-
-    vec_out[0] = (x0[0]*bcords[0] + x1[0]*bcords[1] + x2[0]*bcords[2] + x3[0]*bcords[3]) - p_mm[0];
-    vec_out[1] = (x0[1]*bcords[0] + x1[1]*bcords[1] + x2[1]*bcords[2] + x3[1]*bcords[3]) - p_mm[1];
-    vec_out[2] = (x0[2]*bcords[0] + x1[2]*bcords[1] + x2[2]*bcords[2] + x3[2]*bcords[3]) - p_mm[2];
-
+    double p_mm[3];
+    out_mesh->GetPoints()->GetPoint(i, p_mm);
+    float vec[3];
+    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+    p_mm[0]=p_mm[0]+vec[0];
+    p_mm[1]=p_mm[1]+vec[1];
+    p_mm[2]=p_mm[2]+vec[2];
+    out_mesh->GetPoints()->SetPoint(i, p_mm);
   }
+  out_mesh->GetPoints()->Modified();
+  out_mesh->Modified();
+  out_mesh->Update();
+}
+
+//map closest point to given point from ref mesh to deformed mesh and return displacement
+void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef,vtkUnstructuredGrid* deformedGrid, float* vec_out)
+{
+  //locate closest cell.
+  vtkIdType containingCellRefId;
+  double closestPointInCell[3];
+  int subId=0;
+  double dist=0;
+  cellLocatorRef->FindClosestPoint(p_mm,  closestPointInCell, containingCellRefId, subId, dist);
+
+  //calculate bcords: The barycentric coordinate uses 4 coeff [0..1] to linear combine the vertices of the cell to represent a point inside the cell. 
+  vtkTetra*  containingCellRef = (vtkTetra*) referenceGrid->GetCell(containingCellRefId);
+  double bcords[4];
+  double x0[3]; double x1[3]; double x2[3]; double x3[3];
+  vtkPoints* cellPoints = containingCellRef->GetPoints();
+  cellPoints->GetPoint(0, x0);
+  cellPoints->GetPoint(1, x1);
+  cellPoints->GetPoint(2, x2);
+  cellPoints->GetPoint(3, x3);
+  containingCellRef->BarycentricCoords(p_mm, x0, x1, x2, x3, bcords);
+
+  //apply bcords with deformed nodes to calculate the
+  //cell id in reference and deformed mesh must be equal
+  vtkTetra*  containingCellDef = (vtkTetra*) deformedGrid->GetCell(containingCellRefId); 
+  cellPoints = containingCellDef->GetPoints();
+  cellPoints->GetPoint(0, x0);
+  cellPoints->GetPoint(1, x1);
+  cellPoints->GetPoint(2, x2);
+  cellPoints->GetPoint(3, x3);
+
+  vec_out[0] = (x0[0]*bcords[0] + x1[0]*bcords[1] + x2[0]*bcords[2] + x3[0]*bcords[3]) - p_mm[0];
+  vec_out[1] = (x0[1]*bcords[0] + x1[1]*bcords[1] + x2[1]*bcords[2] + x3[1]*bcords[3]) - p_mm[1];
+  vec_out[2] = (x0[2]*bcords[0] + x1[2]*bcords[1] + x2[2]*bcords[2] + x3[2]*bcords[3]) - p_mm[2];
+
+}
 }
 }
 
