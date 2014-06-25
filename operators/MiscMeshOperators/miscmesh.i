@@ -18,3 +18,9 @@
 %include "MiscMeshOperators.h"
 %include "MappingOperators.h"
 %include "VTKMeshgen.h"
+
+%begin %{
+#ifdef _MSC_VER
+#define SWIG_PYTHON_INTERPRETER_NO_DEBUG
+#endif
+%}
