@@ -35,6 +35,8 @@ SET(MiscMeshOperators_SRCS
   PostProcessingOperators.cpp
   IndexRegionOperators.cpp   
   MappingOperators.cpp
+  MeshQualityOperators.cpp
+  FeatureExtractionOperators.cpp
   )
 
 SET(MiscMeshOperators_LIBS

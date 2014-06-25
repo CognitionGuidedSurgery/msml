@@ -6,6 +6,8 @@
 #include "MiscMeshOperators.h"
 #include "PostProcessingOperators.h"
 #include "MappingOperators.h"
+#include "MeshQualityOperators.h"
+#include "FeatureExtractionOperators.h"
 
 %}
 
@@ -16,3 +18,5 @@
 %include "PostProcessingOperators.h"
 %include "MiscMeshOperators.h"
 %include "MappingOperators.h"
+%include "MeshQualityOperators.h"
+%include "FeatureExtractionOperators.h"
