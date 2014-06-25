@@ -281,6 +281,7 @@
                                 <enumeration value="iterativeCG"/>
                                 <enumeration value="CG"/>
                                 <enumeration value="GMRES"/>
+                                <enumeration value="direct"/>
                             </restriction>
                         </simpleType>
                     </attribute>
