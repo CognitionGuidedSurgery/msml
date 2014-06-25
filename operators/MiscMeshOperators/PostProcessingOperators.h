@@ -281,14 +281,19 @@ LIBRARY_API void MergeMeshes(const char* pointsMeshFilename, const char* cellsMe
 
 LIBRARY_API std::string GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids);
 LIBRARY_API void GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename);
+std::string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename);
 LIBRARY_API void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkImageData* outputDVF, vtkUnstructuredGrid* deformedGrid);
 
 LIBRARY_API std::string ApplyDVFPython(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool multipleDVF, bool reverseDirection);
 LIBRARY_API void ApplyDVF(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool reverseDirection);
+std::string ApplyMultipleDVF(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool reverseDirection);
 LIBRARY_API void ApplyDVF(vtkImageData* refImage, vtkImageData* outputDefImage, vtkImageData* dvf, bool reverseDirection);
 
-LIBRARY_API std::string TransformMeshBarycentricPython(const char* referenceGridPath, const char* out_meshPath, const char* meshPath, const char* deformedGridPath);
+LIBRARY_API std::string TransformMeshBarycentricPython(const char* referenceGridPath, const char* out_meshPath, const char* meshPath, const char* deformedGridPath, bool multipleDeformedGridPath);
+LIBRARY_API std::string TransformMeshBarycentric(const char* referenceGridPath, const char* out_meshPath, const char* meshPath, const char* deformedGridPath);
+std::string TransformMeshBarycentricMultiple(const char* referenceGridPath, const char* out_meshPath, const char* meshPath, const char* deformedGridPath);
 LIBRARY_API void TransformMeshBarycentric(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* out_mesh, vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* deformedGrid);
+
   
 
 // member access
@@ -297,8 +302,8 @@ LIBRARY_API void TransformMeshBarycentric(vtkUnstructuredGrid* referenceGrid, vt
 // void CreateVolumeMesh(vtkUnstructuredGrid* volumeMesh, char* surfaceMeshFilename, char* referenceFilename, bool isQuadratic, bool projectPoints);
 // void ConvertToTet10Mesh(vtkUnstructuredGrid* volumeMesh, char* surfaceMeshFilename, char* referenceFilename, bool isQuadratic, bool projectPoints);
 
-std::string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename);
-std::string ApplyMultipleDVF(const char* referenceImage, const char* outputDeformedImage, const char* DVF, bool reverseDirection);
+
+
 void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef,vtkUnstructuredGrid* deformedGrid, float* vec_out);
 
 } //end namespace PostProcessingOperators

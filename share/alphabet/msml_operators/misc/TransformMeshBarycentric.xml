@@ -22,6 +22,7 @@
       </arg>
 		<arg name="mesh" physical="file.vtk"/>
 		<arg name="deformedGrid" physical="str"/>
+    <arg name="multipleDeformedGrid" physical="bool"/>
 	</parameters>
 
 </msml:operator>
