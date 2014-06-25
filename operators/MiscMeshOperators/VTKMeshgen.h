@@ -3,12 +3,10 @@
 
 namespace MSML
 {
-
-  class VTKMeshgen
+  namespace VTKMeshgen 
   {
-    public:
       LIBRARY_API std::string DiscreteMarchingCube(const char* infile, const char* outfile);
- 
+      LIBRARY_API std::string MarchingCube(const char* infile, const char* outfile, float isoValue);
   };
 }
 
