@@ -712,7 +712,8 @@ class Task(object):
                     report("Lookup after %s does not succeeded" % value, 'E')
             elif isinstance(value, Constant):
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
-                #if empty
+                if slot is None:
+                    raise BindError("Operator {operator} does not have a slot named {inputname}.".format(inputname=key, operator=str(self.operator)))
                 
                 var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
                 # get type and format from input/parameter
