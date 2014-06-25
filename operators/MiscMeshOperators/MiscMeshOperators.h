@@ -27,6 +27,8 @@
 #include <vector>
 #include <limits>
 #include <map>
+#include <set>
+#include <utility>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -453,7 +455,6 @@ namespace MSML {
         LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
         LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
 
-
         LIBRARY_API   std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution);
         LIBRARY_API   bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution);
         LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing);
@@ -465,6 +466,20 @@ namespace MSML {
 //	LIBRARY_API  boost::python::list ExtractPointPositionsPython( boost::python::list indices, std::string infile);
         LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);
         LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh);
+
+        LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile);
+        LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh);
+
+        LIBRARY_API  bool ProjectSurfaceMesh(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
+        LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh);
+
+        LIBRARY_API  std::vector<unsigned int> ExtractNodeSet(std::string inputVolumeMeshFile, std::string nodeSetName);
+        LIBRARY_API  std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, std::string nodeSetName);
+
+        LIBRARY_API  std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
+        LIBRARY_API  std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
+
+
 
     } //end namespace MiscMeshOperators
 } // end namespace MSML

@@ -66,7 +66,7 @@ class IdentifierGenerator(object):
 
 generate_task_id = IdentifierGenerator("converter_task_")
 generate_variable = IdentifierGenerator("gen_", '_')
-
+generate_identifier = IdentifierGenerator('id')
 
 def reset_all():
     generate_task_id.reset()

@@ -137,7 +137,7 @@ class SofaExporter(XMLExporter):
         mesh_value = msmlObject.mesh.mesh
         mesh_type = msmlObject.mesh.type
 
-        theFilename = self.working_dir / self.evaluate_node(mesh_value)
+        theFilename = self.working_dir / self.get_value_from_memory(msmlObject.mesh)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
         # TODO does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug?
@@ -207,7 +207,7 @@ class SofaExporter(XMLExporter):
         for matregion in msmlObject.material:
             assert isinstance(matregion, MaterialRegion)
             indices_key = matregion.indices
-            indices_vec = self.evaluate_node(indices_key)
+            indices_vec = self.get_value_from_memory(matregion)
             indices = '%s' % ', '.join(map(str, indices_vec))
 
 
@@ -254,7 +254,7 @@ class SofaExporter(XMLExporter):
             self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)
-            massNode = self.sub("DiagonalMass", name="meshMass")
+            massNode = self.sub("DiagonalMass", objectNode, name="meshMass")
             massNode.set("massDensity", density_str)
         elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
@@ -276,7 +276,7 @@ class SofaExporter(XMLExporter):
             for constraint in constraint_set.constraints:
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
-                indices_vec = self.evaluate_node(constraint.indices)
+                indices_vec = self.get_value_from_memory(constraint)
                 indices = '%s' % ', '.join(map(str, indices_vec))
 
                 if currentConstraintType == "fixedConstraint":

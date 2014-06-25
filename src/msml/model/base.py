@@ -226,7 +226,7 @@ class MSMLFile(object):
         first_true = looked_up[0] or looked_up[1] or looked_up[2]
         if not xor(looked_up):
             # raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
-            #relaxed /weigl
+            # relaxed /weigl
             warnings.warn("reference %s is ambigous. Found: %s" % (ref, looked_up))
 
         if not first_true:
@@ -320,6 +320,7 @@ class MSMLEnvironment(object):
             </simulaiton>
 
         """
+
         class Step(object):
             """
 
@@ -328,6 +329,7 @@ class MSMLEnvironment(object):
                 <step name="" dt="" iterations="" />
 
             """
+
             def __init__(self, name="initial", dt=0.05, iterations=100):
                 self.name = name
                 self._dt = None
@@ -370,6 +372,7 @@ class MSMLEnvironment(object):
     class Solver(object):
         """Represents the solver xml tag.
         """
+
         def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler",
                      preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2):
             self.linearSolver = linearSolver
@@ -590,6 +593,7 @@ def random_var_name():
     :return: str
     """
     import msml.generators
+
     return msml.generators.generate_variable()
 
 
@@ -627,7 +631,8 @@ class Task(object):
         self._bound = False
 
     @property
-    def bound(self): return self._bound
+    def bound(self):
+        return self._bound
 
     @property
     def id(self):
@@ -636,24 +641,24 @@ class Task(object):
         :rtype: str
         """
         if not self._id:
-            self._id = random_var_name() +  self.name
+            self._id = random_var_name() + self.name
         return self._id
 
 
     @id.setter
-    def id(self, v): self._id = v
+    def id(self, v):
+        self._id = v
 
 
     def __str__(self):
         return "<Task %s (%s)>" % (self.id, self.name)
 
 
-
     def bind(self, alphabet):
         """binds this task to an operator from the given ``alphabet``
         """
         self.operator = alphabet.get(self.name)
-        if (self.operator is  None):
+        if (self.operator is None):
             raise BindError("unknown operator:{name}".format(name=self.name))
 
         # if this tasks has sub tasks.
@@ -661,7 +666,7 @@ class Task(object):
             i = 0
             # align input and sub_tasks, skip already set inputs
             for ipt in self.operator.input:
-                if ipt in self.attributes: # input is set by user
+                if ipt in self.attributes:  # input is set by user
                     continue
 
                 self.attributes[ipt] = Reference(self.sub_tasks[i].id)
@@ -707,6 +712,9 @@ class Task(object):
                     report("Lookup after %s does not succeeded" % value, 'E')
             elif isinstance(value, Constant):
                 slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
+                if slot is None:
+                    raise BindError("Operator {operator} does not have a slot named {inputname}.".format(inputname=key, operator=str(self.operator)))
+                
                 var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
                 # get type and format from input/parameter
 
@@ -745,9 +753,9 @@ class Task(object):
             raise MSMLError("Task does not have an <id> attribute")
 
         for name, slot in self.operator.input.items():
-           if name not in self.attributes:
-               report("task %s for operator %s misses input attribute %s " % (
-                   self.id, self.operator.name, name),'E')
+            if name not in self.attributes:
+                report("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name), 'E')
 
         for name, slot in self.operator.parameters.items():
             if name not in self.attributes:
@@ -757,7 +765,7 @@ class Task(object):
         for k in self.attributes:
             if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
                 report("attrib %s is unknown for operator %s in task %s" % (
-                    k, self.operator.name, self.id),'I')
+                    k, self.operator.name, self.id), 'I')
 
     def get_default(self):
         pass
@@ -890,6 +898,11 @@ class ObjectElement(object):
         :type: ObjectAttribute
         """
 
+        if 'id' not in self.attributes:
+            import msml.generators
+
+            self.attributes['id'] = msml.generators.generate_identifier()
+
     def __getattr__(self, item):
         return self.get(item, None)
 
@@ -909,7 +922,7 @@ class ObjectElement(object):
         b, c = True, True
         if self.meta is None:
             raise MSMLError("for %s is no meta defined. The element %s is not part of the givne MSML Alphabet" % (
-            self.__tag__, self.__tag__))
+                self.__tag__, self.__tag__))
 
         for key, value in self.attributes.items():
             if key == "__tag__":

@@ -1,0 +1,28 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="TransformMeshBarycentric">
+	
+	<runtime>
+		<python module="msml.ext.misc" function="TransformMeshBarycentricPython" />
+	</runtime>
+
+	<input>
+        <!-- TODO logical and physical type -->
+		<arg name="referenceGrid" logical="Mesh" physical="str" />
+	</input>
+
+	<output>
+		<arg name="out_surface" logical="Mesh" physical="file.vtk" />
+	</output>
+
+
+	<parameters>
+      <arg name="out_surface_filename" physical="str" optional="true">
+            <meta key="doc">
+                Optional input filename for the output.
+            </meta>
+      </arg>
+		<arg name="mesh" physical="file.vtk"/>
+		<arg name="deformedGrid" physical="str"/>
+    <arg name="multipleDeformedGrid" physical="bool"/>
+	</parameters>
+
+</msml:operator>
