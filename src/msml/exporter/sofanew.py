@@ -59,7 +59,7 @@ class SofaExporter(XMLExporter):
         self.id = 'SOFAExporter'
         Exporter.__init__(self, msml_file)
         self.export_file = None
-        self.working_dir = path()
+        self.working_dir = path() #path.dirname(msml_file.filename)
 
     def init_exec(self, executer):
         """
@@ -89,14 +89,24 @@ class SofaExporter(XMLExporter):
 
     def execute(self):
         "should execute the external tool and set the memory"
-        filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
-        with open(filenameSofaBatch, 'w') as f:
-            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
-                timeSteps) + ' ' + self.export_file + '.simu \n')
-
         import msml.envconfig
+
+        filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
+
+
+        with open(filenameSofaBatch, 'w') as f:
+                timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
+                f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
+                    timeSteps) + ' ' + self.export_file + '.simu \n')
+
+
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
+
+        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofaExtended')):
+            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
+            callCom = '-g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
+            cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
+
         report("Executing %s" % cmd, 'I', 252)
         report("Working directory: %s" % os.getcwd(), 'I', 616)
 
@@ -173,7 +183,7 @@ class SofaExporter(XMLExporter):
 
 
     def createSolvers(self):
-        if self._msml_file.env.solver.timeIntegration == "dynamicImplicit":
+        if self._msml_file.env.solver.timeIntegration == "Newmark":
             self.sub("MyNewmarkImplicitSolver",
                      rayleighStiffness="0.2",
                      rayleighMass="0.02",
@@ -259,10 +269,10 @@ class SofaExporter(XMLExporter):
         elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
                                     template=self._processing_unit, name="FEM", listening="true",
-                                    setYoungModulus=youngs_str,
-                                    setPoissonRatio=poissons[keylist[0]])  # TODO
+                                    youngModulus=youngs[0],
+                                    poissonRatio=poissons[indices_int[0]])  # TODO
             emassNode = self.sub("QuadraticMeshMatrixMass", objectNode,
-                                 name="meshMass", massDensity=density_str)
+                                 name="meshMass", massDensity=density[0])
         else:
             warn(MSMLSOFAExporterWarning, "Current mesh topology not supported")
 
@@ -411,6 +421,7 @@ class SofaExporter(XMLExporter):
         for request in msmlObject.output:
             assert isinstance(request, ObjectElement)
             filename = self.working_dir / request.id
+
             if request.tag == "displacement":
                 if objectNode.find("MeshTopology") is not None:
                     #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
@@ -441,6 +452,8 @@ class SofaExporter(XMLExporter):
                     dispOutputNode.set("filename", filename + ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
+                    exportEveryNumberOfSteps = request.get("timestep")
+
                     dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
                                               filename=filename,
                                               exportEveryNumberOfSteps=exportEveryNumberOfSteps,
@@ -449,6 +462,21 @@ class SofaExporter(XMLExporter):
                                               quadraticTetras=1,
                                               listening="true",
                                               exportAtEnd="true")
+
+                    # timeSteps = self._msml_file.env.simulation[0].iterations
+                    #
+                    # #exportEveryNumberOfSteps = 1 in SOFA means export every second time step.
+                    # #exportEveryNumberOfSteps = 0 in SOFA means do not export.
+                    # if exportEveryNumberOfSteps == 0:
+                    #     lastNumber = 1
+                    # else:
+                    #     lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
+                    #
+                    # filenameLastOutput = filename + str(lastNumber) + ".vtu"
+                    # self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
+                    # dispOutputNode.set("filename", filename + ".vtu")
+
+
 
                     #TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
                 else:

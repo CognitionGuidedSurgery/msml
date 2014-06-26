@@ -82,7 +82,11 @@ def load_msml_file(fil):
     """
     msml_node = xmldom(fil)
     obj = msml_file_factory(msml_node)
-    obj.filename = fil
+    #if(isinstance(cs, string)):
+    #    print('converting string to path')
+    #    obj.filename = fil
+    #else:
+    obj.filename = path(fil)
     return obj
 
 
