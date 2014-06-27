@@ -13,3 +13,5 @@ alphabet.xml
 Config.xml
 envconfg.py
 examples
+
+src/msml/envconfig.py
