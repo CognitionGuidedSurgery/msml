@@ -30,8 +30,9 @@ __author__ = 'Alexander Weigl'
 
 import warnings
 
-import msml.sortdef
 from ..model import *
+
+import msml.sortdef
 
 
 class ExporterOutputVariable(MSMLVariable):
@@ -61,6 +62,10 @@ class Exporter(object):
         self._input = {}
         """Input slots
         :type dict[str, Slot]"""
+
+        self._attributes = {}
+        """Attribute values for input slots
+        :type dict[str,str]"""
 
         self.gather_output()
         self.gather_inputs()
@@ -116,24 +121,28 @@ class Exporter(object):
         for scene_obj in self._msml_file.scene:
             assert isinstance(scene_obj, SceneObject)
 
-            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1], required=True,
-                                       default=parse_attribute_value(scene_obj.mesh.mesh), parent=self)
+            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
+                                    required=True, parent=self)
+
+            self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
 
             for ig in (scene_obj.sets.nodes + scene_obj.sets.elements + scene_obj.sets.surfaces):
                 name = self.get_input_set_name(ig)
-                self._input[name] = Slot(name, 'vector.int', 'Indices',
-                                         default=parse_attribute_value(ig.indices), parent=self)
+                self._input[name] = Slot(name, 'vector.int', 'Indices', parent=self)
+                self._attributes[name] = parse_attribute_value(ig.indices)
 
             for mr in scene_obj.material:
                 ind = mr.indices
                 name = self.get_input_material_name(mr)
-                self._input[name] = Slot(name, 'vector.int', default=parse_attribute_value(ind), parent=self)
+                self._input[name] = Slot(name, 'vector.int', parent=self)
+                self._attributes[name] = parse_attribute_value(ind)
 
             for cs in scene_obj.constraints:
                 for const in cs.constraints:
                     ind = const.indices
                     name = self.get_input_constraint_name(const)
-                    self._input[name] = Slot(name, 'vector.int', default=parse_attribute_value(ind), parent=self)
+                    self._input[name] = Slot(name, 'vector.int', parent=self)
+                    self._attributes[name] = parse_attribute_value(ind)
 
 
     def get_input_mesh_name(self, mesh):
@@ -172,55 +181,10 @@ class Exporter(object):
         return "constraint_%s" % const.id
 
     def link(self):
-        self.arguments = {}
-        for key, slot in self._input.iteritems():
-            value = slot.default
-            if isinstance(value, Reference):
-                opposite = self._msml_file.lookup(value)
-                if opposite:
-                    outtask, outarg = opposite
-                    value.link_from_task(outtask, outarg)
-                    try:
-                        value.link_to_task(self, slot)
-                    except KeyError, e:
-                        f = str(var)
-                        t = str(self.name)
-                        i = key
-                        op = str(self.operator)
-                        inputs = ",".join(map(str, self.operator.acceptable_names()))
+        from  msml.model.base import link_algorithm
 
-                        raise BindError(
-                            "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
-                                start=f, target=t, inputname=i, operator=op, inputs=inputs
-                            ))
-                    self.arguments[key] = value
-                else:
-                    warnings.warn("Lookup after %s does not succeeded" % value)
-            elif isinstance(value, Constant):
-                var = MSMLVariable(random_var_name(), value=value.value);
-                self._msml_file.add_variable(var)
-                ref = Reference(var.name, None)
-                outtask, outarg = self._msml_file.lookup(ref)
-                ref.link_from_task(outtask, outarg)
-
-                try:
-                    ref.link_to_task(self, self._input[key][1])
-                except ImportError, e:
-                    f = str(var)
-                    t = str(self.name)
-                    i = key
-                    op = str(self.operator)
-                    inputs = ",".join(map(str, self.operator.acceptable_names()))
-
-                    raise BindError(
-                        "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
-                            start=f, target=t, inputname=i, operator=op, inputs=inputs
-                        ))
-
-                self.arguments[key] = ref
-            else:
-                raise MSMLError("no case %s : %s " % (key, str(type(value))))
-
+        slots = dict(self._input)
+        self.arguments = link_algorithm(self._msml_file, self._attributes, self,  slots)
 
     def init_exec(self, executer):
         """

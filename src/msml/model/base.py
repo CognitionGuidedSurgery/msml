@@ -676,74 +676,9 @@ class Task(object):
     def link(self, alphabet, msmlfile):
         """links the input and parameter arguments to the output slots
         """
-
-        self.arguments = {}
-        for key, value in self.attributes.items():
-            if isinstance(value, Reference):
-                a = msmlfile.lookup(value)
-                if a:
-                    outtask, outarg = a
-                    value.link_from_task(outtask, outarg)
-                    try:
-                        if key in self.operator.input:
-                            value.link_to_task(self, self.operator.input[key])
-                        else:
-                            value.link_to_task(self, self.operator.parameters[key])
-                    except KeyError, e:
-
-                        f = str(a)
-                        t = str(self.name)
-                        i = key
-                        op = str(self.operator)
-                        inputs = ",".join(map(str, self.operator.acceptable_names()))
-
-                        raise BindError(
-                            "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
-                                start=f, target=t, inputname=i, operator=op, inputs=inputs
-                            ))
-                    except AttributeError:
-                        raise MSMLError(
-                            "the operator for Task {target} is {operator} ".format(
-                                target=self.name, operator=self.operator
-                            ))
-
-                    self.arguments[key] = value
-                else:
-                    report("Lookup after %s does not succeeded" % value, 'E')
-            elif isinstance(value, Constant):
-                slot = self.operator.input.get(key, None) or self.operator.parameters.get(key, None)
-                if slot is None:
-                    raise BindError("Operator {operator} does not have a slot named {inputname}.".format(inputname=key, operator=str(self.operator)))
-                
-                var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
-                # get type and format from input/parameter
-
-                msmlfile.add_variable(var)
-                ref = Reference(var.name, None)
-                outtask, outarg = msmlfile.lookup(ref)
-                ref.link_from_task(outtask, outarg)
-
-                try:
-                    # ref.link_to_task(self, self.operator.input[key])
-                    if key in self.operator.input:
-                        ref.link_to_task(self, self.operator.input[key])
-                    else:
-                        ref.link_to_task(self, self.operator.parameters[key])
-                except KeyError, e:
-                    f = str(var)
-                    t = str(self.name)
-                    i = key
-                    op = str(self.operator)
-                    inputs = ",".join(map(str, self.operator.acceptable_names()))
-
-                    raise BindError(
-                        "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
-                            start=f, target=t, inputname=i, operator=op, inputs=inputs
-                        ))
-
-                self.arguments[key] = ref
-            else:
-                raise MSMLError("no case %s : %s for attribute %s in %s " % (value, str(type(value)), key, self))
+        slots = dict(self.operator.input)
+        slots.update(self.operator.parameters)
+        self.arguments = link_algorithm(msmlfile, self.attributes, self,  slots)
 
     def validate(self):
         if not self.operator:
@@ -769,6 +704,32 @@ class Task(object):
 
     def get_default(self):
         pass
+
+
+
+def link_algorithm(msmlfile, attributes, node, slots):
+    arguments= {}
+    for key, value in attributes.items():
+        slot = slots[key]
+
+        if isinstance(value, Constant):
+            # get type and format from input/parameter
+            var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
+            msmlfile.add_variable(var)
+            value = Reference(var.name, None)
+
+
+        a = msmlfile.lookup(value)
+        if a:
+            outtask, outarg = a
+            value.link_from_task(outtask, outarg)
+            value.link_to_task(node, slot)
+            arguments[key] = value
+        else:
+            report("Lookup after %s does not succeeded" % value, 'E')
+
+    return arguments
+
 
 
 class SceneObjectSets(object):
