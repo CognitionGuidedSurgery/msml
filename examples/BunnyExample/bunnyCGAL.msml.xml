@@ -53,13 +53,13 @@
                        cell_radius_edge_ratio="3" cell_size="0.02" odt="false" lloyd="false" pertube="false"
                        exude="false"/>
 
-        <boxROIToIndexOperator id="bodyToIndexGroup"
+        <boxROIToIndex
                                box="-0.1 -0.03  -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"
                                select="elements"/>
 
         <boxROIToIndexOperator id="bottomToIndexGroup"
-                               box="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
-                               select="points"/>
+                               bx="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
+                               selt="points"/>
     </workflow>
 
 
