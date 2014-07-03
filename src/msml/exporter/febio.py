@@ -80,7 +80,7 @@ class FeBioExporter(XMLExporter):
         print("Converting to febio feb")
         self.file_name = path(self._msml_file.filename).namebase
         self.export_file = self.file_name + ".feb"
-        print self.export_file
+        print self.export_file 
 
         #with open(self.export_file, "w") as febfile:
             #self.write_feb(febfile)
@@ -106,10 +106,7 @@ class FeBioExporter(XMLExporter):
             meshObj = msmlObject.mesh
             meshValue = meshObj.mesh
             meshFilename = self.evaluate_node(meshValue)
-            
-            #import msml.ext.misc
-            #msml.ext.misc.convertFeBioMeshStringToVTKMesh("SarahTest.txt")
-           
+               
             #self.createControl(self.node_root, msmlObject)
    
             #materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
@@ -121,6 +118,8 @@ class FeBioExporter(XMLExporter):
             #self.createConstraintRegions(msmlObject, meshFilename)
             
             #self.createOutput()
+            
+            self.convertToVTK()
 
         return etree.ElementTree(self.node_root)
 
@@ -288,15 +287,12 @@ class FeBioExporter(XMLExporter):
         analysisType = "static"
         analysis = self.sub("analysis", controlNode, type = analysisType)
         
-    def convertToVTK(self, currentSofaNode, scobj):
-        assert isinstance(scobj, SceneObject)
-        iterations = self._msml_file.env.simulation[0].iterations
+    def convertToVTK(self):
+        iterations = str(self._msml_file.env.simulation[0].iterations).zfill(3)
         dt = self._msml_file.env.simulation[0].dt
         import msml.ext.misc
-        msml.ext.misc.convertFeBioMeshStringToVTKMesh("SarahTest.txt")
-       
-       
-       
+        msml.ext.misc.convertFeBioMeshStringToVTKMesh(self.file_name + iterations + ".log")
+         
     def createScene(self):
         version = "1.2"  
         root = etree.Element("febio_spec", version=version)
@@ -310,6 +306,11 @@ class FeBioExporter(XMLExporter):
         plotfileNode = self.sub("plotfile", outputNode, type = type)
         self.sub("var", plotfileNode, type = type2)
         self.sub("var", plotfileNode, type = type3)
+        logfileName = self.file_name + ".txt"
+        logfileNode = self.sub("logfile", outputNode, file = logfileName)
+        data ="x;y;z"
+        self.sub("node_data", logfileNode, data = data)
+        
 
     def sub(self, tag, root=None, **kwargs):
         skwargs = {k: str(v) for k, v in kwargs.items()}
