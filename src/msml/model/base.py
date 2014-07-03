@@ -271,6 +271,9 @@ class Workflow(object):
         return self._tasks
 
     def add_task(self, task):
+        if task.id in self._tasks:
+            report("The identifier (id attribute) of the tasks have to be disjoint.","E",696)
+
         self._tasks[task.id] = task
 
     def lookup(self, id):
@@ -294,7 +297,17 @@ class Workflow(object):
 
     def validate(self):
         """checks if all tasks match the operator definition"""
-        return all(map(lambda x: x.validate(), self._tasks.values()))
+
+        import operator, collections
+        attrid = operator.attrgetter("id")
+        ids = list(map(attrid, self._tasks.values()))
+        idcntr = collections.Counter(ids)
+        unique_ids = max(idcntr.values()) > 1
+
+        if unique_ids:
+            report("The identifier (id attribute) of the tasks have to be disjoint.","E",696)
+
+        return all(map(lambda x: x.validate(), self._tasks.values())) and unique_ids
 
 
 class MSMLEnvironment(object):
@@ -710,7 +723,11 @@ class Task(object):
 def link_algorithm(msmlfile, attributes, node, slots):
     arguments= {}
     for key, value in attributes.items():
-        slot = slots[key]
+        try:
+            slot = slots[key]
+        except KeyError as e:
+            report("%s is not a valid slot for %s" %(key, node), "F", 610)
+            raise BaseException()
 
         if isinstance(value, Constant):
             # get type and format from input/parameter

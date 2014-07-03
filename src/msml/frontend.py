@@ -206,7 +206,7 @@ class App(object):
 
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)
-        report("Execute: %s in %s" % (fil, fil.dirname))
+        report("Execute: %s in %s" % (fil, fil.dirname),'I',20)
         return self.execute_msml(mfile)
 
 
