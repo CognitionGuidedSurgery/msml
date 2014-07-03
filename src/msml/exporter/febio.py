@@ -78,7 +78,8 @@ class FeBioExporter(XMLExporter):
      Builds the File (XML e.g) for the external tool
      """
         print("Converting to febio feb")
-        self.export_file = path(self._msml_file.filename).namebase + ".feb"
+        self.file_name = path(self._msml_file.filename).namebase
+        self.export_file = self.file_name + ".feb"
         print self.export_file
 
         #with open(self.export_file, "w") as febfile:
@@ -105,18 +106,21 @@ class FeBioExporter(XMLExporter):
             meshObj = msmlObject.mesh
             meshValue = meshObj.mesh
             meshFilename = self.evaluate_node(meshValue)
-
-            self.createControl(self.node_root, msmlObject)
-   
-            materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
-            import msml.ext.misc
-            theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, materialIndices)
+            
+            #import msml.ext.misc
+            #msml.ext.misc.convertFeBioMeshStringToVTKMesh("SarahTest.txt")
            
-            self.node_root.append(etree.fromstring(theInpString))
+            #self.createControl(self.node_root, msmlObject)
+   
+            #materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
+            #import msml.ext.misc
+            #theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
+           
+            #self.node_root.append(etree.fromstring(theInpString))
             
-            self.createConstraintRegions(msmlObject)
+            #self.createConstraintRegions(msmlObject, meshFilename)
             
-            self.createOutput()
+            #self.createOutput()
 
         return etree.ElementTree(self.node_root)
 
@@ -196,9 +200,7 @@ class FeBioExporter(XMLExporter):
 
             indices_key = indexGroupNode.attributes["indices"]
             indices_vec = self.evaluate_node(indices_key)
-            indices = '%s' % ', '.join(map(str, indices_vec))
-
-            indices_int = [int(i) for i in indices.split(",")]
+           
             #Get all materials
             for i in range(len(msmlObject.material[k])):
                 assert isinstance(msmlObject.material[k][i], ObjectElement)
@@ -224,7 +226,7 @@ class FeBioExporter(XMLExporter):
         return indices_vec
             
 
-    def createConstraintRegions(self, msmlObject):
+    def createConstraintRegions(self, msmlObject, meshFilename):
         assert isinstance(msmlObject, SceneObject)
         boundaryNode = self.sub("Boundary", self.node_root)
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
@@ -239,7 +241,11 @@ class FeBioExporter(XMLExporter):
                     for index in map(str, indices_vec):
                         self.sub("node", fixedConstraintNode, id=int(index)+1, bc=bc)
                 elif currentConstraintType == "surfacePressure":
-                    print("Pressure")
+                    loadNode = self.sub("Loads", self.node_root)
+                    import msml.ext.misc
+                    pressureString = msml.ext.misc.createFeBioPressureOutput(meshFilename, indices_vec)
+                    loadNode.append(etree.fromstring(pressureString))
+                    
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
@@ -281,7 +287,16 @@ class FeBioExporter(XMLExporter):
         #=======================================================================
         analysisType = "static"
         analysis = self.sub("analysis", controlNode, type = analysisType)
-
+        
+    def convertToVTK(self, currentSofaNode, scobj):
+        assert isinstance(scobj, SceneObject)
+        iterations = self._msml_file.env.simulation[0].iterations
+        dt = self._msml_file.env.simulation[0].dt
+        import msml.ext.misc
+        msml.ext.misc.convertFeBioMeshStringToVTKMesh("SarahTest.txt")
+       
+       
+       
     def createScene(self):
         version = "1.2"  
         root = etree.Element("febio_spec", version=version)

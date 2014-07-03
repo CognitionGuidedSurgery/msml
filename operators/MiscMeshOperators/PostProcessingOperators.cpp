@@ -26,6 +26,9 @@
 #include "PostProcessingOperators.h"
 #include "IOHelper.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
 
 #include <string.h>
 #include <stdio.h>
@@ -324,6 +327,44 @@ void PostProcessingOperators::ColorMeshFromComparison(const char* modelFilename,
 	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	writer->SetFileName(coloredModelFilename);
 	__SetInput(writer, coloredGrid);
+	writer->Write();
+}
+
+void PostProcessingOperators::FeBioToVTKConversion(const char* modelFilename)
+{
+	vtkSmartPointer<vtkPoints> thePointsOutput =
+		 vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkUnstructuredGrid> vtkGrid = 
+		vtkSmartPointer<vtkUnstructuredGrid>::New();
+	fstream f;
+	char cstring[256];
+	f.open(modelFilename, ios::in);
+
+    while (!f.eof())
+    {
+		double arr [4];
+        f.getline(cstring, sizeof(cstring));
+        int i = 0;
+		stringstream ssin(cstring);
+		while (ssin.good() && i < 4){
+			ssin>>arr[i];
+			++i;
+		}
+		thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
+		
+    }
+    f.close();
+	string filename, basename;
+	filename = string(modelFilename);
+	string::size_type idx = filename.find('.');
+	basename = filename.substr(0, idx) + ".vtk";
+	char * cstr = new char [basename.length()+1];
+	std::strcpy (cstr, basename.c_str());
+	vtkGrid->SetPoints(thePointsOutput);
+	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
+	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
+	writer->SetFileName(cstr);
+	__SetInput(writer, vtkGrid);
 	writer->Write();
 }
 

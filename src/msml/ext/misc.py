@@ -70,6 +70,7 @@ __all__ = ['colorMeshFromComparison',
            'convertSTLToVTK',
            'convertVTKMeshToAbaqusMeshString',
            'convertVTKMeshToFeBioMeshString',
+           'createFeBioPressureOutput',
            'convertVTKPolydataToUnstructuredGrid',
            'convertVTKToSTL',
            'convertVtkToInp',
@@ -137,6 +138,11 @@ def convertVTKMeshToAbaqusMeshString(*args ):
 def convertVTKMeshToFeBioMeshString(*args ):
     return cpp.convertVTKMeshToFeBioMeshString(*args )
 
+def convertFeBioMeshStringToVTKMesh(*args ):
+    return cpp.FeBioToVTKConversion(*args )
+
+def createFeBioPressureOutput(*args ):
+    return cpp.createFeBioPressureOutput(*args )
 
 def convertVTKPolydataToUnstructuredGrid(*args ):
     return cpp.convertVTKPolydataToUnstructuredGrid(*args )

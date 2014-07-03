@@ -460,6 +460,7 @@ bool MiscMeshOperators::VTKToInp( const char* infile, const char* outfile)
     return hist;
   }
 
+
 std::string  MiscMeshOperators::ExtractSurfaceMeshPython( std::string infile, std::string outfile)
 {
 	ExtractSurfaceMesh(infile.c_str(), outfile.c_str());
@@ -630,7 +631,7 @@ bool MiscMeshOperators::AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtk
 	  kDTree->BuildLocator();
 
 
-	 for(unsigned int i=0;i<meshCount;i++)
+	 for(unsigned int i=0; i<meshCount;i++)
 	 {
 			vtkPoints* currentPoints = regionMeshes[i]->GetPoints();
 
@@ -671,14 +672,26 @@ std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython(std::strin
 
 }
 
-std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName, std::vector<unsigned int> VecUInt)
+std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh, std::string partName)
 {
 	//load the vtk  mesh
 	vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	  reader->SetFileName(inputMesh.c_str());
 	  reader->Update();
-	  std::string output = ConvertVTKMeshToFeBioMeshString( reader->GetOutput(),   partName, VecUInt);
+	  std::string output = ConvertVTKMeshToFeBioMeshString( reader->GetOutput(),   partName);
+	  return output;
+
+}
+
+std::string MiscMeshOperators::createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices)
+{
+	//load the vtk  mesh
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	  reader->SetFileName(inputMesh.c_str());
+	  reader->Update();
+	  std::string output = createFeBioPressureOutput( reader->GetOutput(), indices);
 	  return output;
 
 }
@@ -747,7 +760,7 @@ std::string MiscMeshOperators::ConvertVTKMeshToAbaqusMeshString( vtkUnstructured
 	return out.str();
 }
 
-std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::vector<unsigned int> VecUInt)
+std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName)
 {
 	 std::stringstream out;
 	 //write Geometry
@@ -783,17 +796,17 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 	 vtkIdType* currentCellPoints;
 	 vtkIdType numberOfNodesPerElement;
 	 vtkIdType cellType = inputMesh->GetCellType(0);
+	 vtkDataArray* pd = inputMesh->GetCellData()->GetScalars();
+	 
 	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
 	 {
-		 inputMesh->GetCellPoints(i, numberOfNodesPerElement,currentCellPoints);
+		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
+		 double* key = pd->GetTuple(i);
+		 if((int) *key == 100){
+			 *key = 5;
+		 }
 		 if(numberOfNodesPerElement == 4) {
-			 out<<"<tet4 id=\""<<i+1<<"\" ";
-		 }
-		 if(std::find(VecUInt.begin(), VecUInt.end(), i) != VecUInt.end()) {
-		  out<<"mat=\"1\">";
-		 } else {
-	      out<<"mat=\"1\">";
-		 }
+			 out<<"<tet4 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {
 			if(j == numberOfNodesPerElement-1){
@@ -803,9 +816,55 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 			}
 		 }
 		 out<<"</tet4>\n";
+		}
+		/*if(numberOfNodesPerElement == 3) {
+			 out<<"<tri3 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
+		 for(int j=0;j<numberOfNodesPerElement;j++)
+		 {
+			if(j == numberOfNodesPerElement-1){
+				out<<currentCellPoints[j-1]+1;
+			} else if(j == numberOfNodesPerElement-2){
+				out<<currentCellPoints[j+1]+1<<",";
+			}else{
+				out<<currentCellPoints[j]+1<<",";
+			}
+		 }
+		 out<<"</tri3>\n";
+		}*/
 	 }
 	 out << "</Elements>\n";
 	 out << "</Geometry>\n";
+	return out.str();
+}
+
+std::string MiscMeshOperators::createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices)
+{
+   	 std::stringstream out;
+	
+	 //elements
+	 out << "<pressure>\n";
+	 vtkIdType* currentCellPoints;
+	 vtkIdType numberOfNodesPerElement;
+	 vtkIdType cellType = inputMesh->GetCellType(0);
+	 vtkDataArray* pd = inputMesh->GetCellData()->GetScalars();
+
+	 for(int i=0;  i<indices.size(); i++)
+	 {
+		 inputMesh->GetCellPoints(indices[i], numberOfNodesPerElement, currentCellPoints);
+		if(numberOfNodesPerElement == 3) {
+			 out<<"<tri3 id=\""<<i+1<< "\" lc=\"1\" scale=\"1\">" ;
+		 for(int j=0;j<numberOfNodesPerElement;j++)
+		 {
+			if(j == numberOfNodesPerElement-1){
+				out<<currentCellPoints[j]+1;
+			} else{
+				out<<currentCellPoints[j]+1<<",";
+			}
+		 }
+		 out<<"</tri3>\n";
+		}
+	 }
+	 out << "</pressure>\n";
 	return out.str();
 }
 
@@ -1076,6 +1135,7 @@ bool MiscMeshOperators::VoxelizeSurfaceMesh(const char* infile, const char* outf
 //	vtkSmartPointer<vtkPNGWriter> writer2 =
 //	 vtkSmartPointer<vtkPNGWriter>::New();
 //	writer2->SetFilePrefix(outfile);
+
 //	writer2->SetInput(outputImage);
 //	writer2->Write();
 

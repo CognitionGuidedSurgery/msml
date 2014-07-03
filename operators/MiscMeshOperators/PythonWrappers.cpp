@@ -157,12 +157,14 @@ BOOST_PYTHON_MODULE(MiscMeshOperatorsPython)
 	def("computeIndicesFromMaterialId", &IndexRegionOperators::computeIndicesFromMaterialId);
 	
 	def("colorMeshOperator", &PostProcessingOperators::ColorMeshPython);
-  def("GenerateDVF", &PostProcessingOperators::GenerateDVFPython);
-  def("ApplyDVF", &PostProcessingOperators::ApplyDVFPython);
+	def("GenerateDVF", &PostProcessingOperators::GenerateDVFPython);
+	def("ApplyDVF", &PostProcessingOperators::ApplyDVFPython);
+	def("FeBioToVTKConversion", &PostProcessingOperators::FeBioToVTKConversion);
 
 	def("ExtractAllSurfacesByMaterial", &MiscMeshOperators::ExtractAllSurfacesByMaterial);
-  def("convertVTKMeshToAbaqusMeshString", &MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython);
-   def("convertVTKMeshToFeBioMeshString", &MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython);
+	def("convertVTKMeshToAbaqusMeshString", &MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython);
+	def("convertVTKMeshToFeBioMeshString", &MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython);
+	def("createFeBioPressureOutput", &MiscMeshOperators::createFeBioPressureOutputPython);
 	def("projectSurfaceMesh", &MiscMeshOperators::ProjectSurfaceMeshPython);
 	def("extractSurfaceMesh", &MiscMeshOperators::ExtractSurfaceMeshPython);
 	def("convertVtkToInp", &MiscMeshOperators::VTKToInpPython);
