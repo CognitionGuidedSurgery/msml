@@ -37,12 +37,13 @@ __date__ = "2014-05-05"
 import inspect
 import os.path
 
-__all__ = ['report']
+__all__ = ['report', '_reported']
 
 COLOR_TABLE = {'I': 94, 'W': 33, 'E': 31, 'D': 90, 'F': 35}
 
 FORMAT = "{color}{type}-{number}: {msg} {grey}(from {file}:{lineno}){nocolor}"
 
+_reported = []
 
 def report(msg, kind="W", number=0, filename=None, lineno=-1):
     """prints a report information on stdout
@@ -68,6 +69,8 @@ def report(msg, kind="W", number=0, filename=None, lineno=-1):
         if filename == "__init__.py":
             filename = os.path.join(os.path.basename(
                 os.path.dirname(info.filename)), filename)
+
+    _reported.append((kind, number, lineno, filename, msg))
 
     print FORMAT.format(
         type=kind,
