@@ -35,9 +35,7 @@
 
             <constraints>
                 <constraint>
-                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="1 2 3"/>
-<!-- <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>-->
-
+                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
                 </constraint>
             </constraints>
 
