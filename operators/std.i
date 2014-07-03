@@ -11,4 +11,5 @@ namespace std {
     %template(vectorl) vector<long>;
     %template(vectorull) vector<unsigned long long>;
     %template(vectorb) vector<bool>;
+    %template(vectorstr) vector<string>;
  };

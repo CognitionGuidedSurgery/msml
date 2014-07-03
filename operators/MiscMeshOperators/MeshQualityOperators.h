@@ -10,18 +10,28 @@
 
 #include "../MSML_Operators.h"
 #include <string>
+#include <vector>
 
 namespace MSML {
 namespace MeshQuality {
-typedef struct {
+struct MeshQualityStats {
     double min;
     double max;
     double avg;
     double var;
     long long n;
-} MeshQualityStats;
 
-LIBRARY_API MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile);
+    std::string qualityMeasureName;
+    bool errorQualityMeasureNotFound;
+
+    MeshQualityStats(): errorQualityMeasureNotFound(false) { }
+};
+
+// Define constants in c file to ensure values are up to date with the VTK version actually used.
+extern const int DERP;
+extern const std::vector<std::string> TET_QUALITY_MEASURE_TYPE_NAMES;
+
+LIBRARY_API MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName);
 }
 }
 
