@@ -300,8 +300,7 @@ class SofaExporter(XMLExporter):
                              triangles="@LOADER.triangles", quads="@LOADER.quads")
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
-                             position="@SurfaceTopo.position")
-
+                             position="@SurfaceTopo.position") 
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
