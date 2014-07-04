@@ -23,6 +23,12 @@ using namespace std;
 namespace MSML {
 namespace MeshQuality {
 
+MeshQualityStats::MeshQualityStats():
+        min(0), max(0), avg(0), var(0), n(0),
+        qualityMeasureName("UNKNOWN"),
+        errorQualityMeasureNotFound(false) {
+}
+
 // NOT using an std::set since querying a non-existent name will insert it with value 0!
 static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
     vector<pair<string, int>> m;
