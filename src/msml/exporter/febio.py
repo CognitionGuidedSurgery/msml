@@ -94,7 +94,12 @@ class FeBioExporter(XMLExporter):
 
     def execute(self):
         "should execute the external tool and set the memory"
+        cmd = "febio -i " + self.export_file
+        print(os.getcwd());
+        print cmd
         print("Executing FeBio.")
+        os.system(cmd)
+        self.convertToVTK(str("combo.vtk"))
         pass
 
 
@@ -107,19 +112,19 @@ class FeBioExporter(XMLExporter):
             meshValue = meshObj.mesh
             meshFilename = self.evaluate_node(meshValue)
                
-            #self.createControl(self.node_root, msmlObject)
+            self.createControl(self.node_root, msmlObject)
    
-            #materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
-            #import msml.ext.misc
-            #theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
+            materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
+            import msml.ext.misc
+            theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
            
-            #self.node_root.append(etree.fromstring(theInpString))
+            self.node_root.append(etree.fromstring(theInpString))
             
-            #self.createConstraintRegions(msmlObject, meshFilename)
+            self.createConstraintRegions(msmlObject, meshFilename)
             
-            #self.createOutput()
+            self.createOutput()
             
-            self.convertToVTK()
+            #self.convertToVTK(meshFilename)
 
         return etree.ElementTree(self.node_root)
 
@@ -244,7 +249,13 @@ class FeBioExporter(XMLExporter):
                     import msml.ext.misc
                     pressureString = msml.ext.misc.createFeBioPressureOutput(meshFilename, indices_vec)
                     loadNode.append(etree.fromstring(pressureString))
-                    
+                    loadDataNode = self.sub("LoadData", self.node_root)
+                    loadcurve = self.sub("loadcurve", loadDataNode, id="1", type ="smooth")
+                    loadPoint1 = self.sub("loadpoint", loadcurve)
+                    loadPoint1.text = str("0.00100806451613,0.993225806452")
+                    loadPoint2 = self.sub("loadpoint", loadcurve)
+                    loadPoint2.text = str("1.00564516129,0.00322580645161")  
+                         
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
@@ -287,11 +298,12 @@ class FeBioExporter(XMLExporter):
         analysisType = "static"
         analysis = self.sub("analysis", controlNode, type = analysisType)
         
-    def convertToVTK(self):
-        iterations = str(self._msml_file.env.simulation[0].iterations).zfill(3)
+    def convertToVTK(self, meshFilename):
+        iterations = str(self._msml_file.env.simulation[0].iterations)
         dt = self._msml_file.env.simulation[0].dt
         import msml.ext.misc
-        msml.ext.misc.convertFeBioMeshStringToVTKMesh(self.file_name + iterations + ".log")
+        logfile = str(self.file_name + ".txt");
+        msml.ext.misc.convertFeBioMeshStringToVTKMesh(logfile, iterations, meshFilename)
          
     def createScene(self):
         version = "1.2"  
@@ -307,9 +319,9 @@ class FeBioExporter(XMLExporter):
         self.sub("var", plotfileNode, type = type2)
         self.sub("var", plotfileNode, type = type3)
         logfileName = self.file_name + ".txt"
-        logfileNode = self.sub("logfile", outputNode, file = logfileName)
+        logfileNode = self.sub("logfile", outputNode)
         data ="x;y;z"
-        self.sub("node_data", logfileNode, data = data)
+        self.sub("node_data", logfileNode, data = data, file = logfileName)
         
 
     def sub(self, tag, root=None, **kwargs):

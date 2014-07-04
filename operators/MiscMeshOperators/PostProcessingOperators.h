@@ -106,7 +106,7 @@ public:
 	LIBRARY_API static void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename);
 	LIBRARY_API static void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* referenceMesh,vtkUnstructuredGrid* coloredMesh);
 
-	LIBRARY_API static void FeBioToVTKConversion(const char* modelFilename);
+	LIBRARY_API static void FeBioToVTKConversion(const std::string modelFilename, const std::string lastStep, std::string inputMesh);
 
   LIBRARY_API static void MergeMeshes(vtkUnstructuredGrid* pointsMesh, vtkUnstructuredGrid* cellsMesh, vtkUnstructuredGrid* outputMesh);
 	LIBRARY_API static void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, const char* outputMeshFilename);

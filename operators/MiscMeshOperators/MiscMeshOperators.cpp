@@ -772,7 +772,7 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 	 {
 		 currentPoint = inputMesh->GetPoint(i);
 		 out<<"<node id=\""<<i+1<<"\">"<< std::setprecision(7) << std::scientific;
-		 if(currentPoint[0] < 0 ){
+		 if(currentPoint[0] < 0 ){ //!!
 			out<<currentPoint[0] << ",";
 		 }else{
 			out<< " " << currentPoint[0] << ",";
@@ -802,14 +802,14 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 	 {
 		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
 		 double* key = pd->GetTuple(i);
-		 if((int) *key == 100){
+		 if((int) *key == 100){ // !! 
 			 *key = 5;
 		 }
 		 if(numberOfNodesPerElement == 4) {
 			 out<<"<tet4 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {
-			if(j == numberOfNodesPerElement-1){
+			if(j == numberOfNodesPerElement-1){ //!!
 				out<<currentCellPoints[j]+1;
 			} else{
 				out<<currentCellPoints[j]+1<<",";
@@ -852,7 +852,7 @@ std::string MiscMeshOperators::createFeBioPressureOutput(vtkUnstructuredGrid* in
 	 {
 		 inputMesh->GetCellPoints(indices[i], numberOfNodesPerElement, currentCellPoints);
 		if(numberOfNodesPerElement == 3) {
-			 out<<"<tri3 id=\""<<i+1<< "\" lc=\"1\" scale=\"1\">" ;
+			 out<<"<tri3 id=\""<<i+1<< "\" lc=\"1\" scale=\"1\">" ; // lc als Parameter übergeben
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {
 			if(j == numberOfNodesPerElement-1){

@@ -330,15 +330,27 @@ void PostProcessingOperators::ColorMeshFromComparison(const char* modelFilename,
 	writer->Write();
 }
 
-void PostProcessingOperators::FeBioToVTKConversion(const char* modelFilename)
+void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilename, const std::string lastStep, std::string inputMesh)
 {
 	vtkSmartPointer<vtkPoints> thePointsOutput =
 		 vtkSmartPointer<vtkPoints>::New();
 	vtkSmartPointer<vtkUnstructuredGrid> vtkGrid = 
 		vtkSmartPointer<vtkUnstructuredGrid>::New();
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(inputMesh.c_str());
+	reader->Update();
+	vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = reader->GetOutput();
+	vtkCellArray* theCells = referenceGrid->GetCells();
+	int cellType = referenceGrid->GetCellType(1);
 	fstream f;
 	char cstring[256];
 	f.open(modelFilename, ios::in);
+	bool stepReached = false;
+	bool startWithStar = false;
+	std::string prefix = "*";
+	bool start = false;
+	bool started = false;
 
     while (!f.eof())
     {
@@ -346,24 +358,43 @@ void PostProcessingOperators::FeBioToVTKConversion(const char* modelFilename)
         f.getline(cstring, sizeof(cstring));
         int i = 0;
 		stringstream ssin(cstring);
-		while (ssin.good() && i < 4){
-			ssin>>arr[i];
-			++i;
+		std::string temp;
+		if(cstring[0] == '*'){
+			if(started == true){
+				break;
+			}
+			while (ssin >> temp) {
+				if(temp == lastStep) {
+					start = true;
+					std::cout << "Yeaaaaahhhhhhh" <<std::endl;
+				}
+			}
+		}else{
+			if(start){
+			//stringstream ssin(cstring);
+			started = true;
+			while (ssin.good() && i < 4){
+				std::cout << ssin.str().empty();
+				if(!ssin.str().empty()){
+					ssin>>arr[i];
+					++i;
+				}else{
+					break;	
+				}
+			}
+			thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
+			}
 		}
-		thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
 		
     }
     f.close();
-	string filename, basename;
-	filename = string(modelFilename);
-	string::size_type idx = filename.find('.');
-	basename = filename.substr(0, idx) + ".vtk";
-	char * cstr = new char [basename.length()+1];
-	std::strcpy (cstr, basename.c_str());
+	string::size_type idx = modelFilename.find('.');
+	std::string vtkFile = modelFilename.substr(0, idx) + ".vtk";
 	vtkGrid->SetPoints(thePointsOutput);
 	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetFileName(cstr);
+	writer->SetFileName(vtkFile.c_str());
+	vtkGrid->SetCells(cellType, theCells);
 	__SetInput(writer, vtkGrid);
 	writer->Write();
 }
