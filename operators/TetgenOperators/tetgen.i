@@ -6,11 +6,12 @@
 
 %include "std_string.i"
 
+%include "TetgenMeshQuality.h"
 namespace MSML {
     namespace Tetgen {
         std::string CreateVolumeMeshPython(std::string infile,
                                            std::string outfile,
-                                           bool preserveBoundary);
+                                           MSML::Tetgen::TetgenMeshQuality settings);
     }
  }
 

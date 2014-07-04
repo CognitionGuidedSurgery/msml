@@ -38,6 +38,8 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
+#include "TetgenMeshQuality.h"
+
 
 using namespace std;
 
@@ -73,7 +75,7 @@ namespace MSML {
 
     */
 
-    LIBRARY_API bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic );
+    LIBRARY_API bool CreateVolumeMesh(const char* infile, const char* outfile, TetgenMeshQuality settings, bool isQuadratic );
 
     /*MSMLDOC
         .. cpp:function:: std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary)
@@ -81,14 +83,14 @@ namespace MSML {
             Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
     */
 
-    LIBRARY_API std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary);
+    LIBRARY_API std::string CreateVolumeMeshPython(std::string infile, std::string outfile, TetgenMeshQuality settings);
 
     /*MSMLDOC
         .. cpp:function:: bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
 
             Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
     */
-    LIBRARY_API bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
+    LIBRARY_API bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenMeshQuality settings, bool isQuadratic );
     } //end namespace Tetgen
 } // end namespace MediAssist
 
