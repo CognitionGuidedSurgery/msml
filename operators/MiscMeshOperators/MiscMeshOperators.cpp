@@ -684,14 +684,14 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshStringPython(std::string
 
 }
 
-std::string MiscMeshOperators::createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices)
+std::string MiscMeshOperators::createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices, std::string id)
 {
 	//load the vtk  mesh
 	vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	  reader->SetFileName(inputMesh.c_str());
 	  reader->Update();
-	  std::string output = createFeBioPressureOutput( reader->GetOutput(), indices);
+	  std::string output = createFeBioPressureOutput( reader->GetOutput(), indices, id);
 	  return output;
 
 }
@@ -797,7 +797,7 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 	 vtkIdType numberOfNodesPerElement;
 	 vtkIdType cellType = inputMesh->GetCellType(0);
 	 vtkDataArray* pd = inputMesh->GetCellData()->GetScalars();
-	 
+
 	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
 	 {
 		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
@@ -837,7 +837,7 @@ std::string MiscMeshOperators::ConvertVTKMeshToFeBioMeshString( vtkUnstructuredG
 	return out.str();
 }
 
-std::string MiscMeshOperators::createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices)
+std::string MiscMeshOperators::createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices, std::string id)
 {
    	 std::stringstream out;
 	
@@ -852,7 +852,7 @@ std::string MiscMeshOperators::createFeBioPressureOutput(vtkUnstructuredGrid* in
 	 {
 		 inputMesh->GetCellPoints(indices[i], numberOfNodesPerElement, currentCellPoints);
 		if(numberOfNodesPerElement == 3) {
-			 out<<"<tri3 id=\""<<i+1<< "\" lc=\"1\" scale=\"1\">" ; // lc als Parameter übergeben
+			 out<<"<tri3 id=\""<<i+1<< "\" lc=\""<< id << "\" scale=\"1\" >" ; // lc als Parameter übergeben
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {
 			if(j == numberOfNodesPerElement-1){

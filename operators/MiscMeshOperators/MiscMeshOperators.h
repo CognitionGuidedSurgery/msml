@@ -122,8 +122,8 @@ public:
 	LIBRARY_API static std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName);
 	LIBRARY_API static std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName);
 
-	LIBRARY_API static std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices);
-	LIBRARY_API static std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices);
+	LIBRARY_API static std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices, std::string id);
+	LIBRARY_API static std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices, std::string id);
 
 
 	LIBRARY_API  static std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh);

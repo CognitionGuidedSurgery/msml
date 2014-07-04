@@ -342,12 +342,11 @@ void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilena
 	reader->Update();
 	vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = reader->GetOutput();
 	vtkCellArray* theCells = referenceGrid->GetCells();
+	vtkDataArray* scalars = referenceGrid->GetCellData()->GetScalars();
 	int cellType = referenceGrid->GetCellType(1);
 	fstream f;
 	char cstring[256];
 	f.open(modelFilename, ios::in);
-	bool stepReached = false;
-	bool startWithStar = false;
 	std::string prefix = "*";
 	bool start = false;
 	bool started = false;
@@ -366,22 +365,20 @@ void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilena
 			while (ssin >> temp) {
 				if(temp == lastStep) {
 					start = true;
-					std::cout << "Yeaaaaahhhhhhh" <<std::endl;
 				}
 			}
-		}else{
+		} else {
 			if(start){
-			//stringstream ssin(cstring);
-			started = true;
-			while (ssin.good() && i < 4){
-				std::cout << ssin.str().empty();
-				if(!ssin.str().empty()){
-					ssin>>arr[i];
-					++i;
-				}else{
-					break;	
+				started = true;
+				while (ssin.good() && i < 4){
+					std::cout << ssin.str().empty();
+					if(!ssin.str().empty()){
+						ssin>>arr[i];
+						++i;
+					} else {
+						break;
+					}
 				}
-			}
 			thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
 			}
 		}
@@ -395,6 +392,7 @@ void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilena
 	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	writer->SetFileName(vtkFile.c_str());
 	vtkGrid->SetCells(cellType, theCells);
+	vtkGrid->GetCellData()->SetScalars(scalars);
 	__SetInput(writer, vtkGrid);
 	writer->Write();
 }
