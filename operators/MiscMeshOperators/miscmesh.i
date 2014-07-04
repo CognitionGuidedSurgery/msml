@@ -14,6 +14,10 @@
 
 %include "../std.i"
 
+namespace std {
+	%template(vectorMeshQualityStats) vector<MSML::MeshQuality::MeshQualityStats>;
+}
+
 %include "IOHelper.h"
 %include "IndexRegionOperators.h"
 %include "PostProcessingOperators.h"

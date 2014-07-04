@@ -45,8 +45,9 @@ static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
 static vector<pair<string, int>> TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
 
 static int tetQualityMeasureVtkIdForName(string name) {
-    for(vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
-        if(it->first == name) {
+    for (vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin();
+            it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
+        if (it->first == name) {
             return it->second;
         }
     }
@@ -55,28 +56,25 @@ static int tetQualityMeasureVtkIdForName(string name) {
 
 static vector<string> FillTetQualityMeasureTypeNames() {
     vector<string> names;
-    for(vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
+    for (vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin();
+            it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
         names.push_back(it->first);
     }
     return names;
 }
 const vector<string> TET_QUALITY_MEASURE_TYPE_NAMES = FillTetQualityMeasureTypeNames();
 
-const int DERP = 235;
+MeshQualityStats MeasureTetrahedricMeshQuality(string infile, string qualityMeasureName) {
+    vector<string> names;
+    names.push_back(qualityMeasureName);
+    return MeasureTetrahedricMeshQuality(infile, names).front();
+}
 
-MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName) {
+vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<string> qualityMeasureNames) {
     cout << "MeasureTetrahedricMeshQuality" << endl;
 
-    MeshQualityStats stats;
-    stats.qualityMeasureName = qualityMeasureName;
+    vector<MeshQualityStats> results;
 
-    int qualityMeasure = tetQualityMeasureVtkIdForName(qualityMeasureName);
-    if(qualityMeasure < 0) {
-        stats.errorQualityMeasureNotFound = true;
-        return stats;
-    }
-
-    //vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
     vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
     reader->SetFileName(infile.c_str());
     reader->Update();
@@ -90,31 +88,36 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
 #else
     quality->SetInputData(mesh);
 #endif
-    quality->SetTetQualityMeasure(qualityMeasure);
-    quality->Update();
 
-    vtkCellData* cellData = quality->GetOutput()->GetCellData();
-    vtkFieldData* fieldData = quality->GetOutput()->GetFieldData();
-    vtkSmartPointer<vtkDoubleArray> qualityArray = vtkDoubleArray::SafeDownCast(cellData->GetArray("Quality"));
+    quality->SaveCellQualityOff(); // Do not save the values for each cell, since we only return the aggregated values anyways.
 
-    std::cout << "There are " << qualityArray->GetNumberOfTuples() << " values." << std::endl;
+    for (vector<string>::iterator it = qualityMeasureNames.begin(); it != qualityMeasureNames.end(); ++it) {
+        MeshQualityStats result;
+        result.qualityMeasureName = *it;
+        int qualityMeasureId = tetQualityMeasureVtkIdForName(*it);
+        if (qualityMeasureId < 0) {
+            result.errorQualityMeasureNotFound = true;
+        } else {
+            quality->SetTetQualityMeasure(qualityMeasureId);
+            quality->Update();
 
-    for (vtkIdType i = 0; i < qualityArray->GetNumberOfTuples(); i++) {
-        double val = qualityArray->GetValue(i);
-        //std::cout << "value " << i << " : " << val << std::endl;
-    }
+            vtkFieldData* fieldData = quality->GetOutput()->GetFieldData();
+            vtkDataArray* aggregate = fieldData->GetArray("Mesh Tetrahedron Quality");
+            double* tuple = aggregate->GetTuple(0);
+            result.min = tuple[0];
+            result.avg = tuple[1];
+            result.max = tuple[2];
+            result.var = tuple[3];
+            result.n = tuple[4];
 
-    vtkDataArray* aggregate = fieldData->GetArray("Mesh Tetrahedron Quality");
-    double* tuple = aggregate->GetTuple(0);
-    stats.min = tuple[0];
-    stats.avg = tuple[1];
-    stats.max = tuple[2];
-    stats.var = tuple[3];
-    stats.n = tuple[4];
+            cout << result.qualityMeasureName << " min=" << result.min << "; max=" << result.max << "; avg=" << result.avg << "; var="
+                       << result.var << "; n=" << result.n << endl;
 
-    cout << qualityMeasureName << " min=" << stats.min << "; max=" << stats.max << "; avg=" << stats.avg << "; var=" << stats.var << "; n=" << stats.n << endl;
+        }
+        results.push_back(result);
+    };
 
-    return stats;
+    return results;
 }
 
 }

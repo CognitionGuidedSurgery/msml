@@ -28,10 +28,10 @@ struct MeshQualityStats {
 };
 
 // Define constants in c file to ensure values are up to date with the VTK version actually used.
-extern const int DERP;
 extern const std::vector<std::string> TET_QUALITY_MEASURE_TYPE_NAMES;
 
 LIBRARY_API MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName);
+LIBRARY_API std::vector<MeshQualityStats> MeasureTetrahedricMeshQuality(std::string infile, std::vector<std::string> qualityMeasureNames);
 }
 }
 
