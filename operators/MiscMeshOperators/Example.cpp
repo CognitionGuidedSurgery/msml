@@ -48,6 +48,36 @@ void TestAssignRegionOperator()
 
 }
 
+void TestComputeDiceCoefficient()
+{
+	
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk");
+  std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase.vtk");
+
+  PostProcessingOperators::ComputeDiceCoefficient(inputMesh.c_str(), outputMesh.c_str());
+
+}
+
+void TestComputeVolume()
+{
+	
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
+  std::string inputMesh1("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume2.vtk");
+  std::string inputMesh2("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume3.vtk");
+  std::string inputMesh3("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume4.vtk");
+  std::string inputMesh4("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume100.vtk");
+  cout << "Bladder" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh.c_str());
+  cout << "Rectum" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh1.c_str());
+  cout << "Bowel" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh2.c_str());
+  cout << "Bone" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh3.c_str());
+  cout << "Prostate" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh4.c_str());
+}
+
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 {
 	//std::string inputMesh("E:/GIT/msml/Testdata/CGALi2vExampleResults/liver_kidney_gallbladder.vtk");
@@ -58,6 +88,15 @@ void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 	string errorMessage;
   std::string asd("asd");
 	MiscMeshOperators::ExtractAllSurfacesByMaterial(inputMesh.c_str(), outputMesh.c_str(), true);
+
+}
+
+void TestConvertFebToVTK(){
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk");
+  std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase.txt");
+
+ PostProcessingOperators::FeBioToVTKConversion(outputMesh, "29", inputMesh);
+
 
 }
 
@@ -171,10 +210,12 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-  TestGenerateDVF();
-  TestApplyDVF();
+	//TestConvertFebToVTK();
+	//TestComputeDiceCoefficient();
+	TestComputeVolume();
+	//return EXIT_SUCCESS;
 
-	return EXIT_SUCCESS;
+	
 }
 
 

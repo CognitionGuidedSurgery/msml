@@ -99,7 +99,8 @@ class FeBioExporter(XMLExporter):
         print cmd
         print("Executing FeBio.")
         os.system(cmd)
-        self.convertToVTK(str("combo.vtk"))
+        print("Converting FeBio to VTK.")
+        self.convertToVTK(str(self.meshFile))
         pass
 
 
@@ -111,6 +112,7 @@ class FeBioExporter(XMLExporter):
             meshObj = msmlObject.mesh
             meshValue = meshObj.mesh
             meshFilename = self.evaluate_node(meshValue)
+            self.meshFile =  meshFilename
                
             self.createControl(self.node_root, msmlObject)
    
@@ -123,8 +125,6 @@ class FeBioExporter(XMLExporter):
             self.createConstraintRegions(msmlObject, meshFilename)
             
             self.createOutput()
-            
-            #self.convertToVTK(meshFilename)
 
         return etree.ElementTree(self.node_root)
 
@@ -233,6 +233,7 @@ class FeBioExporter(XMLExporter):
     def createConstraintRegions(self, msmlObject, meshFilename):
         assert isinstance(msmlObject, SceneObject)
         boundaryNode = self.sub("Boundary", self.node_root)
+        count = 0;
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
             assert isinstance(constraint_set, ObjectConstraints)
             for constraint in constraint_set.constraints:
@@ -247,14 +248,21 @@ class FeBioExporter(XMLExporter):
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     import msml.ext.misc
-                    pressureString = msml.ext.misc.createFeBioPressureOutput(meshFilename, indices_vec)
+                    count += 1
+                    pressureString = msml.ext.misc.createFeBioPressureOutput(meshFilename, indices_vec, str(count))
                     loadNode.append(etree.fromstring(pressureString))
+                    iterations = float(self._msml_file.env.simulation[0].iterations)
+                    dt = float(self._msml_file.env.simulation[0].dt)
+                    pressure = float(constraint.pressure) / 4.0
+                    time = dt * iterations
+                    loadPointValue1 = "0.00," + str(pressure)
+                    loadPointValue2 = str(time) + ",0.00"
                     loadDataNode = self.sub("LoadData", self.node_root)
-                    loadcurve = self.sub("loadcurve", loadDataNode, id="1", type ="smooth")
+                    loadcurve = self.sub("loadcurve", loadDataNode, id=str(count), type ="smooth")
                     loadPoint1 = self.sub("loadpoint", loadcurve)
-                    loadPoint1.text = str("0.00100806451613,0.993225806452")
+                    loadPoint1.text = loadPointValue1
                     loadPoint2 = self.sub("loadpoint", loadcurve)
-                    loadPoint2.text = str("1.00564516129,0.00322580645161")  
+                    loadPoint2.text = loadPointValue2
                          
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)

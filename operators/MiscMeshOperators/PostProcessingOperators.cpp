@@ -370,16 +370,19 @@ void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilena
 		} else {
 			if(start){
 				started = true;
-				while (ssin.good() && i < 4){
-					std::cout << ssin.str().empty();
+				bool end = false;
+				while (ssin.good() && i < 4){	
 					if(!ssin.str().empty()){
 						ssin>>arr[i];
 						++i;
 					} else {
+						end = true;
 						break;
 					}
 				}
-			thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
+				if(!end){
+					thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
+				}
 			}
 		}
 		
@@ -462,6 +465,75 @@ void PostProcessingOperators::ColorMesh(const char* modelFilename, const char* c
 		polywriter->SetFileName(coloredModelFilename);
 		__SetInput(polywriter, surface);
 		polywriter->Write();
+
+}
+
+void PostProcessingOperators::ComputeDiceCoefficient(const char* filename, const char* filename2)
+{
+		vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+		vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+		reader->SetFileName(filename);
+		reader->Update();
+		vtkUnstructuredGrid* currentGrid = reader->GetOutput();
+		reader2->SetFileName(filename2);
+		reader2->Update();
+		vtkUnstructuredGrid* referenceGrid = reader2->GetOutput();
+		double* currentPoint;
+		double* referencePoint;
+		int countOfEqualPoints = 0;
+		int currentGridNumberOfPoints = currentGrid->GetNumberOfPoints();
+		int referenceGridNumberOfPoints = referenceGrid->GetNumberOfPoints();
+		for(int i=0; i < currentGridNumberOfPoints; i++){
+			bool coordinateIsEqual[3];
+			currentPoint = currentGrid->GetPoint(i);
+			referencePoint = referenceGrid->GetPoint(i);
+			for(int m = 0; m < 3; m++){
+				currentPoint[m] == referencePoint[m] ? coordinateIsEqual[m] = true : coordinateIsEqual[m] = false;
+			} 
+			if(coordinateIsEqual[0] && coordinateIsEqual[1] && coordinateIsEqual[2]){
+				countOfEqualPoints++;
+			}
+		}
+
+		double diceCoefficient = (double)(2*countOfEqualPoints)/(currentGridNumberOfPoints +  referenceGridNumberOfPoints);
+		std::cout << "Count equal points: " << countOfEqualPoints << std::endl << "Number of points input1: " << currentGridNumberOfPoints <<  std::endl << "Number of points input2: " << referenceGridNumberOfPoints
+			<<  std::endl << "DICE Coefficient: " << diceCoefficient <<  std::endl;
+
+}
+
+void PostProcessingOperators::ComputeOrganVolume(const char* volumeFilename){
+		vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+		reader->SetFileName(volumeFilename);
+		reader->Update();
+		vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+		vtkIdType* currentCellPoints;
+		vtkIdType numberOfNodesPerElement;
+		double volume = 0;
+	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
+	 {
+		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
+		 if(numberOfNodesPerElement == 4) {
+			 double tetraPoints[4][3]; 
+			 double *currentPoint;
+			
+			 for(int j=0; j<numberOfNodesPerElement; j++)
+			 {
+				currentPoint = inputMesh->GetPoint(currentCellPoints[j]);
+
+				for(int m=0; m < 3; m++){
+					tetraPoints[j][m] = currentPoint[m];
+				}
+			 }
+			 vtkTetra* vtkTetra = vtkTetra::New();
+			 volume += vtkTetra->ComputeVolume(tetraPoints[0], tetraPoints[1], tetraPoints[2], tetraPoints[3]);
+	    }
+		
+	 }
+
+	 std::cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;
 
 }
 
