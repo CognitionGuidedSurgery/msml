@@ -1,0 +1,14 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="i" value="2" />
+    </variables>
+
+    <workflow>
+        <report id="p" level="W" message="i = " value="${i}" />
+        <add id="a" a="${i}" b="2" />
+        <report id="r" level="W" message="a = " value="${a}" />
+    </workflow>
+</msml:msml>

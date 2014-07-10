@@ -4,9 +4,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -32,11 +32,16 @@ __date__ = "2014-01-26"
 
 import warnings
 
+from path import path
+
 from .memory import Memory
 from msml.model import *
+from msml.log import report
+from msml.generators import generate_task_id
 from msml.model.dag import DiGraph
 from msml.exporter.base import Exporter
 from msml.run.GraphDotWriter import GraphDotWriter
+import msml.sortdef
 
 
 class Executer(object):
@@ -47,8 +52,39 @@ class Executer(object):
 
 
     """
-    # TODO define interface /weigl
-    pass
+
+    def __init__(self, msmlfile): pass
+
+    def run(self): pass
+
+    def init_memory(self, content): pass
+
+
+def contains(a, b):
+    if isinstance(b, type):
+        b = b.__name__
+    elif not isinstance(b, (str, unicode)):
+        b = str(b)
+    try:
+        return b.index(a) >= 0
+    except ValueError:
+        return False
+
+
+def initialize_file_literals(first_bucket):
+    def var_is_file(var):
+        if isinstance(var, MSMLVariable):
+            return issubclass(var.sort.physical, msml.sortdef.InFile)
+            # return contains("file", var.logical_type) or contains("file", var.physical_type)
+        return False
+
+    def abs_value(var):
+        import os.path
+
+        var.value = os.path.abspath(var.value)
+        return var
+
+    return map(abs_value, filter(var_is_file, first_bucket))
 
 
 class LinearSequenceExecuter(Executer):
@@ -60,6 +96,7 @@ class LinearSequenceExecuter(Executer):
         self._mfile = msmlfile
         self._memory = Memory()
         self._exporter = self._mfile.exporter
+        self.working_dir = None
 
     def init_memory(self, content):
         if isinstance(content, str):
@@ -67,7 +104,6 @@ class LinearSequenceExecuter(Executer):
             self._memory.load_memory_file(content)
         elif content:
             warnings.warn("init_memory handles only filenames", MSMLWarning)
-
 
     def define_var(self, name, value=None):
         """defines a variable in the current memory.
@@ -77,7 +113,7 @@ class LinearSequenceExecuter(Executer):
           value (object): any value of variable
 
         """
-        if name not in self._memory:  #do not override
+        if name not in self._memory:  # do not override
             self._memory[name] = value
 
     def run(self):
@@ -85,9 +121,23 @@ class LinearSequenceExecuter(Executer):
         """
         dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
 
-        #dag.show()
+        # dag.show()
 
         buckets = dag.toporder()
+
+        # make absolute paths for every string/file literal
+        # wd is msml file dirname
+        initialize_file_literals(buckets[0])
+
+        # change to output_dir
+        if self.working_dir:
+            wd = path(self.working_dir)
+            try:
+                wd.mkdir()
+            except:
+                pass
+            finally:
+                wd.chdir()
 
         for bucket in buckets:
             for node in bucket:
@@ -121,10 +171,16 @@ class LinearSequenceExecuter(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        print '--Executing operator of task {} with arguments {}'.format(task, kwargs)
+        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
         result = task.operator(**kwargs)
-        print '--Executing operator of task {} done'.format(task)
-        self._memory[task.id] = result
+        report('--Executing operator of task {} done'.format(task), 'I', '002')
+
+        if task.id in self._memory and isinstance(self._memory[task.id], dict):
+            # converter case, only update the change values
+            self._memory[task.id].update(result)
+        else:
+            # set the values into memory
+            self._memory[task.id] = result
 
 
     def gather_arguments(self, task):
@@ -151,6 +207,122 @@ class LinearSequenceExecuter(Executer):
         return vals
 
 
+def build_graph(tasks, exporter, variables):
+    dag = DiGraph()
+
+    nodes = dict(tasks)
+    nodes.update(variables)
+
+    for t in nodes.values():
+        dag.add_node(t)
+
+    dag.add_node(exporter)
+
+    for t in tasks.values():
+        for ta in t.arguments.values():
+            dag.add_edge(ta.linked_from.task,
+                         ta.linked_to.task,
+                         ref=ta)
+
+    for ta in exporter.arguments.values():
+        dag.add_edge(ta.linked_from.task,
+                     ta.linked_to.task, ref=ta)
+
+    return dag
+
+
+from ..log import report
+from ..sorts import conversion
+
+
+def inject_implict_conversion(dag):
+    """Finds type mismatch and injects suitable conversion operators
+
+    :param dag: a directed acyclic graph from `build_graph`
+    :type dag: DiGraph
+    :return: the given graph
+    :rtype: DiGraph
+    """
+    for a, b, data in dag.edges(data=True):
+        ref = data['ref']
+        if not ref.valid:
+            report("Reference %s is invalid. Try to implicit conversion" % ref, 'I', 1561)
+            task = create_conversion_task(ref.linked_from, ref.linked_to)
+
+            # add new task
+            dag.add_node(task)
+
+            # remove the old edge
+            dag.remove_edge(a, b)
+
+            # from Task to Converter
+            _a_t = Reference(ref.task, ref.slot)
+            _a_t.linked_from = ref.linked_from
+            _a_t.link_to_task(task, task.operator.input['i'])
+
+            _t_b = Reference(ref.task, ref.slot)
+            _t_b.linked_to = ref.linked_to
+            _t_b.link_from_task(task, task.operator.output['o'])
+
+            # override converted value
+            # _t_b.link_from_task(task, task.operator.output[task.operator.output.keys()[0]])
+
+            task.arguments['i'] = _a_t
+            b.arguments[ref.linked_to.name] = _t_b
+
+            dag.add_edge(a, task, ref=_a_t)
+            dag.add_edge(task, b, ref=_t_b)
+
+        else:
+            report("Reference %s is valid" % ref, 'D', 1562)
+    return dag
+
+
+from ..model import PythonOperator, Task, Slot
+
+
+def get_python_conversion_operator(slotA, slotB):
+    r = {'function': '<automatic-converter>', 'module': '<module-name>'}
+
+    pA = slotA.arginfo.sort.physical
+    lA = slotA.arginfo.sort.logical
+
+    pB = slotB.arginfo.sort.physical
+    lB = slotB.arginfo.sort.logical
+
+    pyop = PythonOperator(
+        "converter_%s_%s" % (pA.__name__, pB.__name__),
+        input=[Slot("i", pA, lA)],
+        output=[Slot('o', pB, lB)], runtime=r)
+
+    return pyop
+
+
+
+def create_conversion_task(slotA, slotB):
+    """
+
+    :param slotA:
+    :type slotA: Reference.Ref
+    :param slotB:
+    :type slotB: Reference.Ref
+    :return:
+    """
+
+    fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
+    if fn is None:
+        raise MSMLError("Could not find an automatic Converter for %s to %s" % (slotA, slotB))
+
+    pyop = get_python_conversion_operator(slotA, slotB)
+    pyop._function = fn
+
+    # the new task override the old one memory values
+    attrib = {'id': generate_task_id(), 'i': None}
+    task = Task(pyop.name, attrib)
+    task.operator = pyop
+    return task
+
+
 class DefaultGraphBuilder(object):
     """ Builds the DAG for the given msmlfile and exporter
 
@@ -173,31 +345,10 @@ class DefaultGraphBuilder(object):
 
         self._dag = None
 
-    def _build(self):
-        dag = DiGraph()
-
-        nodes = dict(self.mfile._workflow._tasks)
-        nodes.update(self.mfile._variables)
-
-        for t in nodes.values():
-            dag.add_node(t)
-
-        dag.add_node(self.exporter)
-
-        for t in self.mfile._workflow._tasks.values():
-            for ta in t.arguments.values():
-                dag.add_edge(ta.linked_from.task,
-                             ta.linked_to.task,
-                             ref=ta)
-
-        for ta in self.exporter.arguments.values():
-            dag.add_edge(ta.linked_from.task,
-                         ta.linked_to.task, ref=ta)
-
-        return dag
 
     @property
     def dag(self):
         if not self._dag:
-            self._dag = self._build()
+            self._dag = inject_implict_conversion(
+                build_graph(self.mfile.workflow._tasks, self.exporter, self.mfile.variables))
         return self._dag

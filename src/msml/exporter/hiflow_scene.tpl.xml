@@ -1,8 +1,8 @@
 <Param>
     <OutputPathAndPrefix>SimResults/elasticitySimulation_</OutputPathAndPrefix>
     <Mesh>
-        <Filename>{meshfilename}</Filename>
-        <BCdataFilename>{bcdatafilename}</BCdataFilename>
+        <Filename>{{meshfilename}}</Filename>
+        <BCdataFilename>{{bcdatafilename}}</BCdataFilename>
         <InitialRefLevel>0</InitialRefLevel>
     </Mesh>
     <LinearAlgebra>

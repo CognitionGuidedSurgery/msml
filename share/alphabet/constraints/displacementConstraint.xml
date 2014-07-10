@@ -1,4 +1,3 @@
-<!-- This physical element sets fixed points -->
 <msml:element xmlns:msml="http://sfb125.de/msml"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://sfb125.de/msml" name="displacementContraint" category="constraint"
@@ -6,21 +5,18 @@
 
 
     <description>
-        Set fixed points
+        Set (fix) displaced points
     </description>
 
     <parameters>
-        <arg name="time">
+        <arg name="time" physical="float">
             <meta key="doc" value="Set time."/>
         </arg>
-        <arg name="indices">
-            <meta key="doc" value="Set indices of fixed points separated by spaces."/>
-
+        <arg name="indices" physical="vector.float">
+            <meta key="doc" value="Set indices of displaced points separated by spaces."/>
         </arg>
-
-
-        <arg name="displacement">
-            <meta key="doc" value="State the displacement of the point."/>
+        <arg name="displacement" physical="vector.float">
+            <meta key="doc" value="Set the displacement vector (DIM = 3) of the points given in the indices."/>
         </arg>
     </parameters>
 </msml:element>

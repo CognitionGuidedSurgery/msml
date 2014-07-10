@@ -1,0 +1,22 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="MarchingCube">
+	
+	<runtime>
+		<python module="msml.ext.misc" function="MarchingCube" />
+	</runtime>
+
+	<input>
+        <!-- TODO logical and physical type -->
+		<arg name="image" logical="volume" physical="str" />
+	</input>
+
+	<output>
+		<arg name="out_surface" logical="Mesh" physical="file.vtk" />
+	</output>
+
+
+	<parameters>
+      <arg name="out_filename" logical="str" physical="file.vtk" />
+      <arg name="isoValue" physical="float" />
+	</parameters>
+
+</msml:operator>

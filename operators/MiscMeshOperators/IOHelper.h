@@ -1,23 +1,23 @@
-/*=========================================================================
+#include <stdio.h>/*  =========================================================================
 
-  Program:   The Medical Simulation Markup Language
-  Module:    Operators, MiscMeshOperators
-  Authors:   Markus Stoll, Stefan Suwelack
+    Program:   The Medical Simulation Markup Language
+    Module:    Operators, MiscMeshOperators
+    Authors:   Markus Stoll, Stefan Suwelack
 
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-=========================================================================*/
+    =========================================================================*/
 
 //#ifndef __IOHelper_h //ifdef does not work with function templates
 //#define __IOHelper_h
@@ -27,6 +27,7 @@
 // ****************************************************************************
 #include <vector>
 #include <limits>
+#include <map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,40 +45,53 @@
 
 using namespace std;
 
-// ****************************************************************************
-// Defines
-// ****************************************************************************
+/*MSMLDOC
+IOHelper
+^^^^^^^^
+
+.. cpp:namespace:: MSML::IOHelper
+
+.. cpp:function:: vtkSmartPointer\<vtkImageData> VTKReadImage(const char* filename)
+
+    :param const char* filename:
+
+    :returns:
+    :rtype:
 
 
-// ****************************************************************************
-// PostProcessingOperators
-// ****************************************************************************
+
+
+.. cpp:function:: vtkSmartPointer\<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename)
+
+    :param const char* filename:
+
+    :returns:
+    :rtype:
 
 
 
+
+.. cpp:function:: vtkSmartPointer\<vtkPolyData> VTKReadPolyData(const char* filename)
+
+    :param const char* filename:
+
+    :returns:
+    :rtype:
+
+
+*/
 
 namespace MSML {
+    namespace IOHelper {
 
-/** \class IOHelper
-* \brief This class provides helper methods for file IO in msml.
-*/
-class IOHelper
-{
-public:
+        LIBRARY_API vtkSmartPointer<vtkImageData> VTKReadImage(const char* filename);
+        LIBRARY_API vtkSmartPointer<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename);
+        LIBRARY_API vtkSmartPointer<vtkPolyData> VTKReadPolyData(const char* filename);
+        LIBRARY_API vtkSmartPointer<vtkImageData> CTXReadImage(const char* filename);
+        LIBRARY_API std::map<std::string, std::string> ReadTextFileToMap(std::string file, char delim);
 
-LIBRARY_API static vtkSmartPointer<vtkImageData> VTKReadImage(const char* filename);
-LIBRARY_API static vtkSmartPointer<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename);
-LIBRARY_API static vtkSmartPointer<vtkPolyData> VTKReadPolyData(const char* filename);
-
-protected:
-
-private:
-	IOHelper(); //hide C'tor 
-	~IOHelper();
-  //TODO: template <typename T>
-  //TODO: static vtkSmartPointer<T> VTKRead(const char* filename);
-};
-} // end namespace MSML
+    }
+}
 
 
 //#endif /* __IOHelper_h */

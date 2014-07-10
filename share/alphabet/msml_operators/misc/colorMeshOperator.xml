@@ -4,23 +4,33 @@
                xsi:schemaLocation="http://sfb125.de/msml" name="colormesh">
     <runtime>
         <python module="msml.ext.misc"
-                function="colorMeshOperator"/>
+                function="ColorMeshPython"/>
     </runtime>
+
+    <annotation>
+        <entry key="check.output" value="True" />
+        <entry key="check.output.arguments" value="mesh"/>
+        <entry key="check.output.generated" value="coloredMesh"/>
+
+        <entry key="filename-generator" value="True" />
+        <entry key="filename-generator.for" value="coloredMesh" />
+        <entry key="filename-generator.for.coloredMesh" value="{mesh}_colored.vtk" />
+    </annotation>
 
     <input>
         <arg name="mesh"
-             type="linearTetMesh, quadraticTetMesh"
-             format="file.vtk"/>
-
-        <arg name="coloredMesh"
-             type="triangularMesh"
-             format="file.vtk"/>
+             logical="Mesh"
+             physical="vtk"/>
     </input>
 
     <output>
         <arg name="coloredMesh"
-             type="triangularMesh"
-             format="file.vtk"/>
+             logical="triangularMesh"
+             physical="vtk"/>
     </output>
 
+    <parameters>
+        <arg name="coloredMesh"
+             physical="str"/>
+    </parameters>
 </msml:operator>

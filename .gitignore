@@ -1,4 +1,5 @@
 
+.coverage
 
 .idea/
 .project
@@ -11,5 +12,5 @@ alphabet.xml
 *.so
 Config.xml
 envconfg.py
-examples/CGALPelvis_DKFZ_internal
-examples/CGALPelvis_DKFZ_internal - Kopie
+examples
+src/msml/envconfig.py

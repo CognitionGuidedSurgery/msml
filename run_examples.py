@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+# !/usr/bin/env python
 #region gplv3
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
@@ -37,7 +37,6 @@ import sys
 sys.path.insert(0, "src/")
 
 from msml import frontend
-
 from path import path
 
 root = path("examples")
@@ -59,7 +58,7 @@ EXAMPLES = [
 
 def main():
     print("""
-                                    _
+                                _
                                | | Medical
      _ __ ___   ___  _ __ ___  | | Simulation
     | '_ ` _ \ / __|| '_ ` _ \ | | Markup
@@ -82,26 +81,8 @@ def main():
     try:
         name, file, desc = EXAMPLES[number]
         print("Executing: %s" % name)
-
-        options = {'--alphabet': 'alphabet.cache',
-                   '--exporter': 'nsofa',
-                   '--output': None,
-                   '--start-script': '~/.config/msmlrc.py',
-                   '--verbose': False,
-                   '--xsd-file': None,
-                   '-S': True,
-                   '-w': False,
-                   '<file>': [file],
-                   '<paths>': [],
-                   'alphabet': False,
-                   'exec': True,
-                   'show': False}
-
-        import msml.exporter
-
-        print(msml.exporter.get_exporter(options['--exporter']))
-
-        frontend.main(options)
+        app = frontend.App(files=[file], exporter="nsofa", )
+        app.execution()
     except Exception as e:
         raise
 

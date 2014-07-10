@@ -3,9 +3,10 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="segementation_voxel_image" value="case1_T00_labled.vti" type="segmentationImage" format="file.vtk"/>
-        <var name="tet_only_mesh" value="case1_T00_tetmesh.vtk" type="linearMesh" format="file.vtk"/>
-        <var name="combo_mesh" value="case1_T00_mesh_combo.vtk" type="linearMesh" format="file.vtk"/>
+        <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="segmentationImage"
+             physical="file.vtk"/>
+        <var name="tet_only_mesh" value="case1_T00_tetmesh.vtk" logical="linearMesh" physical="file.vtk"/>
+        <var name="combo_mesh" value="case1_T00_mesh_combo.vtk" logical="linearMesh" physical="file.vtk"/>
     </variables>
 
     <scene>
@@ -15,27 +16,24 @@
             </mesh>
 
             <material>
-                <region id="patMaterial01">
-                    <indexgroup indices="${bodyToIndexGroup}"/>
-                    <linearElastic youngModulus="100" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                <region id="patMaterial01" indices="${bodyToIndexGroup}">
+                    <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
+                    <mass massDensity="0.001"/>
                 </region>
-                <region id="patMaterial02">
-                    <indexgroup indices="${bonesToIndexGroup}"/>
-                    <linearElastic youngModulus="19000" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                <region id="patMaterial02" indices="${bonesToIndexGroup}">
+                    <linearElasticMaterial youngModulus="19000" poissonRatio="0.4"/>
+                    <mass massDensity="0.001"/>
                 </region>
-                <region id="patMaterial03">
-                    <indexgroup indices="${lung1ToIndexGroup}"/>
-                    <linearElastic youngModulus="100" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                <region id="patMaterial03" indices="${lung1ToIndexGroup}">
+                    <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
+                    <mass massDensity="0.001"/>
                 </region>
-                <region id="patMaterial04">
-                    <indexgroup indices="${lung2ToIndexGroup}"/>
-                    <linearElastic youngModulus="100" poissonRatio="0.4"/>
-                    <mass density="0.001"/>
+                <region id="patMaterial04" indices="${lung2ToIndexGroup}">
+                    <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
+                    <mass massDensity="0.001"/>
                 </region>
             </material>
+            
 
             <constraints>
                 <constraint forStep="${initial}" name="1">
@@ -46,7 +44,7 @@
             </constraints>
 
             <output>
-                <displacementOutputRequest id="disp" timestep="1"/>
+                <displacement id="disp" timestep="1"/>
             </output>
         </object>
     </scene>
@@ -87,8 +85,10 @@
                                box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
                                select="points"/>
 
-        <paraview id="a" data="${disp}" /> <!-- nonsense -->
-		<generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${combo_mesh}" multipleReferenceGrids="false" DVFFilename="dvf01.vtk"/>
+        <paraview id="a" data="${disp}"/>
+        <!-- nonsense -->
+        <generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${surfaceExtraction}" multipleReferenceGrids="false"
+                     DVFFilename="dvf01.vtk"/>
     </workflow>
 
 

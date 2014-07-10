@@ -77,27 +77,25 @@ class DiGraph(nx.MultiDiGraph):
         return buckets
 
 
-    def show(self):
-        """ shows the graph withing matplotlib
-        """
-
-        import matplotlib.pyplot as plt
-
-        try:
-            from networkx import graphviz_layout, write_dot
-        except ImportError:
-            raise ImportError("This example needs Graphviz and either PyGraphviz or Pydot")
-
-        G = self
-        #todo necessary?
-        #write_dot(G, '/tmp/test.dot')
-        pos = nx.graphviz_layout(G, prog='neato', args='')
-        plt.figure(figsize=(8, 8))
-        nx.draw(G, pos, node_size=100, alpha=0.5, node_color="blue", with_labels=True)
-        plt.axis('equal')
-        #todo necessary?
-        #plt.savefig('circular_tree.png')
-        #plt.show()
+    # def show(self):
+    #     """ shows the graph withing matplotlib
+    #     """
+    #
+    #     import matplotlib.pyplot as plt
+    #
+    #     try:
+    #         from networkx import graphviz_layout, write_dot
+    #     except ImportError:
+    #         raise ImportError("This example needs Graphviz and either PyGraphviz or Pydot")
+    #
+    #     G = self
+    #     #write_dot(G, '/tmp/test.dot')
+    #     pos = nx.graphviz_layout(G, prog='neato', args='')
+    #     plt.figure(figsize=(8, 8))
+    #     nx.draw(G, pos, node_size=100, alpha=0.5, node_color="blue", with_labels=True)
+    #     plt.axis('equal')
+    #     #plt.savefig('circular_tree.png')
+    #     #plt.show()
 
 
 # region oldcode

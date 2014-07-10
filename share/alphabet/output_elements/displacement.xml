@@ -1,0 +1,24 @@
+<!-- This physical element sets fixed points -->
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml"
+              name="displacement"
+              category="output"
+              quantity="single">
+
+
+    <description></description>
+
+    <parameters>
+        <arg name="id" physical="str">
+            <meta key="doc" value="Set time."/>
+        </arg>
+        <arg name="timestep" physical="int">
+            <meta key="doc" value="Set indices of fixed points separated by spaces."/>
+        </arg>
+    </parameters>
+</msml:element>
+
+
+
+

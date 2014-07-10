@@ -25,14 +25,10 @@
 // ****************************************************************************
 #include "TetgenOperators.h"
 #include <iostream>
-
 #include <string.h>
-
-
 #include <stdio.h>
 
 #include "vtkUnstructuredGrid.h"
-
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
@@ -69,41 +65,22 @@
 #include <vtkUnstructuredGridGeometryFilter.h>
 #include <vtkUnstructuredGridWriter.h>
 
-
 #include "tetgen.h"
 
 
 using namespace std;
 
-namespace MSML
-{
+namespace MSML {
+    namespace Tetgen {
 
-
-// ****************************************************************************
-// Constructor / Destructor
-// ****************************************************************************
-TetgenOperators::TetgenOperators()
-{
-
-}
-
-TetgenOperators::~TetgenOperators()
-{
-	//cleanup here
-}
-
-// ****************************************************************************
-// Methods
-// ****************************************************************************
-
-std::string TetgenOperators::CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary)
+std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary)
 {
 	std::cout<<"Creating volume mesh with Tetgen...";
 	CreateVolumeMesh(infile.c_str(), outfile.c_str(), preserveBoundary, false);
 	return outfile;
 }
 
-bool TetgenOperators::CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic )
+bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic )
 {
 
 	vtkSmartPointer<vtkPolyDataReader> reader =
@@ -135,7 +112,7 @@ bool TetgenOperators::CreateVolumeMesh(const char* infile, const char* outfile, 
 	return true;
 }
 
-bool TetgenOperators::CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic )
+bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic )
 {
 	tetgenio in, out;
 
@@ -276,5 +253,6 @@ bool TetgenOperators::CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGr
 
 
 	return true;
+}
 }
 }

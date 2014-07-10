@@ -70,7 +70,7 @@ int main( int argc, char * argv[])
     	std::cout<<" boundary preserve on";
     std::cout<<"\n";
 
-    TetgenOperators::CreateVolumeMesh(surfaceMesh.c_str(),volumeMesh.c_str(), preserveBoundary, false );
+    Tetgen::CreateVolumeMesh(surfaceMesh.c_str(),volumeMesh.c_str(), preserveBoundary, false );
 
 
 

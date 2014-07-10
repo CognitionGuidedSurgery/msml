@@ -4,22 +4,27 @@
 	xsi:schemaLocation="http://sfb125.de/msml" name="apply-dvf">
 
 	<runtime>
-		<python module="msml.ext.misc" function="ApplyDVF" />
+		<python module="msml.ext.misc" function="ApplyDVFPython" />
 	</runtime>
 
 	<input>
-		<arg name="ApplyDVF" type="image" format="file.vtk" />
+		<arg name="referenceImage" logical="Image3D" physical="VTK" />
 	</input>
 
 	<output>
-		<arg name="outputDefImage" type="image" format="file.vti" />
+		<arg name="outputDefImage" logical="Image3D" physical="VTI" />
 	</output>
 
 
 	<parameters>
-		<arg name="dvf" type="file.vtk" />
-		<arg name="multipleDVF" type="bool" />
-		<arg name="reverseDirection" type="bool" />
+      <arg name="outputDefImageFilename" physical="str" optional="true">
+          <meta key="doc">
+              Optional input filename for the output.
+          </meta>
+    </arg>
+		<arg name="dvf" physical="VTK" />
+		<arg name="multipleDVF" physical="bool" />
+		<arg name="reverseDirection" physical="bool" />
 	</parameters>
 </msml:operator>
 

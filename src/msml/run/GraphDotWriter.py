@@ -55,7 +55,7 @@ from collections import namedtuple
 def kvstr(dic, noquote=False):
     a = '%s=%s' if noquote else '%s="%s"'
     return ', '.join(itertools.starmap(
-        lambda k, v:  a % (k, v.replace('"', "'")),
+        lambda k, v:  a % (k, str(v).replace('"', "'")),
         dic.items()))
 
 N = namedtuple("NodeTP", "name spec")
@@ -109,7 +109,7 @@ def todot_exporter(exporter):
 
 @todot.when_type(MSMLVariable)
 def todot_var(obj):
-    return {'label': obj.value or obj.name, 'color': 'green', 'shape':'parallelogram'}
+    return {'label': "{%s|%s}" % (obj.name,obj.value) , 'color': 'green', 'shape':'record'}
 
 @todot.when_type(Reference)
 def todot_ref(ref):

@@ -1,0 +1,20 @@
+<msml:operator
+        xmlns:msml="http://sfb125.de/msml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://sfb125.de/msml"
+        name="add"
+        >
+    <runtime>
+        <python module="operator" function="add" />
+    </runtime>
+
+    <input>
+        <arg name="a" physical="int" logical="Scalar" />
+        <arg name="b" physical="int" logical="Scalar" />
+    </input>
+
+    <output>
+        <arg name="o" physical="int" />
+    </output>
+
+</msml:operator>

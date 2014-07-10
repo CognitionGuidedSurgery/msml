@@ -2,17 +2,17 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="LiverXSTet4.vtk" type="linearMesh"
-             format="file.vtk"/>
+        <var name="vol_mesh" value="LiverXSTet4.vtk" logical="linearMesh"
+             physical="file.vtk"/>
     </variables>
-    
-    
+
+
     <scene>
         <object id="liver">
             <mesh>
                 <linearTet id="liver" mesh="${vol_mesh}"/>
             </mesh>
-            
+
             <sets>
                 <nodes>
                     <indexgroup id="constraintRegion" indices="${bottomToIndexGroup}"/>
@@ -24,30 +24,32 @@
                     <indexgroup id="constraintRegionSurfaces" indices="${bottomToIndexGroup}"/>
                 </surfaces>
             </sets>
-            
+
 
             <material>
-                <region id="liverMaterial">
-                    <!--<materialRegion name=""> -->
-                    <indexgroup indices="${bodyToIndexGroup}"/>
-                    <linearElastic youngModulus="3000" poissonRatio="0.49"/>
-                    <mass density="0.6"/>
+                <region id="liverMaterial" indices="${bodyToIndexGroup}">
+                    <linearElasticMaterial youngModulus="3000" poissonRatio="0.49"/>
+                    <mass name="abc" massDensity="0.6"/>
                 </region>
             </material>
 
             <constraints>
-               <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}" />               
+                <constraint>
+                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+                </constraint>
             </constraints>
 
             <output>
-                <displacementOutputRequest id="LiverXSTet4Def" timestep="1"/> 
+                <displacement id="LiverXSTet4Def" timestep="1"/>
             </output>
         </object>
     </scene>
 
-    <workflow>    
-        	<boxROIToIndexOperator id="bodyToIndexGroup" box="-76 76 -609 133 245 -417" mesh="${vol_mesh}" select="elements"/>	         
-			<boxROIToIndexOperator id="bottomToIndexGroup" box="27.1 81.5 -599 99 208.1 -484" mesh="${vol_mesh}" select="points"/>
+    <workflow>
+        <boxROIToIndexOperator id="bodyToIndexGroup" box="-76 76 -609 133 245 -417" mesh="${vol_mesh}"
+                               select="elements"/>
+        <boxROIToIndexOperator id="bottomToIndexGroup" box="27.1 81.5 -599 99 208.1 -484" mesh="${vol_mesh}"
+                               select="points"/>
     </workflow>
 
 
@@ -55,7 +57,7 @@
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="100" gravity="0 0 -9.81"/>
+            <step name="initial" dt="0.05" iterations="100"/>
         </simulation>
     </environment>
 

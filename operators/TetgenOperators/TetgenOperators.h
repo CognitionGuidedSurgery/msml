@@ -40,57 +40,56 @@
 
 
 using namespace std;
-//using namespace MediAssist;
-
-
 
 
 // ****************************************************************************
 // TetgenOperators
 // ****************************************************************************
 
+/*MSMLDOC
+
+TetgenOperators
+===============
+
+.. cpp:namespace:: MSML::Tetgen
+
+Weit hinten, hinter den Wortbergen, fern der Länder Vokalien und Konsonantien leben die Blindtexte. Abgeschieden wohnen sie in Buchstabhausen an der Küste des Semantik, eines großen Sprachozeans. Ein kleines Bächlein namens Duden fließt durch ihren Ort und versorgt sie mit
+Weit hinten, hinter den Wortbergen, fern der Länder Vokalien und Konsonantien leben die Blindtexte. Abgeschieden wohnen sie in Buchstabhausen an der Küste des Semantik, eines großen Sprachozeans. Ein kleines Bächlein namens Duden fließt durch ihren Ort und versorgt sie mit
+
+See: :py:mod:`msml.ext.tetgen`
+
+*/
 
 namespace MSML {
+    namespace Tetgen {
+    /*MSMLDOC
+        .. cpp:function:: bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic )
+
+          :param const char* infile:  Weit hinten, hinter den Wortbergen,
+          :param const char* outfile: Weit hinten, hinter den Wortbergen,
+          :param bool preserveBoundary: Weit hinten, hinter den Wortbergen,
+          :param bool isQuadratic: Weit hinten, hinter den Wortbergen,
 
 
+    */
 
+    LIBRARY_API bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic );
 
-class TetgenOperators
-{
-public:
-	// constructor
-	TetgenOperators();
+    /*MSMLDOC
+        .. cpp:function:: std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary)
 
-	// destructor
-	~TetgenOperators();
+            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
+    */
 
-	// standard class typedefs
+    LIBRARY_API std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary);
 
+    /*MSMLDOC
+        .. cpp:function:: bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
 
-	// public methods
-	LIBRARY_API static bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic );
-	LIBRARY_API static std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary);
-	LIBRARY_API static bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
-
-	// member access
-
-
-protected:
-
-
-
-private:
-	// private methods
-
-
-	// private attributes
-
-
-
-
-
-};
-
+            Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
+    */
+    LIBRARY_API bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic );
+    } //end namespace Tetgen
 } // end namespace MediAssist
 
 

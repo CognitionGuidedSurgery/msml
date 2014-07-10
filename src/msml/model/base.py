@@ -5,9 +5,9 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -33,17 +33,13 @@
 """
 
 from collections import namedtuple
-
 import re
 import warnings
+
 from path import path
 
-from .exceptions import *
-
-
-
-
-# from msml.model.alphabet import Argument cycle
+from msml.exceptions import *
+from ..sorts import conversion
 from msml.sorts import get_sort
 
 
@@ -54,48 +50,29 @@ __date__ = "2014-01-25"
 def xor(l):
     """
     xor on iterables
+
     >>> l1 = [0, 1 , 0]
     >>> l2 = [1, 1 , 0]
     >>> l3 = [1, 1 , 1]
     >>> xor(l1)
     True
-
     >>> xor(l2)
     False
-
     >>> xor(l3)
     True
+
+
+    :returns: True if an odd numbers of True values within the ``l``
     """
-    return reduce(lambda x,y: x ^ y,map(bool, l), False)
-
-Argument = namedtuple('Argument', 'name,format,type,required')
-
-
-class struct(dict):
-    def __getattr__(self, attr):
-        a = self[attr]
-        if isinstance(a, dict):
-            return struct(a)
-        return a
-
-    #    __getattr__= dict.__getitem__
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
-
-
-def structure(name, field_names):
-    class _allset(object):
-        def __init__(self, **kwargs):
-            self.__dict__.update(kwargs)
-
-    return type(name, (_allset,), {f: None for f in field_names.split('[ ,]')})
-
-
-#Edge = namedtuple("Edge", "inarg outarg");
+    return reduce(lambda x, y: x ^ y, map(bool, l), False)
 
 
 class MSMLFile(object):
-    """
+    """Main model of this project.
+
+    It holds the datastructure for an whole file.
+    Consists of variables, workflow, scene and environment settings.
+    It provides function for validation and reference bind between workflow, scene and variables.
 
     """
 
@@ -115,24 +92,43 @@ class MSMLFile(object):
 
     @property
     def variables(self):
+        """
+        :type: dict[str, MSMLVariable]
+        :return:
+        """
         return self._variables
 
     @property
     def workflow(self):
+        """
+        :type: Workflow
+        :return:
+        """
         return self._workflow
 
     @property
     def scene(self):
+        """
+        :type: list[ SceneObject ]
+        :return:
+        """
         return self._scene
 
     @property
     def env(self):
+        """
+        :type: MSMLEnvironment
+        :return:
+        """
         return self._env
 
     @property
     def output(self):
+        """
+        :type: list[ObjectElement]
+        :return:
+        """
         return self._output
-
 
     @property
     def exporter(self):
@@ -143,28 +139,61 @@ class MSMLFile(object):
         self._exporter = exp
 
     def exists_var(self, name):
+        """checks if variable with ``name`` exists
+
+
+        :param name: name of a variable
+        :type name: str
+
+        :return:
+        :rtype: bool
+        """
         return name in self._variables
 
     def get_var(self, name):
+        """ returns a variable with name if it exists
+
+        :param name:
+        :return:
+        """
         return self._variables[name]
 
     def validate(self, alphabet=None):
+        """validates the given MSMLFile.
+        Delegate this to his children.
+
+        :param alphabet:
+        :rtype: bool
+        :return:
+        """
         if not alphabet:
             import msml.env
 
-            alphabet = msml.env.current_alphabet
+            alphabet = msml.env.CURRENT_ALPHABET
 
-        self._workflow.bind_operators(alphabet)
-        self._workflow.link(alphabet, self)
+        b = all(call_method_list(self.scene, "bind", alphabet))
 
-        # exporter can link his variables against msml file
-        self._exporter.link()
-
-        self._workflow.check_arguments()
-        return True
+        self.workflow.bind_operators(alphabet)
+        self.workflow.link(alphabet, self)
+        call_method_list(self.scene, "validate")
+        self.exporter.link()
+        a = self.workflow.validate()
+        return a and b
 
     def lookup(self, ref, outarg=True):
-        "lookup a reference, consists of task id and output arg"
+        """Lookup a ``reference``.
+        In ``reference`` the ``task`` has to be set. The user get a warnung if the reference is ambiguous.
+        The lookup order is: task, variable, exporter.
+
+        :param ref: an open reference 
+        :type ref: Reference
+        :param outarg: specifies to look for an input (+ parameters) or output slot
+        :type outarg: bool
+        :return: the closed reference or None
+        :rtype: Reference or None
+        """
+
+
         def lookup_exporter():
             return self._exporter.lookup(ref, outarg)
 
@@ -175,7 +204,7 @@ class MSMLFile(object):
                 op = task.operator
                 args = op.output if outarg else op.input + op.parameters
                 if ref.slot:
-                    #choose slot
+                    # choose slot
                     return task, args[ref]
                 else:
                     # choose first from output/input
@@ -196,8 +225,8 @@ class MSMLFile(object):
 
         first_true = looked_up[0] or looked_up[1] or looked_up[2]
         if not xor(looked_up):
-            #raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
-            #relaxed /weigl
+            # raise MSMLError("reference %s is ambigous. Found: %s" % (ref, looked_up))
+            # relaxed /weigl
             warnings.warn("reference %s is ambigous. Found: %s" % (ref, looked_up))
 
         if not first_true:
@@ -207,16 +236,25 @@ class MSMLFile(object):
 
 
     def add_variable(self, var):
-        self._variables[var.name] = var;
+        """adds the given ``var`` to the list of variables
+        This call replaces a variable with the same name.
+        :param var: a new variable
+        :type var: MSMLVariable
+        :return: None
+        """
+        self._variables[var.name] = var
 
     def find_simulation_step(self, name):
+        """Tries to find the simulation step with the given `name`
+
+        :param name: name of the simulation step
+        :type name: str
+        :rtype: NoneType or msml.model.base.Environment.Simulation.Step
+        """
         name = name.strip("{$}")
-        for env in self.env['environment']:
-            if 'simulation' in env:
-                for sstep in env['simulation']:
-                    if sstep['@name'] == name:
-                        return sstep
-        #TODO WARNING! sim step not found
+        for step in self.env.simulation:
+            if step.name == name:
+                return step
         return None
 
 
@@ -224,7 +262,18 @@ class Workflow(object):
     def __init__(self, tasks=[]):
         self._tasks = {t.id: t for t in tasks}
 
+    @property
+    def tasks(self):
+        """
+        :type: dict[str,Task]
+        :return:
+        """
+        return self._tasks
+
     def add_task(self, task):
+        if task.id in self._tasks:
+            report("The identifier (id attribute) of the tasks have to be disjoint.","E",696)
+
         self._tasks[task.id] = task
 
     def lookup(self, id):
@@ -235,23 +284,65 @@ class Workflow(object):
             t.bind(alphabet)
 
     def link(self, alphabet, msmlfile):
+        """Link all tasks input and paramters slots to output slots and variables form the given msml file.
+
+        :param alphabet: the current alphabet
+        :type alphabet: msml.model.alphabet.Alphabet
+        :param msmlfile: the msmlfile, to which the workflow belongs
+        :type msmlfile: MSMLFile
+        :return:
+        """
         for t in self._tasks.values():
             t.link(alphabet, msmlfile)
 
-    def check_arguments(self):
-        "checks if all tasks match the operator definition"
-        return all(map(lambda x: x.validate(), self._tasks.values()))
+    def validate(self):
+        """checks if all tasks match the operator definition"""
+
+        import operator, collections
+        attrid = operator.attrgetter("id")
+        ids = list(map(attrid, self._tasks.values()))
+        idcntr = collections.Counter(ids)
+        unique_ids = max(idcntr.values()) > 1
+
+        if unique_ids:
+            report("The identifier (id attribute) of the tasks have to be disjoint.","E",696)
+
+        return all(map(lambda x: x.validate(), self._tasks.values())) and unique_ids
 
 
 class MSMLEnvironment(object):
-    """<solver linearSolver="iterativeCG" processingUnit="CPU"
+    """
+
+    .. code-block: xml
+
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
             <step name="initial" dt="0.05" iterations="100"/>
-        </simulation>"""
+        </simulation>
+
+    """
 
     class Simulation(list):
+        """
+
+        ..code-block::
+
+            <simulation>
+
+            </simulaiton>
+
+        """
+
         class Step(object):
+            """
+
+            .. code-block::
+
+                <step name="" dt="" iterations="" />
+
+            """
+
             def __init__(self, name="initial", dt=0.05, iterations=100):
                 self.name = name
                 self._dt = None
@@ -276,60 +367,108 @@ class MSMLEnvironment(object):
             def iterations(self, iterations):
                 self._iterations = int(iterations)
 
-
         def __init__(self, *args):
             list.__init__(self, *args)
 
         def add_step(self, name="initial", dt=0.05, iterations=100):
+            """Add a new step to the Simlation
+            :param name: step name
+            :type str:
+            :param dt: delta T
+            :type dt: float
+            :param iterations: number of iterations
+            :type iterations: int
+            :return:
+            """
             self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
 
     class Solver(object):
+        """Represents the solver xml tag.
+        """
+
         def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler",
                      preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2):
             self.linearSolver = linearSolver
+            """Linear Solver
+            :type: str
+            """
             self.processingUnit = processingUnit
+            """CPU or GPU
+            :type: str
+            """
             self.timeIntegration = timeIntegration
-
+            """time integration step
+            :type: str
+            """
             self.preconditioner = preconditioner
+            """hiflow specific, pre conditioner
+            :type: str
+            """
+
             self.dampingRayleighRatioMass = dampingRayleighRatioMass
+            """hiflow specific
+            :type: str
+            """
             self.dampingRayleighRatioStiffness = dampingRayleighRatioStiffness
+            """hiflow specific
+            :type: str
+            """
 
     def __init__(self):
         self.simulation = MSMLEnvironment.Simulation()
         self.solver = MSMLEnvironment.Solver()
 
 
+from ..log import report
+
+
 class MSMLVariable(object):
-    def __init__(self, name, format=None, typ=None, value=None):
+    """Represents an MSMLVariable.
+    An execution of an variable results in setting the appropriate value into
+     the exectioner's memory.
+    """
+
+    def __init__(self, name, physical=None, logical=None, value=None):
+        """creates a variable with the given ``name``, ``logical`` and ``physical`` type and ``value``
+
+        The value gets automatic transformed into the physical type.
+
+        If no physical type is given, it will determined by the value.
+
+        :param name:
+        :type name: str
+        :param physical:
+        :type physical: str or type
+        :param logical:
+        :param value:
+        :type value: object
+        :return:
+        """
         self.name = name
-        self.format = format
-        self.type = typ
+        self.physical_type = physical
+        self.logical_type = logical
         self.value = value
-        self.sort = None
 
-        self._find_sort()
+        if not self.physical_type and self.value is not None:
+            self.physical_type = type(self.value)
 
-    def _find_sort(self):
-        if self.value is not None:
-            self.type = type(self.value)
-            self.sort = self.type
-        elif self.format is not None and self.type is not None:
-            self.sort = get_sort(self.format + self.type)
-        elif self.format:
-            self.sort = get_sort(self.format)
-        elif self.type:
-            self.sort = get_sort(self.type)
-        else:
-            self.sort = get_sort('*')
+        if not self.physical_type and self.value is None:
+            s = 'Try to initialize a variable without physical type and value'
+            report(s, 'F', 666)
+            raise MSMLError(s)
 
-    def _dot(self):
-        return {'label': self.name, 'color': 'orange'}
+        self.sort = get_sort(self.physical_type, self.logical_type)
+        if not isinstance(self.value, self.sort.physical) and self.value is not None:
+            report("Need convert value of %s" % self, 'I', 6161)
+            from_type = type(self.value)
+            converter = conversion(from_type, self.sort)
+            self.value = converter(self.value)
 
     def __str__(self):
-        return "Var '%s' (%s)" % (self.name, self.sort)
+        return "<var %s : %s = %s>" % (self.name, self.sort, self.value)
 
     def __repr__(self):
-        return "MSMLVariable(%s,%s,%s)" % (self.name, self.format, self.type)
+        return "MSMLVariable(%s,%s,%s)" % (self.name, self.physical_type, self.logical_type)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -364,11 +503,34 @@ class MSMLFileVariable(object):
 
 
 class Constant(object):
+    """A constant value within attribute values.
+
+    .. note::
+
+       ``<op-name a="c">``
+
+       The attribute ``a`` will be coded as an :py:class:`Constant` with value ``c``.
+
+    This class will be created py :py:func:`parse_attribute_value`
+
+    .. seealso::
+
+        :py:func:`parse_parse_attribute_value`
+
+    """
+
     def __init__(self, value):
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self):
+        """the value of this constant, **readonly**"""
+        return self._value
 
 
 class Reference(object):
+    """Describes a connection from an *input slot* to an *output slot*.
+    """
     ref = namedtuple("ref", "task,name,arginfo")
 
     def __init__(self, task, out=None):
@@ -380,19 +542,29 @@ class Reference(object):
 
     @property
     def linked(self):
-        return self.linked_to and self.linked_from
+        """ Returns True iff. the Reference is closed iff. input and output slot found and set.
+        :return: bool
+        """
+        return self.linked_to is not None and self.linked_from is not None
 
-    def link_from_task(self, task, outarg):
-        self.linked_from = Reference.ref(task, outarg.name, outarg)
+    @property
+    def valid(self):
+        """ Returns True iff. the input and output slot are physical type compatible
+        :return: bool
+        """
+        return self.linked and self.linked_from.arginfo.sort <= self.linked_to.arginfo.sort
+
+    def link_from_task(self, task, slot):
+        """sets the outgoing task and slot"""
+        self.linked_from = Reference.ref(task, slot.name, slot)
 
     def link_from_variable(self, variable):
+        """sets the outgoing slot from an variable"""
         self.linked_from = Reference.ref(variable, variable.name, variable)
 
-    def link_to_task(self, task, inarg):
-        self.linked_to = Reference.ref(task, inarg.name, inarg)
-
-    def validate(self):
-        pass
+    def link_to_task(self, task, slot):
+        """set the ingoging slot"""
+        self.linked_to = Reference.ref(task, slot.name, slot)
 
     def __str__(self):
         def _id(a):
@@ -402,13 +574,21 @@ class Reference(object):
                 return a.name
 
         if self.linked:
-            return "{Ref+: %s.%s -> %s.%s}" % (
-                _id(self.linked_from.task), self.linked_from.name, _id(self.linked_to.task), self.linked_to.name)
+            return "<Reference+: %s -> %s>" % (self.linked_from.arginfo, self.linked_to.arginfo)
+
         else:
-            return "{Ref-: %s.%s}" % (self.task, self.slot)
+            return "<Reference-: %s.%s>" % (self.task, self.slot)
 
 
 def parse_attribute_value(value):
+    """Parse attribute values:
+    >>> parse_attribute_value("${abc}") # => Reference
+    >>> parse_attribute_value("abc") # => Constant
+
+    :param value: value of a xml attribute
+    :type value: str
+    :return: Constant | Reference
+    """
     if isinstance(value, str):
         expr = re.match(r'\${([^.]+)(\.[^.]+)?}', value)
         if expr:
@@ -417,155 +597,178 @@ def parse_attribute_value(value):
                 b = expr.group(2).strip(".")
             except:
                 b = None
-            return Reference(a,b)
+            return Reference(a, b)
     return Constant(value)
 
 
 def random_var_name():
-    import random
+    """generate a random variable name
+    :return: str
+    """
+    import msml.generators
 
-    return "_gen_%d_" % random.randint(100, 999)
+    return msml.generators.generate_variable()
+
+
+def is_generated_name(name):
+    """True iff. the given `name` is a generated name
+    :param str name:
+    :return: bool
+    """
+    return name.startswith("_gen_")
 
 
 class Task(object):
+    """A task object is a node in the execution graph.
+    It holds his input arguments and the corresponding operator from the alphabet.
+    It can be called with an \*\*kwargs argument of the input parameters form ``self.arguments``.
+    """
     ID_ATTRIB = "id"
 
     def __init__(self, name, attrib):
+        """
+
+        :type name: str
+        :param attrib: has to contain the ``'id'`` value of this task
+        :type attrib: dict[str, object]
+        """
         self.name = name
-        self.id = attrib[Task.ID_ATTRIB]
-        del attrib[Task.ID_ATTRIB]
+        self._id = attrib.pop(Task.ID_ATTRIB, None)
 
         self.attributes = {k: parse_attribute_value(value) for k, value in attrib.items()}
         self.operator = None
+
+        self.sub_tasks = None
         self.arguments = {}
+
+        self._bound = False
+
+    @property
+    def bound(self):
+        return self._bound
+
+    @property
+    def id(self):
+        """``id`` of this task if set, If none ``ìd`` is set, it will generate one.
+        :returns:
+        :rtype: str
+        """
+        if not self._id:
+            self._id = random_var_name() + self.name
+        return self._id
+
+
+    @id.setter
+    def id(self, v):
+        self._id = v
+
 
     def __str__(self):
-        return "{Task %s (%s)}" % (self.id, self.name)
+        return "<Task %s (%s)>" % (self.id, self.name)
 
-    def _dot(self):
-        i = ["%s : %s" % (k, str(v))
-             for k, v in self.arguments.items()]
-
-        o = ("%s :  %s" % (k, v)
-             for k, v in self.operator.output.items())
-
-        LABEL_TPL = """<
-            <TABLE>
-            <tr><td>ID</td>
-                <td><B>{$ id}</B></td>
-            </tr>
-            <tr><td>OP</td>
-                <td><I>{$ operator}</I></td>
-            </tr>
-            {for o in input}
-                <tr><td>IN</td><td>{$ o}</td></tr>
-            {end}
-
-            {for o in output}
-                <tr><td>OUT</td><td>{$ o}</td></tr>
-            {end}
-            </TABLE>
-            >
-        """
-
-        import msml.titen
-
-        TPL = msml.titen.titen(LABEL_TPL)
-        return {'label': TPL(id=self.id, operator=self.operator.name, input=i, output=o)}
 
     def bind(self, alphabet):
+        """binds this task to an operator from the given ``alphabet``
+        """
         self.operator = alphabet.get(self.name)
+        if (self.operator is None):
+            raise BindError("unknown operator:{name}".format(name=self.name))
+
+        # if this tasks has sub tasks.
+        if self.sub_tasks:
+            i = 0
+            # align input and sub_tasks, skip already set inputs
+            for ipt in self.operator.input:
+                if ipt in self.attributes:  # input is set by user
+                    continue
+
+                self.attributes[ipt] = Reference(self.sub_tasks[i].id)
+                i += 1
+
 
     def link(self, alphabet, msmlfile):
-        self.arguments = {}
-        for key, value in self.attributes.items():
-            if isinstance(value, Reference):
-                a = msmlfile.lookup(value)
-                if a:
-                    outtask, outarg = a
-                    value.link_from_task(outtask, outarg)
-                    try:
-                        if key in self.operator.input:
-                            value.link_to_task(self, self.operator.input[key])
-                        else:
-                            value.link_to_task(self, self.operator.parameters[key])
-                    except KeyError, e:
-
-                        f = str(a)
-                        t = str(self.name)
-                        i = key
-                        op = str(self.operator)
-                        inputs = ",".join(map(str, self.operator.acceptable_names()))
-
-                        raise BindError(
-                            "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
-                                start=f, target=t, inputname=i, operator=op, inputs=inputs
-                            ))
-                    except AttributeError:
-                        raise MSMLError(
-                            "the operator for Task {target} is {operator} ".format(
-                                target=self.name, operator=self.operator
-                            ))
-
-                    self.arguments[key] = value
-                else:
-                    warnings.warn("Lookup after %s does not succeeded" % value)
-            elif isinstance(value, Constant):
-                var = MSMLVariable(random_var_name(), value=value.value);
-                msmlfile.add_variable(var)
-                ref = Reference(var.name, None)
-                outtask, outarg = msmlfile.lookup(ref)
-                ref.link_from_task(outtask, outarg)
-
-                try:
-                    #ref.link_to_task(self, self.operator.input[key])
-                    if key in self.operator.input:
-                        ref.link_to_task(self, self.operator.input[key])
-                    else:
-                        ref.link_to_task(self, self.operator.parameters[key])
-                except KeyError, e:
-                    f = str(var)
-                    t = str(self.name)
-                    i = key
-                    op = str(self.operator)
-                    inputs = ",".join(map(str, self.operator.acceptable_names()))
-
-                    raise BindError(
-                        "you try to connect {start} to Task '{target}' but slot {inputname} is unknown for {operator} (Inputs {inputs})".format(
-                            start=f, target=t, inputname=i, operator=op, inputs=inputs
-                        ))
-
-                self.arguments[key] = ref
-            else:
-                raise MSMLError("no case %s : %s for attribute %s in %s " % (value, str(type(value)), key, self))
+        """links the input and parameter arguments to the output slots
+        """
+        slots = dict(self.operator.input)
+        slots.update(self.operator.parameters)
+        self.arguments = link_algorithm(msmlfile, self.attributes, self,  slots)
 
     def validate(self):
         if not self.operator:
             raise BindError("self.operator is not bound to an operator (call Workflow.bind_operator?)")
 
-            # if self.id:
-            #    raise MSMLError("Task does not have an <id> attribute")
+        if not self.id:
+            raise MSMLError("Task does not have an <id> attribute")
 
-            # for arg in self.arguments.values():
-            #    if arg.inarg.required and arg.outarg is None:
-            #        raise MSMLError("task for operator %s misses attribute %s " % (self.operator.name, arg.attribute))
+        for name, slot in self.operator.input.items():
+            if name not in self.attributes:
+                report("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name), 'E')
 
-            #        for k in self.attrib:
-            #            if k not in self.operator and k != Task.ID_ATTRIB:
-            #                raise MSMLError("attrib %s is unknown for operator %s" % (k, self.operator.name))
+        for name, slot in self.operator.parameters.items():
+            if name not in self.attributes:
+                report("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name), 'E')
+
+        for k in self.attributes:
+            if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
+                report("attrib %s is unknown for operator %s in task %s" % (
+                    k, self.operator.name, self.id), 'I')
 
     def get_default(self):
         pass
 
 
+
+def link_algorithm(msmlfile, attributes, node, slots):
+    arguments= {}
+    for key, value in attributes.items():
+        try:
+            slot = slots[key]
+        except KeyError as e:
+            report("%s is not a valid slot for %s" %(key, node), "F", 610)
+            raise BaseException()
+
+        if isinstance(value, Constant):
+            # get type and format from input/parameter
+            var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
+            msmlfile.add_variable(var)
+            value = Reference(var.name, None)
+
+
+        a = msmlfile.lookup(value)
+        if a:
+            outtask, outarg = a
+            value.link_from_task(outtask, outarg)
+            value.link_to_task(node, slot)
+            arguments[key] = value
+        else:
+            report("Lookup after %s does not succeeded" % value, 'E')
+
+    return arguments
+
+
+
 class SceneObjectSets(object):
+    """
+
+    """
+
     def __init__(self, elements=None, nodes=None, surfaces=None):
         self.elements = elements
         self.nodes = nodes
         self.surfaces = surfaces
 
 
+def call_method_list(seq, method, *args):
+    return map(lambda element: getattr(element, method)(*args), seq)
+
+
 class SceneObject(object):
+    """
+
+    """
+
     def __init__(self, oid, mesh=None, sets=SceneObjectSets(), material=None, constraints=None):
         self._id = oid
         self._mesh = mesh if mesh else Mesh()
@@ -573,6 +776,28 @@ class SceneObject(object):
         self._constraints = constraints if constraints else list()
         self._sets = sets
         self._output = list()
+
+    def bind(self, alphabet):
+        """
+
+        :return:
+        """
+        call_method_list(self.material, 'bind', alphabet)
+        call_method_list(self.constraints, 'bind', alphabet)
+        call_method_list(self.output, 'bind', alphabet)
+
+    def validate(self):
+        """
+        :return:
+        :rtype: bool
+        """
+
+        a = self.mesh.validate()
+        b = call_method_list(self.material, 'validate')
+        c = call_method_list(self.constraints, 'validate')
+        d = call_method_list(self.output, 'validate')
+
+        return all([a] + b + c + d)
 
     @property
     def id(self):
@@ -592,6 +817,10 @@ class SceneObject(object):
 
     @property
     def mesh(self):
+        """
+        :type: Mesh
+        :return:
+        """
         return self._mesh
 
     @mesh.setter
@@ -632,21 +861,25 @@ class SceneObject(object):
         self._material = mat
 
 
-from abc import abstractmethod
-
-
-class SceneGroup(object):
-    "unused"
-
-    @abstractmethod
-    def __init__(self):
-        pass
-
-
 class ObjectElement(object):
+    """This class describe an instance of an :py:class:`ObjectAttribute`
+
+    """
+
     def __init__(self, attrib={}, meta=None):
         self.attributes = attrib
+        """a dictionary of the given xml attributes
+        :type: dict
+        """
         self.meta = meta
+        """the given ObjectAttribute template
+        :type: ObjectAttribute
+        """
+
+        if 'id' not in self.attributes:
+            import msml.generators
+
+            self.attributes['id'] = msml.generators.generate_identifier()
 
     def __getattr__(self, item):
         return self.get(item, None)
@@ -655,21 +888,40 @@ class ObjectElement(object):
         if not alphabet:
             import msml.env
 
-            alphabet = msml.env.current_alphabet
+            alphabet = msml.env.CURRENT_ALPHABET
 
         self.meta = alphabet.get(self.__tag__)
 
     def validate(self):
-        if self.meta is None:
-            raise MSMLError("for %s is no meta defined" % self.__tag__)
+        """
 
-        for key, value in self.attributes:
+        :return:
+        """
+        b, c = True, True
+        if self.meta is None:
+            raise MSMLError("for %s is no meta defined. The element %s is not part of the givne MSML Alphabet" % (
+                self.__tag__, self.__tag__))
+
+        for key, value in self.attributes.items():
+            if key == "__tag__":
+                continue
+
             if key not in self.meta.parameters:
-                warnings.warn(MSMLWarning,
-                              "Paramter %s of Element %s is not specify in definition." % (key, self.meta.name))
+                report("Parameter %s of Element %s is not specified in definition." % (key, self.meta.name), 'E')
+                b = False
+
+        for key, value in self.meta.parameters.items():
+            if key not in self.attributes and value.required:
+                report("Parameter %s of Definiton %s is not specified in msml file." % (key, self.id or self.meta.name),
+                       'F')
+                c = False
+
+        return b and c
 
     @property
     def tag(self):
+        """:return: the element (tag) name, this is the same as the `ObjectAttribute.name` in `self.meta`
+        """
         return self.attributes['__tag__']
 
     @tag.setter
@@ -685,6 +937,11 @@ class ObjectElement(object):
         self._meta = new
 
     def _get(self, attribute):
+        """
+
+        :param attribute:
+        :return:
+        """
         if attribute in self.attributes:
             return self.attributes[attribute]
         else:
@@ -693,6 +950,12 @@ class ObjectElement(object):
         raise KeyError("Could not find %s in ObjectElement attributes or a parameter default")
 
     def get(self, attribute, default=None):
+        """
+
+        :param attribute:
+        :param default:
+        :return:
+        """
         try:
             return self._get(attribute)
         except KeyError:
@@ -700,10 +963,26 @@ class ObjectElement(object):
 
 
 class ObjectConstraints(object):
+    """Constraints for a timestep (``for_step``)
+    """
+
     def __init__(self, name, forStep="initial"):
         self._name = name
         self._forStep = forStep
         self._constraints = []
+
+    def bind(self, alphabet):
+        """binds all constraints to the given ``alphabet``
+        :type alphabet: msml.model.alphabet.Alphabet
+        :return: None
+        """
+        call_method_list(self.constraints, 'bind', alphabet)
+
+    def validate(self):
+        """validates all constraints
+        :return: True iff. all constraints valid, and ``for_step`` is set
+        """
+        return all(map(lambda x: x.validate(), self.constraints))
 
     @property
     def index_group(self):
@@ -714,6 +993,10 @@ class ObjectConstraints(object):
 
     @property
     def name(self):
+        """
+        :type: str
+        :return:
+        """
         return self._name
 
     @name.setter
@@ -722,6 +1005,10 @@ class ObjectConstraints(object):
 
     @property
     def for_step(self):
+        """
+        :type: str
+        :return:
+        """
         return self._forStep
 
     @for_step.setter
@@ -730,6 +1017,10 @@ class ObjectConstraints(object):
 
     @property
     def constraints(self):
+        """
+        :type: list[ObjectElement]
+        :return:
+        """
         return self._constraints
 
     @constraints.setter
@@ -737,35 +1028,119 @@ class ObjectConstraints(object):
         self._constraints = v
 
     def add_constraint(self, *constraints):
+        """add ``constraints`` to this object
+        ;type constraints: ObjectElement
+        :param constraints:
+        :return:
+        """
         self._constraints += constraints
 
 
 class SceneSets(object):
-    def __init__(self, nodes=list(), surfaces=list(), elements=list()):
-        self.nodes = nodes
-        self.surfaces = surfaces
-        self.elements = elements
+    """Represents the sets with an :py:class:`SceneObject`
+    """
+
+    def __init__(self, nodes=None, surfaces=None, elements=None):
+        self.nodes = nodes or list()
+        self.surfaces = surfaces or list()
+        self.elements = elements or list()
 
 
 class IndexGroup(object):
+    """The indexgroup element
+
+    .. code-block:: xml
+
+        <indexgroup id="" indices="" />
+
+    """
+
     def __init__(self, id, indices):
         self.id = id
         self.indices = indices
 
 
 class Mesh(object):
-    def __init__(self, type="linear", id=None, mesh=None):
+    """Represent the given mesh within the <object> node:
+
+    .. code-block:: xml
+
+        <mesh>
+            <*type* id="" mesh="" />
+        <mesh>
+
+
+    """
+
+    def __init__(self, type="linear", id=None, value=None):
+        """
+        :param str type: type of the mesh (one of ``linear``, ``quadratic``)
+        :param str id: id of the mesh
+        :param str value: value of the mesh (a reference or a reference string)
+        """
         self.type = type
         self.id = id
-        self.mesh = mesh
+        self.value = value
+
+    @property
+    def mesh(self):
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
 
 
-class MaterialRegion(list):
-    def __init__(self, id, elements=None):
-        self.id = id
+class MaterialRegion(IndexGroup, list):
+    """Represents an material region from an MSMLFile within an SceneObject
+
+    .. code-block:: xml
+
+        <material>
+            <region id="" indices="">
+                [object elements]
+            </region>
+        </material>
+
+    .. seealso::
+
+       :py:class:`SceneObject`
+
+    """
+
+    def __init__(self, id, indices, elements=None):
+        IndexGroup.__init__(self, id, indices)
         list.__init__(self, elements if elements else [])
 
-    def get_indices(self):
-        for ele in self:
-            if ele.attributes['__tag__'] == 'indexgroup':
-                return ele
+    def bind(self, alphabet):
+        """binds all sub elements to the corresponding :py:class:`msml.model.alphabet.ObjectAttribute`
+
+        :param alphabet: the current alphabet
+        :type alphabet: msml.model.alphabet.Alphabet
+        :return: None
+        """
+        call_method_list(self, 'bind', alphabet)
+
+    def validate(self):
+        """
+        :type: bool
+        :return: True iff. all sub elements are valid and the region is valid.
+        """
+        b = self.indices is not None and self.indices != ""
+        if not b:
+            report("MaterialRegion has no id value", 'E')
+
+        a = self.indices is not None and self.indices != ""
+        if not a:
+            report("MaterialRegion %s has no indices" % self.id, 'E')
+        return a and b and all(map(lambda x: x.validate(), self))

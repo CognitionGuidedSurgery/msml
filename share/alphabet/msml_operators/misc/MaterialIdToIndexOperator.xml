@@ -1,20 +1,20 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="materialId-to-index">
-	<runtime>
-		<python module="msml.ext.misc" function="computeIndicesFromMaterialId" />
-	</runtime>
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="materialId-to-index">
+    <runtime>
+        <python module="msml.ext.misc" function="computeIndicesFromMaterialId"/>
+    </runtime>
 
-	<input>
-		<arg name="mesh" type="linearTetMesh" format="file.vtk" />
-	</input>
+    <input>
+        <arg name="mesh" logical="linearTetMesh" physical="vtk"/>
+    </input>
 
-	<output>
-		<arg name="indices" type="indexGroup" format="vector.int" />
-	</output>
+    <output>
+        <arg name="indices" logical="indexGroup" physical="vector.int"/>
+    </output>
 
-	<parameters>
-		<arg name="num" type="int" />
-    <arg name="type" type="string" />
-	</parameters>
+    <parameters>
+        <arg name="num" physical="int"/>
+        <arg name="type" physical="string"/>
+    </parameters>
 </msml:operator>

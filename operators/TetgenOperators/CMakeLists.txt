@@ -1,46 +1,47 @@
 PROJECT(TetgenOperators)
 
-SET(TetgenOperators_SRCS
-   TetgenOperators.h
-   TetgenOperators.cpp
-   )
+option(MODULES_TetgenOperators "Should TetgenOperators build?" "ON")
+
+################################################################################
+# Dependencies: 
+
+FIND_PACKAGE(TETGEN)
+
+################################################################################
+# Guard
+
+SET(TetgenOperators_ACTIVE "OFF")
+IF(NOT TETGEN_FOUND)  
+  message("TetgenOperators need TETGEN")
+  RETURN()
+ENDIF()
+
+
+################################################################################
+# TetgenOperators 
+
+SET(TetgenOperators_ACTIVE "ON" PARENT_SCOPE)
+MESSAGE("TetgenOperators: ENABLED and ACTIVE")
+
+INCLUDE_DIRECTORIES(${TETGEN_INCLUDE_DIRS})
+add_definitions(-DTETLIBRARY)
+
+SET(TetgenOperators_SRCS TetgenOperators.cpp)
 
 INCLUDE_DIRECTORIES(
   ${TetgenOperators_SOURCE_DIR}
   ${TetgenOperators_BINARY_DIR}
   ${TETGEN_INCLUDE_DIR}
-   ${PYTHON_INCLUDE_DIRS}
-  #${VCG_INCLUDE_DIR}
+  ${WRAPPER_INCLUDES}
   )
-  
-SET(TetgenOperatorsPython_SRCS
-       PythonWrappers.cpp
-   )
-#########################
-# Sets preprocessor variables
-#########################
 
-IF(WIN32 AND NOT CYGWIN)
-    ADD_LIBRARY(TetgenOperators STATIC ${TetgenOperators_SRCS})
-ELSE(WIN32 AND NOT CYGWIN)
-    ADD_LIBRARY(TetgenOperators SHARED ${TetgenOperators_SRCS})
-ENDIF(WIN32 AND NOT CYGWIN)
+SET(TetgenOperators_LIBS
+  ${VTK_LIBRARIES}
+  ${TETGEN_LIBRARIES}
+  ${Boost_LIBRARIES})
 
-ADD_LIBRARY(TetgenOperatorsPython SHARED ${TetgenOperatorsPython_SRCS})
-IF(WIN32 AND NOT CYGWIN)
-	SET_TARGET_PROPERTIES(TetgenOperatorsPython PROPERTIES SUFFIX ".pyd")
-ENDIF(WIN32 AND NOT CYGWIN)
-
-set_target_properties(TetgenOperatorsPython PROPERTIES PREFIX "")
-
-TARGET_LINK_LIBRARIES(TetgenOperators ${VTK_LIBRARIES}
-${TETGEN_LIBRARIES}
-)
-
-TARGET_LINK_LIBRARIES(TetgenOperatorsPython ${VTK_LIBRARIES}
-${TETGEN_LIBRARIES}
-${Boost_LIBRARIES}
-${PYTHON_LIBRARIES} 
-TetgenOperators
-)
-
+MSML_LIBRARY(
+  NAME TetgenOperators
+  SWIG_FILE tetgen.i 
+  SOURCES ${TetgenOperators_SRCS}
+  LIBRARIES ${TetgenOperators_LIBS})

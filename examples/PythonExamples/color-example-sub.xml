@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:msml xmlns:p="http://sfb125.de/msml">
+    <workflow>
+        <paraview id="pv">
+            <colormesh coloredMesh="liverTet4ColoredIni.vtk"
+                       mesh="ToColor/LiverXSTet4.vtk" />
+        </paraview>
+    </workflow>
+</p:msml>

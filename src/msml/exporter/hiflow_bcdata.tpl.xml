@@ -1,0 +1,25 @@
+<Param>
+{% if fc %}
+    <FixedConstraintsBCs>
+        <NumberOfFixedDirichletPoints>{{fc.nFDP}}</NumberOfFixedDirichletPoints>
+        <fDPoints>{{fc.fDPointsList}}</fDPoints>
+        <fDisplacements>{{fc.fDisplacementsList}}</fDisplacements>
+    </FixedConstraintsBCs>
+{% endif %}
+
+{% if dc %}
+    <DisplacementConstraintsBCs>
+        <NumberOfDisplacedDirichletPoints>{{dc.nDDP}}</NumberOfDisplacedDirichletPoints>
+        <dDPoints>{{dc.dDPointsList}}</dDPoints>
+        <dDisplacements>{{dc.dDisplacementsList}}</dDisplacements>
+    </DisplacementConstraintsBCs>
+{% endif %}
+
+{% if fp %}
+    <ForceOrPressureBCs>
+        <NumberOfForceOrPressureBCPoints>{{fp.nFoPBCPoints}}</NumberOfForceOrPressureBCPoints>
+        <ForceOrPressureBCPoints>{{fp.FoPBCPointsList}}</ForceOrPressureBCPoints>
+        <ForcesOrPressures>{{fp.FoPBCVectorsList}}</ForcesOrPressures>
+    </ForceOrPressureBCs>
+{% endif %}
+</Param>

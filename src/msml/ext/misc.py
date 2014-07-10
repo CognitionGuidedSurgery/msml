@@ -36,21 +36,10 @@ __date__ = "2014-01-28"
 
 from warnings import warn
 
-from msml.model.exceptions import MSMLUnknownModuleWarning
+from msml.exceptions import MSMLUnknownModuleWarning
 
 try:
-    import MiscMeshOperatorsPython as cpp
-    class VecUInt(cpp.VecUInt):
-        pass
-
-
-    class VecDouble(cpp.VecDouble):
-        pass
-
-    ApplyDVF = cpp.ApplyDVF
-    GenerateDVF = cpp.GenerateDVF
-
-
+    from MiscMeshOperatorsPython import *
 except ImportError, e:
     import sys
     warn("Could not import MiscMeshOperatorsPython. "
@@ -58,8 +47,6 @@ except ImportError, e:
          "Have you successfully compiled and installed it? "
          "Error is %s, Current sys.path: %s" % (e, sys.path),
          MSMLUnknownModuleWarning, 0)
-
-
 
 __all__ = ['colorMeshFromComparison',
            'colorMeshOperator',

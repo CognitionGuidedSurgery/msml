@@ -1,9 +1,36 @@
-__author__ = 'weigl'
+# region gplv3preamble
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
+#
+# MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
+#
+# If you use this software in academic work, please cite the paper:
+#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+#   Medicine Meets Virtual Reality (MMVR) 2014
+#
+# Copyright (C) 2013-2014 see Authors.txt
+#
+# If you have any questions please feel free to contact us at suwelack@kit.edu
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# endregion
 
 from __future__ import print_function
 
+__author__ = 'weigl'
+
 from lxml import etree
-from warnings import warn
 
 from .visitor import *
 import math
@@ -11,6 +38,7 @@ import math
 
 class MSMLSOFAExporterWarning(Warning):
     pass
+
 
 def SubElement(root, tag, **kwargs):
     skwargs = {k: str(v) for k, v in kwargs.items()}
@@ -244,7 +272,7 @@ class SofaVisitor(Visitor):
 
             indices_int = [int(i) for i in indices.split(",")]
 
-            #Get all materials
+            # Get all materials
             for material in matregion:
                 assert isinstance(material, ObjectElement)
 
@@ -276,7 +304,7 @@ class SofaVisitor(Visitor):
         poissons_str = _to_str(poissons)
 
 
-        #merge all different materials to single forcefield/density entries.
+        # merge all different materials to single forcefield/density entries.
         if _object.find("MeshTopology") is not None:
 
             SubElement(_object, "TetrahedronFEMForceField",
@@ -312,7 +340,7 @@ class SofaVisitor(Visitor):
             filename = self.working_dir / request.id
             if request.tag == "displacementOutputRequest":
                 if _object.find("MeshTopology") is not None:
-                    #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
+                    # dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
                     exportEveryNumberOfSteps = request.get("timestep")
 
                     dispOutputNode = SubElement(_object, "VTKExporter",
@@ -342,13 +370,13 @@ class SofaVisitor(Visitor):
                     SubElement(_object, "ExtendedVTKExporter",
                                filename=filename,
                                exportEveryNumberOfSteps=exportEveryNumberOfSteps,
-                               #todo export material => allows extraction of surfaces in post processing
+                               # todo export material => allows extraction of surfaces in post processing
                                tetras=0,
                                quadraticTetras=1,
                                listening="true",
                                exportAtEnd="true")
 
-                    #TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
+                    # TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
                 else:
                     warn(MSMLSOFAExporterWarning, "Topolgy type not supported")
 

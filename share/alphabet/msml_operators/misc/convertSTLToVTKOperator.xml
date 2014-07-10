@@ -4,19 +4,19 @@
 	xsi:schemaLocation="http://sfb125.de/msml" name="stl2vtk">
 
 	<runtime>
-		<python module="msml.ext.misc" function="convertSTLToVTK" />
+		<python module="msml.ext.misc" function="ConvertSTLToVTK" />
 	</runtime>
 
 	<input>
-		<arg name="STLMesh" type="triangularMesh" format="file.stl" />
+		<arg name="STLMesh" logical="triangularMesh" physical="stl" />
 	</input>
 
 	<output>
-		<arg name="VTKMesh" type="triangularMesh" format="file.vtk" />
+		<arg name="VTKMesh" logical="triangularMesh" physical="vtk" />
 	</output>
    
    <parameters>
-      <arg name="vtkFilename" type="filename" optional="1">
+      <arg name="vtkFilename" physical="str" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>

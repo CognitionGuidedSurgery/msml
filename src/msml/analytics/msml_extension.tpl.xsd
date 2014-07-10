@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- macro enroll(elements) -->
+<!-- if elements -->
+<!-- for o in elements -->
+<xsd:element name="{{o.name}}">
+    <xsd:complexType>
+        <!-- for a in o.attributes -->
+        <xsd:attribute name="{{a.name}}" type="{{a.type}}" use="<!-- if a.required -->required<!--else -->optional<!-- endif -->" />
+        <!-- endfor -->
+    </xsd:complexType>
+</xsd:element>
+<!-- endfor -->
+<!-- else -->
+<xsd:any processContents="lax"/>
+<!-- endif -->
+<!-- endmacro -->
+<xsd:schema targetNamespace="http://sfb125.de/msml"
+            elementFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns="http://sfb125.de/msml">
+
+<xsd:redefine schemaLocation="file://{{path_to_msml_xsd}}">
+    <xsd:complexType name="workflow_t">
+        <xsd:complexContent>
+            <xsd:restriction base="workflow_t">
+                <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xsd:choice>{{ enroll(operators)}}</xsd:choice>
+                </xsd:sequence>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="region_t">
+        <xsd:complexContent>
+            <xsd:restriction base="region_t">
+                <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+                    <xsd:choice>{{ enroll(materials) }}
+                    </xsd:choice>
+                </xsd:sequence>
+                <xsd:attribute name="id" type="xsd:string" use="required"/>
+                <xsd:attribute name="indices" type="xsd:string" use="required"/>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+
+     <xsd:complexType name="object_output_t">
+        <xsd:complexContent>
+            <xsd:restriction base="object_output_t">
+                <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xsd:choice>{{ enroll(outputs) }}
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+     <xsd:complexType name="constraint_t">
+        <xsd:complexContent>
+            <xsd:restriction base="constraint_t">
+                <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xsd:choice>{{ enroll(constraints) }}
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+</xsd:redefine>
+</xsd:schema>

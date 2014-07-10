@@ -15,7 +15,9 @@ IF (NOT CMAKE_BUILD_TYPE)
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
 if(MSVC)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+ELSE()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 ENDIF(MSVC)
 
 MESSAGE(" #############################")    
@@ -27,71 +29,54 @@ MESSAGE(" #############################")
 #message("CMAKE does not set RPATH, please adapt your LD_LIBRARY_PATH")
 #set(CMAKE_SKIP_RPATH true)
 
-#########################
 # Find VTK
-#########################
-
 FIND_PACKAGE(VTK REQUIRED)
-
 INCLUDE(${VTK_USE_FILE})
 
-#########################
-# Find Python
-#########################
+# SWIG
+FIND_PACKAGE(SWIG REQUIRED)
+INCLUDE(${SWIG_USE_FILE})
+IF(WIN32 AND NOT CYGWIN)
+  IF(CMAKE_BUILD_TYPE MATCHES Release)
+    SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/bin/release)
+  ELSE()
+      SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/bin/debug)
+  ENDIF()
+ELSE()
+  SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+ENDIF()
+ 
 
-find_package(PythonLibs REQUIRED)
-message("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
+
+
+
+#MESSAGE("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
 #message("Libs of Python: " ${PYTHON_LIBRARIES} )
 
-#########################
+
 # Find Boost
-#########################
-
-FIND_PACKAGE(Boost COMPONENTS program_options python filesystem iostreams REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS program_options filesystem iostreams REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-message("Include dirs of Boost : " ${Boost_INCLUDE_DIR} )
-message("cmake module path: " ${CMAKE_MODULE_PATH} )
-message("Booth2 python library: " ${Boost_PYTHON_LIBRARY} )
-MESSAGE("Boost Libraries = " ${Boost_LIBRARIES})  
+set(Boost_USE_STATIC_LIBS OFF)
+add_definitions( -DBOOST_ALL_DYN_LINK )
+LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
 
-
-#########################
-# VCGlib
-#########################
-
-FIND_PACKAGE(VCG)
-
-
-#########################
-# Tetgen
-#########################
-
-FIND_PACKAGE(TETGEN)
-INCLUDE_DIRECTORIES(${TETGEN_INCLUDE_DIRS})
-add_definitions(-DTETLIBRARY)
-
-
-#########################
-# CGAL
-#########################
-FIND_PACKAGE(CGAL QUIET COMPONENTS Core ImageIO )
-
-if ( CGAL_FOUND )
-INCLUDE( ${CGAL_USE_FILE} )
-ENDIF (CGAL_FOUND)
-
+#message("Include dirs of Boost : " ${Boost_INCLUDE_DIR} )
+#message("cmake module path: " ${CMAKE_MODULE_PATH} )
+#message("Booth2 python library: " ${Boost_PYTHON_LIBRARY} )
+#MESSAGE("Boost Libraries = " ${Boost_LIBRARIES})  
   
 #########################
 # Misc Options
 #########################
 
+SET(PYTHON_SITE_PACKAGE ""
+    CACHE PATH "Path to python site-package directory")
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin) 
 SET(LIBRARY_OUTPUT_PATH  ${CMAKE_BINARY_DIR}/bin) 
 #SET(BUILD_SHARED_LIBS ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/CMake/)
 
@@ -102,37 +87,99 @@ SET(CMAKE_TESTDATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Testdata
     CACHE PATH "Choose the test data path.")
 add_definitions( -DTEST_DATA_PATH="${TESTDATA_PATH}" )
 
+
 #SET(CMAKE_PYTHON_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../MSML_Python
 #    CACHE PATH "Choose the test data path.")
 
-set(SOFA_BIN_DIRECTORY "SOFA_BIN_DIRECTORY_NOT_FOUND" CACHE FILEPATH "description")
-    
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
+FIND_FILE(SOFA_EXECUTABLE "sofaBatch" NAMES "sofaBatch.exe" "sofaBatchExtended"
+    DOC "")
 
-    
+FIND_FILE(HIFLOW_EXECUTABLE "hiflow3" NAMES "hiflow3"
+    DOC "")
 
-#########################
-# Include projects
-#########################
+FIND_FILE(ABAQUS_EXECUTABLE "abaqus" NAMES "abaqus" "abaqus"
+    DOC "")
 
-IF (TETGEN_FOUND)
-ADD_SUBDIRECTORY(TetgenOperators)
-ENDIF (TETGEN_FOUND)
-    
-IF (VCG_FOUND)
-	ADD_SUBDIRECTORY(VCGOperators)  
-ENDIF (VCG_FOUND)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
+
+SET(CMAKE_ECLIPSE_MAKE_ARGUMENTS "-j${x}" CACHE STRING "" FORCE ) 
+
+SET(SWIG_LANG "python")
+#SET(SWIG_LANG "java")
+
+
+IF( "${SWIG_LANG}" STREQUAL "python")
+  # Find Python
+  FIND_PACKAGE(PythonLibs REQUIRED)
+  SET(WRAPPER_LIBRARIES ${PYTHON_LIBRARIES})
+  SET(WRAPPER_INCLUDES  ${PYTHON_INCLUDE_DIRS})
+#ELSEIF( "${SWIG_LANG}" EQUAL "java")
+ELSE()
+  FIND_PACKAGE(JNI)
+  SET(WRAPPER_LIBRARIES ${JNI_LIBRARIES})
+  SET(WRAPPER_INCLUDES  ${JNI_INCLUDE_DIRS})
+  
+  # this does not work
+  #message(${JNI_FOUND})
+  #IF(NOT ${JNI_FOUND})
+  #  message("Java Wrapper selected but no JNI found. JAVA_HOME set?")
+  #  RETURN()
+  #ENDIF()
+ENDIF()
+
+
+#message(${SWIG_LANG})
+#message(${JNI_LIBRARIES})
+
+
+INCLUDE_DIRECTORIES(${WRAPPER_INCLUDES})
+
+################################################################################
+## Macro
+#
+MACRO(MSML_LIBRARY)
+  CMAKE_PARSE_ARGUMENTS(ML 
+    ""   # options
+    "NAME;SWIG_FILE" # single arg
+    "SOURCES;LIBRARIES" # multi arg
+    ${ARGN}
+    )
+  
+  #message("AAAAAA ${ML_UNPARSED_ARGUMENTS}")
+
+  SET_SOURCE_FILES_PROPERTIES(${ML_SWIG_FILE} PROPERTIES CPLUSPLUS ON)
+  #SET_SOURCE_FILES_PROPERTIES(tetgen.i PROPERTIES SWIG_FLAGS "-includeall")
+  SWIG_ADD_MODULE(${ML_NAME}Python ${SWIG_LANG} ${ML_SWIG_FILE} ${ML_SOURCES})
+  SWIG_LINK_LIBRARIES(
+    ${ML_NAME}Python
+    ${ML_LIBRARIES}
+    ${WRAPPER_LIBRARIES}  
+    )
+  
+  IF(WIN32 AND NOT CYGWIN)
+    ADD_LIBRARY(${ML_NAME} STATIC ${ML_SOURCES})
+  ELSE()
+    ADD_LIBRARY(${ML_NAME} SHARED ${ML_SOURCES})
+  ENDIF()
  
+  TARGET_LINK_LIBRARIES(${ML_NAME} ${ML_LIBRARIES})
+ENDMACRO()
 
+    
+################################################################################
+## Modules
+# 
+ADD_SUBDIRECTORY(Base)
+ADD_SUBDIRECTORY(TetgenOperators)
+#ADD_SUBDIRECTORY(VCGOperators)  
 ADD_SUBDIRECTORY(MiscMeshOperators)
-
-if ( CGAL_FOUND )
 ADD_SUBDIRECTORY(CGALOperators)
-ADD_SUBDIRECTORY(CGALOperators/CGALOperatorsExamples)
-ENDIF (CGAL_FOUND)
+ADD_SUBDIRECTORY(CLI)    
+ADD_SUBDIRECTORY(CGALOperators/CGALOperatorsExamples)      
 
 
-ADD_SUBDIRECTORY(CLI)           
-
-set(CMAKE_ECLIPSE_MAKE_ARGUMENTS "-j${x}" CACHE STRING "" FORCE ) 

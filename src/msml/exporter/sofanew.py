@@ -4,8 +4,8 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
@@ -31,17 +31,17 @@ __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 __date__ = "2014-03-13"
 
-from warnings import warn
-import os
 import math
-
-from ..model import *
-from .base import XMLExporter, Exporter
-from path import path
+import os
 import subprocess
 
+from path import path
+
+from msml.log import report
 import lxml.etree as etree
-from msml.model.exceptions import *
+from ..model import *
+from .base import XMLExporter, Exporter
+from msml.exceptions import *
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -59,7 +59,7 @@ class SofaExporter(XMLExporter):
         self.id = 'SOFAExporter'
         Exporter.__init__(self, msml_file)
         self.export_file = None
-        self.working_dir = path()
+        self.working_dir = path() #path.dirname(msml_file.filename)
 
     def init_exec(self, executer):
         """
@@ -89,19 +89,34 @@ class SofaExporter(XMLExporter):
 
     def execute(self):
         "should execute the external tool and set the memory"
-        
+        import msml.envconfig
+
         filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
-        f = open(filenameSofaBatch, 'w')
-        timeSteps = (int) (self._msml_file.env.simulation[0].iterations) #only one step supported
-        f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(timeSteps) + ' ' + self.export_file + '.simu \n')
-        f.close()
-        
-        subprocess.call("C:/Projekte/SOFA/Sofa/bin/SofaBatch.exe" + " -l SOFACuda " + filenameSofaBatch)
-        
+
+
+        with open(filenameSofaBatch, 'w') as f:
+                timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
+                f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
+                    timeSteps) + ' ' + self.export_file + '.simu \n')
+
+
+        cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
+
+        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofaExtended') > -1):
+            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
+            callCom = '-g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
+            cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
+
+        report("Executing %s" % cmd, 'I', 252)
+        report("Working directory: %s" % os.getcwd(), 'I', 616)
+
+        os.system(cmd)
+        #subprocess.call(cmd)
 
 
     def write_scn(self):
         processingUnit = self._msml_file.env.solver.processingUnit
+
         self._processing_unit = "Vec3f" if processingUnit == "CPU" else "CudaVec3f"
 
         self.node_root = self.createScene()
@@ -132,7 +147,7 @@ class SofaExporter(XMLExporter):
         mesh_value = msmlObject.mesh.mesh
         mesh_type = msmlObject.mesh.type
 
-        theFilename = self.working_dir / self.evaluate_node(mesh_value)
+        theFilename = self.working_dir / self.get_value_from_memory(msmlObject.mesh)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
         # TODO does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug?
@@ -161,13 +176,14 @@ class SofaExporter(XMLExporter):
             self.sub("QuadraticMeshTopology", objectNode,
                      name="topo", src="@LOADER")
         else:
-            warn(MSMLSOFAExporterWarning, "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
+            warn(MSMLSOFAExporterWarning,
+                 "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
             return None
         return loaderNode
 
 
     def createSolvers(self):
-        if self._msml_file.env.solver.timeIntegration == "dynamicImplicit":
+        if self._msml_file.env.solver.timeIntegration == "Newmark":
             self.sub("MyNewmarkImplicitSolver",
                      rayleighStiffness="0.2",
                      rayleighMass="0.02",
@@ -178,7 +194,7 @@ class SofaExporter(XMLExporter):
                      name="odesolver")
         else:
             warn(MSMLSOFAExporterWarning, "Error ODE solver %s not supported" %
-                                          self._msml_file.env.solver.timeIntegration)
+                 self._msml_file.env.solver.timeIntegration)
 
         if self._msml_file.env.solver.linearSolver == "direct":
             self.sub("SparseMKLSolver")
@@ -187,7 +203,7 @@ class SofaExporter(XMLExporter):
                      iterations="100", tolerance="1e-06", threshold="1e-06")
         else:
             warn(MSMLSOFAExporterWarning, "Error linear solver %s not supported" %
-                                          self._msml_file.env.solver.linearSolver)
+                 self._msml_file.env.solver.linearSolver)
 
 
     def createMaterialRegions(self, objectNode, msmlObject):
@@ -197,44 +213,42 @@ class SofaExporter(XMLExporter):
         poissons = {}
         density = {}
 
+
         for matregion in msmlObject.material:
             assert isinstance(matregion, MaterialRegion)
-            indexGroupNode = matregion.get_indices()
-
-            assert isinstance(indexGroupNode, ObjectElement)
-
-            indices_key = indexGroupNode.attributes["indices"]
-            indices_vec = self.evaluate_node(indices_key)
+            indices_key = matregion.indices
+            indices_vec = self.get_value_from_memory(matregion)
             indices = '%s' % ', '.join(map(str, indices_vec))
 
+
             indices_int = [int(i) for i in indices.split(",")]
+            indices_int.sort()
 
             #Get all materials
             for material in matregion:
                 assert isinstance(material, ObjectElement)
+                currentMaterialType = material.tag
 
-                currentMaterialType = material.attributes['__tag__']
-                if currentMaterialType == "indexgroup":
-                    continue
-
-                if currentMaterialType == "linearElastic":
+                if currentMaterialType == "linearElasticMaterial":
                     currentYoungs = material.attributes["youngModulus"]
                     currentPoissons = material.attributes["poissonRatio"]  # not implemented in sofa yet!
                     for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
                         youngs[i] = currentYoungs
                         poissons[i] = currentPoissons
                 elif currentMaterialType == "mass":
-                    currentDensity = material.attributes["density"]
+                    currentDensity = material.attributes["massDensity"]
                     for i in indices_int:
                         density[i] = currentDensity
                 else:
-                    warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
+                    warn("Material Type not supported %s" % currentMaterialType, MSMLSOFAExporterWarning)
 
-        keylist = density.keys()
-        keylist.sort()
 
-        _select = lambda x: (x[k] for k in keylist)
-        _to_str = lambda x: ' '.join(_select(x))
+
+        def _to_str(map):
+            keys = list(map.keys())
+            keys.sort()
+            sorted_values = (map[k] for k in keys)
+            return ' '.join(sorted_values)
 
         density_str = _to_str(density)
         youngs_str = _to_str(youngs)
@@ -246,19 +260,19 @@ class SofaExporter(XMLExporter):
             elasticNode = self.sub("TetrahedronFEMForceField", objectNode,
                                    template=self._processing_unit, name="FEM",
                                    listening="true", youngModulus=youngs_str,
-                                   poissonRatio=poissons[keylist[0]])
+                                   poissonRatio=poissons[indices_int[0]])
             self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)
-            massNode = self.sub("DiagonalMass", name="meshMass")
+            massNode = self.sub("DiagonalMass", objectNode, name="meshMass")
             massNode.set("massDensity", density_str)
         elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
                                     template=self._processing_unit, name="FEM", listening="true",
-                                    setYoungModulus=youngs_str,
-                                    setPoissonRatio=poissons[keylist[0]])  # TODO
+                                    youngModulus=youngs[0],
+                                    poissonRatio=poissons[indices_int[0]])  # TODO
             emassNode = self.sub("QuadraticMeshMatrixMass", objectNode,
-                                 name="meshMass", massDensity=density_str)
+                                 name="meshMass", massDensity=density[0])
         else:
             warn(MSMLSOFAExporterWarning, "Current mesh topology not supported")
 
@@ -272,7 +286,7 @@ class SofaExporter(XMLExporter):
             for constraint in constraint_set.constraints:
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
-                indices_vec = self.evaluate_node(constraint.indices)
+                indices_vec = self.get_value_from_memory(constraint)
                 indices = '%s' % ', '.join(map(str, indices_vec))
 
                 if currentConstraintType == "fixedConstraint":
@@ -317,7 +331,7 @@ class SofaExporter(XMLExporter):
 
                 elif currentConstraintType == "springMeshToFixed":
 
-                    constraintNode = self.sub("Node",objectNode, name="springMeshToFixed")
+                    constraintNode = self.sub("Node", objectNode, name="springMeshToFixed")
                     mechObj = self.sub("MechanicalObject", constraintNode, template="Vec3f",
                                        name="pointsInDeformingMesh",
                                        position=constraint.get("movingPoints"))
@@ -407,7 +421,8 @@ class SofaExporter(XMLExporter):
         for request in msmlObject.output:
             assert isinstance(request, ObjectElement)
             filename = self.working_dir / request.id
-            if request.tag == "displacementOutputRequest":
+
+            if request.tag == "displacement":
                 if objectNode.find("MeshTopology") is not None:
                     #dispOutputNode = self.sub(currentSofaNode, "ExtendedVTKExporter" )
                     exportEveryNumberOfSteps = request.get("timestep")
@@ -433,10 +448,12 @@ class SofaExporter(XMLExporter):
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
 
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    self._memory['SOFAExporter'] = {request.id : filenameLastOutput}
-                    dispOutputNode.set("filename", filename+ ".vtu")
+                    self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
+                    dispOutputNode.set("filename", filename + ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
+                    exportEveryNumberOfSteps = request.get("timestep")
+
                     dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
                                               filename=filename,
                                               exportEveryNumberOfSteps=exportEveryNumberOfSteps,
@@ -445,6 +462,21 @@ class SofaExporter(XMLExporter):
                                               quadraticTetras=1,
                                               listening="true",
                                               exportAtEnd="true")
+
+                    # timeSteps = self._msml_file.env.simulation[0].iterations
+                    #
+                    # #exportEveryNumberOfSteps = 1 in SOFA means export every second time step.
+                    # #exportEveryNumberOfSteps = 0 in SOFA means do not export.
+                    # if exportEveryNumberOfSteps == 0:
+                    #     lastNumber = 1
+                    # else:
+                    #     lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
+                    #
+                    # filenameLastOutput = filename + str(lastNumber) + ".vtu"
+                    # self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
+                    # dispOutputNode.set("filename", filename + ".vtu")
+
+
 
                     #TODO: Fill "filename" of request taking output numbering into account (see VTKExporter)
                 else:

@@ -29,7 +29,7 @@
 __author__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 __date__ = '2014-04-14'
 
-from msml.model.exceptions import MSMLWarning, warn
+from msml.exceptions import MSMLWarning, warn
 
 
 class MSMLVTKImportWarning(MSMLWarning):
@@ -77,7 +77,6 @@ def view_stl(filename):
 
 
 def  vtp_reader(filename):
-    import os.path
     reader = vtk.vtkXMLPolyDataReader()
     reader.SetFileName(filename)
     reader.Update()

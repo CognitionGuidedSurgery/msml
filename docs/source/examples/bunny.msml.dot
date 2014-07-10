@@ -1,0 +1,79 @@
+
+digraph G {
+  splines=ortho
+  node [shape=box]
+
+  
+   34114448 [ color="green", shape="parallelogram", label="bunnyVolumeMesh.vtk" ] ;
+  
+   34200208 [ color="red", shape="record", label="{_gen_007_|converter_MSMLString_bool}" ] ;
+  
+   34200720 [ color="red", shape="record", label="{_gen_008_|converter_MSMLString_MSMLListF}" ] ;
+  
+   34218384 [ color="red", shape="record", label="{_gen_010_|converter_MSMLString_MSMLListF}" ] ;
+  
+   34187856 [ color="green", shape="parallelogram", label="0" ] ;
+  
+   34188048 [ color="green", shape="parallelogram", label="-0.1 -0.03  -0.07 0.06 0.19 0.06" ] ;
+  
+   34199632 [ color="red", shape="record", label="{_gen_006_|converter_VTK_MSMLString}" ] ;
+  
+   34187920 [ color="green", shape="parallelogram", label="points" ] ;
+  
+   34201424 [ color="red", shape="record", label="{_gen_009_|converter_VTK_VTU}" ] ;
+  
+   34185936 [ color="red", shape="record", label="{bodyToIndexGroup|boxROIToIndexOperator}" ] ;
+  
+   34186000 [ color="red", shape="record", label="{bottomToIndexGroup|boxROIToIndexOperator}" ] ;
+  
+   34185488 [ color="red", shape="record", label="{bunnyVolumeMesher|mesherTetgen}" ] ;
+  
+   34185552 [ color="green", shape="parallelogram", label="Bunny6000Surface.vtk" ] ;
+  
+   34187408 [ color="green", shape="parallelogram", label="-0.1 0.03 -0.07 0.07 0.035 0.06" ] ;
+  
+   34188176 [ color="green", shape="parallelogram", label="elements" ] ;
+  
+   33614928 [ color="yellow", shape="house", label="<msml.exporter.hiflow3.HiFlow3Exporter object at 0x200ec50>" ] ;
+  
+
+  
+    34114448 -> 34199632 [taillabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>"] ;
+  
+    34200208 -> 34185488 [taillabel="<Sort: <type 'bool'>, None>", fontsize="8", headlabel="<Sort: <type 'bool'>, None>"] ;
+  
+    34200720 -> 34185936 [taillabel="<Sort: <class 'msml.sortdef.MSMLListF'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLListF'>, None>"] ;
+  
+    34218384 -> 34186000 [taillabel="<Sort: <class 'msml.sortdef.MSMLListF'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLListF'>, None>"] ;
+  
+    34187856 -> 34200208 [taillabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>"] ;
+  
+    34188048 -> 34200720 [taillabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>"] ;
+  
+    34199632 -> 34185488 [taillabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>"] ;
+  
+    34187920 -> 34186000 [taillabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>"] ;
+  
+    34201424 -> 33614928 [taillabel="<Sort: <class 'msml.sortdef.VTU'>, <class 'msml.sortdef.Mesh'>>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.VTU'>, <class 'msml.sortdef.Mesh'>>"] ;
+  
+    34185936 -> 33614928 [taillabel="<Sort: <class 'msml.sortdef.MSMLListI'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLListI'>, None>"] ;
+  
+    34185936 -> 33614928 [taillabel="<Sort: <class 'msml.sortdef.MSMLListI'>, <class 'msml.sortdef.Indices'>>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLListI'>, None>"] ;
+  
+    34186000 -> 33614928 [taillabel="<Sort: <class 'msml.sortdef.MSMLListI'>, <class 'msml.sortdef.Indices'>>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLListI'>, None>"] ;
+  
+    34186000 -> 33614928 [taillabel="<Sort: <class 'msml.sortdef.MSMLListI'>, <class 'msml.sortdef.Indices'>>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLListI'>, None>"] ;
+  
+    34185488 -> 34186000 [taillabel="<Sort: <class 'msml.sortdef.VTK'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>"] ;
+  
+    34185488 -> 34185936 [taillabel="<Sort: <class 'msml.sortdef.VTK'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>"] ;
+  
+    34185488 -> 34201424 [taillabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>"] ;
+  
+    34185552 -> 34185488 [taillabel="<Sort: <class 'msml.sortdef.VTK'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.VTK'>, <class 'msml.sortdef.Mesh'>>"] ;
+  
+    34187408 -> 34218384 [taillabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>"] ;
+  
+    34188176 -> 34185936 [taillabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>", fontsize="8", headlabel="<Sort: <class 'msml.sortdef.MSMLString'>, None>"] ;
+  
+}

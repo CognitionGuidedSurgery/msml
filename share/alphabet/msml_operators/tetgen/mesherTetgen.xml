@@ -3,25 +3,24 @@
                xsi:schemaLocation="http://sfb125.de/msml" name="mesherTetgen">
 
     <runtime>
-        <python module="msml.ext.tetgen" function="createVolumeMeshTetgen"/>
+        <python module="msml.ext.tetgen" function="CreateVolumeMeshPython"/>
     </runtime>
 
     <input>
-        <arg name="surfaceMesh" type="triangularMesh" format="file.vtk"/>
+        <arg name="surfaceMesh" logical="triangularMesh" physical="vtk"/>
     </input>
 
     <output>
-        <arg name="mesh" type="linearTetMesh" format="file.vtk"/>
+        <arg name="mesh" logical="Mesh" physical="vtk"/>
     </output>
 
     <parameters>
-        <arg name="preserveBoundary" type="bool"/>
-
-        <arg name="meshFilename" type="filename" optional="1">
+          <arg name="meshFilename" physical="str" optional="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
         </arg>
 
+        <arg name="preserveBoundary" physical="bool"/>
     </parameters>
 </msml:operator>

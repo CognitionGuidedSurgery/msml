@@ -1,23 +1,3 @@
-/*=========================================================================
-
-  Program:   The Medical Simulation Markup Language
-  Module:    Operators, MiscMeshOperators
-  Authors:   Markus Stoll, Stefan Suwelack
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-=========================================================================*/
 
 #include "PostProcessingOperators.h"
 #include "MiscMeshOperators.h"
@@ -25,12 +5,20 @@
 #include <iostream>
 #include <string>
 #include <sstream> 
+#include <VTKMeshgen.h>
+#include <IOHelper.h>
 
 using namespace MSML;
 
 
 void TestAssignRegionOperator()
 {
+//	std::string inputMesh("/org/share/home/mediassi/MediAssistData/Modelle/MIC/Modellbibliothek/Medical/Helios_Aktuell/Leber/LeberXSTet4.vtk");
+//	std::string outputMesh("/org/share/home/mediassi/MediAssistData/Modelle/MIC/Modellbibliothek/Medical/Helios_Aktuell/Leber/LeberXSTet4Regions.vtk");
+//
+//
+//	std::vector<std::string> regionMeshes;
+//	regionMeshes.push_back("/org/share/home/mediassi/MediAssistData/Modelle/MIC/Modellbibliothek/Medical/Helios_Aktuell/Leber/LeberRegion1.vtk");
 
 
 	std::string inputMesh("/home/suwelack/IPCAI/Volumes/liverMVolume.vtk");
@@ -73,6 +61,15 @@ void TestComputeCrossSectionArea()
 	
   std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
   PostProcessingOperators::ComputeOrganCrossSectionArea(inputMesh.c_str());
+
+void TestTransformMeshBarycentric()
+{
+  vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\scenarios_1stmode99\\dispOutput0.vtu");
+	vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\scenarios_1stmode99\\dispOutput125.vtu");
+  vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\allIn100justCGALOptimizerAllOnResults\\boneMesh16.vtk");
+	vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface, refSurface, deformedGrid);
+
 }
 
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
@@ -132,6 +129,12 @@ void TestGenerateDVF()
 
 //  PostProcessingOperators::GenerateDVF(ref.c_str(), dvf.c_str(), def.c_str());
 }
+void TestReadCTX()
+{
+  IOHelper::CTXReadImage("E:\\02_Data\\skelettonPatModel\\04_HNCfinalIGRTdose\\segmentation.ctx");
+}
+
+
 
 void TestApplyDVF()
 {
@@ -213,6 +216,7 @@ int main( int argc, char * argv[])
 	//TestComputeCrossSectionArea();
 	//return EXIT_SUCCESS;
 
+	TestTransformMeshBarycentric();
 	
 }
 

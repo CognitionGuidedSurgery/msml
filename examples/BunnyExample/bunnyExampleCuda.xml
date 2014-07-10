@@ -3,10 +3,10 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" type="linearMesh"
-             format="file.vtk"/>
-        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" type="linearMesh"
-             format="file.vtk"/>
+        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" logical="linearMesh"
+             physical="file.vtk"/>
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="linearMesh"
+             physical="file.vtk"/>
     </variables>
 
     <scene>
@@ -28,9 +28,7 @@
             </sets>
 
             <material>
-                <region id="bunnyMaterial">
-                    <!--<materialRegion name=""> -->
-                    <indexgroup indices="${bodyToIndexGroup}"/>
+                <region id="bunnyMaterial" indices="${bodyToIndexGroup}">
                     <linearElastic youngModulus="80000" poissonRatio="0.49"/>
                     <mass density="1000"/>
                 </region>
