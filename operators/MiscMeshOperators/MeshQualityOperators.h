@@ -24,7 +24,7 @@ struct MeshQualityStats {
     std::string qualityMeasureName;
     bool errorQualityMeasureNotFound;
 
-    MeshQualityStats(): errorQualityMeasureNotFound(false) { }
+    MeshQualityStats();
 };
 
 // Define constants in c file to ensure values are up to date with the VTK version actually used.
