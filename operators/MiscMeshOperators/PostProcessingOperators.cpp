@@ -34,7 +34,7 @@
 #include <stdio.h>
 
 #include "vtkUnstructuredGrid.h"
-
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
@@ -48,12 +48,16 @@
 #include <vtkUnstructuredGridReader.h>
 #include <vtkSTLReader.h>
 #include <vtkPolyDataWriter.h>
+#include <vtkGeometryFilter.h>
+#include <vtkPlane.h>
+#include <vtkCutter.h>
 
 #include <vtkPointData.h>
 #include <vtkIdList.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkTriangle.h>
 
 #include "vtkSTLWriter.h"
 #include "vtkSTLReader.h"
@@ -334,16 +338,19 @@ void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilena
 {
 	vtkSmartPointer<vtkPoints> thePointsOutput =
 		 vtkSmartPointer<vtkPoints>::New();
+	
 	vtkSmartPointer<vtkUnstructuredGrid> vtkGrid = 
 		vtkSmartPointer<vtkUnstructuredGrid>::New();
+
 	vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	reader->SetFileName(inputMesh.c_str());
 	reader->Update();
+	
 	vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = reader->GetOutput();
-	vtkCellArray* theCells = referenceGrid->GetCells();
-	vtkDataArray* scalars = referenceGrid->GetCellData()->GetScalars();
-	int cellType = referenceGrid->GetCellType(1);
+	
+	vtkGrid->DeepCopy(referenceGrid);
+
 	fstream f;
 	char cstring[256];
 	f.open(modelFilename, ios::in);
@@ -391,11 +398,12 @@ void PostProcessingOperators::FeBioToVTKConversion(const std::string modelFilena
 	string::size_type idx = modelFilename.find('.');
 	std::string vtkFile = modelFilename.substr(0, idx) + ".vtk";
 	vtkGrid->SetPoints(thePointsOutput);
+	vtkGrid->GetPoints()->Modified();
+	vtkGrid->Modified();
+	vtkGrid->Update();
 	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 	writer->SetFileName(vtkFile.c_str());
-	vtkGrid->SetCells(cellType, theCells);
-	vtkGrid->GetCellData()->SetScalars(scalars);
 	__SetInput(writer, vtkGrid);
 	writer->Write();
 }
@@ -468,41 +476,6 @@ void PostProcessingOperators::ColorMesh(const char* modelFilename, const char* c
 
 }
 
-void PostProcessingOperators::ComputeDiceCoefficient(const char* filename, const char* filename2)
-{
-		vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(filename);
-		reader->Update();
-		vtkUnstructuredGrid* currentGrid = reader->GetOutput();
-		reader2->SetFileName(filename2);
-		reader2->Update();
-		vtkUnstructuredGrid* referenceGrid = reader2->GetOutput();
-		double* currentPoint;
-		double* referencePoint;
-		int countOfEqualPoints = 0;
-		int currentGridNumberOfPoints = currentGrid->GetNumberOfPoints();
-		int referenceGridNumberOfPoints = referenceGrid->GetNumberOfPoints();
-		for(int i=0; i < currentGridNumberOfPoints; i++){
-			bool coordinateIsEqual[3];
-			currentPoint = currentGrid->GetPoint(i);
-			referencePoint = referenceGrid->GetPoint(i);
-			for(int m = 0; m < 3; m++){
-				currentPoint[m] == referencePoint[m] ? coordinateIsEqual[m] = true : coordinateIsEqual[m] = false;
-			} 
-			if(coordinateIsEqual[0] && coordinateIsEqual[1] && coordinateIsEqual[2]){
-				countOfEqualPoints++;
-			}
-		}
-
-		double diceCoefficient = (double)(2*countOfEqualPoints)/(currentGridNumberOfPoints +  referenceGridNumberOfPoints);
-		std::cout << "Count equal points: " << countOfEqualPoints << std::endl << "Number of points input1: " << currentGridNumberOfPoints <<  std::endl << "Number of points input2: " << referenceGridNumberOfPoints
-			<<  std::endl << "DICE Coefficient: " << diceCoefficient <<  std::endl;
-
-}
-
 void PostProcessingOperators::ComputeOrganVolume(const char* volumeFilename){
 		vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
@@ -534,6 +507,58 @@ void PostProcessingOperators::ComputeOrganVolume(const char* volumeFilename){
 	 }
 
 	 std::cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;
+
+}
+
+void PostProcessingOperators::ComputeOrganCrossSectionArea(const char* volumeFilename){
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+	vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(volumeFilename);
+	reader->Update();
+	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+		
+	vtkSmartPointer<vtkGeometryFilter> geometryFilter = 
+	vtkSmartPointer<vtkGeometryFilter>::New();
+
+	geometryFilter->SetInput(inputMesh);
+	geometryFilter->Update(); 
+	vtkPolyData* polydata = geometryFilter->GetOutput();
+	
+	double bounds[6];
+	polydata->GetBounds(bounds);
+	std::cout << "Bounds: " 
+        << bounds[0] << ", " << bounds[1] << " "
+        << bounds[2] << ", " << bounds[3] << " "
+        << bounds[4] << ", " << bounds[5] << std::endl;
+
+	vtkSmartPointer<vtkPlane> plane =
+	vtkSmartPointer<vtkPlane>::New();
+	plane->SetOrigin((bounds[1] + bounds[0]) / 2.0,
+		(bounds[3] + bounds[2]) / 2.0,
+			-200.0);
+	plane->SetNormal(0,0,1);
+		
+	vtkSmartPointer<vtkCutter> cutter =
+	vtkSmartPointer<vtkCutter>::New();
+	cutter->SetInputConnection(reader->GetOutputPort());;
+	cutter->SetCutFunction(plane);
+	cutter->Update();
+	vtkPolyData *pCutterOutput = cutter->GetOutput();
+	double area = 0;
+	for(vtkIdType i = 0; i < pCutterOutput->GetNumberOfPolys(); i++)
+	{
+		vtkCell* cell = pCutterOutput->GetCell(i);
+		vtkTriangle* triangle = dynamic_cast<vtkTriangle*>(cell);
+		double p0[3];
+		double p1[3];
+		double p2[3];
+		triangle->GetPoints()->GetPoint(0, p0);
+		triangle->GetPoints()->GetPoint(1, p1);
+		triangle->GetPoints()->GetPoint(2, p2);
+		area += vtkTriangle::TriangleArea(p0, p1, p2);
+	}
+
+	std::cout << "Area of cross section: " << area << std::endl;
 
 }
 

@@ -82,15 +82,11 @@ class FeBioExporter(XMLExporter):
         self.export_file = self.file_name + ".feb"
         print self.export_file 
 
-        #with open(self.export_file, "w") as febfile:
-            #self.write_feb(febfile)
         import codecs
 
         with codecs.open(self.export_file, 'w', 'utf-8') as febfile:  #should be open with codecs.open
            rootelement = self.write_feb()
            rootelement.write(febfile, pretty_print=True, encoding='iso-8859-1', xml_declaration=True)
-            #s = etree.tostring(rootelement, encoding="utf-8")
-            #scnfile.write(s)
 
     def execute(self):
         "should execute the external tool and set the memory"
@@ -98,6 +94,8 @@ class FeBioExporter(XMLExporter):
         print(os.getcwd());
         print cmd
         print("Executing FeBio.")
+        os.system(cmd)
+        cmd = "postview.exe " + self.file_name + ".xplt"
         os.system(cmd)
         print("Converting FeBio to VTK.")
         self.convertToVTK(str(self.meshFile))
@@ -116,11 +114,9 @@ class FeBioExporter(XMLExporter):
                
             self.createControl(self.node_root, msmlObject)
    
-            materialIndices = self.createMaterialRegions(self.node_root, msmlObject)
-            import msml.ext.misc
-            theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
-           
-            self.node_root.append(etree.fromstring(theInpString))
+            self.createMaterialRegions(self.node_root, msmlObject)
+            
+            self.createMeshTopology(meshFilename, msmlObject)
             
             self.createConstraintRegions(msmlObject, meshFilename)
             
@@ -128,68 +124,11 @@ class FeBioExporter(XMLExporter):
 
         return etree.ElementTree(self.node_root)
 
-    def createMeshTopology(self, objectNode, msmlObject):
+    def createMeshTopology(self, meshFilename, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-        mesh_value = msmlObject.mesh.mesh
-        mesh_type = msmlObject.mesh.type
-
-        theFilename = self.working_dir / self.evaluate_node(mesh_value)
-
-        # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
-        # TODO does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug?
-
-        #check if child is present
-        #if so, check operator compatibility
-        #execute operator
-        #check if mesh is in MSML folder
-
-        #if not -> copy
-
-        if mesh_type == "linearTet":
-            loaderNode = self.sub("MeshVTKLoader", objectNode,
-                                  name="LOADER", filename=theFilename,
-                                  createSubelements=0)
-            #  createSubelements does not work as expected. If a single triangle exists in mesh, then for each facet of all tets a triangle is ceated... SOFA bug?
-            self.sub("MechanicalObject", objectNode,
-                     name="dofs", template=self._processing_unit, src="@LOADER")
-            self.sub("MeshTopology", objectNode,
-                     name="topo", src="@LOADER")
-        elif mesh_type == "quadraticTet":
-            loaderNode = self.sub("MeshExtendedVTKLoader", objectNode,
-                                  name="LOADER", filename=theFilename)
-            self.sub("MechanicalObject", objectNode,
-                     name="dofs", template=self._processing_unit, src="@LOADER")
-            self.sub("QuadraticMeshTopology", objectNode,
-                     name="topo", src="@LOADER")
-        else:
-            warn(MSMLSOFAExporterWarning, "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
-            return None
-        return loaderNode
-
-
-    def createSolvers(self):
-        if self._msml_file.env.solver.timeIntegration == "dynamicImplicit":
-            self.sub("MyNewmarkImplicitSolver",
-                     rayleighStiffness="0.2",
-                     rayleighMass="0.02",
-                     name="odesolver")
-
-        elif self._msml_file.env.solver.timeIntegration == "dynamicImplicitEuler":
-            self.sub("EulerImplicitSolver",
-                     name="odesolver")
-        else:
-            warn(MSMLSOFAExporterWarning, "Error ODE solver %s not supported" %
-                                          self._msml_file.env.solver.timeIntegration)
-
-        if self._msml_file.env.solver.linearSolver == "direct":
-            self.sub("SparseMKLSolver")
-        elif self._msml_file.env.solver.linearSolver == "iterativeCG":
-            self.sub("CGLinearSolver",
-                     iterations="100", tolerance="1e-06", threshold="1e-06")
-        else:
-            warn(MSMLSOFAExporterWarning, "Error linear solver %s not supported" %
-                                          self._msml_file.env.solver.linearSolver)
-
+        import msml.ext.misc
+        theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
+        self.node_root.append(etree.fromstring(theInpString))
 
     def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
@@ -222,12 +161,10 @@ class FeBioExporter(XMLExporter):
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
             
-            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="neo-Hookean" )
+            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="isotropic elastic" )
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
-        
-        return indices_vec
             
 
     def createConstraintRegions(self, msmlObject, meshFilename):
@@ -253,7 +190,7 @@ class FeBioExporter(XMLExporter):
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
                     dt = float(self._msml_file.env.simulation[0].dt)
-                    pressure = float(constraint.pressure) / 4.0
+                    pressure = float(constraint.pressure) / 10.0
                     time = dt * iterations
                     loadPointValue1 = "0.00," + str(pressure)
                     loadPointValue2 = str(time) + ",0.00"

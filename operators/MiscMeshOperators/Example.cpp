@@ -48,16 +48,6 @@ void TestAssignRegionOperator()
 
 }
 
-void TestComputeDiceCoefficient()
-{
-	
-  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk");
-  std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase.vtk");
-
-  PostProcessingOperators::ComputeDiceCoefficient(inputMesh.c_str(), outputMesh.c_str());
-
-}
-
 void TestComputeVolume()
 {
 	
@@ -78,6 +68,13 @@ void TestComputeVolume()
   PostProcessingOperators::ComputeOrganVolume(inputMesh4.c_str());
 }
 
+void TestComputeCrossSectionArea()
+{
+	
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMesh.c_str());
+}
+
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 {
 	//std::string inputMesh("E:/GIT/msml/Testdata/CGALi2vExampleResults/liver_kidney_gallbladder.vtk");
@@ -95,7 +92,7 @@ void TestConvertFebToVTK(){
   std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk");
   std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase.txt");
 
- PostProcessingOperators::FeBioToVTKConversion(outputMesh, "29", inputMesh);
+ PostProcessingOperators::FeBioToVTKConversion(outputMesh, "25", inputMesh);
 
 
 }
@@ -210,9 +207,10 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-	//TestConvertFebToVTK();
+	TestConvertFebToVTK();
 	//TestComputeDiceCoefficient();
-	TestComputeVolume();
+	//TestComputeVolume();
+	//TestComputeCrossSectionArea();
 	//return EXIT_SUCCESS;
 
 	

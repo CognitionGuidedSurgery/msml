@@ -100,8 +100,9 @@ public:
 	LIBRARY_API static void CompareMeshes(double & errorRMS, double & errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 	LIBRARY_API static void CompareMeshes(double & errorRMS, double & errorMax, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 
-	LIBRARY_API static void ComputeDiceCoefficient(const char* filename, const char* filename2);
+	//LIBRARY_API static void ComputeDiceCoefficient(const char* filename, const char* filename2);
 	LIBRARY_API static void ComputeOrganVolume(const char* volumeFilename);
+	LIBRARY_API static void ComputeOrganCrossSectionArea(const char* volumeFilename);
 	
 	LIBRARY_API static void CompareMeshes(std::vector<double> & errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 	LIBRARY_API static void CompareMeshes(std::vector<double> & errorVec, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
