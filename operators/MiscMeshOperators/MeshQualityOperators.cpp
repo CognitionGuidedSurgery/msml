@@ -40,6 +40,11 @@ static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
     m.push_back(pair<string, int>("RelativeSizeSquared", VTK_QUALITY_RELATIVE_SIZE_SQUARED));
     m.push_back(pair<string, int>("ShapeAndSize", VTK_QUALITY_SHAPE_AND_SIZE));
     m.push_back(pair<string, int>("Distortion", VTK_QUALITY_DISTORTION));
+
+    m.push_back(pair<string, int>("MinAngle", VTK_QUALITY_MIN_ANGLE));
+    //m.push_back(pair<string, int>("AspectDelta", VTK_QUALITY_ASPECT_DELTA)); // Supported by verdict but not VTK
+    m.push_back(pair<string, int>("RadiusRatio", VTK_QUALITY_RADIUS_RATIO));
+
     return m;
 }
 static vector<pair<string, int>> TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
