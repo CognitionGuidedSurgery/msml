@@ -236,6 +236,9 @@ class ConversionNetwork(networkx.DiGraph):
         self.add_edge(a, b, fn=fn, precedence=precedence)
 
     def converter(self, a, b):
+        """returns a function that converts elements of type `a` to element with type `b`.
+
+        """
         def c(n1, n2):
             data = self.get_edge_data(n1, n2)
             return data['fn']
@@ -328,6 +331,20 @@ register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
 register_conversion(str, get_sort('VTI'), VTI, 100)
 register_conversion(get_sort('int'), get_sort('str'), str, 100)
+
+
+register_conversion(unicode, get_sort("str"), MSMLString, 100)
+register_conversion(unicode, get_sort("int"), int, 100)
+register_conversion(unicode, get_sort("float"), float, 100)
+register_conversion(unicode, get_sort("bool"), _bool, 100)
+register_conversion(unicode, get_sort("VTK"), VTK, 100)
+register_conversion(unicode, get_sort("STL"), STL, 100)
+register_conversion(unicode, get_sort('vector.int'), _list_integer, 100)
+register_conversion(unicode, get_sort('vector.float'), _list_float, 100)
+register_conversion(unicode, get_sort('VTI'), VTI, 100)
+register_conversion(get_sort('int'), get_sort('str'), str, 100)
+
+
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
 

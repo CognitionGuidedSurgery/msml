@@ -30,88 +30,89 @@ __author__ = 'Alexander Weigl'
 __date__ = "2014-07-19"
 
 from jinja2 import Template
-
+import json
 from flask import Flask, request
-from flask.ext.restful import reqparse, abort, Api, Resource
+from flask.ext.restful import reqparse, abort, Api, Resource, fields, marshal
 from msml.frontend import App as MSMLApp
 
 
 msmlapp = MSMLApp()
 alphabet = msmlapp.alphabet
 
-OPERATOR_GET = Template("""Hi, I am {o.name}
-
-My Input are as follow:
-
-{for i in o.input}
-    i
-{end}
-""")
-
 app = Flask(__name__)
 api = Api(app)
-
-TODOS = {
-    'todo1': {'task': 'build an API'},
-    'todo2': {'task': '?????'},
-    'todo3': {'task': 'profit!'},
-}
-
-
-def abort_if_todo_doesnt_exist(todo_id):
-    if todo_id not in TODOS:
-        abort(404, message="Todo {} doesn't exist".format(todo_id))
-
 
 
 def error(msg, no=500):
     return {'message': msg, 'number': no}
 
 
+def slots(slots):
+    return [ (s.name, s.physical_type, s.logical_type)
+                for s in slots.values()]
+
+
 class OperatorResource(Resource):
     def get(self, operator_name):
         try:
             operator = alphabet.operators[operator_name]
-            return {
+
+        except KeyError:
+            return error("Operator not found")
+
+        return {
                 'name': operator.name,
-                'input': operator.input_names(),
-                'output': operator.output_names(),
-                'parameter': operator.parameter_names(),
+                'input': slots(operator.input),
+                'output': slots(operator.output),
+                'parameter': slots(operator.parameters),
                 'meta': operator.meta
             }
-        except:
-            return error("Operator not found")
 
     def post(self, operator_name):
         try:
             operator = alphabet.operators[operator_name]
-
-            for inp in operator.input_names():
-                request.get['']
-
-
-            return {
-                'name': operator.name,
-                'input': operator.input_names(),
-                'output': operator.output_names(),
-                'parameter': operator.parameter_names(),
-                'meta': operator.meta
-            }
         except:
             return error("Operator not found")
 
+        try:
+            arguments = get_arguments(operator.input, operator.parameters)
+
+            print arguments
+        except KeyError as e:
+            return error(e.message)
+
+        result = operator(**arguments)
+        return result
 
 
 
+import msml.sorts
+
+
+def get_arguments(*dicts):
+    arguments = {}
+    for t in dicts:
+        for slot in t.values():
+            value = request.form.get(slot.name, slot.default)
+
+            if not value:
+                print request.form
+
+                raise KeyError("operator slot %s is not given" % slot.name)
+
+            cnv = msml.sorts.conversion(type(value), slot.sort)(value)
+            arguments[slot.name] = cnv
+    return arguments
 
 
 
 
 class ListOperators(Resource):
     def get(self):
-        return alphabet.operators.keys()
+        return [
+            (name) for name in alphabet.operators.keys()
+        ]
 
 
 api.add_resource(ListOperators, '/operators/')
-api.add_resource(OperatorResource, '/operators/<string:operator_name>')
-
+api.add_resource(OperatorResource, '/operators/<string:operator_name>', endpoint = 'or')
