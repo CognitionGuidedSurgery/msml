@@ -61,6 +61,7 @@ void TestComputeCrossSectionArea()
 	
   std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
   PostProcessingOperators::ComputeOrganCrossSectionArea(inputMesh.c_str());
+}
 
 void TestTransformMeshBarycentric()
 {
@@ -87,7 +88,7 @@ void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 
 void TestConvertFebToVTK(){
   std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk");
-  std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase.txt");
+  std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase2.txt");
 
  PostProcessingOperators::FeBioToVTKConversion(outputMesh, "25", inputMesh);
 
@@ -216,7 +217,7 @@ int main( int argc, char * argv[])
 	//TestComputeCrossSectionArea();
 	//return EXIT_SUCCESS;
 
-	TestTransformMeshBarycentric();
+	//TestTransformMeshBarycentric();
 	
 }
 

@@ -44,7 +44,10 @@ import subprocess
 
 import lxml.etree as etree
 from xml.etree.ElementTree import Element
-from msml.model.exceptions import *
+from msml.exceptions import *
+from msml.ext.misc import ConvertVTKMeshToFeBioMeshStringPython
+from msml.ext.misc import createFeBioPressureOutputPython
+from msml.ext.misc import FeBioToVTKConversion
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -95,10 +98,10 @@ class FeBioExporter(XMLExporter):
         print cmd
         print("Executing FeBio.")
         os.system(cmd)
-        cmd = "postview.exe " + self.file_name + ".xplt"
-        os.system(cmd)
         print("Converting FeBio to VTK.")
         self.convertToVTK(str(self.meshFile))
+        cmd = "postview.exe " + self.file_name + ".xplt"
+        os.system(cmd)
         pass
 
 
@@ -126,8 +129,7 @@ class FeBioExporter(XMLExporter):
 
     def createMeshTopology(self, meshFilename, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-        import msml.ext.misc
-        theInpString = msml.ext.misc.convertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
+        theInpString = ConvertVTKMeshToFeBioMeshStringPython(meshFilename, msmlObject.id)
         self.node_root.append(etree.fromstring(theInpString))
 
     def createMaterialRegions(self, objectNode, msmlObject):
@@ -137,26 +139,22 @@ class FeBioExporter(XMLExporter):
         
         for k in range(len(msmlObject.material)):
             assert isinstance(msmlObject.material[k], MaterialRegion)
-            indexGroupNode = msmlObject.material[k].get_indices()
+            indices_key = msmlObject.material[k].indices
             matregionId = msmlObject.material[k].id
-            assert isinstance(indexGroupNode, ObjectElement)
 
-            indices_key = indexGroupNode.attributes["indices"]
-            indices_vec = self.evaluate_node(indices_key)
+            indices_vec = self.get_value_from_memory(msmlObject.material[k])
            
             #Get all materials
             for i in range(len(msmlObject.material[k])):
                 assert isinstance(msmlObject.material[k][i], ObjectElement)
 
-                currentMaterialType = msmlObject.material[k][i].attributes['__tag__']
-                if currentMaterialType == "indexgroup":
-                    continue
-
-                if currentMaterialType == "linearElastic":
+                currentMaterialType = msmlObject.material[k][i].tag
+                
+                if currentMaterialType == "linearElasticMaterial":
                     currentYoungs = msmlObject.material[k][i].attributes["youngModulus"]
                     currentPoissons = msmlObject.material[k][i].attributes["poissonRatio"]
                 elif currentMaterialType == "mass":
-                    currentDensity = msmlObject.material[k][i].attributes["density"]
+                    currentDensity = msmlObject.material[k][i].attributes["massDensity"]
                 else:
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
@@ -184,9 +182,8 @@ class FeBioExporter(XMLExporter):
                         self.sub("node", fixedConstraintNode, id=int(index)+1, bc=bc)
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
-                    import msml.ext.misc
                     count += 1
-                    pressureString = msml.ext.misc.createFeBioPressureOutput(meshFilename, indices_vec, str(count))
+                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count))
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
                     dt = float(self._msml_file.env.simulation[0].dt)
@@ -244,11 +241,10 @@ class FeBioExporter(XMLExporter):
         analysis = self.sub("analysis", controlNode, type = analysisType)
         
     def convertToVTK(self, meshFilename):
-        iterations = str(self._msml_file.env.simulation[0].iterations)
+        iterations = str(int(self._msml_file.env.simulation[0].iterations)-1)
         dt = self._msml_file.env.simulation[0].dt
-        import msml.ext.misc
         logfile = str(self.file_name + ".txt");
-        msml.ext.misc.convertFeBioMeshStringToVTKMesh(logfile, iterations, meshFilename)
+        FeBioToVTKConversion(logfile, iterations, meshFilename)
          
     def createScene(self):
         version = "1.2"  
