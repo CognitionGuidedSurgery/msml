@@ -163,8 +163,37 @@ class HiFlow3Exporter(Exporter):
             #NU = poissons[0]  # by definition: set NU = poissons[0], so HiFlow3 can handle without weak material boundaries.
             #E = youngs[0]  # by definition: set E = youngs[0], so HiFlow3 can handle without weak material boundaries.
             # and hence
-            #lamelambda = (E * NU) / ((1 + NU) * (1 - 2 * NU))
-            #lamemu = E / (2 * (1 + NU))
+
+
+            class HF3MaterialModel(object):
+                def __init__(self):
+                    self.id, self.l, self.mu, self.g, self.d = [None]*5
+
+            hiflow_material_models = []
+            for c, matregion in enumerate(msmlObject.material):
+                hiflow_model = HF3MaterialModel()
+                hiflow_material_models.append(hiflow_model)
+                hiflow_model.id = c
+
+                assert isinstance(matregion, MaterialRegion)
+
+                indices = self.get_value_from_memory(matregion)
+
+                # built inp file with right material region id (hiflow_model.id for every point in indices) NICO!
+
+                for material in matregion:
+                    if 'linearElasticMaterial' == material.attributes['__tag__']:
+
+                        E =  float(material.attributes["youngModulus"])
+                        NU = float(material.attributes["poissonRatio"])
+
+                        hiflow_model.l = (E * NU) / ((1 + NU) * (1 - 2 * NU))
+                        hiflow_model.mu = E / (2 * (1 + NU))
+                        hiflow_model.g =   9.81 #gravity
+
+                    if 'mass' == material.attributes['__tag__']:
+                        hiflow_model.d =  material.attributes['massDensity'] # density
+
 
             maxtimestep = self._msml_file.env.simulation[0].iterations
 
@@ -174,19 +203,19 @@ class HiFlow3Exporter(Exporter):
                 SolveInstationary = 0
 
             #debug
-            density = [0]
-            lamemu = 42
-            lamelambda = 42
+            #density = [0]
+            #lamemu = 42
+            #lamelambda = 42
+
+            print os.path.abspath(hf3_filename), "!!!!!!"
 
             with open(hf3_filename, 'w') as fp:
                 content = SCENE_TEMPLATE.render(
+                    hiflow_material_models = hiflow_material_models,
+
                     # template arguments
                     meshfilename=meshFilename,
                     bcdatafilename=bc_filename,
-                    density=density[0],
-                    lamelambda=lamelambda,
-                    lamemu=lamemu,
-                    gravity=-9.81,
                     SolveInstationary=SolveInstationary,
                     DeltaT=self._msml_file.env.simulation[0].dt,
                     maxtimestep=maxtimestep,
@@ -215,31 +244,54 @@ class HiFlow3Exporter(Exporter):
         for cs in obj.constraints:
             for constraint in cs.constraints:
                 indices = self.evaluate_node(constraint.indices)
-                points = msml.ext.misc.positionFromIndices(mesh_name, indices, 'points')
+                points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points')
+                #points = [1,2,3]
 
-                count = len(indices)
-                points_str = ','.join(map(str,points))
+
+                count = len(indices) / 3
+                points_str = list_to_hf3(points)
 
                 assert isinstance(constraint, ObjectElement)
                 if constraint.tag == "fixedConstraint":
-                    #TODO third field i did not understand
-                    fdis = ','.join(["0"] * len(points))
-                    fc = FixedConstraint(count, points_str, "")
+                    fdis = ';'.join(["0.0, 0.0, 0.0"] * count)
+                    fc = FixedConstraint(count, points_str, fdis)
                 elif constraint.tag == "displacementConstraint":
                     #get displacment "a b c" = split => ["a", "b", "c"] = expand to amount points => join
-                    displacement = ','.join(count * list(constraint.displacement.split(" ")))
+                    displacement = ';'.join(count * ','.join(list(constraint.displacement.split(" "))))
+                                                             # [1 2 3]
+                                                    # '1,2,3'
+                                   # 1,2,3;1,2,3;...
                     dc = DisplacementConstraint(count, points_str, displacement)
-                elif constraint.tag == "force":
-                    force_vector = constraint.force  # assume [5 3 3] kg * m/s^2
-                    fp = ForceOrPressure(len(points),
-                                         points,
-                                         ','.join(force_vector * len(points)))
+                elif constraint.tag == "pressureConstraint":
+                    force_vector = constraint.pressureValue # assume [5 3 3] kg / m * s^2
+                    fp = ForceOrPressure(count, points,
+                        ';'.join(','.join(force_vector) * count))
 
         filename = '%s_%s_bc.xml' % (self._msml_file.filename.namebase, obj.id)
         with open(filename, 'w') as h:
             content = BCDATA_TEMPLATE.render(fp=fp, fc=fc, dc=dc)
             h.write(content)
         return filename
+
+
+def list_to_hf3(seq):
+    from cStringIO import StringIO
+
+    s = StringIO()
+
+    for i,p in seq:
+        s.write(p)
+        if i%3 == 0 and i != 0:
+            s.write(";")
+        else:
+            s.write(",")
+
+    s = str(s)
+    return s[:-1]
+
+
+
+
 
         #
         # for roiBoxes in msmlObject.workflow:  # TODO: stimmt das so?

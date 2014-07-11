@@ -136,7 +136,7 @@
                     <element name="constraints" type="msml:constraints_t"
                              minOccurs="0">
                     </element>
-                    <element name="mesh" type="msml:mesh_t" minOccurs="1"
+                      <element name="mesh" type="msml:mesh_t" minOccurs="1"
                              maxOccurs="1">
                     </element>
                     <element name="sets" type="msml:sets_t" minOccurs="0"

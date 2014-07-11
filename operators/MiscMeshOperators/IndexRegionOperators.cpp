@@ -180,19 +180,34 @@ namespace MSML {
 
 
         vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type) {
+            cerr << "positionFromIndices called" << endl;
             vector<double> points;
+
+            cerr << "positionFromIndices called" << endl;
 
             vtkUnstructuredGrid* theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
 
+            cerr << "positionFromIndices called" << endl;
+
+
+            if(theMesh == 0)
+            {
+                cerr << "the mesh is a null pointer" << endl;
+            }
+
             vtkPoints* thePoints = theMesh->GetPoints();
+
+            cerr << "positionFromIndices called" << endl;
+
+
             double* currentPoint = new double[3];
 
             if(type.compare("points") == 0)
             {
                 int count = 0;
 
-                auto it = indices.begin();
-                auto end = indices.end();
+                vector<unsigned int>::iterator it = indices.begin();
+                vector<unsigned int>::iterator end = indices.end();
 
                 for(; it != end; it++)
                 {
@@ -201,6 +216,7 @@ namespace MSML {
                        continue;
                     }
 
+                      cerr << "id: " << *it << endl;
                       thePoints->GetPoint(*it, currentPoint);
                       points.push_back(currentPoint[0]);
                       points.push_back(currentPoint[1]);
