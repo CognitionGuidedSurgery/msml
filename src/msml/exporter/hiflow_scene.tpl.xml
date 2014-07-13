@@ -7,12 +7,14 @@
     </Mesh>
     <LinearAlgebra>
         <Platform>CPU</Platform>
+        <NumParaProcCPU>4</NumParaProcCPU>
         <Implementation>Naive</Implementation>
         <MatrixFormat>CSR</MatrixFormat>
+        <NumRefLevels>1</NumRefLevels>
     </LinearAlgebra>
 
     {%for m in hiflow_material_models%}
-    <ElasticityModel> <!-- nice soft tissue (DA-CJP-2012), MV-tissue (Mansi-2012), brain tissue (Miller) -->
+    <ElasticityModel> <!-- nice soft tissue (DA-CJP-2012), MV-tissue (Mansi-2012), brain-tissue (Miller) -->
 <!--        <materialid>{{m.c}}</materialid> -->
         <density>{{m.d}}</density>
         <lambda>{{m.l}}</lambda> <!-- 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->

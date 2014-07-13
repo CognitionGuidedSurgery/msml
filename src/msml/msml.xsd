@@ -308,6 +308,20 @@
                             </restriction>
                         </simpleType>
                     </attribute>
+                    <attribute use="optional" default="0.1" name="dampingRayleighRatioMass">
+                        <simpleType>
+                            <restriction base="float">
+                                <minExclusive value="0.0"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute use="optional" default="0.2" name="dampingRayleighRatioStiffness">
+                        <simpleType>
+                            <restriction base="float">
+                                <minExclusive value="0.0"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
                 </complexType>
             </element>
             <element name="simulation">
