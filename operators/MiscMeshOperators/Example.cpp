@@ -59,8 +59,16 @@ void TestComputeVolume()
 void TestComputeCrossSectionArea()
 {
 	
-  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume1.vtk");
   PostProcessingOperators::ComputeOrganCrossSectionArea(inputMesh.c_str());
+}
+
+void TestComputeDICECoeff()
+{
+	
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
+  std::string inputMesh2("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume1.vtk");
+  PostProcessingOperators::ComputeDiceCoefficient(inputMesh.c_str(), inputMesh2.c_str());
 }
 
 void TestTransformMeshBarycentric()
@@ -77,11 +85,13 @@ void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 {
 	//std::string inputMesh("E:/GIT/msml/Testdata/CGALi2vExampleResults/liver_kidney_gallbladder.vtk");
 	//std::string outputMesh("E:/GIT/msml/Testdata/CGALi2vExampleResults/liver_kidney_gallbladder_surface.vtk");
-  std::string inputMesh("E:/GIT/msml/Testdata/3Direcadb11Labeled.vtk.tmp");
-  std::string outputMesh("E:/GIT/msml/Testdata/3Direcadb11Labeled_surface.vtk");
+   //std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase2.vtk");
+  //std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase2_surface.vtk");
+	std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/disp50.vtu");
+	std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk");
 
 	string errorMessage;
-  std::string asd("asd");
+	std::string asd("asd");
 	MiscMeshOperators::ExtractAllSurfacesByMaterial(inputMesh.c_str(), outputMesh.c_str(), true);
 
 }
@@ -90,7 +100,7 @@ void TestConvertFebToVTK(){
   std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk");
   std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/pelvisCase2.txt");
 
- PostProcessingOperators::FeBioToVTKConversion(outputMesh, "25", inputMesh);
+ PostProcessingOperators::ConvertFEBToVTK(outputMesh, "100", inputMesh);
 
 
 }
@@ -211,11 +221,13 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-	TestConvertFebToVTK();
-	//TestComputeDiceCoefficient();
+	//TestConvertFebToVTK();
 	//TestComputeVolume();
 	//TestComputeCrossSectionArea();
+	TestComputeDICECoeff();
 	//return EXIT_SUCCESS;
+	//TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator();
+
 
 	//TestTransformMeshBarycentric();
 	

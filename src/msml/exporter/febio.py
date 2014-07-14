@@ -45,9 +45,7 @@ import subprocess
 import lxml.etree as etree
 from xml.etree.ElementTree import Element
 from msml.exceptions import *
-from msml.ext.misc import ConvertVTKMeshToFeBioMeshStringPython
-from msml.ext.misc import createFeBioPressureOutputPython
-from msml.ext.misc import FeBioToVTKConversion
+from msml.ext.misc import *
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -92,7 +90,6 @@ class FeBioExporter(XMLExporter):
            rootelement.write(febfile, pretty_print=True, encoding='iso-8859-1', xml_declaration=True)
 
     def execute(self):
-        "should execute the external tool and set the memory"
         cmd = "febio -i " + self.export_file
         print(os.getcwd());
         print cmd
@@ -100,11 +97,19 @@ class FeBioExporter(XMLExporter):
         os.system(cmd)
         print("Converting FeBio to VTK.")
         self.convertToVTK(str(self.meshFile))
+        self.postProcessing()
         cmd = "postview.exe " + self.file_name + ".xplt"
         os.system(cmd)
-        pass
-
-
+        
+    def postProcessing(self):
+        print("Extract all surfaces by material.")
+        extractedVolumeName = "feb_surface.vtk"
+        ExtractAllSurfacesByMaterial(str(self.file_name + ".vtk"), str(extractedVolumeName), True)
+        print("Bladder last step:")
+        bladderVTK = str(extractedVolumeName + "-volume1.vtk")
+        ComputeOrganVolume(bladderVTK)
+        ComputeOrganCrossSectionArea(bladderVTK);
+        
     def write_feb(self):
         self.node_root = self.createScene()
         for msmlObject in self._msml_file.scene:
@@ -159,7 +164,7 @@ class FeBioExporter(XMLExporter):
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
             
-            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="isotropic elastic" )
+            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="neo-Hookean" )
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
@@ -183,14 +188,14 @@ class FeBioExporter(XMLExporter):
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     count += 1
-                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count))
+                    pressure = - float(constraint.pressure) / 2.0
+                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count), str(pressure))
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
                     dt = float(self._msml_file.env.simulation[0].dt)
-                    pressure = float(constraint.pressure) / 10.0
                     time = dt * iterations
-                    loadPointValue1 = "0.00," + str(pressure)
-                    loadPointValue2 = str(time) + ",0.00"
+                    loadPointValue1 = "0.00, 0.00" 
+                    loadPointValue2 = str(time) + ", 1.00"
                     loadDataNode = self.sub("LoadData", self.node_root)
                     loadcurve = self.sub("loadcurve", loadDataNode, id=str(count), type ="smooth")
                     loadPoint1 = self.sub("loadpoint", loadcurve)
@@ -241,10 +246,10 @@ class FeBioExporter(XMLExporter):
         analysis = self.sub("analysis", controlNode, type = analysisType)
         
     def convertToVTK(self, meshFilename):
-        iterations = str(int(self._msml_file.env.simulation[0].iterations)-1)
+        iterations = str(self._msml_file.env.simulation[0].iterations)
         dt = self._msml_file.env.simulation[0].dt
         logfile = str(self.file_name + ".txt");
-        FeBioToVTKConversion(logfile, iterations, meshFilename)
+        ConvertFEBToVTK(logfile, iterations, meshFilename)
          
     def createScene(self):
         version = "1.2"  

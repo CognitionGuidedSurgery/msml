@@ -754,14 +754,14 @@ std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh, std::st
 
 }
 
-std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices, std::string id)
+std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices, std::string id, std::string pressure)
 {
 	//load the vtk  mesh
 	vtkSmartPointer<vtkUnstructuredGridReader> reader =
 		vtkSmartPointer<vtkUnstructuredGridReader>::New();
 	  reader->SetFileName(inputMesh.c_str());
 	  reader->Update();
-	  std::string output = createFeBioPressureOutput( reader->GetOutput(), indices, id);
+	  std::string output = createFeBioPressureOutput( reader->GetOutput(), indices, id, pressure);
 	  return output;
 
 }
@@ -912,7 +912,7 @@ std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  st
 	return out.str();
 }
 
-std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices, std::string id)
+std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices, std::string id, std::string pressure)
 {
    	 std::stringstream out;
 	
@@ -927,7 +927,7 @@ std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vecto
 	 {
 		 inputMesh->GetCellPoints(indices[i], numberOfNodesPerElement, currentCellPoints);
 		if(numberOfNodesPerElement == 3) {
-			 out<<"<tri3 id=\""<<i+1<< "\" lc=\""<< id << "\" scale=\"1\" >" ; // lc als Parameter übergeben
+			 out<<"<tri3 id=\""<<i+1<< "\" lc=\""<< id << "\" scale=\""<< pressure <<"\" >" ; // lc als Parameter übergeben
 		 for(int j=0;j<numberOfNodesPerElement;j++)
 		 {
 			if(j == numberOfNodesPerElement-1){
