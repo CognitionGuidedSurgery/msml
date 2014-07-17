@@ -73,12 +73,104 @@ void TestComputeDICECoeff()
 
 void TestTransformMeshBarycentric()
 {
-  vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\scenarios_1stmode99\\dispOutput0.vtu");
-	vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\scenarios_1stmode99\\dispOutput125.vtu");
-  vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\allIn100justCGALOptimizerAllOnResults\\boneMesh16.vtk");
+  vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\combo.vtk");
+	vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\disp10.vtu");
+  vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\combo.vtk");
 	vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
   PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface, refSurface, deformedGrid);
 
+}
+
+void TestComparisonFeBioAndSofa()
+{
+  std::string referenceGrid("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\disp0.vtu");
+  std::string deformedGrid("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\disp100.vtu");
+  std::string refSurface("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\combo.vtk");
+  std::string out_surface("C:\\MSML\\msml\\examples\\CGALPelvis_DKFZ_internal\\disp100_pressure8_10s.vtk");
+  std::string outputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk");
+  PostProcessingOperators::TransformMeshBarycentric(referenceGrid.c_str(),out_surface.c_str(), refSurface.c_str(), deformedGrid.c_str());
+  MiscMeshOperators::ExtractAllSurfacesByMaterial(out_surface.c_str(), outputMesh.c_str(), false);
+  
+  std::string inputMesh0("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume0.vtk");
+  std::string inputMesh("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume1.vtk");
+  std::string inputMesh1("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume2.vtk");
+  std::string inputMesh2("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume3.vtk");
+  std::string inputMesh3("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume4.vtk");
+  std::string inputMesh4("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/combo.vtk-volume100.vtk");
+
+  cerr << "initial Bladder" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh.c_str());
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMesh.c_str());
+  cerr << "initial Rectum" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh1.c_str());
+  cerr << "initial Bowel" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh2.c_str());
+  cerr << "initial Bone" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh3.c_str());
+  cerr << "initial Prostate" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMesh4.c_str());
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMesh4.c_str());
+  cerr << endl;
+
+  std::string inputMeshFeb0("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume0.vtk");
+  std::string inputMeshFeb("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume1.vtk");
+  std::string inputMeshFeb1("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume2.vtk");
+  std::string inputMeshFeb2("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume3.vtk");
+  std::string inputMeshFeb3("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume4.vtk");
+  std::string inputMeshFeb4("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/feb_surface.vtk-volume100.vtk");
+
+  cerr << "feb Bladder Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshFeb.c_str());
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMeshFeb.c_str());
+  cerr << "feb Rectum Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshFeb1.c_str());
+  cerr << "feb Bowel Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshFeb2.c_str());
+  cerr << "feb Bone Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshFeb3.c_str());
+  cerr << "feb Prostate Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshFeb4.c_str());
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMeshFeb4.c_str());
+  cerr << endl;
+
+  std::string inputMeshSofa0("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk-volume0.vtk");
+  std::string inputMeshSofa("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk-volume1.vtk");
+  std::string inputMeshSofa1("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk-volume2.vtk");
+  std::string inputMeshSofa2("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk-volume3.vtk");
+  std::string inputMeshSofa3("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk-volume4.vtk");
+  std::string inputMeshSofa4("C:/MSML/msml/examples/CGALPelvis_DKFZ_internal/sofa_surface.vtk-volume100.vtk");
+
+  cerr << "Sofa Bladder Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshSofa.c_str());
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMeshSofa.c_str());
+  cerr << "Sofa Rectum Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshSofa1.c_str());
+  cerr << "Sofa Bowel Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshSofa2.c_str());
+  cerr << "Sofa Bone Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshSofa3.c_str());
+  cerr << "Sofa Prostate Pressure 8" << endl;
+  PostProcessingOperators::ComputeOrganVolume(inputMeshSofa4.c_str());
+  PostProcessingOperators::ComputeOrganCrossSectionArea(inputMeshSofa4.c_str());
+  cout << endl;
+
+  cerr << "DICE Coeff Sofa Initial Pelvis" << endl;
+  PostProcessingOperators::ComputeDiceCoefficient(inputMesh3.c_str(), inputMeshSofa3.c_str());
+  cout << endl;
+  cerr << "DICE Coeff Feb Initial Pelvis" << endl;
+  PostProcessingOperators::ComputeDiceCoefficient(inputMesh3.c_str(), inputMeshFeb3.c_str());
+  cout << endl;
+  cerr << "DICE Coeff Feb Initial Bladder" << endl;
+  PostProcessingOperators::ComputeDiceCoefficient(inputMesh.c_str(), inputMeshFeb.c_str());
+  cout << endl;
+  cerr << "DICE Coeff Sofa Initial Bladder" << endl;
+  PostProcessingOperators::ComputeDiceCoefficient(inputMesh.c_str(), inputMeshSofa.c_str());
+  cout << endl;
+  cerr << "DICE Coeff Feb Sofa Bladder" << endl;
+  PostProcessingOperators::ComputeDiceCoefficient(inputMeshSofa.c_str(), inputMeshFeb.c_str());
+  cout << endl;
+  cerr << "DICE Coeff Feb Sofa Prostate" << endl;
+  PostProcessingOperators::ComputeDiceCoefficient(inputMeshSofa4.c_str(), inputMeshFeb4.c_str());
 }
 
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
@@ -92,7 +184,7 @@ void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 
 	string errorMessage;
 	std::string asd("asd");
-	MiscMeshOperators::ExtractAllSurfacesByMaterial(inputMesh.c_str(), outputMesh.c_str(), true);
+	MiscMeshOperators::ExtractAllSurfacesByMaterial(inputMesh.c_str(), outputMesh.c_str(), false);
 
 }
 
@@ -224,12 +316,13 @@ int main( int argc, char * argv[])
 	//TestConvertFebToVTK();
 	//TestComputeVolume();
 	//TestComputeCrossSectionArea();
-	TestComputeDICECoeff();
+	//TestComputeDICECoeff();
+	//TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator();
 	//return EXIT_SUCCESS;
 	//TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator();
 
-
-	//TestTransformMeshBarycentric();
+	
+	TestComparisonFeBioAndSofa();
 	
 }
 

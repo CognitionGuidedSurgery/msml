@@ -200,7 +200,7 @@ class SofaExporter(XMLExporter):
             self.sub("SparseMKLSolver")
         elif self._msml_file.env.solver.linearSolver == "iterativeCG":
             self.sub("CGLinearSolver",
-                     iterations="100", tolerance="1e-06", threshold="1e-06")
+                     iterations = str(self._msml_file.env.simulation[0].iterations), tolerance="1e-06", threshold="1e-06")
         else:
             warn(MSMLSOFAExporterWarning, "Error linear solver %s not supported" %
                  self._msml_file.env.solver.linearSolver)
@@ -212,7 +212,6 @@ class SofaExporter(XMLExporter):
         youngs = {}
         poissons = {}
         density = {}
-
 
         for matregion in msmlObject.material:
             assert isinstance(matregion, MaterialRegion)
@@ -315,11 +314,12 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position") 
+                    iterations = float(self._msml_file.env.simulation[0].iterations)
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
-                                                             pulseMode="1",
-                                                             pressureSpeed=str(float(
+                                                             pulseMode="false",
+                                                             pressureSpeed=str(float( #Continuous pressure application in Pascal per second. Only active in pulse mode
                                                                  constraint.pressure) / 10.0),
                                                              pressure=constraint.get("pressure"),
                                                              triangleIndices=indices)
@@ -405,7 +405,7 @@ class SofaExporter(XMLExporter):
 
 
     def createScene(self):
-        dt = "0.05"  # TODO find dt from msmlfile > env > simulation
+        dt = str(self._msml_file.env.simulation[0].dt)  # TODO find dt from msmlfile > env > simulation
         root = etree.Element("Node", name="root", dt=dt)
         theGravity = "0 0 -9.81"  # TODO find gravity in msmlfile > env > simulation stepNode.get("gravity")
         if theGravity is None:

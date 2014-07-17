@@ -476,9 +476,9 @@ void ComputeOrganVolume(const char* volumeFilename){
 	mass->Modified();
 	mass->Update();
 	
-	cout << "Volume: " << mass->GetVolume() << endl << "Surface: " << mass->GetSurfaceArea() << endl;
+	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
 
-	vtkIdType* currentCellPoints;
+	/*vtkIdType* currentCellPoints;
 	vtkIdType numberOfNodesPerElement;
 	double volume = 0;
 	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
@@ -502,7 +502,7 @@ void ComputeOrganVolume(const char* volumeFilename){
 		
 	 }
 
-	 cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;
+	 cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;*/
 
 }
 

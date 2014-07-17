@@ -104,7 +104,7 @@ class FeBioExporter(XMLExporter):
     def postProcessing(self):
         print("Extract all surfaces by material.")
         extractedVolumeName = "feb_surface.vtk"
-        ExtractAllSurfacesByMaterial(str(self.file_name + ".vtk"), str(extractedVolumeName), True)
+        ExtractAllSurfacesByMaterial(str(self.file_name + ".vtk"), str(extractedVolumeName), False)
         print("Bladder last step:")
         bladderVTK = str(extractedVolumeName + "-volume1.vtk")
         ComputeOrganVolume(bladderVTK)
@@ -164,7 +164,7 @@ class FeBioExporter(XMLExporter):
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
             
-            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="neo-Hookean" )
+            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="isotropic elastic" )
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
@@ -188,7 +188,7 @@ class FeBioExporter(XMLExporter):
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     count += 1
-                    pressure = - float(constraint.pressure) / 2.0
+                    pressure = - float(constraint.pressure)
                     pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count), str(pressure))
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
