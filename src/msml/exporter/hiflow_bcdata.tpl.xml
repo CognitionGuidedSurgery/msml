@@ -1,4 +1,5 @@
 <Param>
+  <BCData>
 {% if fc %}
     <FixedConstraintsBCs>
         <NumberOfFixedDirichletPoints>{{fc.nFDP}}</NumberOfFixedDirichletPoints>
@@ -22,4 +23,5 @@
         <ForcesOrPressures>{{fp.FoPBCVectorsList}}</ForcesOrPressures>
     </ForceOrPressureBCs>
 {% endif %}
+  </BCData>
 </Param>

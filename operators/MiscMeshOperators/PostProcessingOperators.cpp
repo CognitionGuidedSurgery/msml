@@ -881,6 +881,7 @@ std::string TransformMeshBarycentricMultiple(const char* referenceGridPath, cons
         currenOutputFile = curentPath.string();
         TransformMeshBarycentric(referenceGridPath, currenOutputFile.c_str(), meshPath, allRefs->at(i).second.c_str());
     }
+    return currenOutputFile;
 }
 
 string TransformMeshBarycentric(const char* referenceGridPath, const char* out_meshPath,  const char* meshPath, const char* deformedGridPath)

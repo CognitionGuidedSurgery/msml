@@ -10,6 +10,7 @@
       Authors: Markus Stoll
                Stefan Suwelack
                Alexander Weigl
+               Nicolai Schoch
       Version: 0.1alpha
          Date: 2014-02-20
    

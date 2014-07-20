@@ -115,56 +115,41 @@ class HiFlow3Exporter(Exporter):
 
             self.scenes.append(hf3_filename)
 
-            # # get and compute elasticity constants (i.e. material parameters):
-            # # therefore, iterate over "material" and "material's region"
-            # # (compare to: NewSofaExporter.createMaterialRegion().)
-            # youngs = {}
-            # poissons = {}
-            # density = {}
-            #
-            # for matregion in msmlObject.material:
-            # assert isinstance(matregion, MaterialRegion)
-            #
-            # indexGroupNode = matregion.get_indices()  # needed for two or more materialregions only?!
-            #
-            # assert isinstance(indexGroupNode, ObjectElement)  # needed for two or more materialregions only?!
-            #
-            # indices_key = indexGroupNode.attributes["indices"]  # needed for two or more materialregions only?!
-            #     indices_vec = self.evaluate_node(indices_key)  # needed for two or more materialregions only?!
-            #     indices = '%s' % ', '.join(map(str, indices_vec))  # needed for two or more materialregions only?!
-            #
-            #     indices_int = [int(i) for i in indices.split(",")]  # needed for two or more materialregions only?!
-            #
-            #     # Get all materials
-            #     for material in matregion:
-            #         assert isinstance(material, ObjectElement)
-            #
-            #         currentMaterialType = material.attributes['__tag__']  # what?!
-            #         if currentMaterialType == "indexgroup":  # what?!
-            #             continue
-            #
-            #         if currentMaterialType == "linearElastic":
-            #             currentYoungs = material.attributes["youngModulus"]
-            #             currentPoissons = material.attributes["poissonRatio"]
-            #             for i in indices_int:  # needed for two or more materialregions only?! #TODO Performance (maybe generator should be make more sense)
-            #                 youngs[i] = currentYoungs  # needed for two or more materialregions only?!
-            #                 poissons[i] = currentPoissons  # needed for two or more materialregions only?!
-            #         elif currentMaterialType == "mass":
-            #             currentDensity = material.attributes["density"]
-            #             for i in indices_int:  # needed for two or more materialregions only?!
-            #                 density[i] = currentDensity  # needed for two or more materialregions only?!
-            #         else:
-            #             warn(MSMLHiFlow3ExporterWarning, "Material Type not supported %s" % currentMaterialType)
-            #
-            #             # now we have: youngs[], poissons[], density[].
-            #             # since HiFlow3 is currently dealing with one material only, the for-loop is to be ended here.
 
-            # the thus obtained linearElasticityConstants for the (imposed) one given material are:
-            #NU = poissons[0]  # by definition: set NU = poissons[0], so HiFlow3 can handle without weak material boundaries.
-            #E = youngs[0]  # by definition: set E = youngs[0], so HiFlow3 can handle without weak material boundaries.
-            # and hence
-            #lamelambda = (E * NU) / ((1 + NU) * (1 - 2 * NU))
-            #lamemu = E / (2 * (1 + NU))
+            class HF3MaterialModel(object):
+                def __init__(self):
+                    self.id, self.lamelambda, self.lamemu, self.gravity, self.density = [None]*5
+
+            hiflow_material_models = []
+            # get and compute elasticity constants (i.e. material parameters):
+            # therefore, iterate over "material" and "material's region"
+            # (compare to: NewSofaExporter.createMaterialRegion().)
+            for c, matregion in enumerate(msmlObject.material):
+                hiflow_model = HF3MaterialModel()
+                hiflow_material_models.append(hiflow_model)
+                hiflow_model.id = c
+
+                assert isinstance(matregion, MaterialRegion)
+
+                indices = self.get_value_from_memory(matregion)
+
+                # TODO: (Nico, 2014-07-11)
+                # build inp-file with correct material region id
+                # (i.e.: hiflow_model.id for every point in indices)
+
+                for material in matregion:
+                    if 'linearElasticMaterial' == material.attributes['__tag__']:
+
+                        E =  float(material.attributes["youngModulus"])
+                        NU = float(material.attributes["poissonRatio"])
+
+                        hiflow_model.lamelambda = (E * NU) / ((1 + NU) * (1 - 2 * NU))
+                        hiflow_model.lamemu = E / (2 * (1 + NU))
+                        hiflow_model.gravity =  -9.81
+
+                    if 'mass' == material.attributes['__tag__']:
+                        hiflow_model.density =  material.attributes['massDensity']
+
 
             maxtimestep = self._msml_file.env.simulation[0].iterations
 
@@ -173,26 +158,22 @@ class HiFlow3Exporter(Exporter):
             else:
                 SolveInstationary = 0
 
-            #debug
-            density = [0]
-            lamemu = 42
-            lamelambda = 42
+            #print os.path.abspath(hf3_filename), "!!!!!!"
 
             with open(hf3_filename, 'w') as fp:
                 content = SCENE_TEMPLATE.render(
+                    hiflow_material_models = hiflow_material_models,
+
                     # template arguments
                     meshfilename=meshFilename,
                     bcdatafilename=bc_filename,
-                    density=density[0],
-                    lamelambda=lamelambda,
-                    lamemu=lamemu,
-                    gravity=-9.81,
                     SolveInstationary=SolveInstationary,
                     DeltaT=self._msml_file.env.simulation[0].dt,
                     maxtimestep=maxtimestep,
                     linsolver=self._msml_file.env.solver.linearSolver,
                     precond=self._msml_file.env.solver.preconditioner
-                    # in future, there may be some more?! # alternatively parsing by means of using *.get("...") possible?!
+                    # in future, there may be some more...
+                    # Note: alternative parsing by means of using *.get("...") possible?!
                 )
                 fp.write(content)
 
@@ -215,25 +196,31 @@ class HiFlow3Exporter(Exporter):
         for cs in obj.constraints:
             for constraint in cs.constraints:
                 indices = self.evaluate_node(constraint.indices)
-                points = msml.ext.misc.positionFromIndices(mesh_name, indices, 'points')
+                points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points') # positionFromIndices() does not yet work?!
+                #points = [1,2,3] # TestOutput
+                #     # TODO: list of DPoints
+                #     pointsInBoxROIVector=pointsInBoxROIVector,
+                #     # TODO: transform MSML-ROIs/Boxes into (lists of) point coordinates:
+                #     #TODO: use "getPointsInBoxROI()" (-> compare: abaqusnew.py, lines 129ff) and "extractPointPositions()".
 
-                count = len(indices)
-                points_str = ','.join(map(str,points))
+                count = len(indices) / 3
+                points_str = list_to_hf3(points)
 
                 assert isinstance(constraint, ObjectElement)
                 if constraint.tag == "fixedConstraint":
-                    #TODO third field i did not understand
-                    fdis = ','.join(["0"] * len(points))
-                    fc = FixedConstraint(count, points_str, "")
+                    fdis = ';'.join(["0.0, 0.0, 0.0"] * count)
+                    fc = FixedConstraint(count, points_str, fdis)
                 elif constraint.tag == "displacementConstraint":
                     #get displacment "a b c" = split => ["a", "b", "c"] = expand to amount points => join
-                    displacement = ','.join(count * list(constraint.displacement.split(" ")))
+                    displacement = ';'.join(count * ','.join(list(constraint.displacement.split(" "))))
+                                                             # [1 2 3]
+                                                    # '1,2,3'
+                                   # 1,2,3;1,2,3;...
                     dc = DisplacementConstraint(count, points_str, displacement)
-                elif constraint.tag == "force":
-                    force_vector = constraint.force  # assume [5 3 3] kg * m/s^2
-                    fp = ForceOrPressure(len(points),
-                                         points,
-                                         ','.join(force_vector * len(points)))
+                elif constraint.tag == "pressureConstraint":
+                    force_vector = constraint.pressureValue
+                    fp = ForceOrPressure(count, points,
+                        ';'.join(','.join(force_vector) * count))
 
         filename = '%s_%s_bc.xml' % (self._msml_file.filename.namebase, obj.id)
         with open(filename, 'w') as h:
@@ -241,53 +228,19 @@ class HiFlow3Exporter(Exporter):
             h.write(content)
         return filename
 
-        #
-        # for roiBoxes in msmlObject.workflow:  # TODO: stimmt das so?
-        # assert isinstance(roiBoxes, boxROI)
-        #
-        # indicesVector = computeIndicesFromBoxROI(string
-        # meshFilename, vector < double > roiBoxes, string
-        # type)  # hier müssen die type-definitions wieder raus...
-        #     # in "IndexRegionOperators.cpp"
-        #     # TODO: what is type "tetrahedron"?
-        #     pointsInBoxROIVector = extractPointPositions(std::vector < int > indicesVector, const
-        #     char * meshFilename)
-        #     # in "MiscMeshOperators.cpp"
-        #     numfDpoints = len(pointsInBoxROIVector) / 3
-        #     zeroDisplacementVectors = ''
-        #     for it in range(1, numfDpoints):
-        #         zeroDisplacementVectors.append('0,0,0;')
-        #     zeroDisplacementVectors = zeroDisplacementVectors[0:-1]
-        #
-        # # writing boundary conditions
-        # bcxmlfile.write(tpl.render(
-        #     # template arguments
-        #     # ---
-        #     # TODO: Number of fDpoints
-        #     numfDpoints=numfDpoints,
-        #
-        #     # TODO: list of DPoints
-        #     pointsInBoxROIVector=pointsInBoxROIVector,
-        #     # TODO: transform MSML-ROIs/Boxes into (lists of) point coordinates:
-        #     #TODO: use "getPointsInBoxROI()" (-> compare: abaqusnew.py, lines 129ff) and "extractPointPositions()".
-        #
-        #     #TODO: list of zeroDisplacementVectors
-        #     zeroDisplacementVectors=zeroDisplacementVectors,
-        #
-        #     #---
-        #     #TODO: Number of dDpoints
-        #
-        #     #TODO: list of dDPoints getPointsInBoxROI()
-        #
-        #     #TODO: list of displacementVectors getVectorsInBoxROI()
-        #
-        #     #---
-        #     #TODO: Number of ForceOrPressureBCPoints
-        #
-        #     #TODO: list of ForceOrPressureBCPoints getPointsInBoxROI()
-        #
-        #     #TODO: list of ForceOrPressureVectors
-        #
-        #     #---
-        # ))
-        #
+
+def list_to_hf3(seq):
+    from cStringIO import StringIO
+
+    s = StringIO()
+
+    for i,p in seq:
+        s.write(p)
+        if i%3 == 0 and i != 0:
+            s.write(";")
+        else:
+            s.write(",")
+
+    s = str(s)
+    return s[:-1]
+
