@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 #region gplv3
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
@@ -74,10 +74,13 @@ def main():
         print("\t \x1b[1m%d\x1b[0m \x1b[34;1m%20s\x1b[0m : %s\n\t\t\t%s\n" % (i, name, file, desc))
 
     print("Select Examples [0]:", end=" ")
-    try:
-        number = int(raw_input()) or 0
-    except:
-        number = 0
+    if len(sys.argv) == 1:
+        try:
+            number = int(raw_input()) or 0
+        except:
+            number = 0
+    else:
+        number = int(sys.argv[1])
 
     try:
         name, file, desc = EXAMPLES[number]
