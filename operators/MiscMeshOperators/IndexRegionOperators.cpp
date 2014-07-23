@@ -185,8 +185,7 @@ namespace MSML {
 
             cerr << "positionFromIndices called" << endl;
 
-            vtkUnstructuredGrid* theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
-
+            vtkSmartPointer<vtkUnstructuredGrid> theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
             cerr << "positionFromIndices called" << endl;
 
 
