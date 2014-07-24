@@ -228,19 +228,25 @@ class HiFlow3Exporter(Exporter):
             h.write(content)
         return filename
 
-
 def list_to_hf3(seq):
+    """transfers a seq of values into a string for hiflow3.
+    :param seq: a sequence (iterable) of value (int, float, ...)
+    :rtype: str
+
+    >>> points = map(float, [1,2,3]*3)
+    >>> list_to_hf3(points)
+    "1.0,2.0,3.0;1.0,2.0,3.0;1.0,2.0,3.0"
+    """
     from cStringIO import StringIO
 
     s = StringIO()
 
-    for i,p in seq:
-        s.write(p)
-        if i%3 == 0 and i != 0:
+    for i,p in enumerate(seq, 1):
+        s.write(str(p))
+        if i%3 == 0 and i != 1:
             s.write(";")
         else:
             s.write(",")
 
-    s = str(s)
+    s =  s.getvalue()
     return s[:-1]
-
