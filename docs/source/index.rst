@@ -19,7 +19,6 @@ msml - medical simulation markup language
 .. toctree::
 
    About
-   modules/run-msml
    Installation
    GettingStarted
    examples/index

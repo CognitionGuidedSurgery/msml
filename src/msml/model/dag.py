@@ -31,8 +31,9 @@
 
 import networkx as nx
 
-__author__ = "Alexander Weigl"
+__author__ = "Alexander Weigl <uiduw@student.kit.edu>"
 
+__all__ = ["DiGraph"]
 
 class DiGraph(nx.MultiDiGraph):
     """ A networkx.MultiDiGraph but extends this by to methods:

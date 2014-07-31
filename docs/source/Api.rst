@@ -9,7 +9,7 @@ API - Documenation
    :maxdepth: 4
    :glob:
 
-   modules/msml/__init__
+   modules/index
    operators/index
    elements/index
    extension/index

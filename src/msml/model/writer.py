@@ -188,17 +188,30 @@ class XmlBuilder(VisitorExporterFramework, Visitor):
         return object_element(_workflow, task.name, a)
 
 
-__all__ = ['to_xml']
+__all__ = ['to_xml', 'save_xml']
 
 
 def to_xml(msml_file):
+    """translate the given `msml_file` into a XML dom tree.
+
+    :param msml.model.MSMLFile msml_file:
+      a MSMLFile object
+
+    :rtype: lxml.etree._Element
+    :returns: root element of etree dom
+    """
     b = XmlBuilder(msml_file)
     return b.to_xml()
 
 import codecs
+def save_xml(filename, xml):
+    """saves the given `xml` element into the given `filename`
 
+    :param str filename: the file written to
+    :param Element xml: the element to be written.
 
-def save_xml(fp, xml):
+    :returns: None
+    """
     r = etree.ElementTree(xml)
-    with codecs.open(fp, 'w', 'utf-8') as fp:
+    with codecs.open(filename, 'w', 'utf-8') as fp:
         r.write(fp, pretty_print=True)
