@@ -26,6 +26,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
+"""This class summaries functions for executing the pipeline.
+
+
+"""
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-26"
@@ -35,21 +39,30 @@ import warnings
 from path import path
 
 from .memory import Memory
-from msml.model import *
-from msml.log import report
-from msml.generators import generate_task_id
-from msml.model.dag import DiGraph
-from msml.exporter.base import Exporter
-from msml.run.GraphDotWriter import GraphDotWriter
+from .GraphDotWriter import GraphDotWriter
+
+from ..model import *
+from ..log import report
+from ..generators import generate_task_id
+from ..exporter import Exporter
+
 import msml.sortdef
 
+__all__ = ['Executer', 'Memory',
+           'build_graph', 'create_conversion_task',
+           'get_python_conversion_operator', 'initialize_file_literals',
+           'inject_implict_conversion',
+           'GraphDotWriter','DefaultGraphBuilder',
+           'MemoryError', 'MemoryTypeMismatchError',
+           'MemoryVariableUnknownError',
+           'LinearSequenceExecuter']
 
 class Executer(object):
-    """Describe the interface of an Executer.
+    """Describes the interface of an Executer.
 
-    An Executer is responsible for calling the operator with the right arguments and parameters in the right order.
-    Additionally it invokes the Exporter.
-
+    An Executer is responsible for calling the operator with the
+    right arguments and parameters in the right order.
+    Additionally it invokes the :py:class:`msml.exporter.Exporter`.
 
     """
 
@@ -72,6 +85,8 @@ def contains(a, b):
 
 
 def initialize_file_literals(first_bucket):
+    """
+    """
     def var_is_file(var):
         if isinstance(var, MSMLVariable):
             return issubclass(var.sort.physical, msml.sortdef.InFile)
@@ -208,6 +223,24 @@ class LinearSequenceExecuter(Executer):
 
 
 def build_graph(tasks, exporter, variables):
+    """build the direct acyclic graph from the given arguments.
+
+    :param list[Task] tasks: a list of :py:class:`msml.model.Task`
+    :param Exporter exporter: the :py:class:`msml.exporter.Exporter`
+       to be weaved int
+    :param list[MSMLVariable] variables: :py:class:`MSMLVariable`
+
+    :returns: a DAG for the execution
+    :rtype: :py:class:`msml.model.DiGraph`
+
+    .. warning::
+
+       The graph building does not validate the dependencies or anything
+       else. You have to do this before or after you used the function.
+       E.g. :py:method:`msml.model.MSMLFile.validate`
+
+    """
+
     dag = DiGraph()
 
     nodes = dict(tasks)
@@ -236,12 +269,17 @@ from ..sorts import conversion
 
 
 def inject_implict_conversion(dag):
-    """Finds type mismatch and injects suitable conversion operators
+    """Finds type mismatches on edges and injects suitable conversion operators
 
-    :param dag: a directed acyclic graph from `build_graph`
-    :type dag: DiGraph
-    :return: the given graph
-    :rtype: DiGraph
+    .. warning::
+
+       This function works and changes the given `dag`.
+
+    :param dag: a directed acyclic graph from
+                :py:func:`msml.run.build_graph`
+    :type dag: :py:class:`msml.model.DiGraph`
+    :return: the modified graph
+    :rtype: msml.model.DiGraph
     """
     for a, b, data in dag.edges(data=True):
         ref = data['ref']
@@ -278,10 +316,24 @@ def inject_implict_conversion(dag):
     return dag
 
 
-from ..model import PythonOperator, Task, Slot
-
-
 def get_python_conversion_operator(slotA, slotB):
+    """creates an :py:class:`msml.model.PythonOperator` for conversion
+    from sort of `slotA` to sort of `slotB`
+
+    :param slotA: slot on the outgoing side
+    :type slotA: msml.model.Reference.Ref
+
+    :param slotB: slot on the incoming side
+    :type slotB: msml.model.Reference.Ref
+
+    :returns: an callable conversion operator or none if types incompatible
+    :rtype: msml.model.PythonOperator
+
+    .. seealso::
+
+       :py:class:`msml.sorts.ConversionNetwork`
+
+    """
     r = {'function': '<automatic-converter>', 'module': '<module-name>'}
 
     pA = slotA.arginfo.sort.physical
@@ -300,13 +352,14 @@ def get_python_conversion_operator(slotA, slotB):
 
 
 def create_conversion_task(slotA, slotB):
-    """
+    """creates a task (instance of operator) for the requested conversion.
 
     :param slotA:
     :type slotA: Reference.Ref
     :param slotB:
     :type slotB: Reference.Ref
-    :return:
+    :return: a task, ready for embedding into the build graph
+    :rtype: msml.model.Task
     """
 
     fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
@@ -329,7 +382,7 @@ class DefaultGraphBuilder(object):
      Args:
        msmlfile (MSMLFile)
        exporter (Exporter)
-        
+
     """
 
     def __init__(self, msmlfile, exporter):

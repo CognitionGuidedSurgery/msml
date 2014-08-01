@@ -8,6 +8,7 @@
 #include "MappingOperators.h"
 #include "VTKMeshgen.h"
 #include "MeshQualityOperators.h"
+#include "MeshInfoOperators.h"
 #include "FeatureExtractionOperators.h"
 
 %}
@@ -25,6 +26,7 @@ namespace std {
 %include "MappingOperators.h"
 %include "VTKMeshgen.h"
 %include "MeshQualityOperators.h"
+%include "MeshInfoOperators.h"
 %include "FeatureExtractionOperators.h"
 
 %begin %{

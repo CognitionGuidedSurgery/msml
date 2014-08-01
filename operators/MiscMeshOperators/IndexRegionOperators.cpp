@@ -180,25 +180,9 @@ namespace MSML {
 
 
         vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type) {
-            cerr << "positionFromIndices called" << endl;
             vector<double> points;
-
-            cerr << "positionFromIndices called" << endl;
-
-            vtkUnstructuredGrid* theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
-
-            cerr << "positionFromIndices called" << endl;
-
-
-            if(theMesh == 0)
-            {
-                cerr << "the mesh is a null pointer" << endl;
-            }
-
+            vtkSmartPointer<vtkUnstructuredGrid> theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
             vtkPoints* thePoints = theMesh->GetPoints();
-
-            cerr << "positionFromIndices called" << endl;
-
 
             double* currentPoint = new double[3];
 
@@ -216,12 +200,11 @@ namespace MSML {
                        continue;
                     }
 
-                      cerr << "id: " << *it << endl;
-                      thePoints->GetPoint(*it, currentPoint);
-                      points.push_back(currentPoint[0]);
-                      points.push_back(currentPoint[1]);
-                      points.push_back(currentPoint[2]);
-                 }
+		    thePoints->GetPoint(*it, currentPoint);
+		    points.push_back(currentPoint[0]);
+		    points.push_back(currentPoint[1]);
+		    points.push_back(currentPoint[2]);
+		}
 
                 cerr << count << " points found in box";
             }/* TODO implement this

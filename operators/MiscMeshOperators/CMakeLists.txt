@@ -37,6 +37,7 @@ SET(MiscMeshOperators_SRCS
   MappingOperators.cpp
   VTKMeshgen.cpp
   MeshQualityOperators.cpp
+  MeshInfoOperators.cpp
   FeatureExtractionOperators.cpp
   )
 

@@ -27,12 +27,12 @@
 
 """
 msml.exporter -- base functionality for all exporters.
-You only need this if you want create your own exporter.
 
 An exporter is like an operator but with great power!
 It is a cut-off in the execution of an msml file and can
 read/manipulate the whole and processed memory content.
 
+For more information: :py:class:`msml.exporter.Exporter`
 
 """
 
@@ -42,16 +42,21 @@ __date__ = "2013-12-13"
 __updated__ = "2014-02-26"
 
 from .base import *
-from .abaqusnew import AbaqusExporter as NAbaqusExporter
-from .sofanew import SofaExporter as NSofaExporter
+from .abaqusnew import AbaqusExporter
+from .sofanew import SofaExporter
 from .hiflow3 import HiFlow3Exporter
+
+__all__ = ['register_exporter', 'get_exporter',
+           'Exporter', 'NAbaqusExporter', 'NSofaExporter',
+           'AbaqusExporter', 'SofaExporter',
+           'HiFlow3Exporter']
+
 
 # Register for common Exporters
 __REGISTER = {'base': Exporter,
-              "nabaqus": NAbaqusExporter, 'nsofa': NSofaExporter,
-              "abaqus": NAbaqusExporter, 'sofa': NSofaExporter,
+              "nabaqus": AbaqusExporter, 'nsofa': SofaExporter,
+              "abaqus": AbaqusExporter, 'sofa': SofaExporter,
               'hiflow3': HiFlow3Exporter,
-
 }
 
 
@@ -70,13 +75,15 @@ def get_exporter(name):
     """Find an Exporter under the given ``name``
 
     Args:
-      name (str): common name of the Exporter, @see ``register_exporter``
+      name (str): common name of the Exporter,
 
     Returns:
-      type: a factory function"""
-    return __REGISTER[name]
+      type: a factory function
 
-    #from .abaqus_exporter import AbaqusExporter
-    #from .base_exporter import BaseExporter
-    #from .generic_exporter import GenericExporter
-    #from .sofa_exporter import SOFAExporter
+    See Also:
+
+       :py:func:`msml.exporter.register_exporter`
+
+
+    """
+    return __REGISTER[name]

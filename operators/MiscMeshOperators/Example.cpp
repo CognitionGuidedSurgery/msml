@@ -1,6 +1,7 @@
 
 #include "PostProcessingOperators.h"
 #include "MiscMeshOperators.h"
+#include "IndexRegionOperators.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -43,6 +44,13 @@ void TestTransformMeshBarycentric()
   vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\allIn100justCGALOptimizerAllOnResults\\boneMesh16.vtk");
 	vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
   PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface, refSurface, deformedGrid);
+}
+
+void TestPositionFromIndices()
+{
+  std::vector<unsigned int> ids;
+  ids.push_back(1);
+  vector<double> pos = IndexRegionOperators::positionFromIndices("C:\\Projekte\\msml_github\\examples\\BunnyExample\\bunnyout\\liver0.vtu", ids, "points");
 }
 
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
@@ -174,7 +182,7 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-  TestTransformMeshBarycentric();
+  TestPositionFromIndices();
 
 	return EXIT_SUCCESS;
 }

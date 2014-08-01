@@ -150,38 +150,21 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
 
 vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const char* filename)
 {
-  std::cerr << "VTKReadUnstructuredGrid called" << std::endl;
   boost::filesystem::path filePath(filename);
-  std::cerr << "VTKReadUnstructuredGrid called" << std::endl;
-
   vtkSmartPointer<vtkDataObject> aReturn;
-
-    std::cerr << "VTKReadUnstructuredGrid called" << std::endl;
-
 
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
-    std::cerr << "VTKReadUnstructuredGrid called1" << std::endl;
-
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
-        std::cerr << "VTKReadUnstructuredGrid called1" << std::endl;
-
     return reader->GetUnstructuredGridOutput();
   }
-
   else
   {
-      std::cerr << "VTKReadUnstructuredGrid called2" << std::endl;
-
     vtkSmartPointer<vtkXMLGenericDataObjectReader > reader = vtkSmartPointer<vtkXMLGenericDataObjectReader >::New();
-          std::cerr << "VTKReadUnstructuredGrid called2" << std::endl;
-
     reader->SetFileName(filename);
     reader->Update();
-          std::cerr << "VTKReadUnstructuredGrid called2" << std::endl;
-
     return reader->GetUnstructuredGridOutput();
   }
 }

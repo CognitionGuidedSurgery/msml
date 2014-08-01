@@ -543,8 +543,8 @@ void MergeMeshes(vtkUnstructuredGrid* pointsMesh, vtkUnstructuredGrid* cellsMesh
 
 void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, const char* outputMeshFilename)
 {
-    vtkUnstructuredGrid* pointsMesh = IOHelper::VTKReadUnstructuredGrid(pointsMeshFilename);
-    vtkUnstructuredGrid* cellsMesh = IOHelper::VTKReadUnstructuredGrid(cellsMeshFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> pointsMesh = IOHelper::VTKReadUnstructuredGrid(pointsMeshFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> cellsMesh = IOHelper::VTKReadUnstructuredGrid(cellsMeshFilename);
     vtkSmartPointer<vtkUnstructuredGrid> mergedGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     MergeMeshes(pointsMesh, cellsMesh, mergedGrid);
