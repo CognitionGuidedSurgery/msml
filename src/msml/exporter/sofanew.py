@@ -395,6 +395,12 @@ class SofaExporter(XMLExporter):
                              name="barycentricMap",
                              output="@.",
                              template="undef, Vec3f")
+
+                elif currentConstraintType == "displacementConstraint":
+
+                    constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
+                                          name=constraint.id or constraint_set.name,
+                                          dispIndices=indices, displacements=constraint.displacement)
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
