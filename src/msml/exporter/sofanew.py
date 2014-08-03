@@ -42,6 +42,7 @@ import lxml.etree as etree
 from ..model import *
 from .base import XMLExporter, Exporter
 from msml.exceptions import *
+from ..sortdef import VTK
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -454,7 +455,7 @@ class SofaExporter(XMLExporter):
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
 
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
+                    self._memory['SOFAExporter'] = {request.id: VTK(str(filenameLastOutput))}
                     dispOutputNode.set("filename", filename + ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
