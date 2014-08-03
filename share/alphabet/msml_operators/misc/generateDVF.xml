@@ -9,7 +9,7 @@
 	<input>
         <!-- TODO logical and physical type -->
 		<arg name="RefMesh" logical="Mesh"
-			physical="str" />
+			physical="file.vtk" />
 	</input>
 
 	<output>
