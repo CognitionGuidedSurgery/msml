@@ -6,7 +6,10 @@ docopt
 pyparsing
 jinja2 
 
+colorama
+
 ## ReadTheDocs.org / Sphinx
 sphinx
 sphinxcontrib-napoleon 
 sphinx-bootstrap-theme
+
