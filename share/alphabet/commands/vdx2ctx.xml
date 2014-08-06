@@ -3,7 +3,7 @@
                xsi:schemaLocation="http://sfb125.de/msml" name="vdx2ctx">
 
     <runtime>
-        <python module="msml.ext.commands" function="vdx2ctx"/>
+        <sh  file="vdx2ctx" function="vdx2ctx" template="vdx2ctx {vdx} {out_filename} {voi_name}"/>
     </runtime>
 
     <input>
