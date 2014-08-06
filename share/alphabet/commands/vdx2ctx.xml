@@ -1,0 +1,21 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="vdx2ctx">
+
+    <runtime>
+        <python module="msml.ext.commands" function="vdx2ctx"/>
+    </runtime>
+
+    <input>
+        <arg name="vdx" logical="triangularMesh" physical="vdx"/>
+    </input>
+
+    <output>
+        <arg name="ctx" logical="volume" physical="ctx"/>
+    </output>
+
+    <parameters>
+        <arg name="out_filename" physical="str" />
+        <arg name="voi_name" physical="str" />
+    </parameters>
+</msml:operator>
