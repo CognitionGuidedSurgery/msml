@@ -495,6 +495,11 @@ class ShellOperator(Operator):
 
         command = self.command_tpl.format(**kwargs)
         os.system(command)
+        
+        results = None
+        if len(self.output) == 1 and 'out_filename' in kwargs:
+            results = {self.output_names()[0]: kwargs.get('out_filename')}
+        return results
 
 
 class SharedObjectOperator(PythonOperator):
