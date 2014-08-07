@@ -16,10 +16,10 @@
     {%for m in hiflow_material_models%}
     <ElasticityModel> <!-- nice soft tissue (DA-CJP-2012), MV-tissue (Mansi-2012), brain-tissue (Miller) -->
 <!--        <materialid>{{m.c}}</materialid> -->
-        <density>{{m.d}}</density>
-        <lambda>{{m.l}}</lambda> <!-- 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
-        <mu>{{m.mu}}</mu> <!-- 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
-        <gravity>{{m.g}}</gravity>
+        <density>{{m.density}}</density>
+        <lambda>{{m.lamelambda}}</lambda> <!-- 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
+        <mu>{{m.lame}}</mu> <!-- 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
+        <gravity>{{m.gravity}}</gravity>
     </ElasticityModel>
     {%endfor%}
 
