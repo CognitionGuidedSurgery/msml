@@ -890,7 +890,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
 	  vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridPath);
     vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid(meshPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    PostProcessingOperators::TransformMeshBarycentric(referenceGrid, deformedGrid, refSurface, out_surface);
+    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface);
 
     //write output
 		vtkSmartPointer<vtkUnstructuredGridWriter> writer =
