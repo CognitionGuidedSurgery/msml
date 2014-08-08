@@ -618,7 +618,7 @@ std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const 
         cout << "Generating Deformed image " << currenOutputFile << std::endl;
         boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
         currenOutputFile = curentPath.string();
-        ApplyDVF(referenceImage, currenOutputFile.c_str(), allRefs->at(i).second.c_str(), reverseDirection);
+        ApplyDVF(referenceImage, allRefs->at(i).second.c_str(), currenOutputFile.c_str(), reverseDirection);
     }
 
     return currenOutputFile;
