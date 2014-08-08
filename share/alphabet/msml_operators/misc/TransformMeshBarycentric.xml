@@ -5,8 +5,9 @@
 	</runtime>
 
 	<input>
-        <!-- TODO logical and physical type -->
-		<arg name="referenceGrid" logical="Mesh" physical="str" />
+    <arg name="mesh" physical="file.vtk"/>
+    <arg name="referenceGrid" logical="Mesh" physical="file.vtk" />
+    <arg name="deformedGrid" physical="file.vtk"/>
 	</input>
 
 	<output>
@@ -15,13 +16,7 @@
 
 
 	<parameters>
-      <arg name="out_surface_filename" physical="str" optional="true">
-            <meta key="doc">
-                Optional input filename for the output.
-            </meta>
-      </arg>
-		<arg name="mesh" physical="file.vtk"/>
-		<arg name="deformedGrid" physical="str"/>
+    <arg name="out_surface_filename" physical="str" optional="true" />
     <arg name="multipleDeformedGrid" physical="bool"/>
 	</parameters>
 
