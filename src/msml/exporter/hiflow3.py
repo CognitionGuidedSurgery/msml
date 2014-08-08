@@ -111,7 +111,7 @@ class HiFlow3Exporter(Exporter):
 
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
-            meshFilename = self.evaluate_node(msmlObject.mesh.mesh)
+            meshFilename = self.get_value_from_memory(msmlObject.mesh)
 
             hf3_filename = '%s_%s_hf3.xml' % (self._msml_file.filename.namebase, msmlObject.id)
             bc_filename = self.create_bcdata(msmlObject)
