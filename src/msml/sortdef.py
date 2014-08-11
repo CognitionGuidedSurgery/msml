@@ -267,3 +267,6 @@ class DICOM(ContainerFile): pass
 
 class HDF5(ContainerFile): pass
 
+class ctx(ContainerFile): pass
+
+class vdx(ContainerFile): pass
