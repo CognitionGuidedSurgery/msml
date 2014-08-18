@@ -95,7 +95,7 @@ Usage:
 
 Options:
  -v, --verbose              verbose information on stdout [default: false]
- -o, --output=DIR           output file
+ -o, --output=DIR           output directory
  --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
  -a, --alphabet-dir=DIR     loads an specific alphabet dir
  --operator-dir             path to search for additional python modules
