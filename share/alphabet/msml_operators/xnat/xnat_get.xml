@@ -1,0 +1,52 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="xnatGet">
+
+    <annotation>
+        <entry key="doc">Download a file from xnat.</entry>
+    </annotation>
+
+    <runtime>
+        <python module="msml.ext.xnat" function="xnat_get"/>
+    </runtime>
+
+    <input>
+    </input>
+
+    <output>
+        <arg name="dl" logical="" physical="file"/>
+    </output>
+
+    <parameters>
+        <arg name="filename" physical="str"/>
+        <arg name="resource" physical="str"/>
+        <arg name="project" physical="str"/>
+
+        <arg name="host" physical="str">
+            <meta key="doc">
+                The host of the xnat service. If not leaded with 'http', 'https://' will be assumed as prefix.
+                If empty `XNAT_HOST` will be taken from the environment.
+            </meta>
+        </arg>
+        <arg name=" subject" physical="str">
+            <meta key="doc">
+                If given, the resource will be looked up in the given subject. Else the requested resource is assumed within the project
+            </meta>
+        </arg>
+        <arg name="username" physical="str">
+            <meta key="doc">
+                If empty,  `XNAT_USER` will be taken from the environment.
+            </meta>
+        </arg>
+        <arg name="password" physical="str">
+            <meta key="doc">
+                If empty, `XNAT_PASS` will be taken from the environment.
+            </meta>
+        </arg>
+        <arg name="localname" physical="str">
+            <meta key="doc">
+                    If empty, a temporary filename is generated and returned.
+            </meta>
+        </arg>
+    </parameters>
+</msml:operator>
