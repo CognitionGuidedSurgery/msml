@@ -37,7 +37,6 @@ import urllib2
 import tempfile
 from ..log import error, warn, info, fatal, critical, debug
 import requests
-
 from .. import log
 
 def xnat_get(filename, resource, project, host=None, subject=None, username=None, password=None, localname=None):
