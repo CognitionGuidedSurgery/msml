@@ -101,6 +101,35 @@ namespace MSML {
                 }
             }
 
+            else if(type.compare("surfaceElements") == 0)
+			{
+				vtkCell* currentCell;
+				vtkUnsignedCharArray* cellsTypes = reader->GetOutput()->GetCellTypesArray();
+				vtkIdType numberOfPoints;
+				double currentBounds[6];
+				int count = 0;
+
+				for(unsigned int i=0; i<reader->GetOutput()->GetNumberOfCells(); i++)
+				{
+					if (*cellsTypes->GetTuple(i) == VTK_TRIANGLE ||	*cellsTypes->GetTuple(i) == VTK_QUADRATIC_TRIANGLE)
+					{
+
+						reader->GetOutput()->GetCellBounds(i, currentBounds);
+
+						if( (currentBounds[0]>=box[0]) && (currentBounds[2]>=box[1]) && (currentBounds[4]>=box[2])
+								&& (currentBounds[1]<=box[3]) && (currentBounds[3]<=box[4]) && (currentBounds[5]<=box[5]))
+						{
+							std::cout<<"Triangle found with id "<<i<<"\n";
+							std::cout<<"Bounds are "<<box[0]<<","<<box[1]<<","<<box[2]<<","<<box[3]<<","<<box[4]<<","<<box[5]<<"\n";
+							std::cout<<"CurrentTri bounds are "<<currentBounds[0]<<","<<currentBounds[2]<<","<<currentBounds[4]<<","<<currentBounds[1]<<","<<currentBounds[3]<<","<<currentBounds[5]<<"\n";
+
+							indices.push_back(i);
+							count++;
+						}
+					}
+				}
+			}
+
             else
             {
                 cerr<<"Error, this type is not supported\n";
@@ -181,18 +210,17 @@ namespace MSML {
 
         vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type) {
             vector<double> points;
-
-            vtkUnstructuredGrid* theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
-
+            vtkSmartPointer<vtkUnstructuredGrid> theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
             vtkPoints* thePoints = theMesh->GetPoints();
+
             double* currentPoint = new double[3];
 
             if(type.compare("points") == 0)
             {
                 int count = 0;
 
-                auto it = indices.begin();
-                auto end = indices.end();
+                vector<unsigned int>::iterator it = indices.begin();
+                vector<unsigned int>::iterator end = indices.end();
 
                 for(; it != end; it++)
                 {
@@ -201,11 +229,11 @@ namespace MSML {
                        continue;
                     }
 
-                      thePoints->GetPoint(*it, currentPoint);
-                      points.push_back(currentPoint[0]);
-                      points.push_back(currentPoint[1]);
-                      points.push_back(currentPoint[2]);
-                 }
+		    thePoints->GetPoint(*it, currentPoint);
+		    points.push_back(currentPoint[0]);
+		    points.push_back(currentPoint[1]);
+		    points.push_back(currentPoint[2]);
+		}
 
                 cerr << count << " points found in box";
             }/* TODO implement this

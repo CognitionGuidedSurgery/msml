@@ -136,7 +136,7 @@
                     <element name="constraints" type="msml:constraints_t"
                              minOccurs="0">
                     </element>
-                    <element name="mesh" type="msml:mesh_t" minOccurs="1"
+                      <element name="mesh" type="msml:mesh_t" minOccurs="1"
                              maxOccurs="1">
                     </element>
                     <element name="sets" type="msml:sets_t" minOccurs="0"
@@ -305,6 +305,20 @@
                             <restriction base="string">
                                 <enumeration value="dynamicImplicitEuler"/>
                                 <enumeration value="Newmark"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute use="optional" default="0.1" name="dampingRayleighRatioMass">
+                        <simpleType>
+                            <restriction base="float">
+                                <minExclusive value="0.0"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute use="optional" default="0.2" name="dampingRayleighRatioStiffness">
+                        <simpleType>
+                            <restriction base="float">
+                                <minExclusive value="0.0"/>
                             </restriction>
                         </simpleType>
                     </attribute>

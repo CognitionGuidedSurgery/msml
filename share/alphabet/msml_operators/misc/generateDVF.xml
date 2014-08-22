@@ -8,8 +8,8 @@
 
 	<input>
         <!-- TODO logical and physical type -->
-		<arg name="RefMesh" logical="Mesh"
-			physical="str" />
+		<arg name="RefMesh" logical="Mesh" physical="file.vtk" />
+    <arg name="DeformedMesh" logical="Mesh" physical="file.vtk" />
 	</input>
 
 	<output>
@@ -17,12 +17,7 @@
 	</output>
 
 	<parameters>
-      <arg name="DVFFilename" physical="str" optional="true">
-            <meta key="doc">
-                Optional input filename for the output.
-            </meta>
-      </arg>
-		<arg name="DeformedMesh" physical="VTK" />
+    <arg name="DVFFilename" physical="str" optional="false" />
 		<arg name="multipleReferenceGrids" physical="bool" />
 	</parameters>
 

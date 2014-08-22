@@ -42,6 +42,7 @@ import lxml.etree as etree
 from ..model import *
 from .base import XMLExporter, Exporter
 from msml.exceptions import *
+from ..sortdef import VTK
 
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -60,6 +61,7 @@ class SofaExporter(XMLExporter):
         Exporter.__init__(self, msml_file)
         self.export_file = None
         self.working_dir = path() #path.dirname(msml_file.filename)
+        self._memory_update = {} #cache for changes to _memory, updated after execution.
 
     def init_exec(self, executer):
         """
@@ -90,7 +92,7 @@ class SofaExporter(XMLExporter):
     def execute(self):
         "should execute the external tool and set the memory"
         import msml.envconfig
-
+        
         filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
 
 
@@ -111,6 +113,9 @@ class SofaExporter(XMLExporter):
         report("Working directory: %s" % os.getcwd(), 'I', 616)
 
         os.system(cmd)
+        
+        self._memory._internal.update(self._memory_update) #update output
+        
         #subprocess.call(cmd)
 
 
@@ -395,6 +400,12 @@ class SofaExporter(XMLExporter):
                              name="barycentricMap",
                              output="@.",
                              template="undef, Vec3f")
+
+                elif currentConstraintType == "displacementConstraint":
+
+                    constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
+                                          name=constraint.id or constraint_set.name,
+                                          dispIndices=indices, displacements=constraint.displacement)
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
@@ -448,7 +459,8 @@ class SofaExporter(XMLExporter):
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
 
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
+                    self._memory_update['SOFAExporter'] = {request.id: VTK(str(filenameLastOutput))} 
+
                     dispOutputNode.set("filename", filename + ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:

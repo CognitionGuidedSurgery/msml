@@ -187,7 +187,9 @@ DEFAULTS_SORTS = {
         DICOM,
         HDF5,
         (STL, "STL", "stl"),
-        PNG
+        PNG,
+        ctx,
+        vdx,
     ],
 }
 
@@ -327,6 +329,8 @@ register_conversion(str, get_sort("float"), float, 100)
 register_conversion(str, get_sort("bool"), _bool, 100)
 register_conversion(str, get_sort("VTK"), VTK, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
+register_conversion(str, get_sort("ctx"), ctx, 100)
+register_conversion(str, get_sort("vdx"), vdx, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
 register_conversion(str, get_sort('VTI'), VTI, 100)

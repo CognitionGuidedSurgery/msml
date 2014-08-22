@@ -9,6 +9,7 @@
 
 	<input>
 		<arg name="referenceImage" logical="Image3D" physical="VTK" />
+    <arg name="dvf" physical="VTK" />
 	</input>
 
 	<output>
@@ -17,12 +18,7 @@
 
 
 	<parameters>
-      <arg name="outputDefImageFilename" physical="str" optional="true">
-          <meta key="doc">
-              Optional input filename for the output.
-          </meta>
-    </arg>
-		<arg name="dvf" physical="VTK" />
+    <arg name="outputDefImageFilename" physical="str" optional="true" />
 		<arg name="multipleDVF" physical="bool" />
 		<arg name="reverseDirection" physical="bool" />
 	</parameters>

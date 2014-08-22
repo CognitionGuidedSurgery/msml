@@ -31,25 +31,20 @@ MSML -- Meta model.
 
 defines classes for:
 
-* operators 
+* operators
 * environments
 * scene elements
-* msml-files    
+* msml-files
 
 """
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
-from ..exceptions import *
-
-from .alphabet import Alphabet, Operator, PythonOperator, SharedObjectOperator, ShellOperator, \
-    Slot, ObjectAttribute, OAMaterial, OAConstraint, OAOutput
-
-from .base import MSMLFile, MSMLVariable, \
-    MSMLFileVariable, Workflow, Task, ObjectElement, SceneObject, \
-    ObjectConstraints, SceneSets, IndexGroup, Mesh, MaterialRegion, \
-    Reference, parse_attribute_value, random_var_name, Constant, MSMLEnvironment
+from .alphabet import *
+from .base import *
+from .writer import *
+from .dag import *
 
 
-
+__all__ = filter(lambda s: not s.startswith("__"), dir())
