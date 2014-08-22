@@ -89,6 +89,23 @@ def xnat_get(filename, resource, project, host=None, subject=None, username=None
 def xnat_put(localname, resource, project, filename=None, host=None, deleteBeforePut = True,
              subject=None, username=None, password=None, _content=None,
              _format=None, _tags=None):
+    """
+
+    :param localname:
+    :param resource:
+    :param project:
+    :param filename:
+    :param host:
+    :param deleteBeforePut:
+    :param subject:
+    :param username:
+    :param password:
+    :param _content:
+    :param _format:
+    :param _tags:
+    :return:
+    """
+
     username = username or os.environ['XNAT_USER']
     password = password or os.environ['XNAT_PASS']
     host = host or os.environ['XNAT_HOST']
