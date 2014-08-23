@@ -173,6 +173,7 @@ DEFAULTS_SORTS = {
     ],
 
     'physical': [
+        (InFile, 'file'),
         (MSMLString, "str", "string", "s"),
         (MSMLFloat, "float"),
         (MSMLInt, "int"),
