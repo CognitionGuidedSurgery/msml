@@ -194,6 +194,7 @@ bool ConvertVTKToVTU(const char* infile, const char* outfile )
 	// OR: ?!
 	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
 	writer->SetFileName(outfile);
+	writer->SetDataModeToAscii();
 	__SetInput(writer, reader->GetOutput());
 	// OR: ?!
 	//__SetInput(writer, mesh);
