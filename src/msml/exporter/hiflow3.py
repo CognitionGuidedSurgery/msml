@@ -54,9 +54,7 @@ jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(path(__file__).dir
 SCENE_TEMPLATE = jinja_env.get_template("hiflow_scene.tpl.xml")
 BCDATA_TEMPLATE = jinja_env.get_template("hiflow_bcdata.tpl.xml")
 
-FixedConstraint = namedtuple("FixedConstraint", "nFDP fDPointsList fDisplacementsList")
-DisplacementConstraint = namedtuple("DisplacementConstraint", "nDDP dDPointsList dDisplacementsList nFoPBCPoints")
-ForceOrPressure = namedtuple("ForceOrPressure", "nFoPBCPoints FoPBCPointsList FoPBCVectorsList")
+BcDataEntry = namedtuple("BcDataEntry", "num points vectors")
 Entry = namedtuple("Entry", "mesh bcdata")
 
 
@@ -203,37 +201,34 @@ class HiFlow3Exporter(Exporter):
         for cs in obj.constraints:
             for constraint in cs.constraints:
                 indices = self.evaluate_node(constraint.indices)
-                points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points') # positionFromIndices() does not yet work?!
-                #points = [1,2,3] # TestOutput
-                #     # TODO: list of DPoints
-                #     pointsInBoxROIVector=pointsInBoxROIVector,
-                #     # TODO: transform MSML-ROIs/Boxes into (lists of) point coordinates:
-                #     #TODO: use "getPointsInBoxROI()" (-> compare: abaqusnew.py, lines 129ff) and "extractPointPositions()".
-
-                count = len(indices) / 3
+                points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points')
+                count = len(points) / 3
                 points_str = list_to_hf3(points)
 
                 assert isinstance(constraint, ObjectElement)
                 if constraint.tag == "fixedConstraint":
-                    fdis = ';'.join(["0.0, 0.0, 0.0"] * count)
-                    fc = FixedConstraint(count, points_str, fdis)
+                    fdis = displacement = count_vector(['0.0', '0.0', '0.0'], count)
+                    fc = BcDataEntry(count, points_str, fdis)
                 elif constraint.tag == "displacementConstraint":
-                    #get displacment "a b c" = split => ["a", "b", "c"] = expand to amount points => join
-                    displacement = ';'.join(count * ','.join(list(constraint.displacement.split(" "))))
-                                                             # [1 2 3]
-                                                    # '1,2,3'
-                                   # 1,2,3;1,2,3;...
-                    dc = DisplacementConstraint(count, points_str, displacement)
+                    disp = constraint.displacements.split(" ")
+                    displacement = count_vector(disp, count)
+                    dc = BcDataEntry(count, points_str, displacement)
                 elif constraint.tag == "pressureConstraint":
-                    force_vector = constraint.pressureValue
-                    fp = ForceOrPressure(count, points,
-                        ';'.join(','.join(force_vector) * count))
+                    force_vector = constraint.pressure.split(" ")
+                    force = count_vector(force_vector, count)
+                    fp = BcDataEntry(count, points, force)
 
         filename = '%s_%s_bc.xml' % (self._msml_file.filename.namebase, obj.id)
         with open(filename, 'w') as h:
             content = BCDATA_TEMPLATE.render(fp=fp, fc=fc, dc=dc)
             h.write(content)
         return filename
+
+
+def count_vector(vec, count):
+    assert len(vec) == 3
+    vec = map(lambda x: "%+0.15f" % float(x), vec)
+    return ";\n".join(count * [",\t".join(vec)])
 
 def list_to_hf3(seq):
     """transfers a seq of values into a string for hiflow3.
@@ -249,11 +244,15 @@ def list_to_hf3(seq):
     s = StringIO()
 
     for i,p in enumerate(seq, 1):
-        s.write(str(p))
-        if i%3 == 0 and i != 1:
-            s.write(";")
-        else:
-            s.write(",")
+        s.write("%+0.15f" % float(p))
 
-    s =  s.getvalue()
+        if i%3 == 0 and i != 1:
+            s.write(";\n")
+        else:
+            s.write(",\t")
+
+    s =  s.getvalue()[:-2]
+
+    assert s.count(';') + 1 == len(seq) / 3
+
     return s[:-1]
