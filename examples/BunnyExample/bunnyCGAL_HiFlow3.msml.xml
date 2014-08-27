@@ -71,8 +71,8 @@
     </workflow>
 
     <environment>
-        <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" processingUnit="CPU"
-                timeIntegration="Newmark" dampingRayleighRatioMass="0.3" dampingRayleighRatioStiffness="0.4"/>
+        <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" processingUnit="CPU" numParallelProcessesOnCPU="4" 
+                timeIntegration="Newmark" dampingRayleighRatioMass="0.2" dampingRayleighRatioStiffness="0.4"/>
         <simulation>
             <step name="initial" dt="0.05" iterations="20"/>
         </simulation>

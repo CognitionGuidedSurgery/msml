@@ -370,11 +370,11 @@ def msml_file_factory(msml_node):
         env = MSMLEnvironment()
 
         solver_node = env_node.find('solver')
-        env.solver.timeIntegration = solver_node.get('timeIntegration')
-        env.solver.linearSolver = solver_node.get('linearSolver')
         env.solver.processingUnit = solver_node.get('processingUnit')
-
+        env.solver.numParallelProcessesOnCPU = solver_node.get('numParallelProcessesOnCPU')
+        env.solver.linearSolver = solver_node.get('linearSolver')
         env.solver.preconditioner = solver_node.get('preconditioner')
+        env.solver.timeIntegration = solver_node.get('timeIntegration')
         env.solver.dampingRayleighRatioMass = solver_node.get('dampingRayleighRatioMass')
         env.solver.dampingRayleighRatioStiffness = solver_node.get('dampingRayleighRatioStiffness')
 

@@ -9,7 +9,7 @@
 
     <LinearAlgebra>
         <Platform>CPU</Platform>
-        <NumParaProcCPU>4</NumParaProcCPU>
+        <NumParaProcCPU>{{numParaProcCPU}}</NumParaProcCPU>
         <Implementation>Naive</Implementation>
         <MatrixFormat>CSR</MatrixFormat>
         <NumRefLevels>1</NumRefLevels>

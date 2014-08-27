@@ -170,6 +170,7 @@ class HiFlow3Exporter(Exporter):
                     # template arguments
                     meshfilename=meshFilename,
                     bcdatafilename=bc_filename,
+                    numParaProcCPU=self._msml_file.env.solver.numParallelProcessesOnCPU,
                     SolveInstationary=SolveInstationary,
                     DeltaT=self._msml_file.env.simulation[0].dt,
                     maxtimestep=maxtimestep,
