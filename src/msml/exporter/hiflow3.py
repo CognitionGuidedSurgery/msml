@@ -174,7 +174,10 @@ class HiFlow3Exporter(Exporter):
                     DeltaT=self._msml_file.env.simulation[0].dt,
                     maxtimestep=maxtimestep,
                     linsolver=self._msml_file.env.solver.linearSolver,
-                    precond=self._msml_file.env.solver.preconditioner
+                    precond=self._msml_file.env.solver.preconditioner,
+                    timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
+                    RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
+                    RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
                     # in future, there may be some more...
                     # Note: alternative parsing by means of using *.get("...") possible?!
                 )

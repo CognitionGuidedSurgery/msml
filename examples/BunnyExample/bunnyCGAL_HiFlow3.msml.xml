@@ -31,7 +31,7 @@
 
             <material>
                 <region id="bunnyMaterial" indices="${bodyToIndexGroup}">
-                    <linearElasticMaterial youngModulus="80000" poissonRatio="0.49"/>
+                    <linearElasticMaterial youngModulus="4166" poissonRatio="0.488"/> <!-- soft tissue e.g. in heart leaflets -->
                     <mass name="stdMass" massDensity="1000"/>
                 </region>
             </material>

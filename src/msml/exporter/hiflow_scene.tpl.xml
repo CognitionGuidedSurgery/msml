@@ -1,10 +1,12 @@
 <Param>
     <OutputPathAndPrefix>SimResults/elasticitySimulation_</OutputPathAndPrefix>
+
     <Mesh>
         <Filename>{{meshfilename}}</Filename>
         <BCdataFilename>{{bcdatafilename}}</BCdataFilename>
         <InitialRefLevel>0</InitialRefLevel>
     </Mesh>
+
     <LinearAlgebra>
         <Platform>CPU</Platform>
         <NumParaProcCPU>4</NumParaProcCPU>
@@ -14,34 +16,35 @@
     </LinearAlgebra>
 
     {%for m in hiflow_material_models%}
-    <ElasticityModel> <!-- nice soft tissue (DA-CJP-2012), MV-tissue (Mansi-2012), brain-tissue (Miller) -->
+    <ElasticityModel> <!-- e.g.: average soft tissue (CJP-2012), MV-tissue (Mansi-2012), brain-tissue (Miller) -->
 <!--        <materialid>{{m.c}}</materialid> -->
         <density>{{m.density}}</density>
-        <lambda>{{m.lamelambda}}</lambda> <!-- 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
-        <mu>{{m.lamemu}}</mu> <!-- 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
+        <lambda>{{m.lamelambda}}</lambda> <!-- e.g.: 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
+        <mu>{{m.lamemu}}</mu> <!-- e.g.: 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
         <gravity>{{m.gravity}}</gravity>
     </ElasticityModel>
     {%endfor%}
 
     <QuadratureOrder>2</QuadratureOrder>
+
     <FiniteElements>
         <DisplacementDegree>1</DisplacementDegree>
     </FiniteElements>
+
     <Instationary>
         {% if SolveInstationary %}
         <SolveInstationary>1</SolveInstationary>
         <DampingFactor>1.0</DampingFactor>
-        <RayleighAlpha>0.0</RayleighAlpha>
-        <!-- MassFactor -->
-        <RayleighBeta>0.2</RayleighBeta>
-        <!-- StiffnessFactor -->
-        <Method>Newmark</Method>
+        <RayleighAlpha>{{RayleighRatioMass}}</RayleighAlpha>
+        <RayleighBeta>{{RayleighRatioStiffness}}</RayleighBeta>
+        <Method>{{timeIntegrationMethod}}</Method>
         <DeltaT>{{DeltaT}}</DeltaT>
         <MaxTimeStepIts>{{maxtimestep}}</MaxTimeStepIts>
         {%else%}
         <SolveInstationary>0</SolveInstationary>
         {%endif%}
     </Instationary>
+
     <LinearSolver>
         <SolverName>{{linsolver}}</SolverName>
         <MaximumIterations>1000</MaximumIterations>
@@ -54,6 +57,7 @@
         <Omega>2.5</Omega>
         <ILU_p>2.5</ILU_p>
     </LinearSolver>
+
     <ILUPP>
         <PreprocessingType>0</PreprocessingType>
         <PreconditionerNumber>11</PreconditionerNumber>
