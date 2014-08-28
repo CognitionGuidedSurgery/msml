@@ -1,0 +1,26 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="closestPoint">
+
+    <runtime>
+        <python module="msml.ext.vtk" function="closest_point"/>
+    </runtime>
+
+    <input>
+        <arg name="mesh" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+        <arg name="index" logical="Index" physical="int"/>
+        <arg name="point" logical="Point3D" physical="vector.float"/>
+        <arg name="dist" logical="Distance" physical="float"/>
+    </output>
+
+    <parameters>
+        <arg name="radius" physical="float" optional="true">
+            <meta key="doc">
+                Specify a range for the search.
+            </meta>
+        </arg>
+    </parameters>
+</msml:operator>

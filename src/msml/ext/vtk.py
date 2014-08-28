@@ -25,12 +25,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
+from __future__ import absolute_import
 
 __author__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 __date__ = '2014-04-14'
 
 from msml.exceptions import MSMLWarning, warn
-
+import math
+from itertools import starmap
 
 class MSMLVTKImportWarning(MSMLWarning):
     pass
@@ -41,6 +43,80 @@ except:
     warn("Could not import vtk python module.\n"
          "Did you install python-vtk?", MSMLVTKImportWarning)
 
+def read_ugrid(filename):
+    if filename.endswith(".pvtu"):
+        reader = vtk.vtkXMLPUnstructuredGridReader()
+    elif filename.endswith(".vtk"):
+        reader = vtk.vtkUnstructuredGridReader()
+    elif filename.endswith(".vtu"):
+        reader = vtk.vtkUnstructuredGridReader()
+    else:
+        raise BaseException("Illegal filename suffix %s" % filename)
+
+    reader.SetFileName(filename)
+    reader.Update()
+
+    return reader.GetOutput()
+
+def write_surface(ugrid, filename):
+    surface_filter = vtk.vtkDataSetSurfaceFilter()
+    surface_filter.SetInputData(ugrid)
+
+    triangle_filter = vtk.vtkTriangleFilter()
+    triangle_filter.SetInputConnection(surface_filter.GetOutputPort())
+
+    writer = vtk.vtkPolyDataWriter()
+    writer.SetFileName(filename)
+    writer.SetInputConnection(triangle_filter.GetOutputPort())
+    writer.Write()
+
+def write_stl(ugrid, filename):
+    surface_filter = vtk.vtkDataSetSurfaceFilter()
+    surface_filter.SetInputConnection(ugrid)
+
+    triangle_filter = vtk.vtkTriangleFilter()
+    triangle_filter.SetInputConnection(surface_filter.GetOutputPort())
+
+    writer = vtk.vtkSTLWriter()
+    writer.SetFileName(filename)
+    writer.SetInputConnection(triangle_filter.GetOutputPort())
+    writer.Write()
+
+def write_vtu(ugrid, filename, mode = 'ascii'):
+    writer = vtk.vtkXMLUnstructuredGridWriter()
+    if mode == 'ascii':
+        writer.SetDataModeToAscii()
+    elif mode == 'binary':
+        writer.SetDataModeToBinary()
+    elif mode == 'append':
+        writer.SetDataModetoAppend()
+
+    writer.SetFileName(filename)
+    writer.SetInputData(ugrid)
+    writer.Write()
+
+def write_vtk(ugrid, filename):
+    writer = vtk.vtkUnstructuredGridWriter()
+    writer.SetFileName(filename)
+    writer.SetInputData(ugrid)
+    writer.Write()
+
+def closest_point(mesh, vector, radius = None):
+    locator = vtk.vtkPointLocator()
+    ugrid = read_ugrid(mesh)
+    locator.SetDataSet(ugrid)
+
+    vector = map(float, vector)
+    assert len(vector) == 3
+
+    if radius is None:
+        index = locator.FindClosestPoint(vector)
+    else:
+        index = locator.FindClosestPointWithinRadius(radius, vector)
+
+    point = ugrid.GetPoint(index)
+    distance = math.sqrt(sum(starmap(lambda a, b: (b-a)**2, zip(vector, point))))
+    return {'index': index, 'point': point, 'dist': distance}
 
 def view_stl(filename):
     """
