@@ -61,7 +61,7 @@ class BcData(object):
 
 
 class BcDataEntry(object):
-    """Holds the data for a Fixed/Displacement or Pressure constraint in the bcdata file.
+    """Holds the data for a Fixed/Displacement (Dirichlet) constraint or Pressure/Force (Neumann) constraint in the bcdata file.
 
     """
 
@@ -90,8 +90,8 @@ class BcDataEntry(object):
     def append(self, count, points, vectors):
         """Appends the given `points` with `vectors` to the constraint.
 
-        * length of points has to dividable by 3
-        * length of vectors has to dividable by 3
+        * length of points has to be dividable by 3
+        * length of vectors has to be dividable by 3
         * if vectors just holds three components it is repeated
           to the correct amount given by `count`
 
@@ -142,6 +142,7 @@ class BcDataEntry(object):
         return list_to_hf3(self._vectors)
 
 
+# namedtuple(...) dynamically creates a class -> class constructor.
 Entry = namedtuple("Entry", "mesh bcdata")
 
 
@@ -149,7 +150,7 @@ class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
 
     .. todo::
-        What support this exporter.
+        What does this exporter support? - See GitHub issue n73.
 
     """
 
@@ -172,7 +173,7 @@ class HiFlow3Exporter(Exporter):
         filename = self._msml_file.filename.namebase
 
         report("Converting to HiFlow3 input formats", 'I', 801)
-        report(" -- (hiflow3Scene.xml-file & vtkMesh.vtu-file & BCdata.xml-file).", 'I', 801)
+        report(" -- (hiflow3Scene.xml-file & vtkMesh.vtu-file & hiflow3BCdata.xml-file).", 'I', 801)
 
         self.create_scenes()
 
@@ -265,8 +266,8 @@ class HiFlow3Exporter(Exporter):
                     timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
                     RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
                     RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
-                    # in future, there may be some more...
-                    # Note: alternative parsing by means of using *.get("...") possible?!
+                    # Note: in future, there may be some more, such as CPU/GPU, RefinementLevels, lin/quadElements, ...
+                    # So far, the remaining parameters in HiFlow3Scene.xml-files are chosen to represent a general optimal setting.
                 )
                 fp.write(content)
 
@@ -323,8 +324,8 @@ class HiFlow3Exporter(Exporter):
             if constraint.tag == "fixedConstraint":
                 bcdata.fc.append(count, points, [0, 0, 0])
             elif constraint.tag == "displacementConstraint":
-                disp = constraint.displacements.split(" ")
-                bcdata.dc.append(count, points, disp)
+                disp_vector = constraint.displacement.split(" ")
+                bcdata.dc.append(count, points, disp_vector)
             elif constraint.tag == "pressureConstraint":
                 force_vector = constraint.pressure.split(" ")
                 bcdata.fp.append(count, points, force_vector)

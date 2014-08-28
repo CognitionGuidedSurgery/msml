@@ -23,7 +23,7 @@
     "dDPoints",
     "dDisplacements")}}
 
-{{bcentry(data.dc,
+{{bcentry(data.fp,
     "ForceOrPressureBCs",
     "NumberOfForceOrPressureBCPoints",
     "ForceOrPressureBCPoints",
