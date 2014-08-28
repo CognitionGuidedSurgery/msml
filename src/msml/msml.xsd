@@ -334,7 +334,7 @@
             <element name="simulation">
                 <complexType>
                     <sequence>
-                        <element name="step">
+                        <element name="step" minOccurs="1" maxOccurs="unbounded">
                             <complexType>
                                 <attribute name="name" type="string">
                                 </attribute>

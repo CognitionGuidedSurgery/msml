@@ -199,9 +199,9 @@ class LinearSequenceExecutor(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
+        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', 1)
         result = task.operator(**kwargs)
-        report('--Executing operator of task {} done'.format(task), 'I', '002')
+        report('--Executing operator of task {} done'.format(task), 'I', 2)
 
         if task.id in self._memory and isinstance(self._memory[task.id], dict):
             # converter case, only update the change values

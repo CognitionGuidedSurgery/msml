@@ -1,4 +1,4 @@
-#-*- encoding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 # region gplv3preamble
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
@@ -27,41 +27,129 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
-from msml.model.base import *
-from path import path
-from collections import namedtuple
-from ..exceptions import *
-
 __authors__ = 'Nicolai Schoch, Alexander Weigl <uiduw@student.kit.edu>'
 __license__ = 'GPLv3'
 
 import os
-from .base import Exporter
-from msml.model import *
 
 import jinja2
-from msml.exceptions import *
 
+from msml.model import *
+from msml.exceptions import *
 import msml.ext.misc
+
 
 class MSMLHiFlow3ExporterWarning(MSMLWarning): pass
 
-
 from ..log import report
+
+from path import path
+from collections import namedtuple
+from .base import Exporter
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(path(__file__).dirname()))
 
 SCENE_TEMPLATE = jinja_env.get_template("hiflow_scene.tpl.xml")
 BCDATA_TEMPLATE = jinja_env.get_template("hiflow_bcdata.tpl.xml")
 
-BcDataEntry = namedtuple("BcDataEntry", "num points vectors")
+
+class BcData(object):
+    def __init__(self):
+        self.fc = BcDataEntry()
+        self.dc = BcDataEntry()
+        self.fp = BcDataEntry()
+
+
+class BcDataEntry(object):
+    """Holds the data for a Fixed/Displacement or Pressure constraint in the bcdata file.
+
+    """
+
+    def __init__(self):
+        self._num = 0
+        self._points = []
+        self._vectors = []
+        self.is_valid()
+
+    def is_valid(self):
+        """asserts, that the amount of points and vectors are dividable by 3
+           and correct to the given number of points
+
+        :raises: Assertion, if data structure is wrong.
+        :return: None
+        """
+        div3 = lambda x: len(x) % 3 == 0
+
+        assert div3(self._points)
+        assert div3(self._vectors)
+
+        assert self._num * 3 == len(self._points)
+        assert self._num * 3 == len(self._vectors)
+
+
+    def append(self, count, points, vectors):
+        """Appends the given `points` with `vectors` to the constraint.
+
+        * length of points has to dividable by 3
+        * length of vectors has to dividable by 3
+        * if vectors just holds three components it is repeated
+          to the correct amount given by `count`
+
+        * each component of points and vectors is casted to float
+
+        :param count: amount of points
+        :param points: a list of points (3*count == len(points)
+        :type points: list
+        :param vectors: a list of points (3*count == len(points)
+        :type list: list
+
+        :return: None
+        """
+        as_float = lambda seq: map(float, seq)
+
+        points = as_float(points)
+        vectors = as_float(vectors)
+
+        if len(vectors) == 3:
+            # a single vector is given
+            vectors = vectors * count
+
+        self._num += count
+        self._points += points
+        self._vectors += vectors
+
+        self.is_valid()
+
+    def __repr__(self):
+        return "%s.%s(%s, %s, %s)" % (
+            self.__module__, type(self).__name__,
+            repr(self.num), repr(self._points), repr(self._vectors)
+        )
+
+    def __str__(self):
+        return "<%s.%s num: %d >" % (self.__module__, type(self).__name__, self._num)
+
+    @property
+    def num(self):
+        return self._num
+
+    @property
+    def points(self):
+        return list_to_hf3(self._points)
+
+    @property
+    def vectors(self):
+        return list_to_hf3(self._vectors)
+
+
 Entry = namedtuple("Entry", "mesh bcdata")
 
 
 class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
 
-    .. comment: Information here.
+    .. todo::
+        What support this exporter.
 
     """
 
@@ -73,7 +161,7 @@ class HiFlow3Exporter(Exporter):
 
         self.name = 'HiFlow3Exporter'
         Exporter.__init__(self, msml_file)
-        self.mesh_sort = ('VTU', 'Mesh') # i want a VTU file as input
+        self.mesh_sort = ('VTU', 'Mesh')  # i want a VTU file as input
         self.gather_inputs()
 
     def render(self):
@@ -83,10 +171,12 @@ class HiFlow3Exporter(Exporter):
 
         filename = self._msml_file.filename.namebase
 
-        report("Converting to HiFlow3 input formats (hiflow3Scene.xml-file & vtkMesh.vtu-file & BCdata.xml-file).", 'I',
-               801)
+        report("Converting to HiFlow3 input formats", 'I', 801)
+        report(" -- (hiflow3Scene.xml-file & vtkMesh.vtu-file & BCdata.xml-file).", 'I', 801)
+
         self.create_scenes()
-        report("Hiflow3 Scene Files: \n\t %s" % '\n\t'.join(self.scenes), 'I', 802)
+
+        report("Hiflow3 Scene Files: %s" % ', '.join(self.scenes), 'I', 802)
 
 
     def execute(self):
@@ -112,14 +202,15 @@ class HiFlow3Exporter(Exporter):
             meshFilename = self.get_value_from_memory(msmlObject.mesh)
 
             hf3_filename = '%s_%s_hf3.xml' % (self._msml_file.filename.namebase, msmlObject.id)
-            bc_filename = self.create_bcdata(msmlObject)
 
+            # only take the first
+            bc_filename = self.create_bcdata_files(msmlObject)[0]
             self.scenes.append(hf3_filename)
 
 
             class HF3MaterialModel(object):
                 def __init__(self):
-                    self.id, self.lamelambda, self.lamemu, self.gravity, self.density = [None]*5
+                    self.id, self.lamelambda, self.lamemu, self.gravity, self.density = [None] * 5
 
             hiflow_material_models = []
             # get and compute elasticity constants (i.e. material parameters):
@@ -140,17 +231,15 @@ class HiFlow3Exporter(Exporter):
 
                 for material in matregion:
                     if 'linearElasticMaterial' == material.attributes['__tag__']:
-
-                        E =  float(material.attributes["youngModulus"])
+                        E = float(material.attributes["youngModulus"])
                         NU = float(material.attributes["poissonRatio"])
 
                         hiflow_model.lamelambda = (E * NU) / ((1 + NU) * (1 - 2 * NU))
                         hiflow_model.lamemu = E / (2 * (1 + NU))
-                        hiflow_model.gravity =  -9.81
+                        hiflow_model.gravity = -9.81
 
                     if 'mass' == material.attributes['__tag__']:
-                        hiflow_model.density =  material.attributes['massDensity']
-
+                        hiflow_model.density = material.attributes['massDensity']
 
             maxtimestep = self._msml_file.env.simulation[0].iterations
 
@@ -163,8 +252,7 @@ class HiFlow3Exporter(Exporter):
 
             with open(hf3_filename, 'w') as fp:
                 content = SCENE_TEMPLATE.render(
-                    hiflow_material_models = hiflow_material_models,
-
+                    hiflow_material_models=hiflow_material_models,
                     # template arguments
                     meshfilename=meshFilename,
                     bcdatafilename=bc_filename,
@@ -182,53 +270,72 @@ class HiFlow3Exporter(Exporter):
                 )
                 fp.write(content)
 
+    def create_bcdata_files(self, obj):
+        """creates all bcdata files for all declared steps in `msml/env/simulation`
 
-    # define function to create HiFlow3-compatible BCdata-input-File:
-    def create_bcdata(self, obj):
-        """
-        :param obj:
+        :param obj: scene object
         :type obj: msml.model.base.SceneObject
         :return:
         """
+        def create():
+            for step in self._msml_file.env.simulation:
+                filename = '%s_%s_%s.bc.xml' % (self._msml_file.filename.namebase, obj.id, step.name)
+                data = self.create_bcdata(obj, step.name)
+                content = BCDATA_TEMPLATE.render(data = data)
+                with open(filename, 'w') as h:
+                        h.write(content)
+                yield filename
 
-        fc = None
-        fp = None
-        dc = None
+        return list(create())
+
+
+    def create_bcdata(self, obj, step):
+        """
+        :param obj:
+        :type obj: msml.model.base.SceneObject
+        :type step: msml.model.base.MSMLEnvironment.Simulation.Step
+
+
+        :return: a object of BcData
+        :rtype: BcData
+        """
+        bcdata = BcData()
+
+        # find the constraints for the given step
+        for cs in obj.constraints:
+            if cs.for_step == step or cs.for_step == "${%s}" % step:
+                break
+        else:
+            cs = None
+
+        if cs is None: # nothing to do here
+            report("No constraint region found for step %s" % step, 'W', 516)
+            return bcdata
 
         mesh_name = self.evaluate_node(obj.mesh.mesh)
 
+        for constraint in cs.constraints:
+            indices = self.evaluate_node(constraint.indices)
+            points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points')
+            count = len(points) / 3
+            points_str = list_to_hf3(points)
 
-        for cs in obj.constraints:
-            for constraint in cs.constraints:
-                indices = self.evaluate_node(constraint.indices)
-                points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points')
-                count = len(points) / 3
-                points_str = list_to_hf3(points)
+            if constraint.tag == "fixedConstraint":
+                bcdata.fc.append(count, points, [0, 0, 0])
+            elif constraint.tag == "displacementConstraint":
+                disp = constraint.displacements.split(" ")
+                bcdata.dc.append(count, points, disp)
+            elif constraint.tag == "pressureConstraint":
+                force_vector = constraint.pressure.split(" ")
+                bcdata.fp.append(count, points, force_vector)
 
-                assert isinstance(constraint, ObjectElement)
-                if constraint.tag == "fixedConstraint":
-                    fdis = displacement = count_vector(['0.0', '0.0', '0.0'], count)
-                    fc = BcDataEntry(count, points_str, fdis)
-                elif constraint.tag == "displacementConstraint":
-                    disp = constraint.displacements.split(" ")
-                    displacement = count_vector(disp, count)
-                    dc = BcDataEntry(count, points_str, displacement)
-                elif constraint.tag == "pressureConstraint":
-                    force_vector = constraint.pressure.split(" ")
-                    force = count_vector(force_vector, count)
-                    fp = BcDataEntry(count, points, force)
-
-        filename = '%s_%s_bc.xml' % (self._msml_file.filename.namebase, obj.id)
-        with open(filename, 'w') as h:
-            content = BCDATA_TEMPLATE.render(fp=fp, fc=fc, dc=dc)
-            h.write(content)
-        return filename
-
+        return bcdata
 
 def count_vector(vec, count):
     assert len(vec) == 3
     vec = map(lambda x: "%+0.15f" % float(x), vec)
     return ";\n".join(count * [",\t".join(vec)])
+
 
 def list_to_hf3(seq):
     """transfers a seq of values into a string for hiflow3.
@@ -243,15 +350,15 @@ def list_to_hf3(seq):
 
     s = StringIO()
 
-    for i,p in enumerate(seq, 1):
+    for i, p in enumerate(seq, 1):
         s.write("%+0.15f" % float(p))
 
-        if i%3 == 0 and i != 1:
+        if i % 3 == 0 and i != 1:
             s.write(";\n")
         else:
             s.write(",\t")
 
-    s =  s.getvalue()[:-2]
+    s = s.getvalue()[:-2]
 
     assert s.count(';') + 1 == len(seq) / 3
 

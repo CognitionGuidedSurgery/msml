@@ -41,6 +41,11 @@
                     <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
                     <displacementConstraint time="0" indices="${earsToIndexGroup}" displacements="0.0 0.02 0.0"/>
                 </constraint>
+                <constraint name="bodyConstraint" forStep="${pressure}">
+                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint time="0" indices="${earsToIndexGroup}"
+                                            displacements="0.5 -0.06 -0.3"/>
+                </constraint>
             </constraints>
 
             <output>
@@ -75,6 +80,7 @@
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.2" dampingRayleighRatioStiffness="0.4"/>
         <simulation>
             <step name="initial" dt="0.05" iterations="20"/>
+            <step name="pressure" dt="0.05" iterations="20"/>
         </simulation>
     </environment>
 

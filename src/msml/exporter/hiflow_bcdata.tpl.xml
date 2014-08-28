@@ -1,5 +1,5 @@
 {%macro bcentry(data, entry_name, number_field, points_field, vector_field) %}
-{% if data -%}
+{% if data and data.num > 0 -%}
         <{{entry_name}}>
             <{{number_field}}>{{data.num}}</{{number_field}}>
             <{{points_field}}>
@@ -11,19 +11,19 @@
 {% endmacro %}
 <Param>
   <BCData>
-{{bcentry(fc,
+{{bcentry(data.fc,
     "FixedConstraintsBCs",
     "NumberOfFixedDirichletPoints",
     "fDPoints",
     "fDisplacements")}}
 
-{{bcentry(dc,
+{{bcentry(data.dc,
      "DisplacementConstraintsBCs",
     "NumberOfDisplacedDirichletPoints",
     "dDPoints",
     "dDisplacements")}}
 
-{{bcentry(dc,
+{{bcentry(data.dc,
     "ForceOrPressureBCs",
     "NumberOfForceOrPressureBCPoints",
     "ForceOrPressureBCPoints",
