@@ -334,7 +334,7 @@ class HiFlow3Exporter(Exporter):
 
 def count_vector(vec, count):
     assert len(vec) == 3
-    vec = map(lambda x: "%+0.15f" % float(x), vec)
+    vec = map(lambda x: "%0.15f" % float(x), vec)
     return ";".join(count * [",".join(vec)])
 
 
