@@ -37,14 +37,17 @@
             </material>
 
             <constraints>
-                <constraint name="bodyConstraint" forStep="${initial}">
+                <constraint name="bodyConstraint" forStep="${initial_def_1}">
                     <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacements="0.0 0.02 0.0"/>
+                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacement="0.0 0.02 0.0"/>
                 </constraint>
-                <constraint name="bodyConstraint" forStep="${pressure}">
+                <constraint name="bodyConstraint" forStep="${subsequent_def_2}">
                     <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <displacementConstraint time="0" indices="${earsToIndexGroup}"
-                                            displacements="0.5 -0.06 -0.3"/>
+                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacement="0.01 0.0 -0.03"/>
+                </constraint>
+                <constraint name="bodyConstraint" forStep="${subsequent_pressure_3}">
+                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
+                    <pressureConstraint time="0" indices="${earsToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
                 </constraint>
             </constraints>
 
@@ -57,7 +60,7 @@
     <workflow>
 
         <mesherCGALs2v id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
-                       preserveFeatures="false" facet_angle="20" facet_size="0.008" facet_distance="0.005"
+                       preserveFeatures="false" facet_angle="20" facet_size="0.006" facet_distance="0.004"
                        cell_radius_edge_ratio="3" cell_size="0.02" odt="false" lloyd="false" pertube="false"
                        exude="false"/>
 
@@ -79,8 +82,9 @@
         <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" processingUnit="CPU" numParallelProcessesOnCPU="4" 
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.2" dampingRayleighRatioStiffness="0.4"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="20"/>
-            <step name="pressure" dt="0.05" iterations="20"/>
+            <step name="initial_def_1" dt="0.05" iterations="20"/>
+            <step name="subsequent_def_2" dt="0.05" iterations="20"/>
+            <step name="subsequent_pressure_3" dt="0.05" iterations="20"/>
         </simulation>
     </environment>
 
