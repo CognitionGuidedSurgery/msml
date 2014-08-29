@@ -359,8 +359,6 @@ def list_to_hf3(seq):
         else:
             s.write(",")
 
-    s = s.getvalue()[:-2]
-
+    s = s.getvalue()[:-1]
     assert s.count(';') + 1 == len(seq) / 3
-
-    return s[:-1]
+    return s
