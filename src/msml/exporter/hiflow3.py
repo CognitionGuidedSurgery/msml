@@ -334,7 +334,7 @@ class HiFlow3Exporter(Exporter):
 def count_vector(vec, count):
     assert len(vec) == 3
     vec = map(lambda x: "%+0.15f" % float(x), vec)
-    return ";\n".join(count * [",\t".join(vec)])
+    return ";".join(count * [",".join(vec)])
 
 
 def list_to_hf3(seq):
@@ -351,12 +351,12 @@ def list_to_hf3(seq):
     s = StringIO()
 
     for i, p in enumerate(seq, 1):
-        s.write("%+0.15f" % float(p))
+        s.write("%0.15f" % float(p))
 
         if i % 3 == 0 and i != 1:
-            s.write(";\n")
+            s.write(";")
         else:
-            s.write(",\t")
+            s.write(",")
 
     s = s.getvalue()[:-2]
 
