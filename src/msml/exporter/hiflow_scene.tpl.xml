@@ -45,6 +45,16 @@
         {%endif%}
     </Instationary>
 
+    <Boundary>
+        <DirichletMaterial1>12345</DirichletMaterial1> <!-- fixed boundary -->
+        <DirichletMaterial2>12345</DirichletMaterial2> <!-- displaced boundary -->
+        <DirichletMaterial3>12345</DirichletMaterial3> <!-- displaced boundary -->
+        <NeumannMaterial1>12345</NeumannMaterial1> <!-- (lower) boundary under pressure -->
+        <NeumannMaterial1Pressure>1234567</NeumannMaterial1Pressure>
+        <NeumannMaterial2>12345</NeumannMaterial2> <!-- (upper) boundary under pressure -->
+        <NeumannMaterial2Pressure>1234567</NeumannMaterial2Pressure>
+    </Boundary>
+
     <LinearSolver>
         <SolverName>{{linsolver}}</SolverName>
         <MaximumIterations>1000</MaximumIterations>
