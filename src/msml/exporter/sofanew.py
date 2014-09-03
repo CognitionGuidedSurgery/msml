@@ -320,13 +320,15 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
+                    p = float(self.evaluate_node(constraint.pressure)) / 10
+
 
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
                                                              pulseMode="1",
-                                                             pressureSpeed=str(float(
-                                                                 constraint.pressure) / 10.0),
+                                                             pressureSpeed=p,
+                                                             # TODO this is broken
                                                              pressure=constraint.get("pressure"),
                                                              triangleIndices=indices)
 

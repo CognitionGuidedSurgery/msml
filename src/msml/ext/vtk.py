@@ -49,7 +49,7 @@ def read_ugrid(filename):
     elif filename.endswith(".vtk"):
         reader = vtk.vtkUnstructuredGridReader()
     elif filename.endswith(".vtu"):
-        reader = vtk.vtkUnstructuredGridReader()
+        reader = vtk.vtkXMLUnstructuredGridReader()
     else:
         raise BaseException("Illegal filename suffix %s" % filename)
 
@@ -117,6 +117,28 @@ def closest_point(mesh, vector, radius = None):
     point = ugrid.GetPoint(index)
     distance = math.sqrt(sum(starmap(lambda a, b: (b-a)**2, zip(vector, point))))
     return {'index': index, 'point': point, 'dist': distance}
+
+
+def get_impact(ugrid, start, direction, factor = 1000):
+    cl = vtk.vtkCellLocator()
+    ugrid = read_ugrid(ugrid)
+    cl.SetDataSet(ugrid)
+
+    mult = lambda f, x: map(lambda a: f*a, x)
+    end = mult(1000, direction)
+
+
+    points = vtk.vtkPoints()
+    cells = vtk.vtkIdList()
+
+    cl.intersectWithLine(start, end, points, cells)
+
+    ugrid.GetCell(cells.getId(0))
+
+
+
+
+
 
 def view_stl(filename):
     """
