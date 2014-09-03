@@ -136,8 +136,8 @@ class Liver(object):
 
 l = Liver("liverLinear_py.msml.xml")
 
-l.force_constraint_indices = [ 1, 2]
-l.force_constraint_pressure  = 100
+l.displacement_vector = [0.1, 0.2, 0.3]
+l.displacement_indices  = range(0,4)
 l.fixed_contraint_indices = range(4,7)
 
 files = l()
