@@ -1,0 +1,63 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+    <variables>
+        <var name="vol_mesh" value="LiverXSTet4.vtk" logical="linearMesh" physical="file.vtk"/>
+
+        <var name="force_vector"   logical="Force" physical="vector.float"/>
+        <var name="force_indices"  logical="Indices" physical="vector.int"/>
+
+
+        <var name="disp_vector"   logical="Force" physical="vector.float"/>
+        <var name="disp_indices"  logical="Indices" physical="vector.int"/>
+
+
+        <var name="fixed_indices"  logical="Indices" physical="vector.int"/>
+        <var name="all_indices"  logical="Indices" physical="vector.int"/>
+    </variables>
+
+    <scene>
+        <object id="liver">
+            <mesh>
+                <linearTet id="liver" mesh="${vol_mesh}"/>
+            </mesh>
+
+            <sets>
+            </sets>
+
+
+            <material>
+                <region id="liverMaterial" indices="${all_indices}">
+                    <linearElasticMaterial youngModulus="3000" poissonRatio="0.49"/>
+                    <mass massDensity="0.6"/>
+                </region>
+            </material>
+
+            <constraints>
+                <constraint forStep="initial">
+                    <fixedConstraint name="fiC" indices="${fixed_indices}" />
+                   <!-- <surfacePressure name="foC" indices="${force_indices}" pressure="${force_vector}"/> -->
+                    <displacementConstraint name="dC" indices="${disp_indices}" displacement="${disp_vector}" />
+                </constraint>
+            </constraints>
+
+            <output>
+                <displacement id="LiverXSTet4Def" timestep="1"/>
+            </output>
+        </object>
+    </scene>
+
+    <workflow>
+    </workflow>
+
+
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="100"/>
+        </simulation>
+    </environment>
+
+</msml:msml>
+
