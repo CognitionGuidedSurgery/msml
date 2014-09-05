@@ -4,7 +4,7 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 #   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
@@ -25,25 +25,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
-from docutils.nodes import Element
-from xml.etree import ElementPath
 
 
-__authors__ = 'Stefan Suwelack, Alexander Weigl, Markus Stoll, Sarah Grimm'
+__author__ = 'Stefan Suwelack, Alexander Weigl, Markus Stoll, Sarah Grimm'
 __license__ = 'GPLv3'
 __date__ = "2014-05-26"
 
-from warnings import warn
 import os
-import math
+
+from path import path
+import lxml.etree as etree
 
 from ..model import *
 from .base import XMLExporter, Exporter
-from path import path
-import subprocess
-
-import lxml.etree as etree
-from xml.etree.ElementTree import Element
 from msml.exceptions import *
 from msml.ext.misc import *
 
@@ -54,11 +48,9 @@ class MSMLSOFAExporterWarning(MSMLWarning): pass
 class FeBioExporter(XMLExporter):
     def __init__(self, msml_file):
         """
-      Args:
-       executer (Executer)
-
-
-      """
+          Args:
+           executer (Executer)
+        """
         self.name = 'FeBioExporter'
         self.id = 'FeBioExporter'
         Exporter.__init__(self, msml_file)
@@ -66,28 +58,27 @@ class FeBioExporter(XMLExporter):
         self.working_dir = path()
 
     def init_exec(self, executer):
+        """initialization by the executer, sets memory and executor member
+
+        :param executer: msml.run.Executer
+        :return:
         """
-     initialization by the executer, sets memory and executor member
-     :param executer: msml.run.Executer
-     :return:
-     """
         self._executer = executer
         self._memory = self._executer._memory
 
     def render(self):
+        """Builds the File (XML e.g) for the external tool
         """
-     Builds the File (XML e.g) for the external tool
-     """
         print("Converting to febio feb")
         self.file_name = path(self._msml_file.filename).namebase
         self.export_file = self.file_name + ".feb"
-        print self.export_file 
+        print self.export_file
 
         import codecs
 
-        with codecs.open(self.export_file, 'w', 'utf-8') as febfile:  #should be open with codecs.open
-           rootelement = self.write_feb()
-           rootelement.write(febfile, pretty_print=True, encoding='iso-8859-1', xml_declaration=True)
+        with codecs.open(self.export_file, 'w', 'iso-8859-1') as febfile:  #should be open with codecs.open
+            rootelement = self.write_feb()
+            rootelement.write(febfile, pretty_print=True, encoding='iso-8859-1', xml_declaration=True)
 
     def execute(self):
         cmd = "febio -i " + self.export_file
@@ -100,7 +91,7 @@ class FeBioExporter(XMLExporter):
         self.postProcessing()
         cmd = "postview.exe " + self.file_name + ".xplt"
         os.system(cmd)
-        
+
     def postProcessing(self):
         print("Extract all surfaces by material.")
         extractedVolumeName = "feb_surface.vtk"
@@ -109,7 +100,7 @@ class FeBioExporter(XMLExporter):
         bladderVTK = str(extractedVolumeName + "-volume1.vtk")
         ComputeOrganVolume(bladderVTK)
         ComputeOrganCrossSectionArea(bladderVTK);
-        
+
     def write_feb(self):
         self.node_root = self.createScene()
         for msmlObject in self._msml_file.scene:
@@ -118,16 +109,16 @@ class FeBioExporter(XMLExporter):
             meshObj = msmlObject.mesh
             meshValue = meshObj.mesh
             meshFilename = self.evaluate_node(meshValue)
-            self.meshFile =  meshFilename
-               
+            self.meshFile = meshFilename
+
             self.createControl(self.node_root, msmlObject)
-   
+
             self.createMaterialRegions(self.node_root, msmlObject)
-            
+
             self.createMeshTopology(meshFilename, msmlObject)
-            
+
             self.createConstraintRegions(msmlObject, meshFilename)
-            
+
             self.createOutput()
 
         return etree.ElementTree(self.node_root)
@@ -141,20 +132,20 @@ class FeBioExporter(XMLExporter):
         assert isinstance(msmlObject, SceneObject)
 
         materialNode = self.sub("Material", self.node_root)
-        
+
         for k in range(len(msmlObject.material)):
             assert isinstance(msmlObject.material[k], MaterialRegion)
             indices_key = msmlObject.material[k].indices
             matregionId = msmlObject.material[k].id
 
             indices_vec = self.get_value_from_memory(msmlObject.material[k])
-           
+
             #Get all materials
             for i in range(len(msmlObject.material[k])):
                 assert isinstance(msmlObject.material[k][i], ObjectElement)
 
                 currentMaterialType = msmlObject.material[k][i].tag
-                
+
                 if currentMaterialType == "linearElasticMaterial":
                     currentYoungs = msmlObject.material[k][i].attributes["youngModulus"]
                     currentPoissons = msmlObject.material[k][i].attributes["poissonRatio"]
@@ -163,12 +154,12 @@ class FeBioExporter(XMLExporter):
                 else:
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
-            
-            materialRegionNode = self.sub("material", materialNode, id=k+1, name = matregionId, type="isotropic elastic" )
+            materialRegionNode = self.sub("material", materialNode, id=k + 1, name=matregionId,
+                                          type="isotropic elastic")
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
-            
+
 
     def createConstraintRegions(self, msmlObject, meshFilename):
         assert isinstance(msmlObject, SceneObject)
@@ -184,40 +175,41 @@ class FeBioExporter(XMLExporter):
                     fixedConstraintNode = self.sub("fix", boundaryNode)
                     bc = "xyz"
                     for index in map(str, indices_vec):
-                        self.sub("node", fixedConstraintNode, id=int(index)+1, bc=bc)
+                        self.sub("node", fixedConstraintNode, id=int(index) + 1, bc=bc)
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     count += 1
                     pressure = - float(constraint.pressure)
-                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count), str(pressure))
+                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count),
+                                                                     str(pressure))
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
                     dt = float(self._msml_file.env.simulation[0].dt)
                     time = dt * iterations
-                    loadPointValue1 = "0.00, 0.00" 
+                    loadPointValue1 = "0.00, 0.00"
                     loadPointValue2 = str(time) + ", 1.00"
                     loadDataNode = self.sub("LoadData", self.node_root)
-                    loadcurve = self.sub("loadcurve", loadDataNode, id=str(count), type ="smooth")
+                    loadcurve = self.sub("loadcurve", loadDataNode, id=str(count), type="smooth")
                     loadPoint1 = self.sub("loadpoint", loadcurve)
                     loadPoint1.text = loadPointValue1
                     loadPoint2 = self.sub("loadpoint", loadcurve)
                     loadPoint2.text = loadPointValue2
-                         
+
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
 
     def createControl(self, currentSofaNode, scobj):
         assert isinstance(scobj, SceneObject)
-        type ="solid"
+        type = "solid"
         moduleNode = self.sub("Module", self.node_root, type=type)
         controlNode = self.sub("Control", self.node_root)
         iterations = self._msml_file.env.simulation[0].iterations
         time_steps = self.sub("time_steps", controlNode)
-        time_steps.text = str(iterations) 
+        time_steps.text = str(iterations)
         dt = self._msml_file.env.simulation[0].dt
         step_size = self.sub("step_size", controlNode)
-        step_size.text = str(dt) 
+        step_size.text = str(dt)
         # msml doesn't support attributes below
         #=======================================================================
         # max_refs = self.sub("max_refs", controlNode)
@@ -243,32 +235,32 @@ class FeBioExporter(XMLExporter):
         # opt_iter.text = "10"
         #=======================================================================
         analysisType = "static"
-        analysis = self.sub("analysis", controlNode, type = analysisType)
-        
+        analysis = self.sub("analysis", controlNode, type=analysisType)
+
     def convertToVTK(self, meshFilename):
         iterations = str(self._msml_file.env.simulation[0].iterations)
         dt = self._msml_file.env.simulation[0].dt
         logfile = str(self.file_name + ".txt");
         ConvertFEBToVTK(logfile, iterations, meshFilename)
-         
+
     def createScene(self):
-        version = "1.2"  
+        version = "1.2"
         root = etree.Element("febio_spec", version=version)
         return root
-    
+
     def createOutput(self):
         type = "febio"
         type2 = "displacement"
-        type3 = "stress"  
+        type3 = "stress"
         outputNode = self.sub("Output", self.node_root)
-        plotfileNode = self.sub("plotfile", outputNode, type = type)
-        self.sub("var", plotfileNode, type = type2)
-        self.sub("var", plotfileNode, type = type3)
+        plotfileNode = self.sub("plotfile", outputNode, type=type)
+        self.sub("var", plotfileNode, type=type2)
+        self.sub("var", plotfileNode, type=type3)
         logfileName = self.file_name + ".txt"
         logfileNode = self.sub("logfile", outputNode)
-        data ="x;y;z"
-        self.sub("node_data", logfileNode, data = data, file = logfileName)
-        
+        data = "x;y;z"
+        self.sub("node_data", logfileNode, data=data, file=logfileName)
+
 
     def sub(self, tag, root=None, **kwargs):
         skwargs = {k: str(v) for k, v in kwargs.items()}
