@@ -27,10 +27,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
-"""
-
-
-"""
 
 from collections import namedtuple
 import re
@@ -46,6 +42,28 @@ from msml.sorts import get_sort
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
+__all__ =[ 'Constant',
+           'IndexGroup',
+           'MSMLEnvironment',
+           'MSMLFile',
+           'MSMLFileVariable',
+           'MSMLVariable',
+           'MaterialRegion',
+           'Mesh',
+           'ObjectConstraints',
+           'ObjectElement',
+           'Reference',
+           'SceneObject',
+           'SceneObjectSets',
+           'SceneSets',
+           'Task',
+           'Workflow',
+           'call_method_list',
+           'is_generated_name',
+           'link_algorithm',
+           'parse_attribute_value',
+           'random_var_name',
+           'xor']
 
 def xor(l):
     """
@@ -185,7 +203,7 @@ class MSMLFile(object):
         In ``reference`` the ``task`` has to be set. The user get a warnung if the reference is ambiguous.
         The lookup order is: task, variable, exporter.
 
-        :param ref: an open reference 
+        :param ref: an open reference
         :type ref: Reference
         :param outarg: specifies to look for an input (+ parameters) or output slot
         :type outarg: bool
@@ -297,6 +315,8 @@ class Workflow(object):
 
     def validate(self):
         """checks if all tasks match the operator definition"""
+        if not self._tasks:
+            return True
 
         import operator, collections
         attrid = operator.attrgetter("id")

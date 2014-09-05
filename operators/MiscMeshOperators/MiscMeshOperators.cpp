@@ -197,6 +197,7 @@ bool ConvertVTKToVTU(const char* infile, const char* outfile )
 	// OR: ?!
 	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
 	writer->SetFileName(outfile);
+	writer->SetDataModeToAscii();
 	__SetInput(writer, reader->GetOutput());
 	// OR: ?!
 	//__SetInput(writer, mesh);
@@ -1024,136 +1025,51 @@ bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* ref
 
 bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
 {
-    //	inputMesh->BuildCells();
-    //
-    ////	//first add a point data id to each point
-    ////	vtkPoints* thePoints = inputMesh->GetPoints();
-    ////	vtkCellArray* theCells = inputMesh->GetCells();
-    ////	vtkIdType numberOfPoints = thePoints->GetNumberOfPoints();
-    ////	vtkIdType numberOfCells = theCells->GetNumberOfCells();
-    ////
-    ////	vtkSmartPointer<vtkLongLongArray> pointIds =
-    ////	  vtkSmartPointer<vtkLongLongArray>::New();
-    ////	pointIds->SetNumberOfComponents(1);
-    ////	pointIds->SetName("pointIds");
-    ////
-    ////
-    ////	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
-    ////	{
-    ////	pointIds->InsertNextTuple1(i);
-    ////	}
-    ////
-    ////	inputMesh->GetPointData()->SetGlobalIds(pointIds);
-    ////
-    ////
-    ////	//extract the surface
-    ////	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
-    ////		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-    ////	geom->SetInput(inputMesh);
-    ////	geom->PassThroughPointIdsOn();
-    ////	geom->SetOriginalPointIdsName("pointIds");
-    ////	geom->Update();
-    //
-    //
-    //	//initialize collision detection
-    //
-    //
-    //
-    //	DT_ShapeHandle meshShapeHandle = DT_NewComplexShape(0);
-    //	vtkIdType* currentCellPoints;
-    //	vtkIdType numberOfNodes=3;
-    //	float currentVertex[3];
-    //	double currentVTKVertex[3];
-    //
-    //	referenceMesh->BuildCells();
-    //
-    //	std::cout<<"Add reference surface mesh to solid \n";
-    //
-    //	for(int i=0; i<referenceMesh->GetNumberOfCells(); i++)
-    //	{
-    //	 referenceMesh->GetCellPoints(i, numberOfNodes,currentCellPoints);
-    //	 if(numberOfNodes != 3)
-    //		 std::cerr<<"WTF:Number of nodes not 3 \n";
-    //
-    //	 DT_Begin();
-    //
-    //	 for(int j=0; j<numberOfNodes; j++)
-    //	 {
-    //		 referenceMesh->GetPoint(currentCellPoints[j], currentVTKVertex);
-    //		 currentVertex[0] = currentVTKVertex[0];
-    //		 currentVertex[1] = currentVTKVertex[1];
-    //		 currentVertex[2] = currentVTKVertex[2];
-    //		 DT_Vertex(currentVertex);
-    //	 }
-    //
-    //	 DT_End();
-    //
-    //	}
-    //
-    //	DT_EndComplexShape();
-    //
-    //	DT_ObjectHandle meshObjectHandle = DT_CreateObject(0,meshShapeHandle);
-    //
-    //
-    //
-    //	//iterate over all surface point
-    ////	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
-    ////
-    //	vtkPoints* thePointsSurface = inputMesh->GetPoints();
-    ////	vtkCellArray* theCellsSurface = surfaceGrid->GetCells();
-    //	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
-    ////	vtkIdType numberOfCellsSurface = theCellsSurface->GetNumberOfCells();
-    //
-    //
-    //
-    //	std::vector<DT_ShapeHandle> pointShapeHandles;
-    //	pointShapeHandles.resize(numberOfPointsSurface);
-    //	std::vector<DT_ObjectHandle> pointObjectHandles;
-    //	pointObjectHandles.resize(numberOfPointsSurface);
-    //	DT_ShapeHandle currentShapeHandle;
-    //	DT_ObjectHandle currentObjectHandle;
-    //
-    //
-    //	std::cout<<"Add quadratic surface points to solid \n";
-    //
-    //	for(int i=0; i<numberOfPointsSurface; i++)
-    //	{
-    //	thePointsSurface->GetPoint(i,currentVTKVertex);
-    //	currentVertex[0]=currentVTKVertex[0];
-    //	currentVertex[1]=currentVTKVertex[1];
-    //	currentVertex[2]=currentVTKVertex[2];
-    //
-    //	pointShapeHandles[i] = DT_NewPoint(currentVertex);
-    //	DT_EndComplexShape();
-    //	pointObjectHandles[i] = DT_CreateObject(0,pointShapeHandles[i]);
-    //
-    //	}
-    //
-    //	//for each surface point: project
-    //
-    //	float currentPointOnMesh[3];
-    //	float currentTempPoint[3];
-    //
-    //	//vtkLongLongArray* globalIdsSurface = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");//->GetPointData()->get->GetScalars("pointIds");
-    //
-    //	std::cout<<"Numberof surface points: "<<numberOfPointsSurface<<"\n";
-    //
-    //	std::cout<<"Query nearest point on surface \n";
-    //
-    //	for(int i=0; i<numberOfPointsSurface; i++)
-    //	{
-    //	currentObjectHandle = pointObjectHandles[i];
-    //
-    //	//std::cout<<"CurrentSurfacePointId: "<<i<<" globalID: "<<globalIdsSurface->GetValue(i)<<"\n";
-    //
-    //	DT_GetClosestPair(meshObjectHandle,currentObjectHandle,currentPointOnMesh,currentTempPoint);
-    //
-    //
-    //	thePointsSurface->SetPoint(i,  currentPointOnMesh[0],currentPointOnMesh[1],currentPointOnMesh[2] );
-    //
-    //	}
-    //
-    //	std::cout<<"Save output\n";
+	std::cout<<"Start surface projection\n";
+
+//	outputMesh->BuildCells();
+	//
+	//first add a point data id to each point
+	vtkPoints* thePoints = inputMesh->GetPoints();
+	vtkIdType numberOfPoints = inputMesh->GetNumberOfPoints();
+
+
+
+	//prepare octree data structure for reference mesh
+	referenceMesh->BuildCells();
+    vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+    cellLocatorRef->SetDataSet ( referenceMesh);
+    cellLocatorRef->BuildLocator();
+
+
+	//iterate over all surface point
+
+    double currentPoint[3];
+    double currentClosestPoint[3];
+    double currentDisplacement[3];
+    vtkSmartPointer<vtkGenericCell> currentTriangle = vtkSmartPointer<vtkGenericCell>::New();
+    currentTriangle->SetCellTypeToTriangle();
+    vtkIdType currentCellId;
+    int currentSubId;
+    double currentDistance;
+
+
+
+	for(int i=0; i<numberOfPoints; i++)
+	{
+		thePoints->GetPoint ( i, currentPoint );
+
+
+        cellLocatorRef->FindClosestPoint ( currentPoint, currentClosestPoint,
+                                           currentTriangle, currentCellId,currentSubId,currentDistance );
+
+
+        thePoints->SetPoint(i, currentClosestPoint[0], currentClosestPoint[1], currentClosestPoint[2]);
+	}
+
+
+
+
     return true;
 }
 

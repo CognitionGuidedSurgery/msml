@@ -24,20 +24,24 @@ class Runner(object):
     def setDisplacements(self, indices, displacements):
         print('Setting displacements...')
 
-       # assert isinstance(mfile, MSMLFile)
-       #
-       #  sceneobject = mfile.scene[0]
-       #  cs = sceneobject.constraints
-       #
-       #  assert isinstance(cs, ObjectConstraints)
-       #
-       #  for displacementConstraint in cs.constraints:
-       #      assert isinstance(displacementConstraint, ObjectElement)
-       #
-       #      if displacementConstraint.tag == 'displacementConstraint':
-       #          break
-       #
-       #  displacementConstraint.attributes['attribute'] ...
+        assert isinstance(self._mfile, MSMLFile)
+
+        sceneobject = self._mfile.scene[0]
+        cs = sceneobject.constraints[0]
+
+        assert isinstance(cs, ObjectConstraints)
+
+        for displacementConstraint in cs.constraints:
+            assert isinstance(displacementConstraint, ObjectElement)
+
+            if displacementConstraint.tag == 'displacementConstraint':
+                break
+
+        print displacementConstraint
+
+        displacementConstraint.attributes['displacement'] = [1,1,1,1,1,1]
+        displacementConstraint.attributes['indices'] = [2,2]
+
 
 
 

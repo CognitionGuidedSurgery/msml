@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 #region gplv3
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
@@ -29,7 +29,7 @@
 
 from __future__ import print_function
 
-__author__ = "Alexander Weigl"
+__author__ = "Alexander Weigl, Nicolai Schoch"
 __date__ = "2014-03-10"
 
 import sys
@@ -47,12 +47,13 @@ EXAMPLES = [
     ("Bunny", bunny / "bunny.msml.xml", "Prepare the standard bunny for simulation"),
     ("Bunny CGAL", bunny / "bunnyCGAL.msml.xml", "Prepare the standard bunny for simulation"),
     ("Bunny CGAL High", bunny / "bunnyCGALHigh.msml.xml", "Prepare the standard bunny for simulation"),
+    ("Bunny CGAL for HiFlow3", bunny / "bunnyCGAL_HiFlow3.msml.xml", "Prepare the standard bunny for HiFlow3-based simulation"),
     ("Bunny Cuda", bunny / "bunnyExampleCuda.xml", "Prepare the standard bunny for simulation"),
     ("Bunny VoxMesh", bunny / "bunnyVoxelMeshing.msml.xml", "Prepare the standard bunny for simulation"),
     ("Lungs", root / "CGALi2vLungs/Lungs_new.xml", ""),
     ("CGal", root / "CGALi2vExample/CGALExample.xml", ""),
     ("Liver", root / "LiverExample/liverLinear.msml.xml", "Prepare a liver mesh simulation"),
-    ("Color", root / "PythonExamples/color-example.xml", "Workflow only example. Colorize   a Mesh")
+    ("Color", root / "PythonExamples/color-example.xml", "Workflow only example. Colorize a Mesh")
 ]
 
 
@@ -73,15 +74,21 @@ def main():
         print("\t \x1b[1m%d\x1b[0m \x1b[34;1m%20s\x1b[0m : %s\n\t\t\t%s\n" % (i, name, file, desc))
 
     print("Select Examples [0]:", end=" ")
-    try:
-        number = int(raw_input()) or 0
-    except:
-        number = 0
+    if len(sys.argv) == 1:
+        try:
+            number = int(raw_input()) or 0
+        except:
+            number = 0
+    else:
+        number = int(sys.argv[1])
 
     try:
         name, file, desc = EXAMPLES[number]
         print("Executing: %s" % name)
-        app = frontend.App(files=[file], exporter="nsofa", )
+        if number == 3:
+            app = frontend.App(files=[file], exporter="hiflow3", )
+        else:
+            app = frontend.App(files=[file], exporter="nsofa", )
         app.execution()
     except Exception as e:
         raise

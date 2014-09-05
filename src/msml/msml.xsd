@@ -136,7 +136,7 @@
                     <element name="constraints" type="msml:constraints_t"
                              minOccurs="0">
                     </element>
-                    <element name="mesh" type="msml:mesh_t" minOccurs="1"
+                      <element name="mesh" type="msml:mesh_t" minOccurs="1"
                              maxOccurs="1">
                     </element>
                     <element name="sets" type="msml:sets_t" minOccurs="0"
@@ -275,6 +275,13 @@
                             </restriction>
                         </simpleType>
                     </attribute>
+                    <attribute use="optional" default="1" name="numParallelProcessesOnCPU">
+                        <simpleType>
+                            <restriction base="int">
+                                <minExclusive value="1"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
                     <attribute name="linearSolver">
                         <simpleType>
                             <restriction base="string">
@@ -308,12 +315,26 @@
                             </restriction>
                         </simpleType>
                     </attribute>
+                    <attribute use="optional" default="0.1" name="dampingRayleighRatioMass">
+                        <simpleType>
+                            <restriction base="float">
+                                <minExclusive value="0.0"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute use="optional" default="0.2" name="dampingRayleighRatioStiffness">
+                        <simpleType>
+                            <restriction base="float">
+                                <minExclusive value="0.0"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
                 </complexType>
             </element>
             <element name="simulation">
                 <complexType>
                     <sequence>
-                        <element name="step">
+                        <element name="step" minOccurs="1" maxOccurs="unbounded">
                             <complexType>
                                 <attribute name="name" type="string">
                                 </attribute>

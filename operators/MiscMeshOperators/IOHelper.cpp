@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sstream>      // std::istringstream
+#include <iostream>
 #include <map>
 
 
@@ -151,6 +152,7 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
 {
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkDataObject> aReturn;
+
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
@@ -158,7 +160,6 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     reader->Update();
     return reader->GetUnstructuredGridOutput();
   }
-
   else
   {
     vtkSmartPointer<vtkXMLGenericDataObjectReader > reader = vtkSmartPointer<vtkXMLGenericDataObjectReader >::New();

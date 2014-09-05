@@ -33,9 +33,20 @@ from ..sorts import get_sort
 from msml.log import report
 from ..exceptions import *
 
-
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
+
+
+__all__ = ['Alphabet',
+           'ObjectAttribute',
+           'OAOutput',
+           'OAConstraint',
+           'OAMaterial',
+           'Slot',
+           'Operator',
+           'SharedObjectOperator',
+           'PythonOperator',
+           'ShellOperator']
 
 
 class Alphabet(object):
@@ -145,6 +156,7 @@ class Alphabet(object):
         """
         with open(filename, 'r') as file:
             return pickle.load(file)
+
 
 
 class ObjectAttribute(object):
@@ -483,6 +495,11 @@ class ShellOperator(Operator):
 
         command = self.command_tpl.format(**kwargs)
         os.system(command)
+        
+        results = None
+        if len(self.output) == 1 and 'out_filename' in kwargs:
+            results = {self.output_names()[0]: kwargs.get('out_filename')}
+        return results
 
 
 class SharedObjectOperator(PythonOperator):
@@ -502,4 +519,3 @@ class SharedObjectOperator(PythonOperator):
 
         self.__function = getattr(object, self.symbol_name)
         return self.__function
-

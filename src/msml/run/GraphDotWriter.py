@@ -26,7 +26,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
-__author__ = 'Alexander Weigl'
+__author__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 
 from jinja2 import Template
 
@@ -51,6 +51,8 @@ template = Template(TMPL)
 import itertools
 from collections import namedtuple
 
+__all__ = ["GraphDotWriter"]
+
 
 def kvstr(dic, noquote=False):
     a = '%s=%s' if noquote else '%s="%s"'
@@ -65,10 +67,21 @@ from msml.model.dag import DiGraph
 
 
 class GraphDotWriter(object):
+    """Export the given `dag` into the graphviz format.
+
+    :param dag: directed acyclic graph
+    :type dag: msml.model.DiGraph
+
+
+    """
     def __init__(self, dag):
         self.dag = dag
 
     def __call__(self):
+        """returns the graph in dot format
+
+        :rtype: str
+        """
         dag = self.dag
         assert isinstance(dag, DiGraph)
 

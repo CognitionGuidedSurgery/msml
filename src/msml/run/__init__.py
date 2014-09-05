@@ -26,38 +26,62 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
+"""This class summaries functions for executing the pipeline.
+
+
+"""
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-26"
 
-import warnings
-
-from path import path
-
 from .memory import Memory
-from msml.model import *
-from msml.log import report
-from msml.generators import generate_task_id
-from msml.model.dag import DiGraph
-from msml.exporter.base import Exporter
-from msml.run.GraphDotWriter import GraphDotWriter
+from .GraphDotWriter import GraphDotWriter
+from path import path
+from ..model import *
+from ..generators import generate_task_id
+from ..exporter import Exporter
+
 import msml.sortdef
+
+__all__ = ['Executer', 'Memory',
+           'build_graph', 'create_conversion_task',
+           'get_python_conversion_operator', 'initialize_file_literals',
+           'inject_implict_conversion',
+           'GraphDotWriter', 'DefaultGraphBuilder',
+           'MemoryError', 'MemoryTypeMismatchError',
+           'MemoryVariableUnknownError',
+           'LinearSequenceExecutor']
+import abc
 
 
 class Executer(object):
-    """Describe the interface of an Executer.
+    """Describes the interface of an Executer.
 
-    An Executer is responsible for calling the operator with the right arguments and parameters in the right order.
-    Additionally it invokes the Exporter.
-
+    An Executer is responsible for calling the operator with the
+    right arguments and parameters in the right order.
+    Additionally it invokes the :py:class:`msml.exporter.Exporter`.
 
     """
+    __metaclass__ = abc.ABCMeta
 
-    def __init__(self, msmlfile): pass
+    def __init__(self, msmlfile):
+        self._options = None
 
-    def run(self): pass
+    @property
+    def options(self):
+        return self._options
 
-    def init_memory(self, content): pass
+    @options.setter
+    def options(self, value):
+        self._options = value
+
+    @abc.abstractmethod
+    def run(self):
+        pass
+
+    @abc.abstractmethod
+    def init_memory(self, content):
+        pass
 
 
 def contains(a, b):
@@ -72,6 +96,9 @@ def contains(a, b):
 
 
 def initialize_file_literals(first_bucket):
+    """
+    """
+
     def var_is_file(var):
         if isinstance(var, MSMLVariable):
             return issubclass(var.sort.physical, msml.sortdef.InFile)
@@ -87,7 +114,8 @@ def initialize_file_literals(first_bucket):
     return map(abs_value, filter(var_is_file, first_bucket))
 
 
-class LinearSequenceExecuter(Executer):
+
+class LinearSequenceExecutor(Executer):
     """ The LinearSequenceExecuter executes the given MSMLFile  in one sequence with no parallelism in topological order.
 
     """
@@ -102,6 +130,8 @@ class LinearSequenceExecuter(Executer):
         if isinstance(content, str):
             self._memory.reset()
             self._memory.load_memory_file(content)
+        elif isinstance(content, dict):
+            self._memory._internal.update(content)
         elif content:
             warnings.warn("init_memory handles only filenames", MSMLWarning)
 
@@ -171,9 +201,9 @@ class LinearSequenceExecuter(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
+        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', 1)
         result = task.operator(**kwargs)
-        report('--Executing operator of task {} done'.format(task), 'I', '002')
+        report('--Executing operator of task {} done'.format(task), 'I', 2)
 
         if task.id in self._memory and isinstance(self._memory[task.id], dict):
             # converter case, only update the change values
@@ -207,7 +237,49 @@ class LinearSequenceExecuter(Executer):
         return vals
 
 
+class ControllableExecutor(LinearSequenceExecutor):
+    def __init__(self, msmlfile):
+        super(ControllableExecutor, self).__init__(msmlfile)
+        self.state = "PRE"
+
+    def in_preprocessing(self):
+        return self.state == "PRE"
+
+    def in_postprocessing(self):
+        return self.state == "POST"
+
+    def _execute_exporter(self, node):
+        if not self.options.get('executor.disable_exporter', False):
+            super(ControllableExecutor, self)._execute_exporter(node)
+        self.state = "POST"
+
+    def _execute_operator_task(self, task):
+        if (self.in_preprocessing() and \
+                    not self.options.get('executor.disable_pre', False)) or \
+                (self.in_postprocessing() and \
+                         not self.options.get('executor.disable_post', False)):
+            super(ControllableExecutor, self)._execute_operator_task(task)
+
+
 def build_graph(tasks, exporter, variables):
+    """build the direct acyclic graph from the given arguments.
+
+    :param list[Task] tasks: a list of :py:class:`msml.model.Task`
+    :param Exporter exporter: the :py:class:`msml.exporter.Exporter`
+       to be weaved int
+    :param list[MSMLVariable] variables: :py:class:`MSMLVariable`
+
+    :returns: a DAG for the execution
+    :rtype: :py:class:`msml.model.DiGraph`
+
+    .. warning::
+
+       The graph building does not validate the dependencies or anything
+       else. You have to do this before or after you used the function.
+       E.g. :py:method:`msml.model.MSMLFile.validate`
+
+    """
+
     dag = DiGraph()
 
     nodes = dict(tasks)
@@ -236,12 +308,17 @@ from ..sorts import conversion
 
 
 def inject_implict_conversion(dag):
-    """Finds type mismatch and injects suitable conversion operators
+    """Finds type mismatches on edges and injects suitable conversion operators
 
-    :param dag: a directed acyclic graph from `build_graph`
-    :type dag: DiGraph
-    :return: the given graph
-    :rtype: DiGraph
+    .. warning::
+
+       This function works and changes the given `dag`.
+
+    :param dag: a directed acyclic graph from
+                :py:func:`msml.run.build_graph`
+    :type dag: :py:class:`msml.model.DiGraph`
+    :return: the modified graph
+    :rtype: msml.model.DiGraph
     """
     for a, b, data in dag.edges(data=True):
         ref = data['ref']
@@ -278,10 +355,24 @@ def inject_implict_conversion(dag):
     return dag
 
 
-from ..model import PythonOperator, Task, Slot
-
-
 def get_python_conversion_operator(slotA, slotB):
+    """creates an :py:class:`msml.model.PythonOperator` for conversion
+    from sort of `slotA` to sort of `slotB`
+
+    :param slotA: slot on the outgoing side
+    :type slotA: msml.model.Reference.Ref
+
+    :param slotB: slot on the incoming side
+    :type slotB: msml.model.Reference.Ref
+
+    :returns: an callable conversion operator or none if types incompatible
+    :rtype: msml.model.PythonOperator
+
+    .. seealso::
+
+       :py:class:`msml.sorts.ConversionNetwork`
+
+    """
     r = {'function': '<automatic-converter>', 'module': '<module-name>'}
 
     pA = slotA.arginfo.sort.physical
@@ -298,15 +389,15 @@ def get_python_conversion_operator(slotA, slotB):
     return pyop
 
 
-
 def create_conversion_task(slotA, slotB):
-    """
+    """creates a task (instance of operator) for the requested conversion.
 
     :param slotA:
     :type slotA: Reference.Ref
     :param slotB:
     :type slotB: Reference.Ref
-    :return:
+    :return: a task, ready for embedding into the build graph
+    :rtype: msml.model.Task
     """
 
     fn = conversion(slotA.arginfo.sort, slotB.arginfo.sort)
@@ -329,7 +420,7 @@ class DefaultGraphBuilder(object):
      Args:
        msmlfile (MSMLFile)
        exporter (Exporter)
-        
+
     """
 
     def __init__(self, msmlfile, exporter):

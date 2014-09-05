@@ -1,6 +1,7 @@
 
 #include "PostProcessingOperators.h"
 #include "MiscMeshOperators.h"
+#include "IndexRegionOperators.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -173,6 +174,13 @@ void TestComparisonFeBioAndSofa()
   PostProcessingOperators::ComputeDiceCoefficient(inputMeshSofa4.c_str(), inputMeshFeb4.c_str());
 }
 
+void TestPositionFromIndices()
+{
+  std::vector<unsigned int> ids;
+  ids.push_back(1);
+  vector<double> pos = IndexRegionOperators::positionFromIndices("C:\\Projekte\\msml_github\\examples\\BunnyExample\\bunnyout\\liver0.vtu", ids, "points");
+}
+
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 {
 	//std::string inputMesh("E:/GIT/msml/Testdata/CGALi2vExampleResults/liver_kidney_gallbladder.vtk");
@@ -324,6 +332,7 @@ int main( int argc, char * argv[])
 	
 	TestComparisonFeBioAndSofa();
 	
+         return EXIT_SUCCESS;
 }
 
 

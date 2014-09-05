@@ -1,0 +1,82 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml ../../test.xsd">
+
+    <variables>
+        <var name="input_vol_mesh" value="msmlLogoVMesh.vtk" logical="Mesh"
+             physical="file.vtk"/>
+        <var name="input_surf_mesh" value="msmlLogoSurfaceBinaryVTK.vtk" logical="linearMesh"
+             physical="file.vtk"/>
+    </variables>
+
+    <scene>
+        <object id="msmlLogo">
+            <mesh>
+                <linearTet id="msmlLogoMesh" mesh="${msmlLogoVolumeMesher}"/>
+            </mesh>
+
+            <sets>
+                <nodes>
+                    <indexgroup id="constraintRegion1" indices="${leftSideToIndexGroup}"/>
+                    <indexgroup id="constraintRegion2" indices="${rightSideToIndexGroup}"/>
+                </nodes>
+                <elements>
+                    <indexgroup id="bodyRegion" indices="${bodyToIndexGroup}"/>
+                </elements>
+                <surfaces>
+                    <indexgroup id="constraintRegionSurfaces1" indices="${leftSideToIndexGroup}"/>
+                    <indexgroup id="constraintRegionSurfaces2" indices="${rightSideToIndexGroup}"/>
+                </surfaces>
+            </sets>
+
+            <material>
+                <region id="msmlLogoMaterial" indices="${bodyToIndexGroup}">
+                    <linearElasticMaterial youngModulus="33428" poissonRatio="0.466"/>
+                    <mass name="msmlLogo" massDensity="1.000"/>
+                </region>
+            </material>
+
+            <constraints>
+                <constraint name="bodyConstraint" forStep="${initial_def_1}">
+                    <fixedConstraint time="0" indices="${leftSideToIndexGroup}"/>
+                    <displacementConstraint time="0" indices="${rightSideToIndexGroup}" displacement="2.0 0.0 0.0"/>
+                </constraint>
+            </constraints>
+
+            <output>
+                <displacement id="msmlLogo" timestep="1"/>
+            </output>
+        </object>
+    </scene>
+
+    <workflow>
+
+        <mesherCGALs2v id="msmlLogoVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+                       preserveFeatures="true" facet_angle="30" facet_size="0.2" facet_distance="0.3"
+                       cell_radius_edge_ratio="3" cell_size="0.2" odt="false" lloyd="false" pertube="true"
+                       exude="true"/>
+
+        <boxROIToIndexOperator id="bodyToIndexGroup"
+                               box="-12.3 -2.1 -4.3 12.3 0.1 4.3" mesh="${msmlLogoVolumeMesher}"
+                               select="elements"/>
+
+        <boxROIToIndexOperator id="leftSideToIndexGroup"
+                               box="-12.3 -2.1 -4.3 -9.0 0.1 4.3" mesh="${msmlLogoVolumeMesher}"
+                               select="points"/>
+
+        <boxROIToIndexOperator id="rightSideToIndexGroup"
+                               box="10.0 -2.1 -4.3 12.3 0.1 4.3" mesh="${msmlLogoVolumeMesher}"
+                               select="points"/>
+
+    </workflow>
+
+
+    <environment>
+        <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" processingUnit="CPU" numParallelProcessesOnCPU="4" 
+                timeIntegration="Newmark" dampingRayleighRatioMass="0.3" dampingRayleighRatioStiffness="0.4"/>
+        <simulation>
+            <step name="initial_def_1" dt="0.05" iterations="40"/>
+        </simulation>
+    </environment>
+
+</msml:msml>
