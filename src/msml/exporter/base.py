@@ -210,15 +210,19 @@ class Exporter(object):
     def evaluate_node(self, expression):
         if ((expression[0:2] == '${') & (expression[-1] == '}') ):
             # in this case, get value from workflow
-            resultNode = self._memory._internal[expression[2:-1]]
-            if isinstance(resultNode, basestring):
-                resultExpression = resultNode
-            else:
-                resultExpression = resultNode[resultNode.keys()[0]]
-        else:
-            resultExpression = expression
+            data = self._memory._internal
+            for seg in expression[2:-1].split("."):
+                data = data[seg]
 
-        return resultExpression
+            return data
+        else:
+            return  expression
+
+            # every reference should be full, commented out from weigl
+            # if isinstance(resultNode, basestring):
+            #    resultExpression = resultNode
+            #else:
+            # resultExpression = resultNode[resultNode.keys()[0]]
 
     def get_value_from_memory(self, reference):
         """

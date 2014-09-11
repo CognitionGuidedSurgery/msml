@@ -34,15 +34,10 @@
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-26"
 
-import warnings
-
-from path import path
-
 from .memory import Memory
 from .GraphDotWriter import GraphDotWriter
-
+from path import path
 from ..model import *
-from ..log import report
 from ..generators import generate_task_id
 from ..exporter import Exporter
 
@@ -52,10 +47,12 @@ __all__ = ['Executer', 'Memory',
            'build_graph', 'create_conversion_task',
            'get_python_conversion_operator', 'initialize_file_literals',
            'inject_implict_conversion',
-           'GraphDotWriter','DefaultGraphBuilder',
+           'GraphDotWriter', 'DefaultGraphBuilder',
            'MemoryError', 'MemoryTypeMismatchError',
            'MemoryVariableUnknownError',
-           'LinearSequenceExecuter']
+           'LinearSequenceExecutor']
+import abc
+
 
 class Executer(object):
     """Describes the interface of an Executer.
@@ -65,12 +62,26 @@ class Executer(object):
     Additionally it invokes the :py:class:`msml.exporter.Exporter`.
 
     """
+    __metaclass__ = abc.ABCMeta
 
-    def __init__(self, msmlfile): pass
+    def __init__(self, msmlfile):
+        self._options = None
 
-    def run(self): pass
+    @property
+    def options(self):
+        return self._options
 
-    def init_memory(self, content): pass
+    @options.setter
+    def options(self, value):
+        self._options = value
+
+    @abc.abstractmethod
+    def run(self):
+        pass
+
+    @abc.abstractmethod
+    def init_memory(self, content):
+        pass
 
 
 def contains(a, b):
@@ -87,6 +98,7 @@ def contains(a, b):
 def initialize_file_literals(first_bucket):
     """
     """
+
     def var_is_file(var):
         if isinstance(var, MSMLVariable):
             return issubclass(var.sort.physical, msml.sortdef.InFile)
@@ -102,7 +114,8 @@ def initialize_file_literals(first_bucket):
     return map(abs_value, filter(var_is_file, first_bucket))
 
 
-class LinearSequenceExecuter(Executer):
+
+class LinearSequenceExecutor(Executer):
     """ The LinearSequenceExecuter executes the given MSMLFile  in one sequence with no parallelism in topological order.
 
     """
@@ -117,6 +130,8 @@ class LinearSequenceExecuter(Executer):
         if isinstance(content, str):
             self._memory.reset()
             self._memory.load_memory_file(content)
+        elif isinstance(content, dict):
+            self._memory._internal.update(content)
         elif content:
             warnings.warn("init_memory handles only filenames", MSMLWarning)
 
@@ -186,9 +201,9 @@ class LinearSequenceExecuter(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', '001')
+        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', 1)
         result = task.operator(**kwargs)
-        report('--Executing operator of task {} done'.format(task), 'I', '002')
+        report('--Executing operator of task {} done'.format(task), 'I', 2)
 
         if task.id in self._memory and isinstance(self._memory[task.id], dict):
             # converter case, only update the change values
@@ -220,6 +235,30 @@ class LinearSequenceExecuter(Executer):
                 vals[inname] = self._memory[outid][outname]
 
         return vals
+
+
+class ControllableExecutor(LinearSequenceExecutor):
+    def __init__(self, msmlfile):
+        super(ControllableExecutor, self).__init__(msmlfile)
+        self.state = "PRE"
+
+    def in_preprocessing(self):
+        return self.state == "PRE"
+
+    def in_postprocessing(self):
+        return self.state == "POST"
+
+    def _execute_exporter(self, node):
+        if not self.options.get('executor.disable_exporter', False):
+            super(ControllableExecutor, self)._execute_exporter(node)
+        self.state = "POST"
+
+    def _execute_operator_task(self, task):
+        if (self.in_preprocessing() and \
+                    not self.options.get('executor.disable_pre', False)) or \
+                (self.in_postprocessing() and \
+                         not self.options.get('executor.disable_post', False)):
+            super(ControllableExecutor, self)._execute_operator_task(task)
 
 
 def build_graph(tasks, exporter, variables):
@@ -348,7 +387,6 @@ def get_python_conversion_operator(slotA, slotB):
         output=[Slot('o', pB, lB)], runtime=r)
 
     return pyop
-
 
 
 def create_conversion_task(slotA, slotB):

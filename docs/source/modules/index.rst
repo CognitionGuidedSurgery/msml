@@ -7,6 +7,7 @@ Python API
    :toctree: generated
 
    analytics
+   api
    env
    envconfig
    exceptions

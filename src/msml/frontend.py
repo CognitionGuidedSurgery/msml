@@ -81,21 +81,16 @@ OPTIONS = """
     |_| |_| |_||___/|_| |_| |_||_|
 
 Usage:
-  msml exec     [-w] [options] [<file>...]
+  msml exec [(-D D)...] [-w] [options] <file>...
   msml show     [options] <file>
   msml writexsd <XSDFile>
   msml check    [<file>...]
   msml validate
   msml expy     [options] [<file>...]
 
-#for future: msml devel kit, creation of operator templates and element templates
-  msml operator init    <folder> [<name>]
-  msml operator compile <folder>
-  msml element  init    <file>
-
 Options:
  -v, --verbose              verbose information on stdout [default: false]
- -o, --output=DIR           output file
+ -o, --output=DIR           output directory
  --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
  -a, --alphabet-dir=DIR     loads an specific alphabet dir
  --operator-dir             path to search for additional python modules
@@ -104,6 +99,23 @@ Options:
  -m FILE, --vars=FILE       predefined the memory content
 
 """
+
+def _parse_keyvalue_options(list_str):
+    options = {}
+    for s in list_str:
+        if "=" in s:
+            k,v = s.split("=")
+            options[k] = v
+        else:
+            options[s] = True
+    return options
+
+def _load_class(cl):
+    d = cl.rfind(".")
+    classname = cl[d+1:len(cl)]
+    m = __import__(cl[0:d], globals(), locals(), [classname])
+    return getattr(m, classname)
+
 
 
 class App(object):
@@ -149,6 +161,7 @@ class App(object):
         self.output_dir = output_dir or options.get('--output')
         self._novalidate = novalidate
         self._memory_init_file = memory_init_file
+        self._executor_options = _parse_keyvalue_options(options.get('D', list()))
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -205,13 +218,12 @@ class App(object):
     @property
     def memory_init_file(self):
         """memory init file for initalization of the :py:class:`msml.run.Memory`.
-
-        return self._memory_init_file
         """
+        return self._memory_init_file
 
     @memory_init_file.setter
     def memory_init_file(self, v):
-        self._memory_init_file = path(v)
+        self._memory_init_file = v
 
     @property
     def exporter(self):
@@ -236,7 +248,10 @@ class App(object):
         and override this property.
 
         """
-        return msml.run.LinearSequenceExecuter
+        if 'executor.class' in self._executor_options:
+            return _load_class(self._executor_options['executor.class'])
+        else:
+            return msml.run.LinearSequenceExecutor
 
     def _load_msml_file(self, filename):
         mfile = msml.xml.load_msml_file(filename)
@@ -278,6 +293,7 @@ class App(object):
         # change to msml-file dirname
         os.chdir(msml_file.filename.dirname().abspath())
         exe = execlazz(msml_file)
+        exe.options = self._executor_options
         exe.working_dir = self.output_dir
         exe.init_memory(self.memory_init_file)
         mem = exe.run()

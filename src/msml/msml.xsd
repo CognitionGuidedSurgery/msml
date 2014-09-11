@@ -275,6 +275,13 @@
                             </restriction>
                         </simpleType>
                     </attribute>
+                    <attribute use="optional" default="1" name="numParallelProcessesOnCPU">
+                        <simpleType>
+                            <restriction base="int">
+                                <minExclusive value="1"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
                     <attribute name="linearSolver">
                         <simpleType>
                             <restriction base="string">
@@ -327,7 +334,7 @@
             <element name="simulation">
                 <complexType>
                     <sequence>
-                        <element name="step">
+                        <element name="step" minOccurs="1" maxOccurs="unbounded">
                             <complexType>
                                 <attribute name="name" type="string">
                                 </attribute>

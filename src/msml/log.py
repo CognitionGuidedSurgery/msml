@@ -37,11 +37,17 @@ __date__ = "2014-05-05"
 import inspect
 import os.path
 
+try:
+    import colorama
+    colorama.init()
+except:
+    pass
+
 __all__ = ['report', '_reported']
 
 COLOR_TABLE = {'I': 94, 'W': 33, 'E': 31, 'D': 90, 'F': 35}
 
-FORMAT = "{color}{type}-{number}: {msg} {grey}(from {file}:{lineno}){nocolor}"
+FORMAT = "{color}{type}-{number:04d}: {msg} {grey}(from {file}:{lineno}){nocolor}"
 
 _reported = []
 

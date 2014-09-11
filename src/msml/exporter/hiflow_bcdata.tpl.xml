@@ -1,27 +1,32 @@
+{%macro bcentry(data, entry_name, number_field, points_field, vector_field) %}
+{% if data and data.num > 0 -%}
+        <{{entry_name}}>
+            <{{number_field}}>{{data.num}}</{{number_field}}>
+            <{{points_field}}>
+                {{data.points}}</{{points_field}}>
+            <{{vector_field}}>
+                {{data.vectors}}</{{vector_field}}>
+        </{{entry_name}}>
+{%- endif %}
+{% endmacro %}
 <Param>
   <BCData>
-{% if fc %}
-    <FixedConstraintsBCs>
-        <NumberOfFixedDirichletPoints>{{fc.nFDP}}</NumberOfFixedDirichletPoints>
-        <fDPoints>{{fc.fDPointsList}}</fDPoints>
-        <fDisplacements>{{fc.fDisplacementsList}}</fDisplacements>
-    </FixedConstraintsBCs>
-{% endif %}
+{{bcentry(data.fc,
+    "FixedConstraintsBCs",
+    "NumberOfFixedDirichletPoints",
+    "fDPoints",
+    "fDisplacements")}}
 
-{% if dc %}
-    <DisplacementConstraintsBCs>
-        <NumberOfDisplacedDirichletPoints>{{dc.nDDP}}</NumberOfDisplacedDirichletPoints>
-        <dDPoints>{{dc.dDPointsList}}</dDPoints>
-        <dDisplacements>{{dc.dDisplacementsList}}</dDisplacements>
-    </DisplacementConstraintsBCs>
-{% endif %}
+{{bcentry(data.dc,
+     "DisplacementConstraintsBCs",
+    "NumberOfDisplacedDirichletPoints",
+    "dDPoints",
+    "dDisplacements")}}
 
-{% if fp %}
-    <ForceOrPressureBCs>
-        <NumberOfForceOrPressureBCPoints>{{fp.nFoPBCPoints}}</NumberOfForceOrPressureBCPoints>
-        <ForceOrPressureBCPoints>{{fp.FoPBCPointsList}}</ForceOrPressureBCPoints>
-        <ForcesOrPressures>{{fp.FoPBCVectorsList}}</ForcesOrPressures>
-    </ForceOrPressureBCs>
-{% endif %}
+{{bcentry(data.fp,
+    "ForceOrPressureBCs",
+    "NumberOfForceOrPressureBCPoints",
+    "ForceOrPressureBCPoints",
+    "ForcesOrPressures")}}
   </BCData>
 </Param>
