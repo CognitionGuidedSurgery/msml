@@ -14,6 +14,8 @@
 #include <vtkTriangleFilter.h>
 #include <vtkMassProperties.h>
 
+#include "../vtk6_compat.h"
+
 using namespace std;
 
 namespace MSML {
@@ -28,13 +30,13 @@ Features ExtractFeatures(std::string infile) {
 
     // vtkMassProperties only processes triangles, so we use vtkTriangleFilter to convert all Polygons to triangles:
     vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
-    triangleFilter->SetInputConnection(reader->GetOutput()->GetProducerPort());
+    __SetInput(triangleFilter, reader->GetOutput());
     triangleFilter->Update();
 
     vtkPolyData* mesh = triangleFilter->GetOutput();
 
     vtkSmartPointer<vtkMassProperties> massProps = vtkSmartPointer<vtkMassProperties>::New();
-    massProps->SetInputConnection(mesh->GetProducerPort());
+    __SetInput(massProps, mesh);
     massProps->Update();
 
     Features features;
