@@ -3,8 +3,7 @@
            xsi:schemaLocation="http://sfb125.de/msml ../../test.xsd">
 
     <variables>
-        <var name="input_vol_mesh" value="msmlLogoVMesh.vtk" logical="Mesh"
-             physical="file.vtk"/>
+        <var name="vol_mesh_filename" value="msmlLogoVMesh.vtk" logical="str"/>
         <var name="input_surf_mesh" value="msmlLogoSurfaceBinaryVTK.vtk" logical="linearMesh"
              physical="file.vtk"/>
     </variables>
@@ -51,7 +50,7 @@
 
     <workflow>
 
-        <mesherCGALs2v id="msmlLogoVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+        <mesherCGALs2v id="msmlLogoVolumeMesher" meshFilename="${vol_mesh_filename}" surfaceMesh="${input_surf_mesh}"
                        preserveFeatures="true" facet_angle="30" facet_size="0.2" facet_distance="0.3"
                        cell_radius_edge_ratio="3" cell_size="0.2" odt="false" lloyd="false" pertube="true"
                        exude="true"/>

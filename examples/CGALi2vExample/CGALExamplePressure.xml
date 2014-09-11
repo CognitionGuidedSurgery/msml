@@ -3,10 +3,8 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-       <var name="input_vol_surf_mesh" value="3Dircadb0101Mesh_combo.vtk" logical="linearMesh"
-             physical="file.vtk"/>
-        <var name="input_vol_mesh" value="3Dircadb0101MeshTets.vtk" logical="linearMesh"
-             physical="file.vtk"/>
+       <var name="input_vol_surf_mesh" value="3Dircadb0101Mesh_combo.vtk" logical="str"/>
+        <var name="input_vol_mesh" value="3Dircadb0101MeshTets.vtk" logical="str"/>
         <var name="input_image" value="3Dircadb0101Labeled.vti" logical="segmentationImage"
              physical="file.vti"/>
     </variables>
