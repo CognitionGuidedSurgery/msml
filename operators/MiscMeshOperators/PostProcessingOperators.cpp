@@ -896,7 +896,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
 		vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 		vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 		writer->SetFileName(out_meshPath);
-		writer->SetInput(out_surface);
+		__SetInput(writer,out_surface);
 		writer->Write();
 
     return string(out_meshPath);
@@ -928,7 +928,9 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
   }
   out_mesh->GetPoints()->Modified();
   out_mesh->Modified();
+#if VTK_MAJOR_VERSION <= 5
   out_mesh->Update();
+#endif
 }
 
 //map closest point to given point from ref mesh to deformed mesh and return displacement
