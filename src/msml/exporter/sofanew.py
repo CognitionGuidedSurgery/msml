@@ -463,7 +463,6 @@ class SofaExporter(XMLExporter):
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     self._memory_update['SOFAExporter'] = {request.id: VTK(str(filenameLastOutput))} 
 
-                    dispOutputNode.set("filename", filename + ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
                     exportEveryNumberOfSteps = request.get("timestep")
@@ -488,7 +487,6 @@ class SofaExporter(XMLExporter):
                     #
                     # filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     # self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
-                    # dispOutputNode.set("filename", filename + ".vtu")
 
 
 
