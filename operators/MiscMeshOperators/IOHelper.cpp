@@ -27,6 +27,9 @@
 
 
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/trim_all.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,12 +43,13 @@
 #include <vtkGenericDataObjectReader.h>
 #include <vtkXMLGenericDataObjectReader.h>
 #include <vtkImageReader.h>
+#include <vtkImageFlip.h>
 
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkImageData.h>
 
-
+#include "MiscMeshOperators.h"
 
 
 #include "IOHelper.h"
@@ -78,7 +82,7 @@ vtkSmartPointer<vtkImageData> IOHelper::CTXReadImage(const char* filename)
   assert(hed_map["zoffset"] == "0");
   reader->SetDataSpacing(atof(hed_map["pixel_size"].c_str()), atof(hed_map["pixel_size"].c_str()), atof(hed_map["slice_distance"].c_str()));
   reader->SetDataExtent(0, atof(hed_map["dimx"].c_str())-1, 0, atof(hed_map["dimy"].c_str())-1, 0, atof(hed_map["slice_number"].c_str())-1);
-  reader->SetDataOrigin(0.0, 0.0, 0.0); //TODO !
+  reader->SetDataOrigin(0.0, 0.0, atof(hed_map["1"].c_str())); //first slice
   reader->SetDebug(1);
   reader->SetFileDimensionality(3);
   reader->Update();
@@ -88,8 +92,17 @@ vtkSmartPointer<vtkImageData> IOHelper::CTXReadImage(const char* filename)
   reader->SetDataScalarTypeToShort();
   reader->SetDataByteOrderToLittleEndian();
   reader->UpdateWholeExtent();
-  vtkSmartPointer<vtkImageData> aReturn = reader->GetOutput();
-  reader->PrintSelf(cout, vtkIndent(0));
+
+  vtkSmartPointer<vtkImageFlip> flipFilter = vtkSmartPointer<vtkImageFlip>::New();
+  flipFilter->SetFilteredAxis(1); // flip y axis
+  flipFilter->SetInputConnection(reader->GetOutputPort());
+  flipFilter->Update();
+
+  vtkSmartPointer<vtkImageData> aReturn = flipFilter->GetOutput();
+
+  reader->SetFileName("");
+  reader->Update();
+
   return aReturn;
 }
 
@@ -103,6 +116,7 @@ std::map<std::string, std::string> IOHelper::ReadTextFileToMap(std::string file,
 	  std::string line;  
 	  while(getline(fileStream, line))
 	  {
+      boost::algorithm::trim_all(line);
       std::istringstream lineStream(line);
       std::string field;
       std::vector<string> fields;
@@ -124,7 +138,6 @@ std::map<std::string, std::string> IOHelper::ReadTextFileToMap(std::string file,
 vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
 {
   boost::filesystem::path filePath(filename);
-  vtkSmartPointer<vtkDataObject> aReturn;
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
@@ -136,6 +149,18 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
   else if (filePath.extension().string() == ".ctx")
   {
     return IOHelper::CTXReadImage(filename);
+  }
+
+  else if (filePath.extension().string() == ".gz")
+  {
+    boost::filesystem::path filePath_without_gz(filename);
+    filePath_without_gz = filePath_without_gz.replace_extension("");
+    string command = "gunzip -c \"" + filePath.string() + "\" >\"" + filePath_without_gz.string() + "\"";
+    cout << command << std::endl;
+    system(command.c_str());    
+    vtkSmartPointer<vtkImageData> tmp = IOHelper::CTXReadImage(filePath_without_gz.string().c_str());
+    boost::filesystem::remove(filePath_without_gz);
+    return tmp;
   }
 
   else
@@ -178,16 +203,64 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
-    return reader->GetPolyDataOutput();
-  }
 
+    if (reader->GetPolyDataOutput())
+      return reader->GetPolyDataOutput();
+    else 
+    {
+      vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
+      MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
+      return poly;
+    }
+  }
   else
   {
     vtkSmartPointer<vtkXMLGenericDataObjectReader > reader = vtkSmartPointer<vtkXMLGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
-    return reader->GetPolyDataOutput();
+    if (reader->GetPolyDataOutput())
+      return reader->GetPolyDataOutput();
+    else 
+    {
+      vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
+      MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
+      return poly;
+    }
   }
+}
+
+//find all files with the same name (without digit postfix) and any digit postfix.
+//TODO: move to Python
+vector<pair<int, string> >* IOHelper::getAllFilesOfSeries(const char* filename)
+{
+    vector<pair<int, string> >* aReturn = new vector<pair<int, string> >();
+    boost::filesystem::path aPath(filename);
+    boost::filesystem::path extension = aPath.extension();
+    boost::filesystem::path file = aPath.filename().stem();
+    std::string aFilename = file.string();
+    
+    //how many digits? 
+    int i=aFilename.length()-1;
+    int numberOfDigits=0;
+    while(i>0 && aFilename[i] >='0' && aFilename[i] <='9')
+    {
+        numberOfDigits++;
+        i--;
+    }
+
+    //find all files with the same name (without digit postfix) and any digit postfix.
+    aFilename = aFilename.substr(0,aFilename.length()-numberOfDigits);
+    for (int i=0; i<pow(10.0,(double)numberOfDigits); i++)
+    {
+        boost::filesystem::path curentPath = aPath.parent_path() / (aFilename + boost::lexical_cast<string>(i) + extension.string());
+
+        if(boost::filesystem::exists(curentPath))
+        {
+            aReturn->push_back(std::make_pair(i, curentPath.string()));
+        }
+    }
+
+    return aReturn;
 }
 
 

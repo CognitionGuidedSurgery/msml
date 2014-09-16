@@ -447,6 +447,7 @@ class PythonOperator(Operator):
         # r = self.__function(**kwargs)
 
         args = [kwargs.get(x, None) for x in self.acceptable_names()]
+        print(args)
         r = self._function(*args)
 
         if len(self.output) == 0:

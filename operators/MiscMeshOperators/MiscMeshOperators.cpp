@@ -84,6 +84,8 @@
 
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLImageDataWriter.h>
+#include <vtkStructuredPointsWriter.h>
+
 #include <vtkImageData.h>
 #include <vtkPolyDataToImageStencil.h>
 #include <vtkImageStencil.h>
@@ -101,6 +103,10 @@
 #include <vtkThreshold.h>
 #include <vtkMergeCells.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "PostProcessingOperators.h"
 #include "../vtk6_compat.h"
 using namespace std;
 
@@ -952,31 +958,51 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution)
+std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution, const char* referenceCoordinateGrid, bool multipleInputMesh)
+{
+    if (multipleInputMesh)
+    {
+        return VoxelizeMultipleSurfaceMesh(infile.c_str(), outfile.c_str(), resolution, referenceCoordinateGrid);
+    }
+
+    else
+    {
+        VoxelizeSurfaceMesh(infile.c_str(), outfile.c_str(), resolution, referenceCoordinateGrid);
+        return outfile;
+    }
+
+}
+
+std::string VoxelizeMultipleSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
+{
+    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(infile);
+    string currenOutputFile;
+    boost::filesystem::path aPath(outfile);
+
+    for (int i=0; i<allRefs->size(); i++)
+    {
+        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + boost::lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
+        currenOutputFile = curentPath.string();
+        cout << "Generating Voxel image " << currenOutputFile << std::endl;
+        VoxelizeSurfaceMesh(allRefs->at(i).second.c_str(), currenOutputFile.c_str(), resolution, referenceCoordinateGrid);
+    }
+
+    return currenOutputFile;
+}
+
+bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
 {
     std::cout<<"Creating image from surface mesh (voxelization)...";
     std::cout<<"Resolution of the longest bound is "<<resolution<<"\n";
-    VoxelizeSurfaceMesh(infile.c_str(), outfile.c_str(), resolution);
-    return outfile;
-}
-
-bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution)
-{
-    vtkSmartPointer<vtkPolyDataReader> reader =
-        vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
-    //deep copy
-    vtkPolyData* inputMesh = reader->GetOutput();
+    vtkSmartPointer<vtkPolyData> inputMesh = IOHelper::VTKReadPolyData(infile);
 
     vtkSmartPointer<vtkImageData> outputImage =
         vtkSmartPointer<vtkImageData>::New();
 
-    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution);
+    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid);
 
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-        vtkSmartPointer<vtkXMLImageDataWriter>::New();
+    vtkSmartPointer<vtkStructuredPointsWriter> writer =
+        vtkSmartPointer<vtkStructuredPointsWriter>::New();
     writer->SetFileName(outfile);
     __SetInput(writer, outputImage);
     writer->Write();
@@ -990,39 +1016,72 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
     return true;
 }
 
-bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution)
+bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)
 {
+    vtkSmartPointer<vtkImageData> whiteImage = vtkSmartPointer<vtkImageData>::New();
 
-    //	vtkSmartPointer<vtkVoxelModeller> voxelizer =
-    //	 vtkSmartPointer<vtkVoxelModeller>::New();
-    //
-    //	voxelizer->SetInput(inputMesh);
-    //	voxelizer->SetScalarTypeToUnsignedChar ();
-    //	voxelizer->SetSampleDimensions (50,50,50);//
-
-    //	voxelizer->Update();
-
-    //clean mesh and fill holes
-    double bounds[6];
-    inputMesh->GetBounds(bounds);
-
-    //find longest bound
-    double longestBoundValue = 0;
-    double spacing = -1;
-
-    for (int i = 0; i < 3; i++)
+    //Method A: Generate bounds, spacing and origine based on mesh:
+    if (resolution>0)
     {
-        double currentValue = (bounds[i * 2 + 1] - bounds[i * 2]);
+      double bounds[6];
+      double spacingArray[3]; // desired volume spacing
+      double origin[3];
+      int dim[3];
+      double spacing = -1;
+      //find longest bound
+      double longestBoundValue = 0;
+      inputMesh->GetBounds(bounds);
+      for (int i = 0; i < 3; i++)
+      {
+          double currentValue = (bounds[i * 2 + 1] - bounds[i * 2]);
 
-        if(currentValue>longestBoundValue)
-        {
-            longestBoundValue = currentValue;
-            spacing = currentValue / (double)resolution;
-        }
+          if(currentValue>longestBoundValue)
+          {
+              longestBoundValue = currentValue;
+              spacing = currentValue / (double)resolution;
+          }
+      }    
+         
+      spacingArray[0] = spacing;
+      spacingArray[1] = spacing;
+      spacingArray[2] = spacing;
+      std::cout<<"Longest bound is "<<longestBoundValue<<"\n";
+      std::cout<<"Spacing is "<<spacing<<"\n";
+
+      // compute dimensions 
+      for (int i = 0; i < 3; i++)
+      {
+          dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing));
+      }
+      //Compute origin
+      origin[0] = bounds[0] + spacing / 2;
+      origin[1] = bounds[2] + spacing / 2;
+      origin[2] = bounds[4] + spacing / 2;
+      
+      whiteImage->SetSpacing(spacingArray);
+      whiteImage->SetDimensions(dim);
+      whiteImage->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
+      whiteImage->SetOrigin(origin);
     }
 
-    std::cout<<"Longest bound is "<<longestBoundValue<<"\n";
-    std::cout<<"Spacing is "<<spacing<<"\n";
+    //Method B: Get bounds, spacing and origin from given grid:
+    else
+    {
+      vtkSmartPointer<vtkImageData> referenceImage =  IOHelper::VTKReadImage(referenceCoordinateGrid);
+      whiteImage->SetDimensions(referenceImage->GetDimensions());
+      whiteImage->SetOrigin(referenceImage->GetOrigin());
+      whiteImage->SetSpacing(referenceImage->GetSpacing());
+    }
+
+#if VTK_MAJOR_VERSION <= 5
+    whiteImage->SetScalarTypeToUnsignedChar();
+    whiteImage->AllocateScalars();
+#else
+    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,3);
+    // 3 could be wrong, no   image->SetNumberOfScalarComponents(3); found /Weigl
+#endif
+
+
 
     //detect holes
     vtkSmartPointer<vtkFeatureEdges> featureEdges =
@@ -1064,44 +1123,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
         inputMesh->DeepCopy(cleanFilter->GetOutput());
 
     }
-
     std::cout<<"Performing voxelization (this might take while)...\n";
-
-    vtkSmartPointer<vtkImageData> whiteImage =
-        vtkSmartPointer<vtkImageData>::New();
-
-    double spacingArray[3]; // desired volume spacing
-    spacingArray[0] = spacing;
-    spacingArray[1] = spacing;
-    spacingArray[2] = spacing;
-    whiteImage->SetSpacing(spacingArray);
-
-    // compute dimensions
-    int dim[3];
-
-    for (int i = 0; i < 3; i++)
-    {
-        dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacingArray[i]));
-    }
-
-    whiteImage->SetDimensions(dim);
-    whiteImage->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
-
-    double origin[3];
-    origin[0] = bounds[0] + spacingArray[0] / 2;
-    origin[1] = bounds[2] + spacingArray[1] / 2;
-    origin[2] = bounds[4] + spacingArray[2] / 2;
-    whiteImage->SetOrigin(origin);
-
-#if VTK_MAJOR_VERSION <= 5
-    whiteImage->SetScalarTypeToUnsignedChar();
-    whiteImage->AllocateScalars();
-#else
-    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,3);
-    // 3 could be wrong, no   image->SetNumberOfScalarComponents(3); found /Weigl
-#endif
-
-
     // fill the image with foreground voxels:
     unsigned char inval = 255;
     unsigned char outval = 0;
@@ -1119,9 +1141,8 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     __SetInput(pol2stenc, inputMesh);
 
 
-
-    pol2stenc->SetOutputOrigin(origin);
-    pol2stenc->SetOutputSpacing(spacingArray);
+    pol2stenc->SetOutputOrigin(whiteImage->GetOrigin());
+    pol2stenc->SetOutputSpacing(whiteImage->GetSpacing());
     pol2stenc->SetOutputWholeExtent(whiteImage->GetExtent());
     pol2stenc->Update();
 

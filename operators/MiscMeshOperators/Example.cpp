@@ -106,39 +106,29 @@ void TestReadCTX()
   IOHelper::CTXReadImage("E:\\02_Data\\skelettonPatModel\\04_HNCfinalIGRTdose\\segmentation.ctx");
 }
 
+void TestMarchingCube()
+{
+  VTKMeshgen::MarchingCube("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_transformFullRTSSmarching_15.09.2014\\RTSS_BLASE.ctx.gz", 
+    "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_transformFullRTSSmarching_15.09.2014\\RTSS_BLASE.vtk", 0.5);
+}
+
+void TestVox()
+{
+  MiscMeshOperators::VoxelizeSurfaceMeshPython("RTSS_BLASE_deformed1.vtk", "VOXEL_RTSS_BLASE1.vtk", 0, "../../pelvisCase.ctx.gz" , false);
+}
+
 
 
 void TestApplyDVF()
 {
-  /*std::string ref("E:/02_Data/m_mechanic/simpleResults/refImage.vtk");
-  std::string def("E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/deformedImage9.vtk");
-  std::string dvf("E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/dvf9.vtk");
 
-  PostProcessingOperators::ApplyDVF(ref.c_str(), def.c_str(), dvf.c_str());
 
-  ref = "E:/02_Data/m_mechanic/simpleResults/refImage.vtk";
-  def = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/deformedImage10.vtk";
-  dvf = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/dvf10.vtk";
-
-  PostProcessingOperators::ApplyDVF(ref.c_str(), def.c_str(), dvf.c_str());
-
-  ref = "E:/02_Data/m_mechanic/simpleResults/refImage.vtk";
-  def = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/deformedImage11.vtk";
-  dvf = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/dvf11.vtk";
-
-  PostProcessingOperators::ApplyDVF(ref.c_str(), def.c_str(), dvf.c_str());*/
-
-  std::string ref = "E:/02_Data/m_mechanic/simpleResults/refImage.vtk";
-  std::string def = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFApplyResults/deformedImagedvf12_dispToRef_on_disp.vtk";
-  std::string dvf = "E:\\02_Data\\m_mechanic\\simpleResults\\generateTheDVFApplyResults\\dvf12_dispToRef_on_disp.vtk";
+  std::string ref = "..\\pelvisCaseCTImage.vti";
+  std::string def = "pelvisCaseDeformedImage.vtk";
+  std::string dvf = "dvf.vtk";
   
-//  PostProcessingOperators::ApplyDVF(ref.c_str(), def.c_str(), dvf.c_str());
+  PostProcessingOperators::ApplyDVFPython(ref.c_str(), dvf.c_str(), def.c_str(),  false, true, "2" );
 
-  /*ref = "E:/02_Data/m_mechanic/simpleResults/refImage.vtk";
-  def = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/deformedImage13.vtk";
-  dvf = "E:/02_Data/m_mechanic/simpleResults/generateTheDVFResults/dvf13.vtk";
-
-  PostProcessingOperators::ApplyDVF(ref.c_str(), def.c_str(), dvf.c_str());*/
 
 }
 
@@ -182,7 +172,7 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-  TestPositionFromIndices();
+  TestApplyDVF();
 
 	return EXIT_SUCCESS;
 }

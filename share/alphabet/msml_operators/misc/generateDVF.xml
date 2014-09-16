@@ -19,6 +19,7 @@
 	<parameters>
     <arg name="DVFFilename" physical="str" optional="false" />
 		<arg name="multipleReferenceGrids" physical="bool" />
+    <arg name="multipleDefGrids" physical="bool" />
 	</parameters>
 
 </msml:operator>

@@ -557,59 +557,24 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
     writer->Write();
 }
 
-//find all files with the same name (without digit postfix) and any digit postfix.
-//TODO: Refactor+cleanup
-vector<pair<int, string> >* getAllFilesOfSeries(const char* filename)
-{
-    vector<pair<int, string> >* aReturn = new vector<pair<int, string> >();
-    boost::filesystem::path aPath(filename);
-    boost::filesystem::path extension = aPath.extension();
-    boost::filesystem::path file = aPath.filename().stem();
-    std::string aFilename = file.string();
-    
-    //how many digits? 
-    int i=aFilename.length()-1;
-    int numberOfDigits=0;
-    while(i>0 && aFilename[i] >='0' && aFilename[i] <='9')
-    {
-        numberOfDigits++;
-        i--;
-    }
-
-    //find all files with the same name (without digit postfix) and any digit postfix.
-    aFilename = aFilename.substr(0,aFilename.length()-numberOfDigits);
-    for (int i=0; i<pow(10.0,(double)numberOfDigits); i++)
-    {
-        boost::filesystem::path curentPath = aPath.parent_path() / (aFilename + lexical_cast<string>(i) + extension.string());
-
-        if(boost::filesystem::exists(curentPath))
-        {
-            aReturn->push_back(std::make_pair(i, curentPath.string()));
-        }
-    }
-
-    return aReturn;
-}
-
-
-std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool multipleDVF, bool reverseDirection)
+std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool multipleDVF, bool reverseDirection, const char* voxelSize)
 {
     if (multipleDVF)
     {
-        return ApplyMultipleDVF(referenceImage, DVF, outputDeformedImage, reverseDirection);
+        return ApplyMultipleDVF(referenceImage, DVF, outputDeformedImage, reverseDirection, atof(voxelSize));
     }
 
     else
     {
-        ApplyDVF(referenceImage, outputDeformedImage, DVF, reverseDirection);
+        ApplyDVF(referenceImage, DVF, outputDeformedImage, reverseDirection, atof(voxelSize));
         return (std::string) outputDeformedImage;
     }
 
 }
 
-std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection)
+std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, double voxelSize)
 {
-    vector<pair<int, string> >* allRefs = getAllFilesOfSeries(DVF);
+    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(DVF);
     string currenOutputFile;
     boost::filesystem::path aPath(outputDeformedImage);
 
@@ -618,27 +583,28 @@ std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const 
         cout << "Generating Deformed image " << currenOutputFile << std::endl;
         boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
         currenOutputFile = curentPath.string();
-        ApplyDVF(referenceImage, allRefs->at(i).second.c_str(), currenOutputFile.c_str(), reverseDirection);
+        ApplyDVF(referenceImage, allRefs->at(i).second.c_str(), currenOutputFile.c_str(), reverseDirection, voxelSize);
     }
 
     return currenOutputFile;
 }
 
-void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection)
+void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, double voxelSize)
 {
     vtkSmartPointer<vtkImageData> refImage =  IOHelper::VTKReadImage(referenceImage);
     vtkSmartPointer<vtkImageData> dvfVecImage = IOHelper::VTKReadImage(DVF);
     vtkSmartPointer<vtkImageData> outputDefImage = vtkSmartPointer<vtkImageData>::New();
 
 
-    ApplyDVF(refImage, dvfVecImage, outputDefImage, reverseDirection);
+    ApplyDVF(refImage, dvfVecImage, outputDefImage, reverseDirection, voxelSize);
     cout << "Writing Deformed image.. "  << std::endl;
     //write output
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-        vtkSmartPointer<vtkXMLImageDataWriter>::New();
+    vtkSmartPointer<vtkStructuredPointsWriter> writer =
+        vtkSmartPointer<vtkStructuredPointsWriter>::New();
     writer->SetFileName(outputDeformedImage);
     __SetInput(writer, outputDefImage);
-    writer->SetCompressorTypeToZLib();
+    //writer->SetCompressorTypeToZLib();
+    writer->SetFileTypeToBinary();
     writer->Write();
 }
 
@@ -653,11 +619,37 @@ void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDef
 
     - Areas outside definition zone of DVF or reference image are set to -1024
 */
-void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputDefImage, bool reverseDirection)
+void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputDefImage, bool reverseDirection, double voxelSize)
 {
-    int* dims = inputImage->GetDimensions();
-    double* origin = inputImage->GetOrigin();
-    double* spacing = inputImage->GetSpacing();
+    int dims[3];
+    dims[0] = inputImage->GetDimensions()[0];
+    dims[1] = inputImage->GetDimensions()[1];
+    dims[2] = inputImage->GetDimensions()[2];
+    double origin[3];
+    origin[0] = inputImage->GetOrigin()[0];
+    origin[1] = inputImage->GetOrigin()[1];
+    origin[2] = inputImage->GetOrigin()[2];
+
+    double spacing[3];
+    spacing[0] = inputImage->GetSpacing()[0];
+    spacing[1] = inputImage->GetSpacing()[1];
+    spacing[2] = inputImage->GetSpacing()[2];
+
+    double bounds[6];
+    inputImage->GetBounds(bounds);
+    
+    if (voxelSize>0)
+    {
+      spacing[0] = voxelSize;
+      spacing[1] = voxelSize;
+      spacing[2] = voxelSize;
+
+      for (int i = 0; i < 3; i++)
+      {
+          dims[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
+      }
+      outputDefImage->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+    }
     outputDefImage->SetDimensions(dims);
     outputDefImage->SetOrigin(origin);
     outputDefImage->SetSpacing(spacing);
@@ -732,23 +724,44 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
     }
 }
 
-std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, bool multipleReferenceGrids)
+std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, bool multipleReferenceGrids, bool multipleDeformedGrids)
 {
     if (multipleReferenceGrids)
     {
         return GenerateDVFMultipleRefGrids(referenceGridFilename, deformedGridFilename, outputDVFFilename );
     }
+    else if (multipleDeformedGrids)
+    {
+      return GenerateDVFMultipleDefGrids(referenceGridFilename, deformedGridFilename, outputDVFFilename );
+    }
 
-    else
+    else 
     {
         GenerateDVF(referenceGridFilename, deformedGridFilename, outputDVFFilename);
         return (std::string) outputDVFFilename;
     }
 }
 
+string GenerateDVFMultipleDefGrids(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename)
+{
+    vector<pair<int, string> >* allDefs = IOHelper::getAllFilesOfSeries(deformedGridFilename);
+    string currenOutputFile;
+    boost::filesystem::path aPath(outputDVFFilename);
+
+    for (int i=0; i<allDefs->size(); i++)
+    {
+        cout << "Generating DVF " << currenOutputFile << std::endl;
+        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allDefs->at(i).first) + aPath.extension().string());
+        currenOutputFile = curentPath.string();
+        GenerateDVF(referenceGridFilename, allDefs->at(i).second.c_str(), currenOutputFile.c_str());
+    }
+
+    return currenOutputFile;
+}
+
 string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename)
 {
-    vector<pair<int, string> >* allRefs = getAllFilesOfSeries(referenceGridFilename);
+    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(referenceGridFilename);
     string currenOutputFile;
     boost::filesystem::path aPath(outputDVFFilename);
 
@@ -775,6 +788,7 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
     //write output
     vtkSmartPointer<vtkStructuredPointsWriter> writer = vtkSmartPointer<vtkStructuredPointsWriter>::New();
     writer->SetFileName(outputDVFFilename);
+    writer->SetFileTypeToBinary();
     __SetInput(writer, outputDVF);
     writer->Write();
 
@@ -795,7 +809,7 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
 //Method: For each point in DVF: Find nearest point in reference mesh, calculate barycentric coordinates, find same point in deformed mesh, calculate displacment.
 void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkImageData* outputDVF)
 {
-    float spacing = 5; //TODO use parameter
+    float spacing = 2; //TODO use parameter
 
     //TODO: refactor this block wirh mishmeshoperators::
     //generate empty vector field
@@ -870,7 +884,7 @@ string TransformMeshBarycentricPython(const char* meshPath, const char* referenc
 
 std::string TransformMeshBarycentricMultiple(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath)
 {
-    vector<pair<int, string> >* allRefs = getAllFilesOfSeries(deformedGridPath);
+    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(deformedGridPath);
     string currenOutputFile;
     boost::filesystem::path aPath(out_meshPath);
 
