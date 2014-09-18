@@ -48,6 +48,9 @@
 #include <vtksys/ios/sstream>
 #include <IOHelper.h>
 #include <VTKMeshgen.h>
+
+#include "../vtk6_compat.h"
+
 namespace MSML
 {
   namespace VTKMeshgen {
@@ -84,13 +87,13 @@ namespace MSML
  
 
  
-    histogram->SetInput(imageIn);
+    __SetInput(histogram, imageIn);
     histogram->SetComponentExtent(0, endLabel, 0, 0, 0, 0);
     histogram->SetComponentOrigin(0, 0, 0);
     histogram->SetComponentSpacing(1, 1, 1);
     histogram->Update();
  
-    discreteCubes->SetInput(imageIn);
+	__SetInput(discreteCubes, imageIn);
     discreteCubes->GenerateValues(endLabel - startLabel + 1, startLabel, endLabel);
  
     smoother->SetInputConnection(discreteCubes->GetOutputPort());
@@ -162,7 +165,7 @@ namespace MSML
     #if VTK_MAJOR_VERSION <= 5
       surface->SetInput(imageIn);
     #else
-      surface->SetInputData(volume);
+      surface->SetInputData(imageIn);
     #endif
     surface->ComputeNormalsOn();
     surface->SetValue(0, isoValue);
@@ -185,7 +188,7 @@ namespace MSML
     #if VTK_MAJOR_VERSION <= 5
       appendFilter->AddInput(smoother->GetOutput());
     #else
-      appendFilter->AddInputData(geometry->GetOutput());
+      appendFilter->AddInputData(smoother->GetOutput());
     #endif
     appendFilter->Update();
 

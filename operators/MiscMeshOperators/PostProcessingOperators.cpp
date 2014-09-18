@@ -559,9 +559,9 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
 
 //find all files with the same name (without digit postfix) and any digit postfix.
 //TODO: Refactor+cleanup
-vector<pair<int, string>>* getAllFilesOfSeries(const char* filename)
+vector<pair<int, string> >* getAllFilesOfSeries(const char* filename)
 {
-    vector<pair<int, string>>* aReturn = new vector<pair<int, string>>();
+    vector<pair<int, string> >* aReturn = new vector<pair<int, string> >();
     boost::filesystem::path aPath(filename);
     boost::filesystem::path extension = aPath.extension();
     boost::filesystem::path file = aPath.filename().stem();
@@ -609,7 +609,7 @@ std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const ch
 
 std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection)
 {
-    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(DVF);
+    vector<pair<int, string> >* allRefs = getAllFilesOfSeries(DVF);
     string currenOutputFile;
     boost::filesystem::path aPath(outputDeformedImage);
 
@@ -748,7 +748,7 @@ std::string GenerateDVF(const char* referenceGridFilename, const char* deformedG
 
 string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename)
 {
-    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(referenceGridFilename);
+    vector<pair<int, string> >* allRefs = getAllFilesOfSeries(referenceGridFilename);
     string currenOutputFile;
     boost::filesystem::path aPath(outputDVFFilename);
 
@@ -870,7 +870,7 @@ string TransformMeshBarycentricPython(const char* meshPath, const char* referenc
 
 std::string TransformMeshBarycentricMultiple(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath)
 {
-    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(deformedGridPath);
+    vector<pair<int, string> >* allRefs = getAllFilesOfSeries(deformedGridPath);
     string currenOutputFile;
     boost::filesystem::path aPath(out_meshPath);
 
@@ -896,7 +896,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
 		vtkSmartPointer<vtkUnstructuredGridWriter> writer =
 		vtkSmartPointer<vtkUnstructuredGridWriter>::New();
 		writer->SetFileName(out_meshPath);
-		writer->SetInput(out_surface);
+		__SetInput(writer,out_surface);
 		writer->Write();
 
     return string(out_meshPath);
@@ -928,7 +928,9 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
   }
   out_mesh->GetPoints()->Modified();
   out_mesh->Modified();
+#if VTK_MAJOR_VERSION <= 5
   out_mesh->Update();
+#endif
 }
 
 //map closest point to given point from ref mesh to deformed mesh and return displacement

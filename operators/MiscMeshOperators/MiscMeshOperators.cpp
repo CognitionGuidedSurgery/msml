@@ -1434,7 +1434,9 @@ LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstruc
 	//extract the surface
 	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
 		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-	geom->SetInput(outputMesh);
+	
+	__SetInput(geom, outputMesh);
+	
 	geom->PassThroughPointIdsOn();
 	geom->SetOriginalPointIdsName("pointIds");
 	geom->Update();

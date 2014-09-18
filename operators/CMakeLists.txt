@@ -17,7 +17,7 @@ ENDIF (NOT CMAKE_BUILD_TYPE)
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 ELSE()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 ENDIF(MSVC)
 
 MESSAGE(" #############################")    

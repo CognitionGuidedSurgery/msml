@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="voxelize">
 	<runtime>
-		<python module="msml.ext.misc" function="VoxelizeSurfaceMesh" />
+		<python module="msml.ext.misc" function="VoxelizeSurfaceMeshPython" />
 	</runtime>
 
 	<input>
