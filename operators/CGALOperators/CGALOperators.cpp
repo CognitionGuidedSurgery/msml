@@ -424,7 +424,7 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 
   image->endianness = ::_getEndianness();
   int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType();
-  if(vtk_type =! VTK_UNSIGNED_CHAR)
+  if(vtk_type != VTK_UNSIGNED_CHAR)
   {
     cerr << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
     exit(2);
