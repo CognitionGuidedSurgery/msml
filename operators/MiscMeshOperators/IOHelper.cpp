@@ -138,12 +138,18 @@ std::map<std::string, std::string> IOHelper::ReadTextFileToMap(std::string file,
 vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
 {
   boost::filesystem::path filePath(filename);
+  
+  if (!boost::filesystem::exists(filePath))
+    cerr << filePath << " was not found." << endl;
+
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
     vtkImageData* aReturn = (vtkImageData*)reader->GetOutput();
+    if (!reader->IsFileStructuredPoints())
+      cerr << filePath << " is not an image." << endl;
     return aReturn;
   }
   else if (filePath.extension().string() == ".ctx")
@@ -169,6 +175,8 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->SetFileName(filename);
     reader->Update();
     vtkSmartPointer<vtkImageData> aReturn = reader->GetImageDataOutput();
+    if (!reader->GetImageDataOutput())
+      cerr << filePath << " is not an image." << endl;
     return aReturn;
   }
 }
@@ -178,11 +186,15 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkDataObject> aReturn;
 
+  if (!boost::filesystem::exists(filePath))
+    cerr << filePath << " was not found." << endl;
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
+    if (!reader->IsFileUnstructuredGrid())
+      cerr << filePath << " is not an unstructured grid." << endl;
     return reader->GetUnstructuredGridOutput();
   }
   else
@@ -190,6 +202,8 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     vtkSmartPointer<vtkXMLGenericDataObjectReader > reader = vtkSmartPointer<vtkXMLGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
+    if (!reader->GetUnstructuredGridOutput() )
+      cerr << filePath << " is not an unstructured grid." << endl;
     return reader->GetUnstructuredGridOutput();
   }
 }
@@ -198,6 +212,9 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
 {
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkDataObject> aReturn;
+  if (!boost::filesystem::exists(filePath))
+   cerr << filePath << " was not found." << endl;
+
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
@@ -205,7 +222,11 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
     reader->Update();
 
     if (reader->GetPolyDataOutput())
-      return reader->GetPolyDataOutput();
+    {
+       return reader->GetPolyDataOutput();
+       cerr << filePath << " is no poly data. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
+    }
+
     else 
     {
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
