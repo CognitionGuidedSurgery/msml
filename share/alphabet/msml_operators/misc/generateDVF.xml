@@ -17,9 +17,9 @@
 	</output>
 
 	<parameters>
-    <arg name="DVFFilename" physical="str" optional="false" />
-		<arg name="multipleReferenceGrids" physical="bool" />
-    <arg name="multipleDefGrids" physical="bool" />
+    <arg name="DVFFilename" physical="str" optional="true" default="false" />
+		<arg name="multipleReferenceGrids" physical="bool" optional="true" default="false"/>
+    <arg name="multipleDefGrids" physical="bool" optional="true" default="false" />
 	</parameters>
 
 </msml:operator>

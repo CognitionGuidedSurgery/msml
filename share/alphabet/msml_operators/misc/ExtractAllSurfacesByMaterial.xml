@@ -15,11 +15,7 @@
     </output>
 
     <parameters>
-        <arg name="meshOutFilename" physical="str" optional="1">
-            <meta key="doc">
-                Optional input filename for the output.
-            </meta>
-        </arg>
-        <arg name="cut" physical="bool"/>
+        <arg name="meshOutFilename" physical="str" />
+        <arg name="cut" physical="bool" optional="true" default="false" />
     </parameters>
 </msml:operator>
