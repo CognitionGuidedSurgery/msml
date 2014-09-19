@@ -1003,6 +1003,7 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
 
     vtkSmartPointer<vtkStructuredPointsWriter> writer =
         vtkSmartPointer<vtkStructuredPointsWriter>::New();
+    writer->SetFileTypeToBinary();
     writer->SetFileName(outfile);
     __SetInput(writer, outputImage);
     writer->Write();
@@ -1018,59 +1019,18 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
 
 bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)
 {
-    vtkSmartPointer<vtkImageData> whiteImage = vtkSmartPointer<vtkImageData>::New();
-
+    vtkSmartPointer<vtkImageData> whiteImage;
     //Method A: Generate bounds, spacing and origine based on mesh:
     if (resolution>0)
     {
-      double bounds[6];
-      double spacingArray[3]; // desired volume spacing
-      double origin[3];
-      int dim[3];
-      double spacing = -1;
-      //find longest bound
-      double longestBoundValue = 0;
-      inputMesh->GetBounds(bounds);
-      for (int i = 0; i < 3; i++)
-      {
-          double currentValue = (bounds[i * 2 + 1] - bounds[i * 2]);
-
-          if(currentValue>longestBoundValue)
-          {
-              longestBoundValue = currentValue;
-              spacing = currentValue / (double)resolution;
-          }
-      }    
-         
-      spacingArray[0] = spacing;
-      spacingArray[1] = spacing;
-      spacingArray[2] = spacing;
-      std::cout<<"Longest bound is "<<longestBoundValue<<"\n";
-      std::cout<<"Spacing is "<<spacing<<"\n";
-
-      // compute dimensions 
-      for (int i = 0; i < 3; i++)
-      {
-          dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing));
-      }
-      //Compute origin
-      origin[0] = bounds[0] + spacing / 2;
-      origin[1] = bounds[2] + spacing / 2;
-      origin[2] = bounds[4] + spacing / 2;
-      
-      whiteImage->SetSpacing(spacingArray);
-      whiteImage->SetDimensions(dim);
-      whiteImage->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
-      whiteImage->SetOrigin(origin);
+      whiteImage = ImageCreateWithMesh(inputMesh, resolution);
     }
 
     //Method B: Get bounds, spacing and origin from given grid:
     else
     {
-      vtkSmartPointer<vtkImageData> referenceImage =  IOHelper::VTKReadImage(referenceCoordinateGrid);
-      whiteImage->SetDimensions(referenceImage->GetDimensions());
-      whiteImage->SetOrigin(referenceImage->GetOrigin());
-      whiteImage->SetSpacing(referenceImage->GetSpacing());
+      
+      whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
     }
 
 #if VTK_MAJOR_VERSION <= 5
@@ -1628,6 +1588,107 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 	}
 
 }
+vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution)
+{
+  vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();
 
+  double bounds[6];
+  double spacingArray[3]; // desired volume spacing
+  double origin[3];
+  int dim[3];
+  double spacing = -1;
+  //find longest bound
+  double longestBoundValue = 0;
+  grid->GetBounds(bounds);
+  for (int i = 0; i < 3; i++)
+  {
+      double currentValue = (bounds[i * 2 + 1] - bounds[i * 2]);
+
+      if(currentValue>longestBoundValue)
+      {
+          longestBoundValue = currentValue;
+          spacing = currentValue / (double)resolution;
+      }
+  }    
+
+  std::cout<<"Longest bound is "<<longestBoundValue<<"\n";
+  std::cout<<"Spacing is "<<spacing<<"\n";
+             
+  spacingArray[0] = spacing;
+  spacingArray[1] = spacing;
+  spacingArray[2] = spacing;
+  
+  // compute dimensions 
+  for (int i = 0; i < 3; i++)
+  {
+      dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing));
+  }
+  //Compute origin
+  origin[0] = bounds[0] + spacing / 2;
+  origin[1] = bounds[2] + spacing / 2;
+  origin[2] = bounds[4] + spacing / 2;
+      
+  newVTKImage->SetSpacing(spacingArray);
+  newVTKImage->SetDimensions(dim);
+  newVTKImage->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
+  newVTKImage->SetOrigin(origin);
+
+  return newVTKImage;
+}
+
+vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid)
+{
+
+  vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();
+
+  int dims[3];
+  dims[0] = refImageGrid->GetDimensions()[0];
+  dims[1] = refImageGrid->GetDimensions()[1];
+  dims[2] = refImageGrid->GetDimensions()[2];
+    
+  double origin[3];
+  origin[0] = refImageGrid->GetOrigin()[0];
+  origin[1] = refImageGrid->GetOrigin()[1];
+  origin[2] = refImageGrid->GetOrigin()[2];
+
+  double spacing[3];
+  spacing[0] = refImageGrid->GetSpacing()[0];
+  spacing[1] = refImageGrid->GetSpacing()[1];
+  spacing[2] = refImageGrid->GetSpacing()[2];
+
+  newVTKImage->SetDimensions(dims);
+  newVTKImage->SetOrigin(origin);
+  newVTKImage->SetSpacing(spacing);
+  newVTKImage->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+
+  return newVTKImage;
+}
+
+void ImageChangeVoxelSize(vtkImageData* image, double voxelSize)
+{
+  double voxelSizeArr[3];
+  voxelSizeArr[0] = voxelSize;
+  voxelSizeArr[1] = voxelSize;
+  voxelSizeArr[2] = voxelSize;
+  ImageChangeVoxelSize(image, voxelSizeArr);
+}
+
+void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize)
+{
+  double* bounds = image->GetBounds();
+  double spacing[3];
+  spacing[0] = voxelSize[0];
+  spacing[1] = voxelSize[1];
+  spacing[2] = voxelSize[2];
+
+  int dims[3];
+  for (int i = 0; i < 3; i++)
+  {
+      dims[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
+  }
+  image->SetDimensions(dims);
+  image->SetSpacing(spacing);
+  image->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+}
 }//end namepace MiscMeshOperators
 }//end namepace MSML

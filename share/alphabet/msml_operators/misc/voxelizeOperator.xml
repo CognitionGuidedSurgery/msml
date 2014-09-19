@@ -18,8 +18,16 @@
                 Optional input filename for the output.
             </meta>
       </arg>
-		<arg name="resolution" physical="int" optional="true" default="0"/>
-    <arg name="referenceCoordinateGrid" physical="vtk" optional="true" default=""/>
-    <arg name="multipleInputMesh" physical="bool" optional="true" default=""/>
+		<arg name="resolution" physical="int" optional="true" default="0">
+          <meta key="doc">
+                  either resolution or referenceCoordinateGrid must be set 
+      </meta>
+    </arg>
+    <arg name="referenceCoordinateGrid" physical="vtk" optional="true" default="">
+      <meta key="doc">
+                  either resolution or referenceCoordinateGrid must be set 
+      </meta>
+    </arg>
+    <arg name="multipleInputMesh" physical="bool" optional="true" default="false" />
 	</parameters>
 </msml:operator>

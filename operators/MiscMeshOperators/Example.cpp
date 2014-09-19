@@ -95,11 +95,11 @@ void TestGenerateDVF()
   std::string outputMesh("E:/GIT/msml/MSML_Python/LungsHighResResults/case1_T00_labledOutput");*/
 
 
-  std::string ref("E:/GIT/msml/examples/CGALi2vExample/CGALExample_lowResults/3Dircadb0101Labeled.vtk");
-  std::string def("E:/GIT/msml/examples/CGALi2vExample/CGALExample_lowResults/dispOutput7.vtu");
-  std::string dvf("E:/GIT/msml/examples/CGALi2vExample/CGALExample_lowResults/dispOutput7DVF.vtk");
+  std::string ref("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\tetmesh.vtk");
+  std::string def("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\disp20.vtu");
+  std::string dvf("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\tmpTes.vtk");
 
-//  PostProcessingOperators::GenerateDVF(ref.c_str(), dvf.c_str(), def.c_str());
+  PostProcessingOperators::GenerateDVF(ref.c_str(),  def.c_str(), dvf.c_str(), 5, "");
 }
 void TestReadCTX()
 {
@@ -172,7 +172,7 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-  TestApplyDVF();
+  TestGenerateDVF();
 
 	return EXIT_SUCCESS;
 }

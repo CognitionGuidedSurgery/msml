@@ -480,7 +480,10 @@ namespace MSML {
         LIBRARY_API  std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
         LIBRARY_API  std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
 
-
+        LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
+        LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
+        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
+        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
 
     } //end namespace MiscMeshOperators
 } // end namespace MSML
