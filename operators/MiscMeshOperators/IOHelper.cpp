@@ -149,7 +149,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->Update();
     vtkImageData* aReturn = (vtkImageData*)reader->GetOutput();
     if (!reader->IsFileStructuredPoints())
-      cerr << filePath << " is not an image." << endl;
+      cerr << filePath << " is not an .vtk image." << endl;
     return aReturn;
   }
   else if (filePath.extension().string() == ".ctx")
@@ -176,7 +176,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->Update();
     vtkSmartPointer<vtkImageData> aReturn = reader->GetImageDataOutput();
     if (!reader->GetImageDataOutput())
-      cerr << filePath << " is not an image." << endl;
+      cerr << filePath << " is not an .vti image." << endl;
     return aReturn;
   }
 }
@@ -194,7 +194,7 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->IsFileUnstructuredGrid())
-      cerr << filePath << " is not an unstructured grid." << endl;
+      cerr << filePath << " is not an .vtk unstructured grid." << endl;
     return reader->GetUnstructuredGridOutput();
   }
   else
@@ -203,7 +203,7 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->GetUnstructuredGridOutput() )
-      cerr << filePath << " is not an unstructured grid." << endl;
+      cerr << filePath << " is not an .vtu unstructured grid." << endl;
     return reader->GetUnstructuredGridOutput();
   }
 }
@@ -224,7 +224,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
     if (reader->GetPolyDataOutput())
     {
        return reader->GetPolyDataOutput();
-       cerr << filePath << " is no poly data. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
+       cerr << filePath << " is no poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
     }
 
     else 
@@ -249,6 +249,11 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
     }
   }
 }
+/*
+IOHelper::VTKWriteImage()
+IOHelper::VTKWriteImage()
+IOHelper::VTKWriteImage()*/
+
 
 //find all files with the same name (without digit postfix) and any digit postfix.
 //TODO: move to Python
