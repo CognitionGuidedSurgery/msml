@@ -221,12 +221,12 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
 
     if (reader->GetPolyDataOutput())
     {
-       aReturn =  reader->GetPolyDataOutput();
-       cerr << filePath << " is no poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
+       aReturn =  reader->GetPolyDataOutput();   
     }
 
     else 
     {
+      cerr << filePath << " is no poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
       MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
       aReturn = poly;
@@ -241,6 +241,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
       aReturn =  reader->GetPolyDataOutput();
     else 
     {
+      cerr << filePath << " is no poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
       MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
       aReturn = poly;

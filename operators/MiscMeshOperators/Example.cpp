@@ -221,7 +221,6 @@ int main( int argc, char * argv[])
   TestConvertVTKMeshToAbaqusMeshStringPython();
   TestConvertVTKPolydataToUnstructuredGridPython();
   TestConvertVTKToOFF();
-  TestConvertVTKToOFF();
   TestExtractAllSurfacesByMaterial();
   TestExtractNodeSet();
   TestExtractPointPositions();

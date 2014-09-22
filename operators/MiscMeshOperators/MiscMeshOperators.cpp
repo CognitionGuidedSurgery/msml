@@ -964,8 +964,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     whiteImage->SetScalarTypeToUnsignedChar();
     whiteImage->AllocateScalars();
 #else
-    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,3);
-    // 3 could be wrong, no   image->SetNumberOfScalarComponents(3); found /Weigl
+    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
 #endif
 
 
