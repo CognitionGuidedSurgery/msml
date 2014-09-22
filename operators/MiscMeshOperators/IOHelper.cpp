@@ -138,7 +138,7 @@ std::map<std::string, std::string> IOHelper::ReadTextFileToMap(std::string file,
 vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
 {
   boost::filesystem::path filePath(filename);
-  
+  vtkSmartPointer<vtkImageData> aReturn;
   if (!boost::filesystem::exists(filePath))
     cerr << filePath << " was not found." << endl;
 
@@ -147,14 +147,13 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
-    vtkImageData* aReturn = (vtkImageData*)reader->GetOutput();
     if (!reader->IsFileStructuredPoints())
       cerr << filePath << " is not an .vtk image." << endl;
-    return aReturn;
+    aReturn = (vtkImageData*)reader->GetOutput();
   }
   else if (filePath.extension().string() == ".ctx")
   {
-    return IOHelper::CTXReadImage(filename);
+    aReturn = IOHelper::CTXReadImage(filename);
   }
 
   else if (filePath.extension().string() == ".gz")
@@ -164,9 +163,8 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     string command = "gunzip -c \"" + filePath.string() + "\" >\"" + filePath_without_gz.string() + "\"";
     cout << command << std::endl;
     system(command.c_str());    
-    vtkSmartPointer<vtkImageData> tmp = IOHelper::CTXReadImage(filePath_without_gz.string().c_str());
+    aReturn = IOHelper::CTXReadImage(filePath_without_gz.string().c_str());
     boost::filesystem::remove(filePath_without_gz);
-    return tmp;
   }
 
   else
@@ -174,17 +172,17 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     vtkSmartPointer<vtkXMLGenericDataObjectReader > reader = vtkSmartPointer<vtkXMLGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
-    vtkSmartPointer<vtkImageData> aReturn = reader->GetImageDataOutput();
     if (!reader->GetImageDataOutput())
       cerr << filePath << " is not an .vti image." << endl;
-    return aReturn;
+    aReturn = (vtkImageData*)reader->GetOutput();
   }
+  return aReturn;
 }
 
 vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const char* filename)
 {
   boost::filesystem::path filePath(filename);
-  vtkSmartPointer<vtkDataObject> aReturn;
+  vtkSmartPointer<vtkUnstructuredGrid> aReturn;
 
   if (!boost::filesystem::exists(filePath))
     cerr << filePath << " was not found." << endl;
@@ -195,7 +193,7 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     reader->Update();
     if (!reader->IsFileUnstructuredGrid())
       cerr << filePath << " is not an .vtk unstructured grid." << endl;
-    return reader->GetUnstructuredGridOutput();
+    aReturn = reader->GetUnstructuredGridOutput();
   }
   else
   {
@@ -204,14 +202,15 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     reader->Update();
     if (!reader->GetUnstructuredGridOutput() )
       cerr << filePath << " is not an .vtu unstructured grid." << endl;
-    return reader->GetUnstructuredGridOutput();
+    aReturn = reader->GetUnstructuredGridOutput();
   }
+  return aReturn;
 }
 
 vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
 {
   boost::filesystem::path filePath(filename);
-  vtkSmartPointer<vtkDataObject> aReturn;
+  vtkSmartPointer<vtkPolyData> aReturn;
   if (!boost::filesystem::exists(filePath))
    cerr << filePath << " was not found." << endl;
 
@@ -223,7 +222,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
 
     if (reader->GetPolyDataOutput())
     {
-       return reader->GetPolyDataOutput();
+       aReturn =  reader->GetPolyDataOutput();
        cerr << filePath << " is no poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
     }
 
@@ -231,7 +230,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
     {
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
       MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
-      return poly;
+      aReturn = poly;
     }
   }
   else
@@ -240,14 +239,15 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
     reader->SetFileName(filename);
     reader->Update();
     if (reader->GetPolyDataOutput())
-      return reader->GetPolyDataOutput();
+      aReturn =  reader->GetPolyDataOutput();
     else 
     {
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
       MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
-      return poly;
+      aReturn = poly;
     }
   }
+  return aReturn;
 }
 /*
 IOHelper::VTKWriteImage()

@@ -28,7 +28,6 @@
 
 #include "vtkUnstructuredGrid.h"
 
-#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
 #include <vtkDataSetMapper.h>
@@ -38,7 +37,6 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkXMLImageDataWriter.h>
 #include <vtkUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridReader.h>
 #include <vtkSTLReader.h>
 #include <vtkPolyDataWriter.h>
 
@@ -95,18 +93,8 @@ namespace PostProcessingOperators {
 
 void CompareMeshes(std::vector<double>& errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly)
 {
-    //load the meshes
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(referenceFilename);
-    reader->Update();
-    vtkUnstructuredGrid* referenceGrid = reader->GetOutput();
-
-    vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(testFilename);
-    reader2->Update();
-    vtkUnstructuredGrid* testGrid = reader2->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> testGrid = IOHelper::VTKReadUnstructuredGrid(testFilename);
 
     CompareMeshes(errorVec, referenceGrid, testGrid, surfaceOnly);
 }
@@ -185,18 +173,8 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
 
 void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly)
 {
-    //load the meshes
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(referenceFilename);
-    reader->Update();
-    vtkUnstructuredGrid* referenceGrid = reader->GetOutput();
-
-    vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(testFilename);
-    reader2->Update();
-    vtkUnstructuredGrid* testGrid = reader2->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> testGrid = IOHelper::VTKReadUnstructuredGrid(testFilename);
 
     CompareMeshes(errorRMS, errorMax, referenceGrid, testGrid, surfaceOnly);
 
@@ -284,18 +262,8 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
 
 void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename)
 {
-    //load the meshes
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(referenceFilename);
-    reader->Update();
-    vtkUnstructuredGrid* referenceGrid = reader->GetOutput();
-
-    vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(modelFilename);
-    reader2->Update();
-    vtkUnstructuredGrid* modelGrid = reader2->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> modelGrid = IOHelper::VTKReadUnstructuredGrid(modelFilename);
 
     vtkSmartPointer<vtkUnstructuredGrid> coloredGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
@@ -356,12 +324,7 @@ std::string ColorMeshPython(std::string modelFilename, std::string coloredModelF
 void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
 {
     //load the vtk quadratic mesh
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(modelFilename);
-    reader->Update();
-
-    vtkUnstructuredGrid* currentGrid = reader->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> currentGrid=  IOHelper::VTKReadUnstructuredGrid(modelFilename);
 
     vtkSmartPointer<vtkPolyData> surface =
         vtkSmartPointer<vtkPolyData>::New();
