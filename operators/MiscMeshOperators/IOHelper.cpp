@@ -173,7 +173,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->Update();
     if (!reader->GetImageDataOutput())
       cerr << filePath << " is not an .vti image." << endl;
-    aReturn = (vtkImageData*)reader->GetOutput();
+    aReturn = reader->GetImageDataOutput();
   }
   return aReturn;
 }
