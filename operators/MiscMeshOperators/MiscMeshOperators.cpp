@@ -42,7 +42,6 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkPolyDataWriter.h>
-#include <vtkGenericDataObjectReader.h>
 
 #include <vtkPointData.h>
 #include <vtkIdList.h>
