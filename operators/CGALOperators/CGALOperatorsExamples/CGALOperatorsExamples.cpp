@@ -29,5 +29,5 @@ int main( int argc, char * argv[])
 {
   
   //CGALOperators::CreateVolumeMeshFromImage("../../testdata/liver_kidney_gallbladder.inr", "../../testdata/liver_kidney_gallbladder_tri_tet.vtu", false);
-  CGALOperators::CreateVolumeMeshi2v((std::string(TEST_DATA_PATH) + "3Dircadb0101Labeled.vti").c_str(), "E:\\GIT\\msml\\testdata\\3Dircadb0101Labeled.vtk", 20, 10, 5, 3, 30, 1, 1, 1, 1);
+  CGALOperators::CreateVolumeMeshi2v((std::string(TESTDATA_PATH) + "3Dircadb0101Labeled.vti").c_str(), "E:\\GIT\\msml\\testdata\\3Dircadb0101Labeled.vtk", 20, 10, 5, 3, 30, 1, 1, 1, 1);
 }
