@@ -27,7 +27,6 @@
 
 
 #include <boost/filesystem.hpp>
-#include <boost/algorithm/string/trim_all.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -116,14 +115,14 @@ std::map<std::string, std::string> IOHelper::ReadTextFileToMap(std::string file,
 	  std::string line;  
 	  while(getline(fileStream, line))
 	  {
-      boost::algorithm::trim_all(line);
       std::istringstream lineStream(line);
       std::string field;
       std::vector<string> fields;
       fields.clear();
       while (getline(lineStream, field, delim)) 
       {
-        fields.push_back(field);
+        if (field.size()>0)
+          fields.push_back(field);
       }
       if (fields.size() > 1)
       {
