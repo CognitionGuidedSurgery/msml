@@ -11,7 +11,7 @@
 
 using namespace MSML;
 
-
+#define SMOKE_TEST_DIR_PREFIX smoke
 void TestAssignRegionOperator()
 {
 //	std::string inputMesh("/org/share/home/mediassi/MediAssistData/Modelle/MIC/Modellbibliothek/Medical/Helios_Aktuell/Leber/LeberXSTet4.vtk");
@@ -112,29 +112,105 @@ void TestMarchingCube()
     "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_transformFullRTSSmarching_15.09.2014\\RTSS_BLASE.vtk", 0.5);
 }
 
-void TestVox()
-{
-  MiscMeshOperators::VoxelizeSurfaceMeshPython("RTSS_BLASE_deformed1.vtk", "VOXEL_RTSS_BLASE1.vtk", 0, "../../pelvisCase.ctx.gz" , false);
-}
-
-
 
 void TestApplyDVF()
 {
 
 
-  std::string ref = "..\\pelvisCaseCTImage.vti";
-  std::string def = "pelvisCaseDeformedImage.vtk";
-  std::string dvf = "dvf.vtk";
+  std::string ref = string(TESTDATA_PATH) + "\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\\pelvisCaseCTImage.vti";
+  std::string def = "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_postprocessing_19.09.2014\\defed10.vtk";
+  std::string dvf = "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_postprocessing_19.09.2014\\dvf10.vtk";
   
   PostProcessingOperators::ApplyDVFPython(ref.c_str(), dvf.c_str(), def.c_str(),  false, true, "2" );
-
-
 }
 
+//tests for miscMeshOperators.cpp
+void TestConvertLinearToQuadraticTetrahedralMesh()
+{
+  MiscMeshOperators::ConvertLinearToQuadraticTetrahedralMesh((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestConvertLinearToQuadraticTetrahedralMesh.vtk").c_str());
+}
+
+void TestConvertSTLToVTK()
+{
+  MiscMeshOperators::ConvertSTLToVTKPython((string(TESTDATA_PATH)+"/bunny_xl.stl").c_str(), (string(TESTDATA_PATH)+ "/TestConvertSTLToVTKPython.vtk").c_str());
+}
+
+void TestConvertVTKMeshToAbaqusMeshStringPython()
+{
+  std::ofstream aFile;
+  aFile.open((string(TESTDATA_PATH)+ "/TestConvertVTKMeshToAbaqusMeshStringPython.abq").c_str());
+  string aReturn = MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), "aPart", "aMaterial");
+  aFile << aReturn << "\n";
+  aFile.close();
+}
+
+void TestConvertVTKPolydataToUnstructuredGridPython()
+{
+  MiscMeshOperators::ConvertVTKPolydataToUnstructuredGridPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(),(string(TESTDATA_PATH)+ "/TestConvertVTKPolydataToUnstructuredGridPython.vtk").c_str());
+}
+
+void TestConvertVTKToOFF()
+{
+  MiscMeshOperators::ConvertVTKToOFF(IOHelper::VTKReadPolyData((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str()),(string(TESTDATA_PATH)+ "/TestConvertVTKToOFF.off").c_str());
+}
+
+void TestExtractAllSurfacesByMaterial()
+{
+  MiscMeshOperators::ExtractAllSurfacesByMaterial((string(TESTDATA_PATH)+"/ircad_tets_labled.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestExtractAllSurfacesByMaterial.vtk").c_str(), false);
+}
+
+void TestExtractNodeSet()
+{
+  MiscMeshOperators::ExtractNodeSet((string(TESTDATA_PATH)+"/ircad_tets_labled.vtk").c_str(), "nonExtistingNodeset-TestdataNeeded");
+} 
+
+void TestExtractPointPositions()
+{
+  std::vector<int> indices;
+  indices.push_back(0);indices.push_back(1);indices.push_back(2);
+  std::vector<double> aReturn = MiscMeshOperators::ExtractPointPositions(indices, (string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str());
+  if (abs(aReturn[1] - 0.0660446) > 0.000001)
+    throw;
+} 
+
+void TestExtractVectorField()
+{
+  std::vector<unsigned int> indices;
+  indices.push_back(0);indices.push_back(1);indices.push_back(2);
+  MiscMeshOperators::ExtractVectorField((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), "nonExistinFieldTestdataNeeded", indices);
+}
+void TestExtractSurfaceMeshPython()
+{
+  MiscMeshOperators::ExtractSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestExtractSurfaceMeshPython_AKA_ugrid_to_polydata.vtk").c_str());
+}
+
+void TestProjectSurfaceMeshPython()
+{
+  MiscMeshOperators::ProjectSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_polydata_highres.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestProjectSurfaceMeshPython.vtk").c_str(), (string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str());
+}
+
+void TestVoxelizeSurfaceMeshPython()
+{
+  MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, "", false);
+}
 
 int main( int argc, char * argv[])
 {
+  TestConvertLinearToQuadraticTetrahedralMesh();
+  TestConvertSTLToVTK();
+  TestConvertVTKMeshToAbaqusMeshStringPython();
+  TestConvertVTKPolydataToUnstructuredGridPython();
+  TestConvertVTKToOFF();
+  TestConvertVTKToOFF();
+  TestExtractAllSurfacesByMaterial();
+  TestExtractNodeSet();
+  TestExtractPointPositions();
+  TestExtractVectorField();
+  TestExtractSurfaceMeshPython();
+  TestProjectSurfaceMeshPython();
+  TestVoxelizeSurfaceMeshPython();
+
+
 
 	//example: mesh stl surface files with tetgen, export volume to vtk and inp (Abaqus) and export the corresponding surface to stl
   //	std::vector<std::string> inputSurfaceMeshes;
@@ -172,8 +248,6 @@ int main( int argc, char * argv[])
 ////		MiscMeshOperators::ConvertInpToVTK(inputSurfaceMeshes[i].c_str(), outputVolumeMeshes[i].c_str(),&errormessage );
 //
 //	}
-  TestGenerateDVF();
-
 	return EXIT_SUCCESS;
 }
 

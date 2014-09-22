@@ -307,19 +307,7 @@ bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile)
 
 std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile, bool theCutIntoPieces)
 {
-    //load the vtk volume mesh
-    vtkSmartPointer<vtkGenericDataObjectReader> reader =
-        vtkSmartPointer<vtkGenericDataObjectReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
-    if (!reader->IsFileUnstructuredGrid())
-    {
-        cerr << infile << " is not a vtkUnstructuredGrid";
-        exit (1);
-    }
-
-    vtkUnstructuredGrid* inputGrid = reader->GetUnstructuredGridOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);
 
     //cut model in pieces
     if (theCutIntoPieces)
@@ -390,10 +378,10 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
 
 
 
-    std::cout << "There are " << reader->GetUnstructuredGridOutput()->GetNumberOfCells()  << " cells before thresholding." << std::endl;
+    std::cout << "There are " << inputGrid->GetNumberOfCells()  << " cells before thresholding." << std::endl;
 
     //get alle surfaces
-    vtkIntArray* cellMaterialArray = (vtkIntArray*) reader->GetUnstructuredGridOutput()->GetCellData()->GetArray("Materials");
+    vtkIntArray* cellMaterialArray = (vtkIntArray*) inputGrid->GetCellData()->GetArray("Materials");
     map<int,int>* cellDataHist = createHist(cellMaterialArray);
 
 
