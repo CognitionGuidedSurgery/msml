@@ -928,9 +928,8 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
 
     bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid);
 
-    vtkSmartPointer<vtkStructuredPointsWriter> writer =
-        vtkSmartPointer<vtkStructuredPointsWriter>::New();
-    writer->SetFileTypeToBinary();
+    vtkSmartPointer<vtkXMLImageDataWriter> writer =
+        vtkSmartPointer<vtkXMLImageDataWriter>::New();
     writer->SetFileName(outfile);
     __SetInput(writer, outputImage);
     writer->Write();
