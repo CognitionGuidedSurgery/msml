@@ -4,7 +4,8 @@ networkx
 simplegeneric
 docopt
 pyparsing
-jinja2 
+jinja2
+rdflib 
 
 colorama
 
