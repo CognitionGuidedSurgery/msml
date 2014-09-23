@@ -991,7 +991,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
         __SetInput(fillHolesFilter, inputMesh);
 
         fillHolesFilter->SetHoleSize(holeSize);;
-
+        fillHolesFilter->Update();
         vtkSmartPointer<vtkCleanPolyData> cleanFilter =
             vtkSmartPointer<vtkCleanPolyData>::New();
 
