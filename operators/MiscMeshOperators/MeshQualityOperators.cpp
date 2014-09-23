@@ -30,8 +30,8 @@ MeshQualityStats::MeshQualityStats():
 }
 
 // NOT using an std::set since querying a non-existent name will insert it with value 0!
-static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
-    vector<pair<string, int>> m;
+static vector<pair<string, int> > FillTetQualityMeasureVtkIdsForTypeName() {
+    vector<pair<string, int> > m;
     m.push_back(pair<string, int>("AspectRatio", VTK_QUALITY_ASPECT_RATIO));
     m.push_back(pair<string, int>("AspectFrobenius", VTK_QUALITY_ASPECT_FROBENIUS));
     m.push_back(pair<string, int>("EdgeRatio", VTK_QUALITY_EDGE_RATIO));
@@ -48,10 +48,10 @@ static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
     m.push_back(pair<string, int>("Distortion", VTK_QUALITY_DISTORTION));
     return m;
 }
-static vector<pair<string, int>> TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
+static vector<pair<string, int> > TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
 
 static int tetQualityMeasureVtkIdForName(string name) {
-    for(vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
+    for(vector<pair<string, int> >::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
         if(it->first == name) {
             return it->second;
         }
@@ -61,7 +61,7 @@ static int tetQualityMeasureVtkIdForName(string name) {
 
 static vector<string> FillTetQualityMeasureTypeNames() {
     vector<string> names;
-    for(vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
+    for(vector<pair<string, int> >::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
         names.push_back(it->first);
     }
     return names;

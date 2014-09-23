@@ -315,6 +315,8 @@ class Workflow(object):
 
     def validate(self):
         """checks if all tasks match the operator definition"""
+        if not self._tasks:
+            return True
 
         import operator, collections
         attrid = operator.attrgetter("id")

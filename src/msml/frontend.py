@@ -218,13 +218,12 @@ class App(object):
     @property
     def memory_init_file(self):
         """memory init file for initalization of the :py:class:`msml.run.Memory`.
-
-        return self._memory_init_file
         """
+        return self._memory_init_file
 
     @memory_init_file.setter
     def memory_init_file(self, v):
-        self._memory_init_file = path(v)
+        self._memory_init_file = v
 
     @property
     def exporter(self):

@@ -17,7 +17,7 @@ ENDIF (NOT CMAKE_BUILD_TYPE)
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 ELSE()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 ENDIF(MSVC)
 
 MESSAGE(" #############################")    
@@ -85,7 +85,7 @@ SET(CMAKE_OPERATOR_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     
 SET(CMAKE_TESTDATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Testdata
     CACHE PATH "Choose the test data path.")
-add_definitions( -DTEST_DATA_PATH="${TESTDATA_PATH}" )
+add_definitions( -DTESTDATA_PATH="${CMAKE_TESTDATA_PATH}" )
 
 
 #SET(CMAKE_PYTHON_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../MSML_Python

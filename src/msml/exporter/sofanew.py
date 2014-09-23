@@ -320,13 +320,15 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
+                    p = float(self.evaluate_node(constraint.pressure)) / 10
+
 
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
                                                              pulseMode="1",
-                                                             pressureSpeed=str(float(
-                                                                 constraint.pressure) / 10.0),
+                                                             pressureSpeed=p,
+                                                             # TODO this is broken
                                                              pressure=constraint.get("pressure"),
                                                              triangleIndices=indices)
 
@@ -461,7 +463,6 @@ class SofaExporter(XMLExporter):
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     self._memory_update['SOFAExporter'] = {request.id: VTK(str(filenameLastOutput))} 
 
-                    dispOutputNode.set("filename", filename + ".vtu")
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
                     exportEveryNumberOfSteps = request.get("timestep")
@@ -486,7 +487,6 @@ class SofaExporter(XMLExporter):
                     #
                     # filenameLastOutput = filename + str(lastNumber) + ".vtu"
                     # self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
-                    # dispOutputNode.set("filename", filename + ".vtu")
 
 
 

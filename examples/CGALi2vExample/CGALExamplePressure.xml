@@ -3,10 +3,8 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-       <var name="input_vol_surf_mesh" value="3Dircadb0101Mesh_combo.vtk" logical="linearMesh"
-             physical="file.vtk"/>
-        <var name="input_vol_mesh" value="3Dircadb0101MeshTets.vtk" logical="linearMesh"
-             physical="file.vtk"/>
+       <var name="input_vol_surf_mesh" value="3Dircadb0101Mesh_combo.vtk" logical="str"/>
+        <var name="input_vol_mesh" value="3Dircadb0101MeshTets.vtk" logical="str"/>
         <var name="input_image" value="3Dircadb0101Labeled.vti" logical="segmentationImage"
              physical="file.vti"/>
     </variables>
@@ -32,19 +30,19 @@
             <material>
                 <region id="Material" indices="${bodyToIndexGroup}">
                     <linearElasticMaterial youngModulus="80000" poissonRatio="0.35"/>
-                    <mass name="abc" massDensity="1000"/>
+                    <mass name="abc" massDensity="0.000001"/>
                 </region>
             </material>
 
             <constraints>
                 <constraint name="test" forStep="${initial}">
                   <fixedConstraint name="bodyConstraint" indices="${bottomToIndexGroup}" />
-                  <surfacePressure name="pressureConstraint" indices="${pressureIndexGroup}" pressure="-8000" />
+                  <surfacePressure name="pressureConstraint" indices="${pressureIndexGroup}" pressure="-32000" />
                 </constraint>
             </constraints>
 
             <output>
-                <displacement id="disp01" timestep="1"/>
+                <displacement id="disp" timestep="1"/>
             </output>
         </object>
     </scene>

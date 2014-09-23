@@ -1,6 +1,7 @@
 <msml:element xmlns:msml="http://sfb125.de/msml"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://sfb125.de/msml" name="pressureConstraint" category="constraint"
+              xsi:schemaLocation="http://sfb125.de/msml"
+              name="forceConstraint" category="constraint"
               quantity="single">
 
 
@@ -17,11 +18,11 @@
             <meta key="doc" value="how long does the pressure act."/>
         </arg>
 
-        <arg name="indices" physical="vector.float">
+        <arg name="indices" physical="vector.int">
             <meta key="doc" value="Set indices of points subjected to pressure, separated by spaces."/>
         </arg>
 
-        <arg name="pressureValue" physical="vector.float">
+        <arg name="force" physical="vector.float">
             <meta key="doc" value="Set the pressure force as an 3D-vector."/>
         </arg>
     </parameters>

@@ -129,7 +129,7 @@ namespace MSML{
 #if VTK_MAJOR_VERSION <= 5
     image_data_byte->SetScalarTypeToUnsignedChar(); //does not work as expected. read_vtk_image_data will find double in image_data_byte->GetScalarType()
 #else
-    image_data_byte->AllocateScalars(VTK_UNSIGNED_CHAR,3);
+    image_data_byte->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
 #endif
     //convert vtk image to INRIA Image_3 and mesh it.
     CGAL::Image_3 image = read_vtk_image_data_char(image_data_byte);
@@ -424,7 +424,7 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 
   image->endianness = ::_getEndianness();
   int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType();
-  if(vtk_type =! VTK_UNSIGNED_CHAR)
+  if(vtk_type != VTK_UNSIGNED_CHAR)
   {
     cerr << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
     exit(2);

@@ -89,7 +89,7 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkPolyData> VTKReadPolyData(const char* filename);
         LIBRARY_API vtkSmartPointer<vtkImageData> CTXReadImage(const char* filename);
         LIBRARY_API std::map<std::string, std::string> ReadTextFileToMap(std::string file, char delim);
-
+        LIBRARY_API vector<pair<int, string> >* getAllFilesOfSeries(const char* filename);
     }
 }
 
