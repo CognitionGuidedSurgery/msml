@@ -39,17 +39,12 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkPolyDataWriter.h>
-
 #include <vtkPointData.h>
 #include <vtkIdList.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPoints.h>
 
 #include "vtkSTLWriter.h"
-#include "vtkPolyDataWriter.h"
 #include "vtkPolyData.h"
 #include "vtkPoints.h"
 #include "vtkCellArray.h"
@@ -63,7 +58,6 @@
 #include "vtkSTLReader.h"
 #include "vtkKdTreePointLocator.h"
 #include "vtkVoxelModeller.h"
-#include "vtkImageWriter.h"
 #include "vtkPNGWriter.h"
 
 
@@ -73,13 +67,8 @@
 
 
 #include <vtkUnstructuredGridGeometryFilter.h>
-#include <vtkUnstructuredGridWriter.h>
 #include "vtkDataSetSurfaceFilter.h"
 #include "vtkUnstructuredGridGeometryFilter.h"
-
-
-#include <vtkXMLImageDataWriter.h>
-#include <vtkStructuredPointsWriter.h>
 
 #include <vtkImageData.h>
 #include <vtkPolyDataToImageStencil.h>
@@ -116,19 +105,9 @@ std::string ConvertSTLToVTKPython(std::string infile, std::string outfile)
 
 bool ConvertSTLToVTK(const char* infile, const char* outfile)
 {
-    vtkSmartPointer<vtkPolyData> mesh =
-        vtkSmartPointer<vtkPolyData>::New();
-
+    vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
     ConvertSTLToVTK( infile, mesh);
-
-    vtkSmartPointer<vtkPolyDataWriter> writer =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    writer->SetFileName(outfile);
-
-    __SetInput(writer, mesh);
-    writer->Write();
-
-    return true;
+    return IOHelper::VTKWritePolyData(outfile, mesh);
 }
 
 bool ConvertSTLToVTK(const char* infile, vtkPolyData* outputMesh)
@@ -177,21 +156,11 @@ std::string ConvertVTKToVTUPython(std::string infile, std::string outfile)
 bool ConvertVTKToVTU(const char* infile, const char* outfile )
 {
   vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(infile);
-	//vtkPolyData* currentPolydata = reader->GetOutput();
-	// OR: ?!
-	//vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-	//write output
-	vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
-	// OR: ?!
-	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
-	writer->SetFileName(outfile);
-	writer->SetDataModeToAscii();
-	__SetInput(writer, grid);
-	// OR: ?!
-	//__SetInput(writer, mesh);
-	writer->Write();
-	std::cout<<"VTU file written\n";
+  boost::filesystem::path filePath(outfile);
+  if (filePath.extension() != ".vtu")
+    cerr << "File extension for XMLUnstructuredGridWriter must be .vtu";
+  IOHelper::VTKWriteUnstructuredGrid(outfile, grid, true);
 
 	return true;
 }
@@ -265,12 +234,14 @@ bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile)
 
 bool ConvertInpToVTK(const char* infile, const char* outfile)
 {
-    return true;
+  throw "not implemented";
+  return true;
 }
 
 bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh )
 {
-    return true;
+  throw "not implemented";
+  return true;
 }
 
 std::string VTKToInpPython( std::string infile, std::string outfile)
@@ -367,10 +338,7 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
             std::cout << "There are " << inputGrid->GetNumberOfCells()  << std::endl;
         }
 
-        vtkSmartPointer<vtkUnstructuredGridWriter> cutGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-        cutGridWriter->SetFileName((string(outfile) + "-cut.vtk").c_str());
-        __SetInput(cutGridWriter,inputGrid);
-        cutGridWriter->Write();
+        IOHelper::VTKWriteUnstructuredGrid((string(outfile) + "-cut.vtk").c_str(), inputGrid);
     }
 
     //done cutting
@@ -397,13 +365,9 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
         threshold->Update();
 
         //debug out surface
-        vtkSmartPointer<vtkUnstructuredGridWriter> aUGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
         stringstream itFirst;
         itFirst << it->first;
-        aUGridWriter->SetFileName((string(outfile) + "-volume" + itFirst.str() + ".vtk").c_str());
-        __SetInput(aUGridWriter, threshold->GetOutput());
-        aUGridWriter->Write();
-        //done debug out
+        //  IOHelper::VTKWriteUnstructuredGrid((string(outfile) + "-volume" + itFirst.str() + ".vtk").c_str(), threshold->GetOutput());
 
         cout << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  it->first << std::endl;
         //extract surface
@@ -413,11 +377,7 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
         bool result = ExtractSurfaceMesh(threshold->GetOutput(), mesh);
 
         //debug out surface
-        vtkSmartPointer<vtkPolyDataWriter> aGridWriter = vtkSmartPointer<vtkPolyDataWriter>::New();
-        aGridWriter->SetFileName((string(outfile) + "-surface" + itFirst.str() + ".vtk").c_str());
-        __SetInput(aGridWriter, mesh);
-        aGridWriter->Write();
-        //done debug out
+        //   IOHelper::VTKWritePolyData((string(outfile) + "-surface" + itFirst.str() + ".vtk").c_str(), mesh);
 
         surfaces.push_back(mesh);
     }
@@ -465,10 +425,7 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
     merger->Finish();
 
     //save the merged data
-    vtkSmartPointer<vtkUnstructuredGridWriter> unioGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    unioGridWriter->SetFileName(outfile);
-    __SetInput(unioGridWriter, unionMesh);
-    unioGridWriter->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outfile, unionMesh);
     return outfile;
 }
 
@@ -511,11 +468,7 @@ bool ExtractSurfaceMesh( const char* infile, const char* outfile)
     bool result = ExtractSurfaceMesh( IOHelper::VTKReadUnstructuredGrid(infile), mesh);
 
     //save the subdivided polydata
-    vtkSmartPointer<vtkPolyDataWriter> polywriter =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    polywriter->SetFileName(outfile);
-    __SetInput(polywriter, mesh);
-    polywriter->Write();
+    IOHelper::VTKWritePolyData(outfile, mesh);
 
     return result;
 
@@ -595,11 +548,7 @@ bool AssignSurfaceRegion( const char* infile, const char* outfile,  std::vector<
     bool result = AssignSurfaceRegion( inputmesh , outputmesh, regionMeshesVec);
 
     //save the subdivided polydata
-    vtkSmartPointer<vtkUnstructuredGridWriter> polywriter =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    polywriter->SetFileName(outfile);
-    __SetInput(polywriter, outputmesh); 
-    polywriter->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outfile, outputmesh);
 
     return result;
 }
@@ -777,12 +726,7 @@ bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfil
     bool returnValue = ConvertVTKPolydataToUnstructuredGrid(currentPolydata ,  mesh);
 
     //write output
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetFileName(outfile);
-    writer->SetFileTypeToBinary();
-    __SetInput(writer, mesh);
-    writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outfile, mesh);
 
     return returnValue;
 }
@@ -825,13 +769,7 @@ bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* ref
     ProjectSurfaceMesh(currentGrid,  reference);
 
     //write output
-    vtkSmartPointer<vtkPolyDataWriter> writer =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    writer->SetFileName(outfile);
-    writer->SetFileTypeToBinary();
-    __SetInput(writer,currentGrid);
-    writer->Write();
-
+    IOHelper::VTKWritePolyData(outfile, currentGrid);
     return true;
 }
 
@@ -928,11 +866,7 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
 
     bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid);
 
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-        vtkSmartPointer<vtkXMLImageDataWriter>::New();
-    writer->SetFileName(outfile);
-    __SetInput(writer, outputImage);
-    writer->Write();
+    IOHelper::VTKWriteImage(outfile, outputImage);
 
     //	vtkSmartPointer<vtkPNGWriter> writer2 =
     //	 vtkSmartPointer<vtkPNGWriter>::New();
@@ -965,8 +899,6 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 #else
     whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
 #endif
-
-
 
     //detect holes
     vtkSmartPointer<vtkFeatureEdges> featureEdges =
@@ -1101,16 +1033,7 @@ bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string out
 
   ConvertLinearToQuadraticTetrahedralMesh(IOHelper::VTKReadUnstructuredGrid(infile.c_str()), outputMesh);
 
-
-	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetFileName(outfile.c_str());
-#if VTK_MAJOR_VERSION <= 5
-	writer->SetInput(outputMesh);
-#else
-	writer->SetInputData(outputMesh);
-#endif
-	writer->Write();
+  IOHelper::VTKWriteUnstructuredGrid(outfile.c_str(), outputMesh);
 
 	return true;
 }
@@ -1249,15 +1172,7 @@ bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vt
 
 	ProjectSurfaceMesh(inputMesh, outputMesh, referenceMesh);
 
-	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetFileName(outputMeshFile.c_str());
-	#if VTK_MAJOR_VERSION <= 5
-		writer->SetInput(outputMesh);
-	#else
-		writer->SetInputData(outputMesh);
-	#endif
-	writer->Write();
+  IOHelper::VTKWriteUnstructuredGrid(outputMeshFile.c_str(), outputMesh);
 
 
 	return true;

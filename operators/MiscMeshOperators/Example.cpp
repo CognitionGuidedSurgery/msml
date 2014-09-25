@@ -103,7 +103,7 @@ void TestGenerateDVF()
 }
 void TestReadCTX()
 {
-  IOHelper::CTXReadImage("E:\\02_Data\\skelettonPatModel\\04_HNCfinalIGRTdose\\segmentation.ctx");
+  IOHelper::VTKReadImage("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\pelvisCase.ctx.gz"); //internal data type
 }
 
 void TestMarchingCube()
@@ -147,7 +147,7 @@ namespace TestMiscMeshoperators
 
   void TestConvertVTKPolydataToUnstructuredGridPython()
   {
-    MiscMeshOperators::ConvertVTKPolydataToUnstructuredGridPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(),(string(TESTDATA_PATH)+ "/TestConvertVTKPolydataToUnstructuredGridPython.vtk").c_str());
+    MiscMeshOperators::ConvertVTKPolydataToUnstructuredGridPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(),(string(TESTDATA_PATH)+ "/TestConvertVTKPolydataToUnstructuredGridPython.vtu").c_str());
   }
 
   void TestConvertVTKToOFF()
@@ -195,8 +195,10 @@ namespace TestMiscMeshoperators
     MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, "", false);
   }
 }
+
 void TestPostProcessingOperators()
 {
+    PostProcessingOperators::ApplyDVF((string(TESTDATA_PATH)+"/ircad_ct_image.vti").c_str(), (string(TESTDATA_PATH)+"/ircad_dvf.vti").c_str(), (string(TESTDATA_PATH)+"/TestApplyDVF.vtk").c_str(), true, 3);
 
     PostProcessingOperators::ColorMeshFromComparisonPython((string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),(string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/ColorMeshFromComparisonPython.vtk").c_str());
     
@@ -207,27 +209,26 @@ void TestPostProcessingOperators()
 
     PostProcessingOperators::TransformMeshBarycentricPython((string(TESTDATA_PATH)+"/ircad_tris_labled.vtk").c_str(), (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/TestTransformMeshBarycentricPython.vtu").c_str(), false);
       
-    //PostProcessingOperators::GenerateDVF(); //comlex example data needed
-    //PostProcessingOperators::ApplyDVF();example data needed
-
+    PostProcessingOperators::GenerateDVF((string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),
+      (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "");
 }
+
 int main( int argc, char * argv[])
 {
   TestPostProcessingOperators();
-
-  using namespace TestMiscMeshoperators;
-  TestConvertLinearToQuadraticTetrahedralMesh();
-  TestConvertSTLToVTK();
-  TestConvertVTKMeshToAbaqusMeshStringPython();
-  TestConvertVTKPolydataToUnstructuredGridPython();
-  TestConvertVTKToOFF();
-  TestExtractAllSurfacesByMaterial();
-  TestExtractNodeSet();
-  TestExtractPointPositions();
-  TestExtractVectorField();
-  TestExtractSurfaceMeshPython();
-  TestProjectSurfaceMeshPython();
-  TestVoxelizeSurfaceMeshPython();
+  
+  TestMiscMeshoperators::TestConvertLinearToQuadraticTetrahedralMesh();
+  TestMiscMeshoperators::TestConvertSTLToVTK();
+  TestMiscMeshoperators::TestConvertVTKMeshToAbaqusMeshStringPython();
+  TestMiscMeshoperators::TestConvertVTKPolydataToUnstructuredGridPython();
+  TestMiscMeshoperators::TestConvertVTKToOFF();
+  TestMiscMeshoperators::TestExtractAllSurfacesByMaterial();
+  TestMiscMeshoperators::TestExtractNodeSet();
+  TestMiscMeshoperators::TestExtractPointPositions();
+  TestMiscMeshoperators::TestExtractVectorField();
+  TestMiscMeshoperators::TestExtractSurfaceMeshPython();
+  TestMiscMeshoperators::TestProjectSurfaceMeshPython();
+  TestMiscMeshoperators::TestVoxelizeSurfaceMeshPython();
 
 
 
