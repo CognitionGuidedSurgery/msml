@@ -292,7 +292,8 @@ class SofaExporter(XMLExporter):
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
                 indices_vec = self.get_value_from_memory(constraint)
-                indices = '%s' % ', '.join(map(str, indices_vec))
+                if (indices_vec is not None):
+                    indices = '%s' % ', '.join(map(str, indices_vec))
 
                 if currentConstraintType == "fixedConstraint":
                     constraintNode = self.sub("FixedConstraint", objectNode,
@@ -333,7 +334,7 @@ class SofaExporter(XMLExporter):
                                                              triangleIndices=indices)
 
                     self.sub("BarycentricMapping", constraintNode,
-                             template="undef, Vec3f",
+                             template=self._processing_unit + ", Vec3f",
                              name="barycentricMapSurfacePressure",
                              input="@..", output="@.")
 
@@ -345,14 +346,15 @@ class SofaExporter(XMLExporter):
                                        position=constraint.get("movingPoints"))
 
                     self.sub("BarycentricMapping", constraintNode,
-                             template="undef, Vec3f",
+                             template=self._processing_unit + ", Vec3f",
                              name="barycentricMapSpringMeshToFixed",
                              input="@..",
                              output="@.")
 
-                    displacedLandLMarks = self.sub(constraintNode, "Node",
+                    displacedLandLMarks = self.sub("Node", constraintNode,
                                                    name="fixedPointsForSpringMeshToFixed")
-                    mechObj = self.sub(displacedLandLMarks, "MechanicalObject",
+                    
+                    mechObj = self.sub("MechanicalObject", displacedLandLMarks,
                                        template="Vec3f",
                                        name="fixedPoints")
 
@@ -368,7 +370,7 @@ class SofaExporter(XMLExporter):
 
                 elif currentConstraintType == "supportingMesh":
 
-                    constraintNode = self.sub("Node", name="support_" + constraint.get("name"))
+                    constraintNode = self.sub("Node", objectNode, name="support_" + constraint.get("name"))
                     loaderNode = self.sub("MeshVTKLoader", constraintNode,
                                           name="LOADER_supportmesh",
                                           createSubelements="0",
@@ -401,7 +403,7 @@ class SofaExporter(XMLExporter):
                              input="@..",
                              name="barycentricMap",
                              output="@.",
-                             template="undef, Vec3f")
+                             template=self._processing_unit + ", Vec3f")
 
                 elif currentConstraintType == "displacementConstraint":
 
