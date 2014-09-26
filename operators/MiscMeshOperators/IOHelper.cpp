@@ -264,7 +264,7 @@ bool IOHelper::VTKWriteImage(const char* filename, vtkImageData* image, bool asc
 {
   bool aResult=false;
   //check if directory exists.
-  boost::filesystem::path filePath(filename);
+    boost::filesystem::path filePath(boost::filesystem::complete(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
     cerr << filePath << " can not be written. Directory of" << filePath << " does not exist "<< endl;
