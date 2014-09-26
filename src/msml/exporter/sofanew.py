@@ -330,7 +330,7 @@ class SofaExporter(XMLExporter):
                                                              pulseMode="1",
                                                              pressureSpeed=p,
                                                              # TODO this is broken
-                                                             pressure=constraint.get("pressure"),
+                                                             pressure=constraint.pressure,
                                                              triangleIndices=indices)
 
                     self.sub("BarycentricMapping", constraintNode,

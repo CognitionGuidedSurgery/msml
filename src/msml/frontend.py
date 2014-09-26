@@ -260,8 +260,8 @@ class App(object):
     def _prepare_msml_model(self, mfile):
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
-        if not self._novalidate:
-            mfile.validate(msml.env.CURRENT_ALPHABET)
+        #validate is needed for simulation execution, removed if condition "if not self._novalidate:"
+        mfile.validate(msml.env.CURRENT_ALPHABET) 
 
     def show(self, msml_file = None):
         if not msml_file:
