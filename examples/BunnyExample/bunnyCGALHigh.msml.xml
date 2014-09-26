@@ -3,8 +3,7 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="bunnyVolumeMeshHigh.vtk"
-             logical="Mesh"
+        <var name="input_vol_mesh" value="bunnyVolumeMeshCGAL.vtk" logical="Mesh"
              physical="file.vtk"/>
         <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="linearMesh"
              physical="file.vtk"/>
@@ -30,15 +29,14 @@
 
             <material>
                 <region id="bunnyMaterial" indices="${bodyToIndexGroup}">
-                    <!--<materialRegion name=""> -->
                     <linearElasticMaterial youngModulus="80000" poissonRatio="0.49"/>
                     <mass massDensity="1000"/>
                 </region>
             </material>
 
             <constraints>
-                <constraint forStep="${initial}">
-                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+                <constraint name="bodyConstraint" forStep="${initial}">
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
                 </constraint>
             </constraints>
 

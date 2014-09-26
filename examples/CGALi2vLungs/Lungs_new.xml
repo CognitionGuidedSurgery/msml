@@ -54,8 +54,7 @@
                                       cut="false"/>
 
         <mesherCGALi2v id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
-                       facet_angle="20" facet_size="12" facet_distance="3" cell_radius_edge_ratio="3" cell_size="18"
-                       odt="false" lloyd="false" pertube="false" exude="false"/>
+                       facet_angle="20" facet_size="12" facet_distance="3" cell_radius_edge_ratio="3" cell_size="18" />
 
         <materialId-to-index id="bodyToIndexGroup"
                              num="100" mesh="${surfaceExtraction}"
@@ -87,7 +86,7 @@
 
         <paraview id="a" data="${disp}"/>
         <!-- nonsense -->
-        <generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${surfaceExtraction}" multipleReferenceGrids="false"
+        <generateDVF id="dvf1" RefMesh="${disp}" DeformedMesh="${surfaceExtraction}" 
                      DVFFilename="dvf01.vtk"/>
     </workflow>
 

@@ -30,19 +30,19 @@
             <material>
                 <region id="Material" indices="${bodyToIndexGroup}">
                     <linearElasticMaterial youngModulus="80000" poissonRatio="0.35"/>
-                    <mass name="abc" massDensity="1000"/>
+                    <mass name="abc" massDensity="0.000001"/>
                 </region>
             </material>
 
             <constraints>
                 <constraint name="test" forStep="${initial}">
                   <fixedConstraint name="bodyConstraint" indices="${bottomToIndexGroup}" />
-                  <surfacePressure name="pressureConstraint" indices="${pressureIndexGroup}" pressure="-8000" />
+                  <surfacePressure name="pressureConstraint" indices="${pressureIndexGroup}" pressure="-32000" />
                 </constraint>
             </constraints>
 
             <output>
-                <displacement id="disp01" timestep="1"/>
+                <displacement id="disp" timestep="1"/>
             </output>
         </object>
     </scene>
