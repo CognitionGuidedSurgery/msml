@@ -37,7 +37,6 @@ import subprocess
 
 from path import path
 
-from msml.log import report
 import lxml.etree as etree
 from ..model import *
 from .base import XMLExporter, Exporter
@@ -109,8 +108,8 @@ class SofaExporter(XMLExporter):
             callCom = '-g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
 
-        report("Executing %s" % cmd, 'I', 252)
-        report("Working directory: %s" % os.getcwd(), 'I', 616)
+        log.info("Executing %s" % cmd)
+        log.info("Working directory: %s" % os.getcwd())
 
         os.system(cmd)
         

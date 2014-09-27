@@ -201,9 +201,9 @@ class LinearSequenceExecutor(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', 1)
+        log.debug('Executing operator of task {} with arguments {}'.format(task, kwargs))
         result = task.operator(**kwargs)
-        report('--Executing operator of task {} done'.format(task), 'I', 2)
+        log.info('--Executing operator of task {} done'.format(task))
 
         if task.id in self._memory and isinstance(self._memory[task.id], dict):
             # converter case, only update the change values
@@ -303,7 +303,7 @@ def build_graph(tasks, exporter, variables):
     return dag
 
 
-from ..log import report
+from .. import log
 from ..sorts import conversion
 
 
@@ -323,7 +323,7 @@ def inject_implict_conversion(dag):
     for a, b, data in dag.edges(data=True):
         ref = data['ref']
         if not ref.valid:
-            report("Reference %s is invalid. Try to implicit conversion" % ref, 'I', 1561)
+            log.info("Reference %s is invalid. Try to implicit conversion" % ref)
             task = create_conversion_task(ref.linked_from, ref.linked_to)
 
             # add new task
@@ -351,7 +351,7 @@ def inject_implict_conversion(dag):
             dag.add_edge(task, b, ref=_t_b)
 
         else:
-            report("Reference %s is valid" % ref, 'D', 1562)
+            log.debug("Reference %s is valid" % ref)
     return dag
 
 

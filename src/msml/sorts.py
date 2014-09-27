@@ -55,7 +55,7 @@ path     => name/path in the class hierarchy, each class is seperated with ».«
 # __all__ = ["__author__", "__date__", "SortsDefinition", "get_sort", "default_sorts_definition"]
 
 from msml.sortdef import *
-from .log import report
+from . import log
 from .exceptions import MSMLException
 
 __author__ = "Alexander Weigl"
@@ -96,7 +96,7 @@ class SortsDefinition(object):
         try:
             return self.logical_cache[typestr]
         except KeyError as e:
-            report("logical type %s requested, but does not exist" % typestr, 'W', 161)
+            log.warn("logical type %s requested, but does not exist" % typestr)
             return None
 
     def _find_physical(self, fmtstr):
@@ -104,7 +104,7 @@ class SortsDefinition(object):
             return self.physical_cache[fmtstr]
         except KeyError as e:
             s="physical type %s requested, but does not exist" % fmtstr
-            report(s, 'E', 162)
+            log.error(s)
             raise BaseException(s)
 
 
@@ -354,4 +354,4 @@ try:
 
     register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
 except:
-    report("No Conversion VTK to VTU avaaible. Hiflow3 may not useable.", 'E', 616)
+    log.error("No Conversion VTK to VTU avaaible. Hiflow3 may not useable")

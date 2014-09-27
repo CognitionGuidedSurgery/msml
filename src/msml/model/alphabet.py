@@ -30,7 +30,6 @@ from collections import OrderedDict
 import pickle
 
 from ..sorts import *
-from msml.log import report
 from ..exceptions import *
 from msml import sorts
 
@@ -216,7 +215,7 @@ class OAConstraint(ObjectAttribute):
         if 'indices' in self.parameters:
             return True
         else:
-            report("OAConstraint: %s does not have an indices attribute defined" % self.name, 'E', 182)
+            log.error("OAConstraint: %s does not have an indices attribute defined" % self.name)
             return False
 
 
@@ -290,8 +289,7 @@ class Slot(object):
         try:
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
-            report("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type),
-                   kind="E", number=156)
+            log.error("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type))
             self.sort = None
 
 

@@ -47,67 +47,12 @@ except:
 else:
     colorama.init()
 
-__all__ = ['report', '_reported', 'ColoredFormatter', 'logger']
+__all__ = ['_reported', 'ColoredFormatter', 'logger']
 
 _reported = []
 
-def report(msg, kind="W", number=0, filename=None, lineno=-1):
-    """prints a report information on stdout
-
-    if `filename` is empty, the method tries to find the source of the caller.
-
-    :param msg: Message
-    :type msg: str
-    :param kind: I, W, E, D, F -- kind of message
-    :param number: some random error number
-    :param filename: a filename (location of event)
-    :param lineno: a line number (location of event)
-    :return:
-    """
-
-    if not filename:
-        frame = inspect.stack()[1][0]
-        info = inspect.getframeinfo(frame)
-
-        filename = os.path.basename(info.filename)
-        lineno = info.lineno
-        if filename == "__init__.py":
-            filename = os.path.join(os.path.basename(
-                os.path.dirname(info.filename)), filename)
-
-    _reported.append((kind, number, lineno, filename, msg))
-    logger = logging.getLogger("root")
-
-    if kind == 'E':
-        fn = logger.error
-    elif kind == 'I':
-        fn = logger.info
-    elif kind == 'F':
-        fn = logger.critical
-    elif kind == 'W':
-        fn = logger.warn
-    elif kind == 'D':
-        fn = logger.debug
-    else:
-        fn = logger.debug
-
-    fn(LRecord(msg, number, filename, lineno))
-
-logger = logging.getLogger("root")
-
-class LRecord(object):
-    def __init__(self, m, n ,f, l):
-        self.message = m
-        self.line = l
-        self.file = f
-        self.number = n
-
-    def __str__(self):
-        return self.message
-
 
 # # below from https://github.com/borntyping/python-colorlog/blob/master/colorlog/colorlog.py
-
 default_log_colors = {
     'DEBUG': 'white',
     'INFO': 'green',
@@ -211,11 +156,14 @@ class ColoredFormatter(logging.Formatter):
 
         return message
 
-
+## https://docs.python.org/2/library/logging.html#logrecord-attributes
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
+        'long':{
+          'format': "%(asctime)-20s %(levelname)-8s %(name)-20s (%(threadName)-20s) %(message)s [%(filename)s:%(lineno)d in %(module)s:%(funcName)s]"
+        },
         'default': {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
         },
@@ -228,7 +176,7 @@ LOGGING = {
         'file': {
             '()': 'logging.FileHandler',
             'level': 'DEBUG',
-            'formatter': 'default',
+            'formatter': 'long',
             'filename': 'msml.log',
             'mode': 'w',
             'encoding': 'utf-8',
@@ -246,3 +194,12 @@ LOGGING = {
     },
 }
 logging.config.dictConfig(LOGGING)
+logger = logging.getLogger("root")
+
+error = logger.error
+warn = logger.warn
+info = logger.info
+debug = logger.debug
+critical = logger.critical
+exception = logger.exception
+fatal = logger.fatal
