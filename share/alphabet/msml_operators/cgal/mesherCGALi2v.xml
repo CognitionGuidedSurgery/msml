@@ -14,19 +14,15 @@
 	</output>
 
 	<parameters>
-      <arg name="meshFilename" physical="str" optional="true">
-            <meta key="doc">
-                Optional input filename for the output.
-            </meta>
-      </arg>
+    <arg name="meshFilename" physical="str" optional="true" />
 		<arg name="facet_angle" physical="float" />
 		<arg name="facet_size" physical="float" />
 		<arg name="facet_distance" physical="float" />
 		<arg name="cell_radius_edge_ratio" physical="float" />
 		<arg name="cell_size" physical="float" />
-		<arg name="odt" physical="bool" />
-		<arg name="lloyd" physical="bool" />
-		<arg name="pertube" physical="bool" />
-		<arg name="exude" physical="bool" />
+		<arg name="odt" physical="bool" optional="true" default="false"/>
+		<arg name="lloyd" physical="bool" optional="true" default="false" />
+		<arg name="pertube" physical="bool" optional="true" default="false" />
+		<arg name="exude" physical="bool" optional="true" default="false" />
 	</parameters>
 </msml:operator>
