@@ -9,7 +9,7 @@
 
 	<input>
 		<arg name="referenceImage" logical="Image3D" physical="VTK" />
-    <arg name="dvf" physical="VTK" />
+    <arg name="dvf" logical="vector" physical="VTK" />
 	</input>
 
 	<output>
@@ -21,6 +21,7 @@
     <arg name="outputDefImageFilename" physical="str" optional="true" />
 		<arg name="multipleDVF" physical="bool" />
 		<arg name="reverseDirection" physical="bool" />
+    <arg name="voxelSize" pyhsical="str" optional="true" deault="0"/>
 	</parameters>
 </msml:operator>
 

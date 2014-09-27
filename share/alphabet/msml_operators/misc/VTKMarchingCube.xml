@@ -15,7 +15,7 @@
 
 
 	<parameters>
-      <arg name="out_filename" logical="str" physical="file.vtk" />
+      <arg name="out_filename" logical="str" />
       <arg name="isoValue" physical="float" />
 	</parameters>
 

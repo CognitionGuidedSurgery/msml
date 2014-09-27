@@ -17,7 +17,7 @@
 
 	<parameters>
     <arg name="out_surface_filename" physical="str" optional="true" />
-    <arg name="multipleDeformedGrid" physical="bool"/>
+    <arg name="multipleDeformedGrid" physical="bool" optional="true" default="false" />
 	</parameters>
 
 </msml:operator>
