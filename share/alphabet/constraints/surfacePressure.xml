@@ -10,10 +10,11 @@
 
 
     <parameters>
+        <!--
         <arg name="time" physical="float">
             <meta key="doc" value="Set time."/>
         </arg>
-
+-->
         <arg name="indices" physical="vector.float">
             <meta key="doc" value="Set indices of points where force/pressure acts separated by spaces."/>
         </arg>

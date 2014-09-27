@@ -295,9 +295,9 @@ def _bool(s):
 
 
 def _list_of_type(s, t):
-    """
-    :param s:
-    :param t:
+    """Convert an input `s` into a list of `t`
+    :param s: string, list or tuple
+    :param t: type of elements
 
     :type s: str
     :type t: type
@@ -305,8 +305,10 @@ def _list_of_type(s, t):
     :rtype: list[t]
     """
 
-    return map(lambda x: t(x.strip(" ")),
-               filter(lambda x: x != "", s.split(" ")))
+    if isinstance(s, str):
+        s = map(lambda x: x.strip(), filter(lambda x: x != "", s.split(" ")))
+
+    return map(t, s)
 
 
 def _list_float(s):
@@ -331,6 +333,10 @@ register_conversion(str, get_sort("ctx"), ctx, 100)
 register_conversion(str, get_sort("vdx"), vdx, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
+register_conversion(tuple, get_sort('vector.int'), _list_float, 100)
+register_conversion(tuple, get_sort('vector.float'), _list_float, 100)
+register_conversion(list, get_sort('vector.int'), _list_float, 100)
+register_conversion(list, get_sort('vector.float'), _list_float, 100)
 register_conversion(str, get_sort('VTI'), VTI, 100)
 register_conversion(get_sort('int'), get_sort('str'), str, 100)
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
