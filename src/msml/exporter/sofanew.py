@@ -461,9 +461,11 @@ class SofaExporter(XMLExporter):
                         lastNumber = 1
                     else:
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
-
-                    filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    self._memory_update['SOFAExporter'] = {request.id: VTK(str(filenameLastOutput))} 
+                    
+                    if (request.useAsterisk): 
+                        self._memory_update['SOFAExporter'] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
+                    else:
+                        self._memory_update['SOFAExporter'] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
 
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
@@ -478,6 +480,8 @@ class SofaExporter(XMLExporter):
                                               listening="true",
                                               exportAtEnd="true")
 
+                    # untested block:
+                    
                     # timeSteps = self._msml_file.env.simulation[0].iterations
                     #
                     # #exportEveryNumberOfSteps = 1 in SOFA means export every second time step.
@@ -487,8 +491,10 @@ class SofaExporter(XMLExporter):
                     # else:
                     #     lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
                     #
-                    # filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    # self._memory['SOFAExporter'] = {request.id: filenameLastOutput}
+                    #if (request.useAsterisk): 
+                    #    self._memory_update['SOFAExporter'] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
+                    #else:
+                    #    self._memory_update['SOFAExporter'] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
 
 
 

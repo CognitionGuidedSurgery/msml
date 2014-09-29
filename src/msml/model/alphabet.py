@@ -479,6 +479,8 @@ class PythonOperator(Operator):
                         outputPathPattern = str(arg);
                         outputI = i;
             
+            assert(outputPathPattern != '' and inputPathPattern != '') #maybe output directory already contained output files matching output pattern?
+            
             [pre, post] = inputPathPattern.split('*')
             outputFileList = []
             for file in inputFileList:
