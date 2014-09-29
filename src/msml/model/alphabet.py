@@ -28,6 +28,7 @@
 
 from collections import OrderedDict
 import pickle
+import glob
 
 from ..sorts import *
 from msml.log import report
@@ -447,6 +448,7 @@ class PythonOperator(Operator):
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
         
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
         defaults = dict()
         for x in self.parameters.values():
             if x.default is not None:
@@ -455,10 +457,45 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-
-
-        print(args)
-        r = self._function(*args)
+        
+        #roll out sequences
+        count = sum('*' in str(arg) for arg in args)
+        if (count == 2):
+            assert (count ==2)
+            outputPathPattern = ''
+            inputPathPattern = ''
+            for i in range(len(args)):
+                arg = args[i]
+                if ('*' in str(arg)):
+                    assert str(arg).count('*') == 1
+                    fileList = glob.glob(str(arg)) #get file of path in arg with Unix style pathname pattern expansion
+                    if (len(fileList)>0):
+                        assert(inputPathPattern == '')
+                        inputFileList = fileList;
+                        inputPathPattern = str(arg);
+                        inputI = i;
+                    else:
+                        assert(outputPathPattern == '')
+                        outputPathPattern = str(arg);
+                        outputI = i;
+            
+            [pre, post] = inputPathPattern.split('*')
+            outputFileList = []
+            for file in inputFileList:
+                tmp = str(file).replace(pre, '')
+                tmp = str(tmp).replace(post, '')  
+                outputFileList.append(outputPathPattern.replace('*', tmp))
+            
+            for j in range(len(inputFileList)):
+                args[inputI] = inputFileList[j]
+                args[outputI] = outputFileList[j]            
+                print(args)
+                r = self._function(*args)
+                
+            
+        else:
+            print(args)
+            r = self._function(*args)
 
         if len(self.output) == 0:
             results = None
