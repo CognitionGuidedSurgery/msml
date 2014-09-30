@@ -308,13 +308,13 @@ namespace MSML{
 	  reader->Update();
 
     //mesh polydata->vtu
-    vtkUnstructuredGrid* outputMesh = vtkUnstructuredGrid::New();
+    vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
     string errorMessage;
-    MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), "CreateVolumeMeshs2v__TEMP.off");
-    C3t3_poly c3t3 = mesh_polyhedral_Domain(OpenOffSurface("CreateVolumeMeshs2v__TEMP.off"), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
+    MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
+    C3t3_poly c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
       theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
-    remove("CreateVolumeMeshs2v__TEMP.off");
+    remove((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
 
     //write vtu
     vtkSmartPointer<vtkUnstructuredGridWriter > aVtkUnstructuredGridWriter =
