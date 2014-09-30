@@ -28,12 +28,12 @@
 
 from collections import OrderedDict
 import pickle
-import glob
 
 from ..sorts import *
 from msml.log import report
 from ..exceptions import *
 from msml import sorts
+from sequence import executeOperatorSequence
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -296,8 +296,9 @@ class Slot(object):
             self.sort = None
 
 
-    def __getattr__(self, item):
-        return self.meta[item]
+    #def __getattr__(self, item):
+        #assert (self.meta is not None)
+        #return self.meta[item]
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)
@@ -440,7 +441,8 @@ class PythonOperator(Operator):
 
     def __str__(self):
         return "<PythonOperator: %s.%s>" % (self.modul_name, self.function_name)
-
+    
+    
     def __call__(self, **kwargs):
         if not self._function:
             self.bind_function()
@@ -458,43 +460,9 @@ class PythonOperator(Operator):
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
         
-        #roll out sequences
-        count = sum('*' in str(arg) for arg in args)
-        if (count == 2):
-            assert (count ==2)
-            outputPathPattern = ''
-            inputPathPattern = ''
-            for i in range(len(args)):
-                arg = args[i]
-                if ('*' in str(arg)):
-                    assert str(arg).count('*') == 1
-                    fileList = glob.glob(str(arg)) #get file of path in arg with Unix style pathname pattern expansion
-                    if (len(fileList)>0):
-                        assert(inputPathPattern == '')
-                        inputFileList = fileList;
-                        inputPathPattern = str(arg);
-                        inputI = i;
-                    else:
-                        assert(outputPathPattern == '')
-                        outputPathPattern = str(arg);
-                        outputI = i;
-            
-            assert(outputPathPattern != '' and inputPathPattern != '') #maybe output directory already contained output files matching output pattern?
-            
-            [pre, post] = inputPathPattern.split('*')
-            outputFileList = []
-            for file in inputFileList:
-                tmp = str(file).replace(pre, '')
-                tmp = str(tmp).replace(post, '')  
-                outputFileList.append(outputPathPattern.replace('*', tmp))
-            
-            for j in range(len(inputFileList)):
-                args[inputI] = inputFileList[j]
-                args[outputI] = outputFileList[j]            
-                print(args)
-                r = self._function(*args)
-                
-            
+        
+        if sum('*' in str(arg) for arg in args):        
+                r = executeOperatorSequence(self, args) 
         else:
             print(args)
             r = self._function(*args)
@@ -507,7 +475,7 @@ class PythonOperator(Operator):
             results = dict(zip(self.output_names(), r))
 
         return results
-
+        
     def bind_function(self):
         """Search and bind the python function. Have to be called before `__call__`"""
         import importlib
@@ -569,3 +537,4 @@ class SharedObjectOperator(PythonOperator):
 
         self.__function = getattr(object, self.symbol_name)
         return self.__function
+

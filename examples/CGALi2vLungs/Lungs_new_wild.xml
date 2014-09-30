@@ -86,7 +86,7 @@
     <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
     <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
 
-    <generateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf*.vtk" spacing="10"/>
+    <generateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf*.vtk" spacing="5"/>
 
   </workflow>
 
