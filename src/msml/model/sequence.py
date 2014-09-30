@@ -79,8 +79,8 @@ def executeOperatorSequence(operator, args):
             num_of_workers = multiprocessing.cpu_count()
             pool = multiprocessing.Pool(num_of_workers-1)
             
-            pool.map(callWrapper, args_list)
-            pool.wait()
+            pool.map(callWrapper, args_list) #blocks until finished
+
             
         else:
             callWrapper(args_list[0])
@@ -89,4 +89,5 @@ def executeOperatorSequence(operator, args):
         
 def callWrapper(selfAndArgs):
     operator = selfAndArgs.pop()
+    print("Asnc of operator %s , with args: %s" % (operator, selfAndArgs))
     return operator._function(*selfAndArgs)
