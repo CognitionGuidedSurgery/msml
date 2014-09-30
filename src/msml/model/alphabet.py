@@ -514,14 +514,33 @@ class ShellOperator(Operator):
 
     def __call__(self, **kwargs):
         import os
-
-        command = self.command_tpl.format(**kwargs)
-        os.system(command)
+        
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
+        defaults = dict()
+        for x in self.parameters.values():
+            if x.default is not None:
+                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
+        kwargsUpdated = defaults
+        kwargsUpdated.update(kwargs)
+                   
+        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        
+        if sum('*' in str(arg) for arg in args):        
+            r = executeOperatorSequence(self, args) 
+        else:
+            self._function(args)
         
         results = None
         if len(self.output) == 1 and 'out_filename' in kwargs:
             results = {self.output_names()[0]: kwargs.get('out_filename')}
         return results
+    
+    def _function(self, *args):
+        if (len(args)==1):
+            args = args[0]
+        kwargs =  dict(zip(self.acceptable_names(), args))
+        command = self.command_tpl.format(**kwargs)
+        os.system(command)
 
 
 class SharedObjectOperator(PythonOperator):

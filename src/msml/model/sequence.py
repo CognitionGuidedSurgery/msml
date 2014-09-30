@@ -27,7 +27,7 @@
 # endregion
 
 
-__author__ = "Markus"
+__author__ = "Markus Stoll"
 __date__ = "2014-09-30"
 
 import glob
