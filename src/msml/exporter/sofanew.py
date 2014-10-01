@@ -37,6 +37,8 @@ import subprocess
 
 from path import path
 
+from .. import log
+
 import lxml.etree as etree
 from ..model import *
 from .base import XMLExporter, Exporter
