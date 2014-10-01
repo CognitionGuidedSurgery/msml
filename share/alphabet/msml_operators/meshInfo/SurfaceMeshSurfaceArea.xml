@@ -12,7 +12,7 @@
 	</input>
 
 	<output>
-		<arg name="surfaceArea" logical="float" />
+		<arg name="surfaceArea" physical="float" />
 	</output>
 
 </msml:operator>
