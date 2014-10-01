@@ -57,7 +57,6 @@ __all__ =[ 'Constant',
            'Reference',
            'SceneObject',
            'SceneObjectSets',
-           'SceneSets',
            'Task',
            'Workflow',
            'call_method_list',
@@ -228,7 +227,7 @@ class MSMLFile(object):
                 args = op.output if outarg else op.input + op.parameters
                 if ref.slot:
                     # choose slot
-                    return task, args[ref]
+                    return task, args[ref.slot]
                 else:
                     # choose first from output/input
                     return task, args.values()[0]
@@ -370,11 +369,9 @@ class MSMLEnvironment(object):
 
             def __init__(self, name="initial", dt=0.05, iterations=100):
                 self.name = name
-                self._dt = None
-                self._iterations = None
+                self._dt = dt
+                self._iterations = iterations
 
-                self.dt = dt
-                self.iterations = iterations
 
             @property
             def dt(self):
@@ -393,7 +390,7 @@ class MSMLEnvironment(object):
                 self._iterations = int(iterations)
 
         def __init__(self, *args):
-            list.__init__(self, *args)
+            list.__init__(self, args)
 
         def add_step(self, name="initial", dt=0.05, iterations=100):
             """Add a new step to the Simlation
@@ -439,8 +436,8 @@ class MSMLEnvironment(object):
             :type: str
             """
 
-    def __init__(self):
-        self.simulation = MSMLEnvironment.Simulation()
+    def __init__(self, solver = None, steps = None):
+        self.simulation = steps or MSMLEnvironment.Simulation()
         self.solver = MSMLEnvironment.Solver()
 
 
@@ -777,9 +774,9 @@ class SceneObjectSets(object):
     """
 
     def __init__(self, elements=None, nodes=None, surfaces=None):
-        self.elements = elements
-        self.nodes = nodes
-        self.surfaces = surfaces
+        self.elements = elements or list()
+        self.nodes = nodes or list()
+        self.surfaces = surfaces or list()
 
 
 def call_method_list(seq, method, *args):
@@ -791,13 +788,13 @@ class SceneObject(object):
 
     """
 
-    def __init__(self, oid, mesh=None, sets=SceneObjectSets(), material=None, constraints=None):
+    def __init__(self, oid, mesh=None, sets = None, material=None, constraints=None, output = None):
         self._id = oid
         self._mesh = mesh if mesh else Mesh()
         self._material = list() if not material else material
         self._constraints = constraints if constraints else list()
-        self._sets = sets
-        self._output = list()
+        self._sets = sets or SceneObjectSets()
+        self._output = output or list()
 
     def bind(self, alphabet):
         """
@@ -1055,14 +1052,8 @@ class ObjectConstraints(object):
         self._constraints += constraints
 
 
-class SceneSets(object):
-    """Represents the sets with an :py:class:`SceneObject`
-    """
+SceneSets = SceneObjectSets
 
-    def __init__(self, nodes=None, surfaces=None, elements=None):
-        self.nodes = nodes or list()
-        self.surfaces = surfaces or list()
-        self.elements = elements or list()
 
 
 class IndexGroup(object):

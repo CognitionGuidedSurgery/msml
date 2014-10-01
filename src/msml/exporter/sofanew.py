@@ -250,11 +250,11 @@ class SofaExporter(XMLExporter):
 
 
 
-        def _to_str(map):
-            keys = list(map.keys())
+        def _to_str(mapping):
+            keys = list(mapping.keys())
             keys.sort()
-            sorted_values = (map[k] for k in keys)
-            return ' '.join(sorted_values)
+            sorted_values = (mapping[k] for k in keys)
+            return ' '.join(map(str, sorted_values))
 
         density_str = _to_str(density)
         youngs_str = _to_str(youngs)
@@ -272,6 +272,7 @@ class SofaExporter(XMLExporter):
                      template=self._processing_unit)
             massNode = self.sub("DiagonalMass", objectNode, name="meshMass")
             massNode.set("massDensity", density_str)
+
         elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
                                     template=self._processing_unit, name="FEM", listening="true",
