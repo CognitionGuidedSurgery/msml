@@ -12,7 +12,7 @@
 	</input>
 
 	<output>
-		<arg name="volume" physical="float" />
+		<arg name="volume" logical="float" />
 	</output>
 
 </msml:operator>

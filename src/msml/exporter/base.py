@@ -28,12 +28,12 @@
 
 __author__ = 'Alexander Weigl'
 
-import warnings
-
 from ..model import *
 
 import msml.sortdef
 
+
+from  .. import log
 
 class ExporterOutputVariable(MSMLVariable):
     pass
@@ -122,7 +122,7 @@ class Exporter(object):
             assert isinstance(scene_obj, SceneObject)
 
             self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
-                                    required=True, parent=self)
+                                       required=True, parent=self)
 
             self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
 
@@ -137,13 +137,35 @@ class Exporter(object):
                 self._input[name] = Slot(name, 'vector.int', parent=self)
                 self._attributes[name] = parse_attribute_value(ind)
 
+                for material in mr:
+                    assert isinstance(material, ObjectElement)
+                    for para in material.meta.parameters.values():
+                        assert isinstance(para, Slot)
+                        name = self.get_input_objectelement_name(material, para)
+                        self._input[name] = Slot(name, para.physical_type, parent=self)
+                        self._attributes[name] = parse_attribute_value(material.attributes[para.name])
+                        log.debug("register %s as input value of material", name)
+
             for cs in scene_obj.constraints:
                 for const in cs.constraints:
-                    ind = const.indices
-                    name = self.get_input_constraint_name(const)
-                    self._input[name] = Slot(name, 'vector.int', parent=self)
-                    self._attributes[name] = parse_attribute_value(ind)
+                    assert isinstance(const, ObjectElement)
+                    for para in const.meta.parameters.values():
+                        assert isinstance(para, Slot)
+                        name = self.get_input_objectelement_name(material, para)
+                        self._input[name] = Slot(name, para.physical_type, parent=self)
+                        self._attributes[name] = parse_attribute_value(material.attributes[para.name])
+                        log.debug("register %s as input value of material", name)
 
+    def get_input_objectelement_name(self, objectelement, parameter):
+        """generates the slot name for an objectelement
+
+        :param objectelement: ObjectElement
+        :type objectelement: msml.model.base.ObjectElement
+        :param parameter: the slot of the given object element
+        :type parameter: msml.model.alphabet.Slot
+        :return:
+        """
+        return "%s_%s" % (objectelement.id, parameter.name)
 
     def get_input_mesh_name(self, mesh):
         """ generates the name for an output request within an object declaration
@@ -184,7 +206,7 @@ class Exporter(object):
         from  msml.model.base import link_algorithm
 
         slots = dict(self._input)
-        self.arguments = link_algorithm(self._msml_file, self._attributes, self,  slots)
+        self.arguments = link_algorithm(self._msml_file, self._attributes, self, slots)
 
     def init_exec(self, executer):
         """
@@ -216,11 +238,11 @@ class Exporter(object):
 
             return data
         else:
-            return  expression
+            return expression
 
             # every reference should be full, commented out from weigl
             # if isinstance(resultNode, basestring):
-            #    resultExpression = resultNode
+            # resultExpression = resultNode
             #else:
             # resultExpression = resultNode[resultNode.keys()[0]]
 

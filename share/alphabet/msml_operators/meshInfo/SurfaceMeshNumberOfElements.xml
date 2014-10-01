@@ -12,7 +12,7 @@
 	</input>
 
 	<output>
-		<arg name="numberOfElements" physical="int" />
+		<arg name="numberOfElements" logical="int" />
 	</output>
 
 </msml:operator>

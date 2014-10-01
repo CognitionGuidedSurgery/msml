@@ -188,17 +188,20 @@ class MSMLFile(object):
         """
         if not alphabet:
             import msml.env
-
             alphabet = msml.env.CURRENT_ALPHABET
 
-        b = all(call_method_list(self.scene, "bind", alphabet))
-
-        self.workflow.bind_operators(alphabet)
         self.workflow.link(alphabet, self)
-        call_method_list(self.scene, "validate")
+        b = all(call_method_list(self.scene, "validate"))
         self.exporter.link()
         a = self.workflow.validate()
         return a and b
+
+    def bind(self, alphabet=None):
+        if not alphabet:
+            import msml.env
+            alphabet = msml.env.CURRENT_ALPHABET
+        call_method_list(self.scene, "bind", alphabet)
+        self.workflow.bind_operators(alphabet)
 
     def lookup(self, ref, outarg=True):
         """Lookup a ``reference``.
@@ -897,7 +900,6 @@ class ObjectElement(object):
 
         if 'id' not in self.attributes:
             import msml.generators
-
             self.attributes['id'] = msml.generators.generate_identifier()
 
     def __getattr__(self, item):
@@ -906,7 +908,6 @@ class ObjectElement(object):
     def bind(self, alphabet=None):
         if not alphabet:
             import msml.env
-
             alphabet = msml.env.CURRENT_ALPHABET
 
         self.meta = alphabet.get(self.__tag__)
@@ -1154,7 +1155,7 @@ class MaterialRegion(IndexGroup, list):
         :type: bool
         :return: True iff. all sub elements are valid and the region is valid.
         """
-        b = self.indices is not None and self.indices != ""
+        b = self.id is not None and self.id != ""
         if not b:
             log.error("MaterialRegion has no id value")
 

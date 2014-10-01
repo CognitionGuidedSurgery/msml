@@ -260,6 +260,7 @@ class App(object):
         return mfile
 
     def _prepare_msml_model(self, mfile):
+        mfile.bind()
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
         #validate is needed for simulation execution, removed if condition "if not self._novalidate:"
