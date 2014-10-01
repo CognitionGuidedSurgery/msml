@@ -29,6 +29,8 @@
 __author__ = 'Alexander Weigl'
 
 from ..model import *
+from ..exceptions import *
+
 
 import msml.sortdef
 
@@ -151,9 +153,15 @@ class Exporter(object):
                     assert isinstance(const, ObjectElement)
                     for para in const.meta.parameters.values():
                         assert isinstance(para, Slot)
+
+                        try:
+                            value = const.attributes[para.name]
+                        except KeyError:
+                            raise MSMLError("parameter %s of constraint %s has not proper value" % (para.name, const.id))
+
                         name = self.get_input_objectelement_name(material, para)
                         self._input[name] = Slot(name, para.physical_type, parent=self)
-                        self._attributes[name] = parse_attribute_value(material.attributes[para.name])
+                        self._attributes[name] = parse_attribute_value(value)
                         log.debug("register %s as input value of material", name)
 
     def get_input_objectelement_name(self, objectelement, parameter):
