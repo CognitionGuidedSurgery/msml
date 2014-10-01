@@ -32,6 +32,8 @@ from collections import namedtuple
 import re
 import warnings
 
+from .. import log
+
 from path import path
 
 from msml.exceptions import *
@@ -290,7 +292,7 @@ class Workflow(object):
 
     def add_task(self, task):
         if task.id in self._tasks:
-            report("The identifier (id attribute) of the tasks have to be disjoint.","E",696)
+            log.error("The identifier (id attribute) of the tasks have to be disjoint.")
 
         self._tasks[task.id] = task
 
@@ -325,7 +327,7 @@ class Workflow(object):
         unique_ids = max(idcntr.values()) > 1
 
         if unique_ids:
-            report("The identifier (id attribute) of the tasks have to be disjoint.","E",696)
+            log.error("The identifier (id attribute) of the tasks have to be disjoint.")
 
         return all(map(lambda x: x.validate(), self._tasks.values())) and unique_ids
 
@@ -439,9 +441,6 @@ class MSMLEnvironment(object):
         self.solver = MSMLEnvironment.Solver()
 
 
-from ..log import report
-
-
 class MSMLVariable(object):
     """Represents an MSMLVariable.
     An execution of an variable results in setting the appropriate value into
@@ -474,12 +473,12 @@ class MSMLVariable(object):
 
         if not self.physical_type and self.value is None:
             s = 'Try to initialize a variable without physical type and value'
-            report(s, 'F', 666)
+            log.fatal(s)
             raise MSMLError(s)
 
         self.sort = get_sort(self.physical_type, self.logical_type)
         if not isinstance(self.value, self.sort.physical) and self.value is not None:
-            report("Need convert value of %s" % self, 'I', 6161)
+            log.info("Need convert value of %s" % self)
             from_type = type(self.value)
             converter = conversion(from_type, self.sort)
             self.value = converter(self.value)
@@ -722,18 +721,18 @@ class Task(object):
 
         for name, slot in self.operator.input.items():
             if name not in self.attributes:
-                report("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name), 'E')
+                log.error("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name))
 
         for name, slot in self.operator.parameters.items():
             if name not in self.attributes:
-                report("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name), 'E')
+                log.error("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name))
 
         for k in self.attributes:
             if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
-                report("attrib %s is unknown for operator %s in task %s" % (
-                    k, self.operator.name, self.id), 'I')
+                log.info("attrib %s is unknown for operator %s in task %s" % (
+                    k, self.operator.name, self.id))
 
     def get_default(self):
         pass
@@ -746,7 +745,7 @@ def link_algorithm(msmlfile, attributes, node, slots):
         try:
             slot = slots[key]
         except KeyError as e:
-            report("%s is not a valid slot for %s" %(key, node), "F", 610)
+            log.fatal("%s is not a valid slot for %s" %(key, node))
             raise BaseException()
 
         if isinstance(value, Constant):
@@ -763,7 +762,7 @@ def link_algorithm(msmlfile, attributes, node, slots):
             value.link_to_task(node, slot)
             arguments[key] = value
         else:
-            report("Lookup after %s does not succeeded" % value, 'E')
+            log.error("Lookup after %s does not succeeded" % value)
 
     return arguments
 
@@ -927,13 +926,12 @@ class ObjectElement(object):
                 continue
 
             if key not in self.meta.parameters:
-                report("Parameter %s of Element %s is not specified in definition." % (key, self.meta.name), 'E')
+                log.error("Parameter %s of Element %s is not specified in definition." % (key, self.meta.name))
                 b = False
 
         for key, value in self.meta.parameters.items():
             if key not in self.attributes and value.required:
-                report("Parameter %s of Definiton %s is not specified in msml file." % (key, self.id or self.meta.name),
-                       'F')
+                log.fatal("Parameter %s of Definiton %s is not specified in msml file." % (key, self.id or self.meta.name))
                 c = False
 
         return b and c
@@ -1158,9 +1156,9 @@ class MaterialRegion(IndexGroup, list):
         """
         b = self.indices is not None and self.indices != ""
         if not b:
-            report("MaterialRegion has no id value", 'E')
+            log.error("MaterialRegion has no id value")
 
         a = self.indices is not None and self.indices != ""
         if not a:
-            report("MaterialRegion %s has no indices" % self.id, 'E')
+            log.error("MaterialRegion %s has no indices" % self.id)
         return a and b and all(map(lambda x: x.validate(), self))

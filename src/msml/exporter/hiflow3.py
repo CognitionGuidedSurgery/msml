@@ -41,7 +41,7 @@ import msml.ext.misc
 
 class MSMLHiFlow3ExporterWarning(MSMLWarning): pass
 
-from ..log import report
+from .. import log
 
 from path import path
 from collections import namedtuple
@@ -172,12 +172,12 @@ class HiFlow3Exporter(Exporter):
 
         filename = self._msml_file.filename.namebase
 
-        report("Converting to HiFlow3 input formats", 'I', 801)
-        report(" -- (hiflow3Scene.xml-file & vtkMesh.vtu-file & hiflow3BCdata.xml-file).", 'I', 801)
+        log.info("Converting to HiFlow3 input formats")
+        log.info(" -- (hiflow3Scene.xml-file & vtkMesh.vtu-file & hiflow3BCdata.xml-file).")
 
         self.create_scenes()
 
-        report("Hiflow3 Scene Files: %s" % ', '.join(self.scenes), 'I', 802)
+        log.info("Hiflow3 Scene Files: %s" % ', '.join(self.scenes))
 
 
     def execute(self):
@@ -185,7 +185,7 @@ class HiFlow3Exporter(Exporter):
 
         """
         cmd = "runHiFlow3 %s" % ' '.join(self.scenes)
-        report("Executing HiFlow3: %s" % cmd, 'I', 803)
+        log.info("Executing HiFlow3: %s" % cmd)
         os.system(cmd)
 
 
@@ -310,7 +310,7 @@ class HiFlow3Exporter(Exporter):
             cs = None
 
         if cs is None: # nothing to do here
-            report("No constraint region found for step %s" % step, 'W', 516)
+            log.warn("No constraint region found for step %s" % step)
             return bcdata
 
         mesh_name = self.evaluate_node(obj.mesh.mesh)

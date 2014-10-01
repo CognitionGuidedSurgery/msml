@@ -40,7 +40,7 @@ entry point, where you can access to various subsystem.
 from __future__ import print_function
 
 from .env import *
-from msml.log import report
+from msml import log
 
 # need first step caused of sys.path
 # this is terrible to execute on module load
@@ -50,6 +50,8 @@ load_envconfig()
 
 from .analytics.alphabet_analytics import *
 
+
+from . import log
 
 from collections import OrderedDict
 from msml.run.GraphDotWriter import *
@@ -278,11 +280,11 @@ class App(object):
         newname = path(newname).abspath()
         with open(newname, 'w') as w:
             w.write(writer())
-        report("File %s written." % newname)
+        log.info("File %s written." % newname)
 
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)
-        report("Execute: %s in %s" % (fil, fil.dirname),'I',20)
+        log.info("Execute: %s in %s" % (fil, fil.dirname))
         return self.execute_msml(mfile)
 
 
@@ -325,11 +327,11 @@ class App(object):
             msml.run.exportpy.exportpy(msml_file)
 
     def _load_alphabet(self):
-        report("READING alphabet...", 'I')
+        log.info("READING alphabet...")
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
-        report("found %d xml files in the alphabet search path" % len(files), 'I')
+        log.info("found %d xml files in the alphabet search path" % len(files))
         alphabet = msml.xml.load_alphabet(file_list=files)
 
         # debug

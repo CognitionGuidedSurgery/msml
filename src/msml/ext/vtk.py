@@ -33,6 +33,8 @@ __date__ = '2014-04-14'
 from msml.exceptions import MSMLWarning, warn
 import math
 from itertools import starmap
+from ..log import logger
+
 
 class MSMLVTKImportWarning(MSMLWarning):
     pass
@@ -40,8 +42,7 @@ class MSMLVTKImportWarning(MSMLWarning):
 try:
     import vtk
 except:
-    warn("Could not import vtk python module.\n"
-         "Did you install python-vtk?", MSMLVTKImportWarning)
+    logger.warn("Could not import vtk python module. Did you install python-vtk?")
 
 def read_ugrid(filename):
     if filename.endswith(".pvtu"):
