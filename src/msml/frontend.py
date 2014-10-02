@@ -40,7 +40,6 @@ entry point, where you can access to various subsystem.
 from __future__ import print_function
 
 from .env import *
-from msml import log
 
 # need first step caused of sys.path
 # this is terrible to execute on module load
@@ -65,7 +64,7 @@ import msml
 import msml.env
 import msml.model
 import msml.run
-import msml.xml
+import msml.msml_xml
 import msml.exporter
 
 
@@ -153,6 +152,7 @@ class App(object):
     :type options: dict[str, T]
 
     """
+
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
                  add_operator_path=None, memory_init_file=None, output_dir = None, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
@@ -253,10 +253,10 @@ class App(object):
         if 'executor.class' in self._executor_options:
             return _load_class(self._executor_options['executor.class'])
         else:
-            return msml.run.LinearSequenceExecutor
+            return msml.run.ControllableExecutor
 
     def _load_msml_file(self, filename):
-        mfile = msml.xml.load_msml_file(filename)
+        mfile = msml.msml_xml.load_msml_file(filename)
         return mfile
 
     def _prepare_msml_model(self, mfile):
@@ -288,18 +288,52 @@ class App(object):
         log.info("Execute: %s in %s" % (fil, fil.dirname))
         return self.execute_msml(mfile)
 
-
-    def execute_msml(self, msml_file):
+    def init_workflow(self, msml_file):
         self._prepare_msml_model(msml_file)
         execlazz = self.executer
 
         # change to msml-file dirname
         os.chdir(msml_file.filename.dirname().abspath())
-        exe = execlazz(msml_file)
-        exe.options = self._executor_options
-        exe.working_dir = self.output_dir
-        exe.init_memory(self.memory_init_file)
-        mem = exe.run()
+        self._executor_class = execlazz(msml_file)
+        self._executor_class.options = self._executor_options
+        self._executor_class.working_dir = self.output_dir
+        self._executor_class.init_memory(self.memory_init_file)
+        mem = self._executor_class.initWorkflow()
+
+
+    def process_workflow(self):
+
+        mem = self._executor_class.process_workflow()
+
+    def launch_postprocessing(self):
+
+        mem = self._executor_class.launch_postprocessing( )
+
+    def launch_simulation(self):
+
+        mem = self._executor_class.launch_simulation()
+
+    def update_variable(self, variable_name, variable_value):
+
+        mem = self._executor_class.update_variable(variable_name, variable_value)
+
+
+
+    def execute_msml(self, msml_file):
+        # self._prepare_msml_model(msml_file)
+        # execlazz = self.executer
+        #
+        # # change to msml-file dirname
+        # os.chdir(msml_file.filename.dirname().abspath())
+        # exe = execlazz(msml_file)
+        # exe.options = self._executor_options
+        # exe.working_dir = self.output_dir
+        # exe.init_memory(self.memory_init_file)
+        # mem = exe.run()
+        self.init_workflow( msml_file)
+        self.process_workflow( )
+        self.launch_simulation( )
+        mem = self.launch_postprocessing( )
         return mem
 
     def execution(self):
@@ -332,8 +366,8 @@ class App(object):
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
-        log.info("found %d xml files in the alphabet search path" % len(files))
-        alphabet = msml.xml.load_alphabet(file_list=files)
+        log.info("found %d xml files in the alphabet search path" % len(files))        
+        alphabet = msml.msml_xml.load_alphabet(file_list=files)
 
         # debug
         #        alphabet.print_nice()

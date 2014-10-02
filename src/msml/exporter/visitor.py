@@ -73,7 +73,7 @@ class Visitor(object):
         * every begin event can deliver a product object that is delivered for every element event
           and the matching event (sub contexts inclusive)
 
-    The processing order (bunny.msml.xml):
+    The processing order (bunny.msml.msml_xml):
 
       * msml_begin
         * environment_begin
