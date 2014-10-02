@@ -63,7 +63,7 @@ import msml
 import msml.env
 import msml.model
 import msml.run
-import msml.xml
+import msml.msml_xml
 import msml.exporter
 
 
@@ -255,7 +255,7 @@ class App(object):
             return msml.run.ControllableExecutor
 
     def _load_msml_file(self, filename):
-        mfile = msml.xml.load_msml_file(filename)
+        mfile = msml.msml_xml.load_msml_file(filename)
         return mfile
 
     def _prepare_msml_model(self, mfile):
@@ -365,7 +365,7 @@ class App(object):
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
         report("found %d xml files in the alphabet search path" % len(files), 'I')
-        alphabet = msml.xml.load_alphabet(file_list=files)
+        alphabet = msml.msml_xml.load_alphabet(file_list=files)
 
         # debug
         #        alphabet.print_nice()
