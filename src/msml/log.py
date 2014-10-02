@@ -162,7 +162,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'long':{
-          'format': "%(asctime)-20s %(levelname)-8s %(name)-20s (%(threadName)-20s) %(message)s [%(filename)s:%(lineno)d in %(module)s:%(funcName)s]"
+          'format': "%(asctime)-20s %(levelname)-8s %(name)-20s  %(message)s [%(filename)s:%(lineno)d in %(module)s:%(funcName)s]"
         },
         'default': {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s'

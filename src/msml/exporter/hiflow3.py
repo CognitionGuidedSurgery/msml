@@ -313,11 +313,11 @@ class HiFlow3Exporter(Exporter):
             log.warn("No constraint region found for step %s" % step)
             return bcdata
 
-        mesh_name = self.evaluate_node(obj.mesh.mesh)
+        mesh_name = self.get_value_from_memory(obj.mesh)
 
         for constraint in cs.constraints:
-            indices = self.evaluate_node(constraint.indices)
-            points = msml.ext.misc.positionFromIndices(mesh_name, list(indices), 'points')
+            indices = self.get_value_from_memory(constraint, "indices")
+            points = msml.ext.misc.positionFromIndices(mesh_name, indices, 'points')
             count = len(points) / 3
             points_str = list_to_hf3(points)
 

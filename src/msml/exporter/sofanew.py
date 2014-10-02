@@ -293,7 +293,7 @@ class SofaExporter(XMLExporter):
             for constraint in constraint_set.constraints:
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
-                indices_vec = self.get_value_from_memory(constraint)
+                indices_vec = self.get_value_from_memory(constraint, 'indices')
                 if (indices_vec is not None):
                     indices = '%s' % ', '.join(map(str, indices_vec))
 

@@ -251,8 +251,9 @@ class Slot(object):
     def __init__(self, name, physical, logical=None,
                  required=True, default=None,
                  meta=dict(), parent=None):
-        if (physical is None):
-            warn("Slot %s does not have a physical type defined. This can cause conversion errros.)" % (name), MSMLUnknownModuleWarning, 0)
+        if physical is None:
+            log.critical("Slot %s does not have a physical type defined. This can cause conversion errors.", name)
+
         self.name = name
         """slot name
         :type: str

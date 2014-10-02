@@ -31,11 +31,10 @@ __author__ = 'Alexander Weigl'
 from ..model import *
 from ..exceptions import *
 
-
 import msml.sortdef
 
+from .. import log
 
-from  .. import log
 
 class ExporterOutputVariable(MSMLVariable):
     pass
@@ -120,19 +119,15 @@ class Exporter(object):
         :return:
         '''
 
-        for scene_obj in self._msml_file.scene:
-            assert isinstance(scene_obj, SceneObject)
 
-            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
-                                       required=True, parent=self)
-
-            self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
-
+        def register_object_sets():
             for ig in (scene_obj.sets.nodes + scene_obj.sets.elements + scene_obj.sets.surfaces):
                 name = self.get_input_set_name(ig)
                 self._input[name] = Slot(name, 'vector.int', 'Indices', parent=self)
                 self._attributes[name] = parse_attribute_value(ig.indices)
 
+
+        def register_material():
             for mr in scene_obj.material:
                 ind = mr.indices
                 name = self.get_input_material_name(mr)
@@ -148,6 +143,7 @@ class Exporter(object):
                         self._attributes[name] = parse_attribute_value(material.attributes[para.name])
                         log.debug("register %s as input value of material", name)
 
+        def register_constraints():
             for cs in scene_obj.constraints:
                 for const in cs.constraints:
                     assert isinstance(const, ObjectElement)
@@ -157,12 +153,26 @@ class Exporter(object):
                         try:
                             value = const.attributes[para.name]
                         except KeyError:
-                            raise MSMLError("parameter %s of constraint %s has not proper value" % (para.name, const.id))
+                            raise MSMLError(
+                                "parameter %s of constraint %s has not proper value" % (para.name, const.id))
 
-                        name = self.get_input_objectelement_name(material, para)
+                        name = self.get_input_objectelement_name(const, para)
                         self._input[name] = Slot(name, para.physical_type, parent=self)
                         self._attributes[name] = parse_attribute_value(value)
                         log.debug("register %s as input value of material", name)
+
+        for scene_obj in self._msml_file.scene:
+            assert isinstance(scene_obj, SceneObject)
+
+            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
+                                       required=True, parent=self)
+
+            self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
+
+            register_object_sets()
+            register_material()
+            register_constraints()
+
 
     def get_input_objectelement_name(self, objectelement, parameter):
         """generates the slot name for an objectelement
@@ -173,7 +183,11 @@ class Exporter(object):
         :type parameter: msml.model.alphabet.Slot
         :return:
         """
-        return "%s_%s" % (objectelement.id, parameter.name)
+        if hasattr(parameter, "name"):
+            n = parameter.name
+        else:
+            n = parameter
+        return "%s_%s" % (objectelement.id, n)
 
     def get_input_mesh_name(self, mesh):
         """ generates the name for an output request within an object declaration
@@ -251,10 +265,10 @@ class Exporter(object):
             # every reference should be full, commented out from weigl
             # if isinstance(resultNode, basestring):
             # resultExpression = resultNode
-            #else:
+            # else:
             # resultExpression = resultNode[resultNode.keys()[0]]
 
-    def get_value_from_memory(self, reference):
+    def get_value_from_memory(self, reference, parameter=None):
         """
 
         :param reference:
@@ -270,7 +284,7 @@ class Exporter(object):
         elif isinstance(reference, IndexGroup):
             return self.get_value_from_memory(self.get_input_set_name(reference))
         elif isinstance(reference, ObjectElement):
-            return self.get_value_from_memory(self.get_input_constraint_name(reference))
+            return self.get_value_from_memory(self.get_input_objectelement_name(reference, parameter))
         elif isinstance(reference, Reference):
             return self._memory.lookup(reference)
         else:

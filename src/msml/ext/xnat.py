@@ -38,8 +38,6 @@ import tempfile
 
 import requests
 
-from  msml.log import report
-
 from .. import log
 
 def xnat_get(filename, resource, project, host=None, subject=None, username=None, password=None, localname=None):
