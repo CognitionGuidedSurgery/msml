@@ -382,7 +382,8 @@ def msml_file_factory(msml_node):
         for s in simulation_node.iterchildren():
             env.simulation.add_step(name=s.get('name'),
                                     dt=s.get('dt'),
-                                    iterations=s.get('iterations'))
+                                    iterations=s.get('iterations'),
+                                    gravity=s.get('gravity'))
 
         return env
 

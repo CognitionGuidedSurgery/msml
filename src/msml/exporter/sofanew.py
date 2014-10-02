@@ -104,9 +104,9 @@ class SofaExporter(XMLExporter):
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
-        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofaExtended') > -1):
+        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
+            callCom = '-l SofaCUDA -l MediAssist -g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
 
         report("Executing %s" % cmd, 'I', 252)
@@ -405,9 +405,22 @@ class SofaExporter(XMLExporter):
 
                 elif currentConstraintType == "displacementConstraint":
 
-                    constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
-                                          name=constraint.id or constraint_set.name,
-                                          dispIndices=indices, displacements=constraint.displacement)
+                    #compute length of time stepo
+                    timeSteps = self._msml_file.env.simulation[0].iterations
+                    dt  = self._msml_file.env.simulation[0].dt
+                    timestep = float(timeSteps) *dt
+                    keytimes = '0 '+str(timestep)+ ' ' +str( 100000) # this is a bad hack! -> if simulation runs further, it stays stable
+
+                    #TODO: How do we get the disp values from memory?
+                    disp_vec = {0,0,0.01}
+                    tempMovement = '%s' % ' '.join(map(str, disp_vec))
+                    theMovement = "0 0 0 "+tempMovement+" 0 0 0"
+                    constraintNode = self.sub('LinearMovementConstraint', objectNode,
+                                              name=constraint.id or constraint_set.name,
+                                              indices=indices, movements=theMovement, keyTimes = keytimes)
+                    #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
+                    #                      name=constraint.id or constraint_set.name,
+                    #                      dispIndices=indices, displacements=constraint.displacement)
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 
@@ -419,9 +432,11 @@ class SofaExporter(XMLExporter):
 
 
     def createScene(self):
-        dt = "0.05"  # TODO find dt from msmlfile > env > simulation
+        dt = str(self._msml_file.env.simulation[0].dt)  # TODO find dt from msmlfile > env > simulation
         root = etree.Element("Node", name="root", dt=dt)
-        theGravity = "0 0 -9.81"  # TODO find gravity in msmlfile > env > simulation stepNode.get("gravity")
+        theGravityVec =  self._msml_file.env.simulation[0].gravity # "0 0 -9.81"  # TODO find gravity in msmlfile > env > simulation stepNode.get("gravity")
+        theGravity = str(theGravityVec)
+        #timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
         if theGravity is None:
             theGravity = '0 -9.81 0'
         root.set("gravity", theGravity)

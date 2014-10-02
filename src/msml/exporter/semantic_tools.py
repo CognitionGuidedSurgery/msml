@@ -12,7 +12,7 @@ from rdflib.namespace import DC, FOAF
 
 from msml.model import *
 
-from msml_namespace import MSMLRep
+#from msml_namespace import MSMLRep
 
 
 class OntologyParser(object):
@@ -25,7 +25,7 @@ class OntologyParser(object):
 
         repNamespace = Namespace('http://www.msml.org/ontology/msmlRepresentation')
 
-        typeURI =
+        #typeURI =
 
         #get type of data node
         dataNodeType = value(representationNodeName,MSMLRep.isRepresentationOf, NONE)

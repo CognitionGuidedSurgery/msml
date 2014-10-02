@@ -32,6 +32,8 @@
 
 #include "IOHelper.h"
 
+#define EPSILON 1e-10
+
 //#include <boost/graph/sequential_vertex_coloring.hpp>
 //#include <boost/graph/adjacency_list.hpp>
 //using namespace boost;
@@ -65,14 +67,18 @@ namespace MSML {
                 {
                     thePoints->GetPoint(i, currentPoint);
 
-                    if( (currentPoint[0]>box[0]) && (currentPoint[1]>box[1]) && (currentPoint[2]>box[2])
-                            && (currentPoint[0]<box[3]) && (currentPoint[1]<box[4]) && (currentPoint[2]<box[5]))
+                    if( (currentPoint[0]>=box[0]) && (currentPoint[1]>=box[1]) && (currentPoint[2]>=box[2])
+                            && (currentPoint[0]<=box[3]) && (currentPoint[1]<=box[4]) && (currentPoint[2]<=box[5]))
                     {
+//                    	std::cout<<"Coords are: "<<currentPoint[0]<<", "<<currentPoint[1]<<","<<currentPoint[2]<<"\n";
+//                    	if((currentPoint[2]==0.02))
+//                    		std::cout<<"Point is in new box!\n";
                         indices.push_back(i);
                         count++;
                     }
                 }
 
+                //std::cout<<count <<" points found in the new box\n";
                 cerr << count << " points found in box";
             }
 

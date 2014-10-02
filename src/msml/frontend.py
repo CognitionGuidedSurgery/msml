@@ -151,6 +151,7 @@ class App(object):
     :type options: dict[str, T]
 
     """
+
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
                  add_operator_path=None, memory_init_file=None, output_dir = None, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
@@ -285,18 +286,52 @@ class App(object):
         report("Execute: %s in %s" % (fil, fil.dirname),'I',20)
         return self.execute_msml(mfile)
 
-
-    def execute_msml(self, msml_file):
+    def init_workflow(self, msml_file):
         self._prepare_msml_model(msml_file)
         execlazz = self.executer
 
         # change to msml-file dirname
         os.chdir(msml_file.filename.dirname().abspath())
-        exe = execlazz(msml_file)
-        exe.options = self._executor_options
-        exe.working_dir = self.output_dir
-        exe.init_memory(self.memory_init_file)
-        mem = exe.run()
+        self._executor_class = execlazz(msml_file)
+        self._executor_class.options = self._executor_options
+        self._executor_class.working_dir = self.output_dir
+        self._executor_class.init_memory(self.memory_init_file)
+        mem = self._executor_class.initWorkflow()
+
+
+    def process_workflow(self):
+
+        mem = self._executor_class.process_workflow()
+
+    def launch_postprocessing(self):
+
+        mem = self._executor_class.launch_postprocessing( )
+
+    def launch_simulation(self):
+
+        mem = self._executor_class.launch_simulation()
+
+    def update_variable(self, variable_name, variable_value):
+
+        mem = self._executor_class.update_variable(variable_name, variable_value)
+
+
+
+    def execute_msml(self, msml_file):
+        # self._prepare_msml_model(msml_file)
+        # execlazz = self.executer
+        #
+        # # change to msml-file dirname
+        # os.chdir(msml_file.filename.dirname().abspath())
+        # exe = execlazz(msml_file)
+        # exe.options = self._executor_options
+        # exe.working_dir = self.output_dir
+        # exe.init_memory(self.memory_init_file)
+        # mem = exe.run()
+        self.init_workflow( msml_file)
+        self.process_workflow( )
+        self.launch_simulation( )
+        mem = self.launch_postprocessing( )
         return mem
 
     def execution(self):
