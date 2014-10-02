@@ -309,6 +309,8 @@ namespace MSML{
 
     //mesh polydata->vtu
     string errorMessage;
+    vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
+
     MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
     C3t3_poly c3t3;
     try 
