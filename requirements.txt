@@ -5,6 +5,10 @@ simplegeneric
 docopt
 pyparsing
 jinja2
+
+html5lib
+isodate
+SPARQLWrapper
 rdflib 
 
 colorama
