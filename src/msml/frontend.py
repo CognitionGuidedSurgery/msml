@@ -252,7 +252,7 @@ class App(object):
         if 'executor.class' in self._executor_options:
             return _load_class(self._executor_options['executor.class'])
         else:
-            return msml.run.LinearSequenceExecutor
+            return msml.run.ControllableExecutor
 
     def _load_msml_file(self, filename):
         mfile = msml.xml.load_msml_file(filename)
