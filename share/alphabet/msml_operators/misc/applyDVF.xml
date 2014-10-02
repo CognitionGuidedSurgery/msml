@@ -19,9 +19,9 @@
 
 	<parameters>
     <arg name="outputDefImageFilename" physical="str" optional="true" />
-		<arg name="multipleDVF" physical="bool" />
+		<arg name="multipleDVF" physical="bool" optional="true" default="false"/>
 		<arg name="reverseDirection" physical="bool" />
-    <arg name="voxelSize" pyhsical="str" optional="true"/>
+    <arg name="voxelSize" physical="str" optional="true" default="10"/>
 	</parameters>
 </msml:operator>
 

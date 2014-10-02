@@ -35,10 +35,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkXMLImageDataWriter.h>
-#include <vtkUnstructuredGridWriter.h>
 #include <vtkSTLReader.h>
-#include <vtkPolyDataWriter.h>
 
 #include <vtkPointData.h>
 #include <vtkIdList.h>
@@ -64,12 +61,7 @@
 #include "vtkLongLongArray.h"
 
 #include <vtkUnstructuredGridGeometryFilter.h>
-#include <vtkUnstructuredGridWriter.h>
 
-#include <vtkStructuredPoints.h>
-#include <vtkStructuredPointsReader.h>
-#include <vtkStructuredPointsWriter.h>
-#include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkCellLocator.h>
 
 #include <vtkImageInterpolator.h>
@@ -270,11 +262,7 @@ void ColorMeshFromComparison(const char* modelFilename, const char* referenceFil
     ColorMeshFromComparison(modelGrid, referenceGrid, coloredGrid);
 
     //write output
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetFileName(coloredModelFilename);
-    __SetInput(writer, coloredGrid);
-    writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(coloredModelFilename, coloredGrid);
 }
 
 void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* referenceMesh,vtkUnstructuredGrid* coloredMesh)
@@ -332,12 +320,7 @@ void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
     ColorMesh(currentGrid, surface);
 
     //write output
-    vtkSmartPointer<vtkPolyDataWriter> polywriter =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    polywriter->SetFileName(coloredModelFilename);
-    __SetInput(polywriter, surface);
-    polywriter->Write();
-
+    IOHelper::VTKWritePolyData(coloredModelFilename, surface);
 }
 
 void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
@@ -515,12 +498,7 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
 
     MergeMeshes(pointsMesh, cellsMesh, mergedGrid);
 
-    //write output
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetFileName(outputMeshFilename);
-    __SetInput(writer, mergedGrid);
-    writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outputMeshFilename, mergedGrid);
 }
 
 std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool multipleDVF, bool reverseDirection, const char* voxelSize)
@@ -535,7 +513,6 @@ std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const ch
         ApplyDVF(referenceImage, DVF, outputDeformedImage, reverseDirection, atof(voxelSize));
         return (std::string) outputDeformedImage;
     }
-
 }
 
 std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, double voxelSize)
@@ -563,17 +540,17 @@ void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDef
 
     outputDefImage = MiscMeshOperators::ImageCreate(refImage);
     MiscMeshOperators::ImageChangeVoxelSize(outputDefImage, voxelSize);
+    #if VTK_MAJOR_VERSION <= 5
+    outputDefImage->SetScalarTypeToFLOAT();
+    outputDefImage->AllocateScalars();
+    #else
+    outputDefImage->AllocateScalars(VTK_FLOAT,1); //one value per 3d coordinate
+    #endif
 
     ApplyDVF(refImage, dvfVecImage, outputDefImage, reverseDirection, voxelSize);
     cout << "Writing Deformed image.. "  << std::endl;
     //write output
-    vtkSmartPointer<vtkStructuredPointsWriter> writer =
-        vtkSmartPointer<vtkStructuredPointsWriter>::New();
-    writer->SetFileName(outputDeformedImage);
-    __SetInput(writer, outputDefImage);
-    //writer->SetCompressorTypeToZLib();
-    writer->SetFileTypeToBinary();
-    writer->Write();
+    IOHelper::VTKWriteImage(outputDeformedImage, outputDefImage);
 }
 
 /*
@@ -657,7 +634,7 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
                 }
 
                 //write pixel value refImage=>defImage
-                double* pixel = static_cast<double*>(outputDefImage->GetScalarPointer(i,j,k));
+                float* pixel = static_cast<float*>(outputDefImage->GetScalarPointer(i,j,k));
                 pixel[0] = pixelValue;
             }
         }
@@ -744,11 +721,7 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
     GenerateDVFImp(referenceGrid, deformedGrid, outputDVF);
  
     //write output
-    vtkSmartPointer<vtkStructuredPointsWriter> writer = vtkSmartPointer<vtkStructuredPointsWriter>::New();
-    writer->SetFileName(outputDVFFilename);
-    writer->SetFileTypeToBinary();
-    __SetInput(writer, outputDVF);
-    writer->Write();
+    IOHelper::VTKWriteImage(outputDVFFilename, outputDVF);
 
     //write raw data
     /*
@@ -776,7 +749,7 @@ void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* def
     outputDVF->SetNumberOfScalarComponents(3);
     outputDVF->AllocateScalars();
 #else
-    outputDVF->AllocateScalars(VTK_FLOAT, 3);
+    outputDVF->AllocateScalars(VTK_FLOAT, 3); //3 component per voxel (vectors)
 #endif
 
 
@@ -843,11 +816,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
     PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface);
 
     //write output
-		vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-		vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-		writer->SetFileName(out_meshPath);
-		__SetInput(writer,out_surface);
-		writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(out_meshPath,out_surface);
 
     return string(out_meshPath);
   }

@@ -105,6 +105,7 @@ namespace MSML {
                         }
                     }
                 }
+                cerr << count << " elements found in box";
             }
 
             else if(type.compare("surfaceElements") == 0)

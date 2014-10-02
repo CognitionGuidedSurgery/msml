@@ -33,6 +33,7 @@ from ..sorts import *
 from msml.log import report
 from ..exceptions import *
 from msml import sorts
+from msml.exceptions import MSMLUnknownModuleWarning
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -251,6 +252,8 @@ class Slot(object):
     def __init__(self, name, physical, logical=None,
                  required=True, default=None,
                  meta=dict(), parent=None):
+        if (physical is None):
+            warn("Slot %s does not have a physical type defined. This can cause conversion errros.)" % (name), MSMLUnknownModuleWarning, 0)
         self.name = name
         """slot name
         :type: str
