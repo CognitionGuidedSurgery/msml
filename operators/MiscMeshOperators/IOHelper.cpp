@@ -48,8 +48,8 @@
 #include <vtkStructuredPointsWriter.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkXMLPolydataWriter.h>
-#include <vtkPolydataWriter.h>
+#include <vtkXMLPolyDataWriter.h>
+#include <vtkPolyDataWriter.h>
 
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
