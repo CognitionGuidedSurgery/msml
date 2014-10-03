@@ -27,7 +27,7 @@
 # endregion
 
 
-""" msml.xml provides functionality to read and process MSML XML-Files to the msml Python models.
+""" msml.msml_xml provides functionality to read and process MSML XML-Files to the msml Python models.
 
 """
 from __future__ import print_function
