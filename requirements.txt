@@ -4,7 +4,12 @@ networkx
 simplegeneric
 docopt
 pyparsing
-jinja2 
+jinja2
+
+html5lib
+isodate
+SPARQLWrapper
+rdflib 
 
 colorama
 

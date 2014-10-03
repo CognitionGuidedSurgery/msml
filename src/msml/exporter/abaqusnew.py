@@ -30,10 +30,15 @@ __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 
 import lxml.etree as etree
+from jinja2 import Template
 
 from .base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
+import rdflib
+from msml.exporter.semantic_tools import OntologyParser
+from rdflib import URIRef
+from rdflib.namespace import RDF
 
 from msml.model import *
 
@@ -92,130 +97,150 @@ class AbaqusExporter(XMLExporter):
     def write_inp(self, inpfile):
         assert isinstance(inpfile, file)
 
-        for msmlObject in self._msml_file.scene:
-            assert isinstance(msmlObject, SceneObject)
+        #print("Here goes jinja testing...")
 
-            meshObj = msmlObject.mesh
-            meshValue = meshObj.mesh
-            meshFilename = self.evaluate_node(meshValue)
+        #template = Template('Hello {{ name }}!')
+        #output = template.render(name='John Doe')
 
-            # TODO this should be obselete with automical converters
-            #
-            import msml.ext.misc
 
-            theInpString = msml.ext.misc.convertVTKMeshToAbaqusMeshString(meshFilename, msmlObject.id, 'Neo-Hooke')
 
-            inpfile.write(theInpString)
+        #print output
+        print(" and rdf lib testing")
 
-            #writing boundary conditions
-            inpfile.write("""**
-**
-** ASSEMBLY
-**
-*Assembly, name={id}-Assembly
-**
-*Instance, name={id}-Instance, part={id}-Part
-*End Instance
-**
-""".format(id=msmlObject.id))
+        parser = OntologyParser('/home/suwelack/git/MSMLExtended/msml/share/ontology/MSMLOnto.rdf-xml.owl')
+        parser.parse_ontology_from_python_memory(URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
 
-            globalIndices = []
-            globalConstraintType = []
-            globalDisplacements = []
+        #g=rdflib.Graph()
+        #g.load('/home/suwelack/git/MSMLExtended/msml/share/ontology/MSMLOnto.rdf-xml.owl')
 
-            for constraint_step in msmlObject.constraints:
-                assert isinstance(constraint_step, ObjectConstraints)
+        #for s,p,o in g:
+         # print s,p,o
 
-                for constraint in constraint_step._constraints:
-                    assert  isinstance(constraint, ObjectElement)
-                    indices_key = constraint.attributes['indices']
-                    indices_vec = self.evaluate_node(indices_key)
-                    indices = '%s' % ', '.join(map(str, indices_vec))
-                    indices = indices.split(",")
-                    currentConstraintType = constraint.attributes['__tag__']
 
-                    if currentConstraintType == "fixedConstraint":
-                        iter = 0
-                        for index in indices:
-                            globalIndices.append(index);
-                            globalConstraintType.append(0)
-                            globalDisplacements.extend([0, 0, 0])
-                            iter += 1
-                    elif currentConstraintType == "displacementConstraint":
-                        displacements = constraint.get("displacements")
-                        displacements = displacements.split(" ")
-                        #print displacements
-                        #print indices
-                        #print len(indices)
-                        iter = 0
-                        #print len(indices)
-                        #print indices
-                        for index in indices:
-                            print iter
-                            globalIndices.append(index);
-                            globalConstraintType.append(1)
-                            globalDisplacements.append(float(displacements[3 * iter + 0]))
-                            globalDisplacements.append(float(displacements[3 * iter + 1]))
-                            globalDisplacements.append(float(displacements[3 * iter + 2]))
-                            iter += 1
-                    else:
-                        print(currentConstraintType)
-                        print("Constraint Type not supported!!!!!!!!!!!")
+        # for msmlObject in self._msml_file.scene:
+        #     assert isinstance(msmlObject, SceneObject)
+        #
+        #     meshObj = msmlObject.mesh
+        #     meshValue = meshObj.mesh
+        #     meshFilename = self.evaluate_node(meshValue)
+        #
+        #     # TODO this should be obselete with automical converters
+        #     #
+        #     import msml.ext.misc
+        #
+        #     theInpString = msml.ext.misc.convertVTKMeshToAbaqusMeshString(meshFilename, msmlObject.id, 'Neo-Hooke')
+        #
+        #     inpfile.write(theInpString)
+        #
+        #     #writing boundary conditions
+        #     inpfile.write("""**
+# **
+# ** ASSEMBLY
+# **
+# *Assembly, name={id}-Assembly
+# **
+# *Instance, name={id}-Instance, part={id}-Part
+# *End Instance
+# **
+# """.format(id=msmlObject.id))
+#
+#             globalIndices = []
+#             globalConstraintType = []
+#             globalDisplacements = []
+#
+#             for constraint_step in msmlObject.constraints:
+#                 assert isinstance(constraint_step, ObjectConstraints)
+#
+#                 for constraint in constraint_step._constraints:
+#                     assert  isinstance(constraint, ObjectElement)
+#                     indices_key = constraint.attributes['indices']
+#                     indices_vec = self.evaluate_node(indices_key)
+#                     indices = '%s' % ', '.join(map(str, indices_vec))
+#                     indices = indices.split(",")
+#                     currentConstraintType = constraint.attributes['__tag__']
+#
+#                     if currentConstraintType == "fixedConstraint":
+#                         iter = 0
+#                         for index in indices:
+#                             globalIndices.append(index);
+#                             globalConstraintType.append(0)
+#                             globalDisplacements.extend([0, 0, 0])
+#                             iter += 1
+#                     elif currentConstraintType == "displacementConstraint":
+#                         displacements = constraint.get("displacements")
+#                         displacements = displacements.split(" ")
+#                         #print displacements
+#                         #print indices
+#                         #print len(indices)
+#                         iter = 0
+#                         #print len(indices)
+#                         #print indices
+#                         for index in indices:
+#                             print iter
+#                             globalIndices.append(index);
+#                             globalConstraintType.append(1)
+#                             globalDisplacements.append(float(displacements[3 * iter + 0]))
+#                             globalDisplacements.append(float(displacements[3 * iter + 1]))
+#                             globalDisplacements.append(float(displacements[3 * iter + 2]))
+#                             iter += 1
+#                     else:
+#                         print(currentConstraintType)
+#                         print("Constraint Type not supported!!!!!!!!!!!")
+#
+#         #print the sets for the bcs
+#         currentLine = [theInpString]
+#         #print len(indices)
+#         #print indices
+#         for i, index in enumerate(globalIndices):
+#             inpfile.write(
+#                 "*Nset, nset=_StaticPickedSet{i}, internal, instance={id}-Instance\n ,{index}\n"\
+#                 .format(id=msmlObject.id, index=int(index) + 1, i=i))
+#
+#         inpfile.write("""*End Assembly
+# **
+# ** MATERIALS
+# **
+# *Material, name=Neo-Hooke
+# *Damping, beta=0.21
+# *Density
+# 1070.,
+# *Hyperelastic, neo hooke
+# 365., 0.000838
+# **
+# ** BOUNDARY CONDITIONS
+# **
+# """)
 
-        #print the sets for the bcs
-        currentLine = [theInpString]
-        #print len(indices)
-        #print indices
-        for i, index in enumerate(globalIndices):
-            inpfile.write(
-                "*Nset, nset=_StaticPickedSet{i}, internal, instance={id}-Instance\n ,{index}\n"\
-                .format(id=msmlObject.id, index=int(index) + 1, i=i))
-
-        inpfile.write("""*End Assembly
-**
-** MATERIALS
-**
-*Material, name=Neo-Hooke
-*Damping, beta=0.21
-*Density
-1070.,
-*Hyperelastic, neo hooke
-365., 0.000838
-**
-** BOUNDARY CONDITIONS
-**
-""")
-
-        for iter, index in enumerate(globalIndices):
-            if globalConstraintType[iter] == 0:
-                inpfile.write(
-                    "** Name: Fixed Type: Symmetry/Antisymmetry/Encastre\n*Boundary\n_StaticPickedSet{i}, PINNED \n".
-                    format(i=iter)
-                )
-
-        inpfile.write("""** ----------------------------------------------------------------
-**
-** STEP: CustomLoad**
-*Step, name=CustomLoad, nlgeom=YES, inc=5000
-DiaLoad
-*Dynamic,alpha=-0.05,haftol=0.1
-0.01,3.,3e-05,3.
-**
-** BOUNDARY CONDITIONS
-**
-""")
-
-        for iter, index in enumerate(globalIndices):
-            if globalConstraintType[iter] == 1:
-                inpfile.write(
-                    """** Name: Disp Type: Displacement/Rotation
-                    *Boundary
-                    _StaticPickedSet{i}, 1, 1, {disp1}
-                    _StaticPickedSet{i}, 2, 2, {disp2}
-                    _StaticPickedSet{i}, 3, 3, {disp3}
-                    """.format(
-                        i=iter,
-                        disp1=globalDisplacements[3 * iter + 0],
-                        disp2=globalDisplacements[3 * iter + 1],
-                        disp3=globalDisplacements[3 * iter + 2]
-                    ))
+#         for iter, index in enumerate(globalIndices):
+#             if globalConstraintType[iter] == 0:
+#                 inpfile.write(
+#                     "** Name: Fixed Type: Symmetry/Antisymmetry/Encastre\n*Boundary\n_StaticPickedSet{i}, PINNED \n".
+#                     format(i=iter)
+#                 )
+#
+#         inpfile.write("""** ----------------------------------------------------------------
+# **
+# ** STEP: CustomLoad**
+# *Step, name=CustomLoad, nlgeom=YES, inc=5000
+# DiaLoad
+# *Dynamic,alpha=-0.05,haftol=0.1
+# 0.01,3.,3e-05,3.
+# **
+# ** BOUNDARY CONDITIONS
+# **
+# """)
+#
+#         for iter, index in enumerate(globalIndices):
+#             if globalConstraintType[iter] == 1:
+#                 inpfile.write(
+#                     """** Name: Disp Type: Displacement/Rotation
+#                     *Boundary
+#                     _StaticPickedSet{i}, 1, 1, {disp1}
+#                     _StaticPickedSet{i}, 2, 2, {disp2}
+#                     _StaticPickedSet{i}, 3, 3, {disp3}
+#                     """.format(
+#                         i=iter,
+#                         disp1=globalDisplacements[3 * iter + 0],
+#                         disp2=globalDisplacements[3 * iter + 1],
+#                         disp3=globalDisplacements[3 * iter + 2]
+#                     ))

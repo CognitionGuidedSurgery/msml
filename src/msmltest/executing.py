@@ -25,15 +25,15 @@ class ExecutingWithTestAlphabet(TestCase):
 
 
     def test_simple_case_01(self):
-        self.app.show(ROOT / 'msmlfiles/simple_case_01.msml.xml')
+        self.app.show(ROOT / 'msmlfiles/simple_case_01.msml.msml_xml')
 
-        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/simple_case_01.msml.xml')
+        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/simple_case_01.msml.msml_xml')
         self.assertEqual(
             {'a': {'o': 4}, 'converter_task_2': {'o': 2}, 'gen_2_': 2, 'i': '2'},
             mem._internal)
 
     def test_double_use_var_01(self):
-        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/double_use_variable_01.msml.xml')
+        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/double_use_variable_01.msml.msml_xml')
         self.assertEqual(
             {'a': {'o': 4}, 'gen_1_': 2, 'p': None, 'gen_4_': 'a = ', 'gen_3_': 'W', 'gen_2_': 'i = ', 'i': '2',
              'r': None, 'gen_5_': 'W', 'converter_task_1': {'o': '4'}, 'converter_task_2': {'o': 2}},
@@ -41,7 +41,7 @@ class ExecutingWithTestAlphabet(TestCase):
 
 
     def test_double_use_var_01(self):
-        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/double_use_variable_01.msml.xml')
+        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/double_use_variable_01.msml.msml_xml')
         self.assertEqual(
             {'a': {'o': 4}, 'gen_1_': 2, 'p': None, 'gen_4_': 'a = ', 'gen_3_': 'W', 'gen_2_': 'i = ', 'i': '2',
              'r': None, 'gen_5_': 'W', 'converter_task_1': {'o': '4'}, 'converter_task_2': {'o': 2}},
@@ -49,7 +49,7 @@ class ExecutingWithTestAlphabet(TestCase):
 
 
     def test_multiple_ids_01(self):
-        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/multiple_id_01.msml.xml')
+        mem = self.app.execute_msml_file(ROOT / 'msmlfiles/multiple_id_01.msml.msml_xml')
         self.assertReported(696)
 
 

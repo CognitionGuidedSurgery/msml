@@ -9,7 +9,7 @@
 
 	<input>
 		<arg name="referenceImage" logical="Image3D" physical="VTK" />
-    <arg name="dvf" physical="VTK" />
+    <arg name="dvf" logical="vector" physical="VTK" />
 	</input>
 
 	<output>
@@ -19,8 +19,9 @@
 
 	<parameters>
     <arg name="outputDefImageFilename" physical="str" optional="true" />
-		<arg name="multipleDVF" physical="bool" />
+		<arg name="multipleDVF" physical="bool" optional="true" default="false"/>
 		<arg name="reverseDirection" physical="bool" />
+    <arg name="voxelSize" physical="str" optional="true" default="10"/>
 	</parameters>
 </msml:operator>
 

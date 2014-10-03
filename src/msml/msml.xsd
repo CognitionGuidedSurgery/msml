@@ -355,6 +355,8 @@
                                         </restriction>
                                     </simpleType>
                                 </attribute>
+                                <attribute name="gravity">
+                                </attribute>
                             </complexType>
                         </element>
                     </sequence>
