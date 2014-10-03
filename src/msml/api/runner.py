@@ -11,7 +11,10 @@ class Runner(object):
         self._exporter = exporter
         self._output_dir = output_dir
 
-        self._theApp = msml.frontend.App(exporter=exporter, output_dir = output_dir)
+        execOptions={}
+        execOptions['D'] = {'executor.class=run.ControllableExecutor'}
+
+        self._theApp = msml.frontend.App(exporter=exporter, output_dir = output_dir,options=execOptions)
 
         self._mfile = self._theApp._load_msml_file(file)
 

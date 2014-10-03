@@ -363,13 +363,14 @@ class MSMLEnvironment(object):
 
             """
 
-            def __init__(self, name="initial", dt=0.05, iterations=100):
+            def __init__(self, name="initial", dt=0.05, iterations=100, gravity =[0,0,-9.81]):
                 self.name = name
                 self._dt = None
                 self._iterations = None
 
                 self.dt = dt
                 self.iterations = iterations
+                self._gravity = gravity
 
             @property
             def dt(self):
@@ -387,10 +388,18 @@ class MSMLEnvironment(object):
             def iterations(self, iterations):
                 self._iterations = int(iterations)
 
+            @property
+            def gravity(self):
+                return self._gravity
+
+            @iterations.setter
+            def iterations(self, gravity):
+                self._iterations = gravity
+
         def __init__(self, *args):
             list.__init__(self, *args)
 
-        def add_step(self, name="initial", dt=0.05, iterations=100):
+        def add_step(self, name="initial", dt=0.05, iterations=100, gravity=[0, 0 ,-9.81]):
             """Add a new step to the Simlation
             :param name: step name
             :type str:
@@ -400,7 +409,7 @@ class MSMLEnvironment(object):
             :type iterations: int
             :return:
             """
-            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations))
+            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations,gravity))
 
     class Solver(object):
         """Represents the solver xml tag.

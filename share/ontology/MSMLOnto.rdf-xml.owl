@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+    xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
+    xmlns:dataLogical="http://www.msml.org/ontology/datatypes/logical#"
+    xmlns:msmlRep="http://www.msml.org/ontology/msmlRepresentation#"
+    xmlns:abaqusRep="http://www.msml.org/ontology/abaqusRepresentation#"
+    xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+    xmlns="http://www.msml.org/ontology#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:msml="http://www.msml.org/ontology/msml#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:dataPhysical="http://www.msml.org/ontology/datatypes/physicall#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+    xmlns:abaqus="http://www.msml.org/ontology/abaqus#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xml:base="http://www.msml.org/ontology/MSML.owl" > 
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msml#model">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#section">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#nodes">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msmlRepresentation#TextRepresentation">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#VTU">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology#BaseRepresentation_17">
+    <rdf:type rdf:resource="http://www.msml.org/ontology/abaqusRepresentation#BaseRepresentation"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#assembly">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#elements">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msml#mesh">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#element_set">
+    <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/abaqus#set"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#boundary_conditions">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#part">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology#density">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#ListF">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqusRepresentation#part">
+    <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/abaqusRepresentation#BaseRepresentation"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#load">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/logical#FaceSet">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="msmlRep:Successor">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#material">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/logical#ElementSet">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#ListI">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msmlRepresentation#pythonModelRep">
+    <rdf:type rdf:resource="http://www.msml.org/ontology/msmlRepresentation#basePythonRep"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="msmlRep:Predecessor">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#AbaqusModel">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqusRepresentation#BaseRepresentation">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="msmlRep:JinjaTemplate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#step">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#bool">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#float">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology#annotationProperty_16">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#VTK">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#node_set">
+    <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/abaqus#set"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msml#set">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#int">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#uint">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/logical#Mesh">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqusRepresentation#header">
+    <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/abaqusRepresentation#BaseRepresentation"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msml#object">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msml#constraints">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#ListUI">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msmlRepresentation#basePythonRep">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="msmlRep:isDataNodeFor">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <owl:inverseOf rdf:resource="msmlRep:isRepresentationOf"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/msml#scene">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#set">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/logical#IndexSet">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/datatypes/physicall#string">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.msml.org/ontology/abaqus#instance">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="msmlRep:isRepresentationOf">
+    <owl:inverseOf rdf:resource="msmlRep:isDataNodeFor"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 3.5, Build 663)  http://protege.stanford.edu -->

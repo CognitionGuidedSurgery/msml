@@ -29,9 +29,11 @@
 from collections import OrderedDict
 import pickle
 
-from ..sorts import get_sort
+from ..sorts import *
 from msml.log import report
 from ..exceptions import *
+from msml import sorts
+from msml.exceptions import MSMLUnknownModuleWarning
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -250,6 +252,8 @@ class Slot(object):
     def __init__(self, name, physical, logical=None,
                  required=True, default=None,
                  meta=dict(), parent=None):
+        if (physical is None):
+            warn("Slot %s does not have a physical type defined. This can cause conversion errros.)" % (name), MSMLUnknownModuleWarning, 0)
         self.name = name
         """slot name
         :type: str
@@ -445,8 +449,18 @@ class PythonOperator(Operator):
 
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
+        
+        defaults = dict()
+        for x in self.parameters.values():
+            if x.default is not None:
+                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
+        kwargsUpdated = defaults
+        kwargsUpdated.update(kwargs)
+                   
+        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
 
-        args = [kwargs.get(x, None) for x in self.acceptable_names()]
+
+        print(args)
         r = self._function(*args)
 
         if len(self.output) == 0:
