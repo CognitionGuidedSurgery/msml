@@ -293,6 +293,7 @@ class ControllableExecutor(LinearSequenceExecutor):
 
         self.state = "INIT"
 
+        #TODO: Sort nodes into 4 buckets: variables, preprocessing, exporter, postprocessing
         for bucket in self._buckets:
             for node in bucket:
                 if isinstance(node, MSMLVariable):
@@ -307,7 +308,7 @@ class ControllableExecutor(LinearSequenceExecutor):
             print('Executor has to be in INIT mode before calling updateVariables')
 
 
-
+        #TODO: Only iter over variable bucket
         for bucket in self._buckets:
             for node in bucket:
                 if isinstance(node, MSMLVariable):
@@ -318,6 +319,7 @@ class ControllableExecutor(LinearSequenceExecutor):
         if "INIT" != self.state:
             print('Executor has to be in INIT mode before calling processWorkflow')
 
+        #TODO: Only iter over preprocessing bucket
         for bucket in self._buckets:
             for node in bucket:
                 if isinstance(node, Task):
@@ -351,16 +353,17 @@ class ControllableExecutor(LinearSequenceExecutor):
     def launch_postprocessing(self):
         if "SIM" != self.state:
             print('Executor has to be in SIM mode before calling launchPostProcessing')
-
+        #TODO: Iter over postprocessing bucket
         self.state='POST'
         return self._memory
 
 
-    def run(self):
-        self.init_workflow()
-        self.process_workflow()
-        self.launch_simulation()
-        self.launch_postprocessing()
+    #Re-enable the new run method
+    #def run(self):
+    #    self.init_workflow()
+    #    self.process_workflow()
+    #    self.launch_simulation()
+    #    self.launch_postprocessing()
 
     # def _execute_exporter(self, node):
     #     if not self.options.get('executor.disable_exporter', False):
