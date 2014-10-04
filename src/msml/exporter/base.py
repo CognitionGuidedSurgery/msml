@@ -53,6 +53,8 @@ class Exporter(object):
         self.name = 'base'
         self._output_types_for_tags = {}
 
+        self.id = "__exporter__"
+
         self.mesh_sort = ['VTK', 'Mesh']
         """The physical and logical sort of the input mesh"""
 

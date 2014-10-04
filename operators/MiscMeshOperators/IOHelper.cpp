@@ -48,8 +48,8 @@
 #include <vtkStructuredPointsWriter.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkXMLPolydataWriter.h>
-#include <vtkPolydataWriter.h>
+#include <vtkXMLPolyDataWriter.h>
+#include <vtkPolyDataWriter.h>
 
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
@@ -264,7 +264,7 @@ bool IOHelper::VTKWriteImage(const char* filename, vtkImageData* image, bool asc
 {
   bool aResult=false;
   //check if directory exists.
-    boost::filesystem::path filePath(boost::filesystem::complete(filename));
+    boost::filesystem::path filePath(boost::filesystem::absolute(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
     cerr << filePath << " can not be written. Directory of" << filePath << " does not exist "<< endl;
@@ -312,7 +312,7 @@ bool IOHelper::VTKWriteUnstructuredGrid(const char* filename, vtkUnstructuredGri
 {
   bool aResult=false;
   //check if directory exists.
-  boost::filesystem::path filePath(boost::filesystem::complete(filename));
+  boost::filesystem::path filePath(boost::filesystem::absolute(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
     cerr << filePath << " can not be written. Directory of " << filePath << " does not exist "<< endl;
@@ -360,7 +360,7 @@ bool IOHelper::VTKWritePolyData(const char* filename, vtkPolyData* polyData, boo
 {
   bool aResult=false;
   //check if directory exists.
-  boost::filesystem::path filePath(boost::filesystem::complete(filename));
+  boost::filesystem::path filePath(boost::filesystem::absolute(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
     cerr << filePath << " can not be written. Directory of " << filePath << " does not exist "<< endl;
@@ -410,7 +410,7 @@ bool IOHelper::VTKWritePolyData(const char* filename, vtkPolyData* polyData, boo
 vector<pair<int, string> >* IOHelper::getAllFilesOfSeries(const char* filename)
 {
     vector<pair<int, string> >* aReturn = new vector<pair<int, string> >();
-    boost::filesystem::path aPath(boost::filesystem::complete(filename));
+    boost::filesystem::path aPath(boost::filesystem::absolute(filename));
     boost::filesystem::path extension = aPath.extension();
     boost::filesystem::path file = aPath.filename().stem();
     std::string aFilename = file.string();

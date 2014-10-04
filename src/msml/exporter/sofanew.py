@@ -236,13 +236,13 @@ class SofaExporter(XMLExporter):
                 currentMaterialType = material.tag
 
                 if currentMaterialType == "linearElasticMaterial":
-                    currentYoungs = material.attributes["youngModulus"]
-                    currentPoissons = material.attributes["poissonRatio"]  # not implemented in sofa yet!
+                    currentYoungs = self.get_value_from_memory(material, "youngModulus")
+                    currentPoissons = self.get_value_from_memory(material, "poissonRatio") # not implemented in sofa yet!
                     for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
                         youngs[i] = currentYoungs
                         poissons[i] = currentPoissons
                 elif currentMaterialType == "mass":
-                    currentDensity = material.attributes["massDensity"]
+                    currentDensity = self.get_value_from_memory(material, "massDensity")
                     for i in indices_int:
                         density[i] = currentDensity
                 else:
@@ -323,7 +323,7 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
-                    p = float(self.evaluate_node(constraint.pressure)) / 10
+                    p = self.get_value_from_memory(constraint, 'pressure') / 10
 
 
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
@@ -436,9 +436,9 @@ class SofaExporter(XMLExporter):
 
 
     def createScene(self):
-        dt = str(self._msml_file.env.simulation[0].dt)  # TODO find dt from msmlfile > env > simulation
+        dt = str(self._msml_file.env.simulation[0].dt)
         root = etree.Element("Node", name="root", dt=dt)
-        theGravityVec =  self._msml_file.env.simulation[0].gravity # "0 0 -9.81"  # TODO find gravity in msmlfile > env > simulation stepNode.get("gravity")
+        theGravityVec =  self._msml_file.env.simulation[0].gravity
         theGravity = str(theGravityVec)
         #timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
         if theGravity is None:
@@ -480,7 +480,7 @@ class SofaExporter(XMLExporter):
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
 
                     filenameLastOutput = filename + str(lastNumber) + ".vtu"
-                    self._memory_update['SOFAExporter'] = {request.id: VTK(str(filenameLastOutput))} 
+                    self._memory_update[self.id] = {request.id: VTK(str(filenameLastOutput))}
 
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:

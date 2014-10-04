@@ -304,7 +304,7 @@ class ControllableExecutor(LinearSequenceExecutor):
 
     def update_variable(self, variable_name, variable_value):
         if "INIT" != self.state:
-            print('Executor has to be in INIT mode before calling updateVariables')
+            raise MSMLError('Executor has to be in INIT mode before calling updateVariables')
 
 
 
@@ -316,7 +316,7 @@ class ControllableExecutor(LinearSequenceExecutor):
 
     def process_workflow(self):
         if "INIT" != self.state:
-            print('Executor has to be in INIT mode before calling processWorkflow')
+            raise MSMLError('Executor has to be in INIT mode before calling processWorkflow')
 
         for bucket in self._buckets:
             for node in bucket:

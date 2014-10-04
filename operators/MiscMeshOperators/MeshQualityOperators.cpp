@@ -18,6 +18,8 @@
 #include <vtkMeshQuality.h>
 #include <vtkVersion.h>
 
+#include "../log.h"
+
 using namespace std;
 
 namespace MSML {
@@ -103,7 +105,7 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
     vtkFieldData* fieldData = quality->GetOutput()->GetFieldData();
     vtkSmartPointer<vtkDoubleArray> qualityArray = vtkDoubleArray::SafeDownCast(cellData->GetArray("Quality"));
 
-    std::cout << "There are " << qualityArray->GetNumberOfTuples() << " values." << std::endl;
+    log_info() << "There are " << qualityArray->GetNumberOfTuples() << " values." << std::endl;
 
     for (vtkIdType i = 0; i < qualityArray->GetNumberOfTuples(); i++) {
         double val = qualityArray->GetValue(i);

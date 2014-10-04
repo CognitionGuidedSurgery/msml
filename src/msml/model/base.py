@@ -32,10 +32,9 @@ from collections import namedtuple
 import re
 import warnings
 
-from .. import log
-
 from path import path
 
+from .. import log
 from msml.exceptions import *
 from ..sorts import conversion
 from msml.sorts import get_sort
@@ -44,7 +43,7 @@ from msml.sorts import get_sort
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
-__all__ =[ 'Constant',
+__all__ = ['Constant',
            'IndexGroup',
            'MSMLEnvironment',
            'MSMLFile',
@@ -65,6 +64,7 @@ __all__ =[ 'Constant',
            'parse_attribute_value',
            'random_var_name',
            'xor']
+
 
 def xor(l):
     """
@@ -187,6 +187,7 @@ class MSMLFile(object):
         """
         if not alphabet:
             import msml.env
+
             alphabet = msml.env.CURRENT_ALPHABET
 
         self.workflow.link(alphabet, self)
@@ -198,6 +199,7 @@ class MSMLFile(object):
     def bind(self, alphabet=None):
         if not alphabet:
             import msml.env
+
             alphabet = msml.env.CURRENT_ALPHABET
         call_method_list(self.scene, "bind", alphabet)
         self.workflow.bind_operators(alphabet)
@@ -323,6 +325,7 @@ class Workflow(object):
             return True
 
         import operator, collections
+
         attrid = operator.attrgetter("id")
         ids = list(map(attrid, self._tasks.values()))
         idcntr = collections.Counter(ids)
@@ -367,12 +370,12 @@ class MSMLEnvironment(object):
 
             """
 
-            def __init__(self, name="initial", dt=0.05, iterations=100, gravity =[0,0,-9.81]):
+            def __init__(self, name="initial", dt=0.05, iterations=100, gravity=None):
                 self.name = name
                 self._dt = dt
                 self._iterations = iterations
 
-                self._gravity = gravity
+                self._gravity = gravity or (0, 0, -9.81)
 
 
             @property
@@ -396,13 +399,13 @@ class MSMLEnvironment(object):
                 return self._gravity
 
             @gravity.setter
-            def iterations(self, gravity):
+            def gravity(self, gravity):
                 self._gravity = gravity
 
         def __init__(self, *args):
             list.__init__(self, args)
 
-        def add_step(self, name="initial", dt=0.05, iterations=100, gravity=[0, 0 ,-9.81]):
+        def add_step(self, name="initial", dt=0.05, iterations=100, gravity=None):
             """Add a new step to the Simlation
             :param name: step name
             :type str:
@@ -412,7 +415,7 @@ class MSMLEnvironment(object):
             :type iterations: int
             :return:
             """
-            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations,gravity))
+            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations, gravity))
 
     class Solver(object):
         """Represents the solver xml tag.
@@ -446,7 +449,7 @@ class MSMLEnvironment(object):
             :type: str
             """
 
-    def __init__(self, solver = None, steps = None):
+    def __init__(self, solver=None, steps=None):
         self.simulation = steps or MSMLEnvironment.Simulation()
         self.solver = MSMLEnvironment.Solver()
 
@@ -720,7 +723,7 @@ class Task(object):
         """
         slots = dict(self.operator.input)
         slots.update(self.operator.parameters)
-        self.arguments = link_algorithm(msmlfile, self.attributes, self,  slots)
+        self.arguments = link_algorithm(msmlfile, self.attributes, self, slots)
 
     def validate(self):
         if not self.operator:
@@ -731,31 +734,30 @@ class Task(object):
 
         for name, slot in self.operator.input.items():
             if name not in self.attributes:
-                report("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name), 'E')
+                log.error("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name))
 
         for name, slot in self.operator.parameters.items():
             if name not in self.attributes:
-                report("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name), 'E')
+                log.error("task %s for operator %s misses input attribute %s " % (
+                    self.id, self.operator.name, name))
 
         for k in self.attributes:
             if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
-                report("attrib %s is unknown for operator %s in task %s" % (
-                    k, self.operator.name, self.id), 'I')
+                log.info("attrib %s is unknown for operator %s in task %s" % (
+                    k, self.operator.name, self.id))
 
     def get_default(self):
         pass
 
 
-
 def link_algorithm(msmlfile, attributes, node, slots):
-    arguments= {}
+    arguments = {}
     for key, value in attributes.items():
         try:
             slot = slots[key]
         except KeyError as e:
-            report("%s is not a valid slot for %s" %(key, node), "F", 610)
+            report("%s is not a valid slot for %s" % (key, node), "F", 610)
             raise BaseException()
 
         if isinstance(value, Constant):
@@ -763,7 +765,6 @@ def link_algorithm(msmlfile, attributes, node, slots):
             var = MSMLVariable(random_var_name(), slot.physical_type, slot.logical_type, value=value.value)
             msmlfile.add_variable(var)
             value = Reference(var.name, None)
-
 
         a = msmlfile.lookup(value)
         if a:
@@ -777,16 +778,15 @@ def link_algorithm(msmlfile, attributes, node, slots):
     return arguments
 
 
-
 class SceneObjectSets(object):
     """
 
     """
 
     def __init__(self, elements=None, nodes=None, surfaces=None):
-        self.elements = elements
-        self.nodes = nodes
-        self.surfaces = surfaces
+        self.elements = elements or list()
+        self.nodes = nodes or list()
+        self.surfaces = surfaces or list()
 
 
 def call_method_list(seq, method, *args):
@@ -936,13 +936,13 @@ class ObjectElement(object):
                 continue
 
             if key not in self.meta.parameters:
-                report("Parameter %s of Element %s is not specified in definition." % (key, self.meta.name), 'E')
+                log.error("Parameter %s of Element %s is not specified in definition." % (key, self.meta.name))
                 b = False
 
         for key, value in self.meta.parameters.items():
             if key not in self.attributes and value.required:
-                report("Parameter %s of Definiton %s is not specified in msml file." % (key, self.id or self.meta.name),
-                       'F')
+                log.fatal(
+                    "Parameter %s of Definiton %s is not specified in msml file." % (key, self.id or self.meta.name))
                 c = False
 
         return b and c
@@ -1066,7 +1066,6 @@ class ObjectConstraints(object):
 
 
 SceneSets = SceneObjectSets
-
 
 
 class IndexGroup(object):
