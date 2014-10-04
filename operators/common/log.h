@@ -1,23 +1,18 @@
 #ifndef LOG_H
 #define LOG_H
 
+
+
 #include <sstream>
 #include <iostream>
 
 
 #ifdef Py_PYTHON_H
-void _log(const char* category, const char* message) {
-    std:: stringstream buffer;
-
-    buffer << "import msml.log\n"
-           << "msml.log." << category << "('" << message << "')";
-
-    const char* code = buffer.str().c_str();
-    PyRun_SimpleString(code);
-}
-void _log_error(const char* message) { _log("error", message); }
-void _log_info(const char* message) { _log("info", message);}
+void _log(const char* category, const char* message);
+void _log_error(const char* message);
+void _log_info(const char* message);
 #endif
+
 
 
 class Logger {
@@ -30,22 +25,22 @@ public:
 
     }
 
-    Logger& operator<<(std::string s) {
-        sstream << s.c_str();
-        return *this;
-    }
-
     Logger& operator<<(const char* str) {
         sstream << str;
         return *this;
     }
 
-
-    Logger& operator<<(int str) {
+    Logger& operator<<(std::string str) {
         sstream << str;
         return *this;
     }
 
+
+    template<typename T>
+    Logger& operator<<(T s) {
+        sstream << s;
+        return *this;
+    }
 
     Logger& operator<<(std::ostream&(*f)(std::ostream&)) {
         const char* msg = sstream.str().c_str();
@@ -68,14 +63,6 @@ private:
 
 };
 
-Logger& log_info() {
-    static Logger li = Logger("info");
-    return li;
-}
-
-Logger& log_error() {
-    static Logger le = Logger("error");
-    return le;
-}
-
+Logger& log_info();
+Logger& log_error();
 #endif

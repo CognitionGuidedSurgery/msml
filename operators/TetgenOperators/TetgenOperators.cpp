@@ -67,7 +67,7 @@
 
 #include "tetgen.h"
 
-#include "../log.h"
+#include "../common/log.h"
 
 using namespace std;
 

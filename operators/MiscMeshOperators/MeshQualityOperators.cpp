@@ -18,7 +18,7 @@
 #include <vtkMeshQuality.h>
 #include <vtkVersion.h>
 
-#include "../log.h"
+#include "../common/log.h"
 
 using namespace std;
 

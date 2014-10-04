@@ -57,6 +57,8 @@
 
 #include "MiscMeshOperators.h" //circular, should be refactored
 #include "../vtk6_compat.h"
+#include "../common/log.h"
+
 
 
 #include "IOHelper.h"
@@ -134,7 +136,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkImageData> aReturn;
   if (!boost::filesystem::exists(filePath))
-    cerr << filePath << " was not found." << endl;
+    log_error() << filePath << " was not found." << endl;
 
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
@@ -142,7 +144,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->IsFileStructuredPoints())
-      cerr << filePath << " is not an .vtk image." << endl;
+      log_error() << filePath << " is not an .vtk image." << endl;
     aReturn = (vtkImageData*)reader->GetOutput();
   }
   else if (filePath.extension().string() == ".ctx")
@@ -155,7 +157,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     boost::filesystem::path filePath_without_gz(filename);
     filePath_without_gz = filePath_without_gz.replace_extension("");
     string command = "gunzip -c \"" + filePath.string() + "\" >\"" + filePath_without_gz.string() + "\"";
-    cout << command << std::endl;
+    log_info() << command << std::endl;
     system(command.c_str());    
     aReturn = IOHelper::CTXReadImage(filePath_without_gz.string().c_str());
     boost::filesystem::remove(filePath_without_gz);
@@ -167,7 +169,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->GetImageDataOutput())
-      cerr << filePath << " is not an .vti image." << endl;
+      log_error() << filePath << " is not an .vti image." << endl;
     aReturn = reader->GetImageDataOutput();
   }
   return aReturn;
@@ -179,14 +181,14 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
   vtkSmartPointer<vtkUnstructuredGrid> aReturn;
 
   if (!boost::filesystem::exists(filePath))
-    cerr << filePath << " was not found." << endl;
+    log_error() << filePath << " was not found." << endl;
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->IsFileUnstructuredGrid())
-      cerr << filePath << " is not an .vtk unstructured grid." << endl;
+      log_error() << filePath << " is not an .vtk unstructured grid." << endl;
     aReturn = reader->GetUnstructuredGridOutput();
   }
   else
@@ -195,7 +197,7 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->GetUnstructuredGridOutput() )
-      cerr << filePath << " is not an .vtu unstructured grid." << endl;
+      log_error() << filePath << " is not an .vtu unstructured grid." << endl;
     aReturn = reader->GetUnstructuredGridOutput();
   }
   return aReturn;
@@ -206,7 +208,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkPolyData> aReturn;
   if (!boost::filesystem::exists(filePath))
-   cerr << filePath << " was not found." << endl;
+   log_error() << filePath << " was not found." << endl;
 
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
@@ -221,7 +223,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
 
     else 
     {
-      cerr << filePath << " is not a .vtk poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
+      log_error() << filePath << " is not a .vtk poly data file. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
       MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
       aReturn = poly;
@@ -236,7 +238,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
       aReturn =  reader->GetPolyDataOutput();
     else 
     {
-      cerr << filePath << "  is not a .ply poly data grid. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
+      log_error() << filePath << "  is not a .ply poly data grid. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
       vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
       MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
       aReturn = poly;
@@ -267,7 +269,7 @@ bool IOHelper::VTKWriteImage(const char* filename, vtkImageData* image, bool asc
     boost::filesystem::path filePath(boost::filesystem::absolute(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
-    cerr << filePath << " can not be written. Directory of" << filePath << " does not exist "<< endl;
+    log_error() << filePath << " can not be written. Directory of" << filePath << " does not exist "<< endl;
   }
   else if (filePath.extension().string() == ".vti")
   {
@@ -289,7 +291,7 @@ bool IOHelper::VTKWriteImage(const char* filename, vtkImageData* image, bool asc
   else 
   {
     if (filePath.extension().string() != ".vtk")
-      cerr << filePath.extension().string() << " is an unknown file extension for images. Fallback solution, the images is stored in vtk legacy format.";
+      log_error() << filePath.extension().string() << " is an unknown file extension for images. Fallback solution, the images is stored in vtk legacy format." << endl;
     
     vtkSmartPointer<vtkStructuredPointsWriter> writer =  vtkSmartPointer<vtkStructuredPointsWriter>::New();
     writer->SetFileName(filename);
@@ -315,7 +317,7 @@ bool IOHelper::VTKWriteUnstructuredGrid(const char* filename, vtkUnstructuredGri
   boost::filesystem::path filePath(boost::filesystem::absolute(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
-    cerr << filePath << " can not be written. Directory of " << filePath << " does not exist "<< endl;
+    log_error() << filePath << " can not be written. Directory of " << filePath << " does not exist "<< endl;
   }
   else if (filePath.extension().string() == ".vtu")
   {
@@ -337,7 +339,7 @@ bool IOHelper::VTKWriteUnstructuredGrid(const char* filename, vtkUnstructuredGri
   else 
   {
     if (filePath.extension().string() != ".vtk")
-      cerr << filePath.extension().string() << " is an unknown file extension for UnstructuredGrid. Fallback solution, the UnstructuredGrid is stored in vtk legacy format.";
+      log_error() << filePath.extension().string() << " is an unknown file extension for UnstructuredGrid. Fallback solution, the UnstructuredGrid is stored in vtk legacy format." << endl;
     
     vtkSmartPointer<vtkUnstructuredGridWriter> writer =  vtkSmartPointer<vtkUnstructuredGridWriter>::New();
     writer->SetFileName(filename);
@@ -363,7 +365,7 @@ bool IOHelper::VTKWritePolyData(const char* filename, vtkPolyData* polyData, boo
   boost::filesystem::path filePath(boost::filesystem::absolute(filename));
   if (!boost::filesystem::exists(filePath.parent_path()))
   {
-    cerr << filePath << " can not be written. Directory of " << filePath << " does not exist "<< endl;
+    log_error() << filePath << " can not be written. Directory of " << filePath << " does not exist "<< endl;
   }
   else if (filePath.extension().string() == ".vtp")
   {
@@ -385,7 +387,7 @@ bool IOHelper::VTKWritePolyData(const char* filename, vtkPolyData* polyData, boo
   else 
   {
     if (filePath.extension().string() != ".vtk")
-      cerr << filePath.extension().string() << " is an unknown file extension for polydata. Fallback solution, the polydata is stored in vtk legacy format.";
+      log_error() << filePath.extension().string() << " is an unknown file extension for polydata. Fallback solution, the polydata is stored in vtk legacy format." << endl;
     
     vtkSmartPointer<vtkPolyDataWriter> writer =  vtkSmartPointer<vtkPolyDataWriter>::New();
     writer->SetFileName(filename);
