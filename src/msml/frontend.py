@@ -318,20 +318,20 @@ class App(object):
 
 
     def execute_msml(self, msml_file):
-        # self._prepare_msml_model(msml_file)
-        # execlazz = self.executer
-        #
-        # # change to msml-file dirname
-        # os.chdir(msml_file.filename.dirname().abspath())
-        # exe = execlazz(msml_file)
-        # exe.options = self._executor_options
-        # exe.working_dir = self.output_dir
-        # exe.init_memory(self.memory_init_file)
-        # mem = exe.run()
-        self.init_workflow( msml_file)
-        self.process_workflow( )
-        self.launch_simulation( )
-        mem = self.launch_postprocessing( )
+        self._prepare_msml_model(msml_file)
+        execlazz = self.executer
+
+        # change to msml-file dirname
+        os.chdir(msml_file.filename.dirname().abspath())
+        exe = execlazz(msml_file)
+        exe.options = self._executor_options
+        exe.working_dir = self.output_dir
+        exe.init_memory(self.memory_init_file)
+        mem = exe.run()
+        #self.init_workflow( msml_file)
+        #self.process_workflow( )
+        #self.launch_simulation( )
+        #mem = self.launch_postprocessing( )
         return mem
 
     def execution(self):

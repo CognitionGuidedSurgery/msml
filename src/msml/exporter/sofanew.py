@@ -104,7 +104,7 @@ class SofaExporter(XMLExporter):
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
-        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
+        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofaExtended') > -1):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
             callCom = '-l SofaCUDA -l MediAssist -g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
