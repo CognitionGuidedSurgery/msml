@@ -329,7 +329,7 @@ def msml_file_factory(msml_node):
         mesh = _parse_mesh(mesh_node)
 
         sets_node = object_node.find('sets')
-        sets = SceneSets()
+        sets = SceneObjectSets()
         if (sets_node is not None):
             element_sets = sets_node.find('elements')
             nodes_sets = sets_node.find('nodes')

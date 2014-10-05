@@ -143,9 +143,9 @@ class PrintVisitorDisp(VisitorDispatchable, PrintVisitor):
     def object_output_element_displacement(self, _msml, _scene, _object, _output, output):
         Printer.object_output_element_displacement(self, _msml, _scene, _object, _output, output)
 
-import msml.msml_xml
+import msml.xml
 def main():
-    msml_file = msml.msml_xml.load_msml_file("/home/weigl/workspace/msml/examples/BunnyExample/bunny.msml.msml_xml")
+    msml_file = msml.xml.load_msml_file("/home/weigl/workspace/msml/examples/BunnyExample/bunny.msml.msml_xml")
 
 
     exporter = msml.exporter.visitor.VisitorExporterFramework(msml_file, PrintVisitor)

@@ -15,7 +15,7 @@
 
 
 	<parameters>
-      <arg name="out_filename" physical="str" />
+      <arg name="out_filename" logical="str" />
       <arg name="isoValue" physical="float" />
 	</parameters>
 
