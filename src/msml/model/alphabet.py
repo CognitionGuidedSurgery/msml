@@ -32,6 +32,8 @@ import pickle
 from ..sorts import *
 from ..exceptions import *
 from msml import sorts
+
+from sequence import executeOperatorSequence
 from msml.exceptions import MSMLUnknownModuleWarning
 from ..log import debug,info, error, warn
 
@@ -147,6 +149,8 @@ class Alphabet(object):
         with open(filename, 'w') as file:
             pickle.dump(self, file)
 
+            # import jsonpickle
+            # print(jsonpickle.encode(self))
 
     @staticmethod
     def load(filename):
@@ -448,6 +452,7 @@ class PythonOperator(Operator):
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
         
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
         defaults = dict()
         for x in self.parameters.values():
             if x.default is not None:
@@ -456,7 +461,12 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-        r = self._function(*args)
+        
+        
+        if sum('*' in str(arg) for arg in args):        
+            r = executeOperatorSequence(self, args) 
+        else:        
+            r = self._function(*args)
 
         if len(self.output) == 0:
             results = None
@@ -466,7 +476,7 @@ class PythonOperator(Operator):
             results = dict(zip(self.output_names(), r))
 
         return results
-
+        
     def bind_function(self):
         """Search and bind the python function. Have to be called before `__call__`"""
         import importlib
@@ -498,22 +508,42 @@ class ShellOperator(Operator):
 
     def __call__(self, **kwargs):
         import os
-
-        command = self.command_tpl.format(**kwargs)
-        os.system(command)
+        
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
+        defaults = dict()
+        for x in self.parameters.values():
+            if x.default is not None:
+                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
+        kwargsUpdated = defaults
+        kwargsUpdated.update(kwargs)
+                   
+        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        
+        if sum('*' in str(arg) for arg in args):        
+            r = executeOperatorSequence(self, args) 
+        else:
+            self._function(args)
         
         results = None
         if len(self.output) == 1 and 'out_filename' in kwargs:
             results = {self.output_names()[0]: kwargs.get('out_filename')}
         return results
+    
+    def _function(self, *args):
+        if (len(args)==1):
+            args = args[0]
+        kwargs =  dict(zip(self.acceptable_names(), args))
+        command = self.command_tpl.format(**kwargs)
+        os.system(command)
 
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""
+    # TODO: executeOperatorSequence 
 
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
-
+        
         self.symbol_name = runtime['symbol']
         self.filename = runtime['file']
 
@@ -525,3 +555,4 @@ class SharedObjectOperator(PythonOperator):
 
         self.__function = getattr(object, self.symbol_name)
         return self.__function
+

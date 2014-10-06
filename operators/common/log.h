@@ -50,6 +50,7 @@ public:
         std::cerr << msg << std::endl;
 #endif
         sstream.str(std::string());
+        return *this;
     }
 
     void flush() {
