@@ -299,9 +299,8 @@ class Slot(object):
             self.sort = None
 
 
-    #def __getattr__(self, item):
-        #assert (self.meta is not None)
-        #return self.meta[item]
+    def __getattr__(self, item):
+        return self.meta[item]
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)
@@ -544,10 +543,11 @@ class ShellOperator(Operator):
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""
+    # TODO: executeOperatorSequence 
 
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
-
+        
         self.symbol_name = runtime['symbol']
         self.filename = runtime['file']
 
