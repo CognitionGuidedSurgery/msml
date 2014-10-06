@@ -73,7 +73,7 @@ const vector<string> TET_QUALITY_MEASURE_TYPE_NAMES = FillTetQualityMeasureTypeN
 const int DERP = 235;
 
 MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName) {
-    cout << "MeasureTetrahedricMeshQuality" << endl;
+    log_debug() << "MeasureTetrahedricMeshQuality" << endl;
 
     MeshQualityStats stats;
     stats.qualityMeasureName = qualityMeasureName;
@@ -90,7 +90,7 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
     reader->Update();
 
     vtkUnstructuredGrid* mesh = reader->GetOutput();
-    cout << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
+    log_debug() << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
 
     vtkSmartPointer<vtkMeshQuality> quality = vtkSmartPointer<vtkMeshQuality>::New();
 #if VTK_MAJOR_VERSION <= 5
@@ -109,7 +109,6 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
 
     for (vtkIdType i = 0; i < qualityArray->GetNumberOfTuples(); i++) {
         double val = qualityArray->GetValue(i);
-        //std::cout << "value " << i << " : " << val << std::endl;
     }
 
     vtkDataArray* aggregate = fieldData->GetArray("Mesh Tetrahedron Quality");
@@ -120,7 +119,7 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
     stats.var = tuple[3];
     stats.n = tuple[4];
 
-    cout << qualityMeasureName << " min=" << stats.min << "; max=" << stats.max << "; avg=" << stats.avg << "; var=" << stats.var << "; n=" << stats.n << endl;
+    log_debug() << qualityMeasureName << " min=" << stats.min << "; max=" << stats.max << "; avg=" << stats.avg << "; var=" << stats.var << "; n=" << stats.n << endl;
 
     return stats;
 }

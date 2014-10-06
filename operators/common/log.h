@@ -1,13 +1,11 @@
 #ifndef LOG_H
 #define LOG_H
 
-
-
 #include <sstream>
 #include <iostream>
 
 
-#ifdef Py_PYTHON_H
+#ifdef PYTHONLOGGING
 void _log(const char* category, const char* message);
 void _log_error(const char* message);
 void _log_info(const char* message);
@@ -44,7 +42,7 @@ public:
 
     Logger& operator<<(std::ostream&(*f)(std::ostream&)) {
         const char* msg = sstream.str().c_str();
-#ifdef Py_PYTHON_H
+#ifdef PYTHONLOGGING
         _log(category, msg);
 #else
         std::cerr << msg << std::endl;
@@ -66,4 +64,6 @@ private:
 
 Logger& log_info();
 Logger& log_error();
+Logger& log_debug();
+
 #endif

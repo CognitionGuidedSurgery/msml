@@ -44,9 +44,6 @@ namespace MSML {
 
         vector<unsigned int>  computeIndicesFromBoxROI(string filename, vector<double> box, string type)
         {
-//	std::cout<<infile<<"\n";
-//	std::cout<<box[0]<<"\n";
-
             vtkSmartPointer<vtkUnstructuredGridReader> reader =
                 vtkSmartPointer<vtkUnstructuredGridReader>::New();
             reader->SetFileName(filename.c_str());
@@ -59,7 +56,6 @@ namespace MSML {
             vector<unsigned int> indices;
             double* currentPoint = new double[3];
 
-//	std::cout<<"Computing indices for mesh"<<filename<<"in BOX ROI\n";
 
             if(type.compare("points") == 0)
             {
@@ -72,15 +68,11 @@ namespace MSML {
                     if( (currentPoint[0]>=box[0]) && (currentPoint[1]>=box[1]) && (currentPoint[2]>=box[2])
                             && (currentPoint[0]<=box[3]) && (currentPoint[1]<=box[4]) && (currentPoint[2]<=box[5]))
                     {
-//                    	std::cout<<"Coords are: "<<currentPoint[0]<<", "<<currentPoint[1]<<","<<currentPoint[2]<<"\n";
-//                    	if((currentPoint[2]==0.02))
-//                    		std::cout<<"Point is in new box!\n";
                         indices.push_back(i);
                         count++;
                     }
                 }
 
-                //std::cout<<count <<" points found in the new box\n";
                 log_error() << count << " points found in box" << endl;
             }
 
