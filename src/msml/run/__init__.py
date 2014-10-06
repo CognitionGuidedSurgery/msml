@@ -180,7 +180,7 @@ class LinearSequenceExecutor(Executer):
 
         return self._memory
 
-    def _execute_exporter(self, node):
+    def _render_exporter(self, node):
         """executes the exporter behind node
 
         Args:
@@ -189,6 +189,15 @@ class LinearSequenceExecutor(Executer):
         """
         self._exporter.init_exec(self)
         self._exporter.render()
+
+    def _execute_exporter(self, node):
+        """executes the exporter behind node
+
+        Args:
+          node (Exporter): the exporter for the msml-file
+
+        """
+        self._render_exporter(node)
         self._exporter.execute()
 
 
@@ -201,9 +210,9 @@ class LinearSequenceExecutor(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', 1)
+        log.debug('Executing operator of task {} with arguments {}'.format(task, kwargs))
         result = task.operator(**kwargs)
-        report('--Executing operator of task {} done'.format(task), 'I', 2)
+        log.info('--Executing operator of task {} done'.format(task))
 
         if task.id in self._memory and isinstance(self._memory[task.id], dict):
             # converter case, only update the change values
@@ -238,27 +247,135 @@ class LinearSequenceExecutor(Executer):
 
 
 class ControllableExecutor(LinearSequenceExecutor):
+    #this exporter has 6 states: NOINIT, INIT, PRE, SIM, POST
     def __init__(self, msmlfile):
         super(ControllableExecutor, self).__init__(msmlfile)
-        self.state = "PRE"
+        self.state = "NOINIT"
 
-    def in_preprocessing(self):
+    def preprocessing_state(self):
         return self.state == "PRE"
 
-    def in_postprocessing(self):
+    def postprocessing_state(self):
         return self.state == "POST"
 
-    def _execute_exporter(self, node):
-        if not self.options.get('executor.disable_exporter', False):
-            super(ControllableExecutor, self)._execute_exporter(node)
-        self.state = "POST"
+    def notInitialized_state(self):
+        return self.state == "NOINIT"
 
-    def _execute_operator_task(self, task):
-        if (self.in_preprocessing() and \
-                    not self.options.get('executor.disable_pre', False)) or \
-                (self.in_postprocessing() and \
-                         not self.options.get('executor.disable_post', False)):
-            super(ControllableExecutor, self)._execute_operator_task(task)
+    def initialized_state(self):
+        return self.state == "INIT"
+
+    def simulation_state(self):
+        return self.state == "SIM"
+
+
+    def initWorkflow(self):
+        """starts the execution of the given MSMLFile
+        """
+        dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
+
+        # dag.show()
+
+        self._buckets = dag.toporder()
+
+        # make absolute paths for every string/file literal
+        # wd is msml file dirname
+        initialize_file_literals(self._buckets[0])
+
+        # change to output_dir
+        if self.working_dir:
+            wd = path(self.working_dir)
+            try:
+                wd.mkdir()
+            except:
+                pass
+            finally:
+                wd.chdir()
+
+        self.state = "INIT"
+
+        #TODO: Sort nodes into 4 buckets: variables, preprocessing, exporter, postprocessing
+        for bucket in self._buckets:
+            for node in bucket:
+                if isinstance(node, MSMLVariable):
+                    self._execute_variable(node)
+
+        return self._memory
+
+
+
+    def update_variable(self, variable_name, variable_value):
+        if "INIT" != self.state:
+            raise MSMLError('Executor has to be in INIT mode before calling updateVariables')
+
+
+        #TODO: Only iter over variable bucket
+        for bucket in self._buckets:
+            for node in bucket:
+                if isinstance(node, MSMLVariable):
+                    self._execute_variable(node)
+        return self._memory
+
+    def process_workflow(self):
+        if "INIT" != self.state:
+            raise MSMLError('Executor has to be in INIT mode before calling processWorkflow')
+
+        #TODO: Only iter over preprocessing bucket
+        for bucket in self._buckets:
+            for node in bucket:
+                if isinstance(node, Task):
+                    self._execute_operator_task(node)
+
+        self.state = "PRE"
+        return self._memory
+
+    def render_simulation_input(self):
+        if "PRE" != self.state:
+            print('Executor has to be in PRE mode before calling renderSimulationInput')
+
+        for bucket in self._buckets:
+            for node in bucket:
+               if isinstance(node, Exporter):
+                    self._render_exporter(node)
+        return self._memory
+
+    def launch_simulation(self):
+        if "PRE" != self.state:
+            print('Executor has to be in PRE mode before calling launchSimulationt')
+
+        for bucket in self._buckets:
+            for node in bucket:
+                if isinstance(node, Exporter):
+                    self._execute_exporter(node)
+        self.state='SIM'
+        return self._memory
+
+
+    def launch_postprocessing(self):
+        if "SIM" != self.state:
+            print('Executor has to be in SIM mode before calling launchPostProcessing')
+        #TODO: Iter over postprocessing bucket
+        self.state='POST'
+        return self._memory
+
+
+    #Re-enable the new run method
+    #def run(self):
+    #    self.init_workflow()
+    #    self.process_workflow()
+    #    self.launch_simulation()
+    #    self.launch_postprocessing()
+
+    # def _execute_exporter(self, node):
+    #     if not self.options.get('executor.disable_exporter', False):
+    #         super(ControllableExecutor, self)._execute_exporter(node)
+    #     self.state = "POST"
+    #
+    # def _execute_operator_task(self, task):
+    #     if (self.in_preprocessing() and \
+    #                 not self.options.get('executor.disable_pre', False)) or \
+    #             (self.in_postprocessing() and \
+    #                      not self.options.get('executor.disable_post', False)):
+    #         super(ControllableExecutor, self)._execute_operator_task(task)
 
 
 def build_graph(tasks, exporter, variables):
@@ -303,7 +420,7 @@ def build_graph(tasks, exporter, variables):
     return dag
 
 
-from ..log import report
+from .. import log
 from ..sorts import conversion
 
 
@@ -323,7 +440,7 @@ def inject_implict_conversion(dag):
     for a, b, data in dag.edges(data=True):
         ref = data['ref']
         if not ref.valid:
-            report("Reference %s is invalid. Try to implicit conversion" % ref, 'I', 1561)
+            log.info("Reference %s is invalid. Try to implicit conversion" % ref)
             task = create_conversion_task(ref.linked_from, ref.linked_to)
 
             # add new task
@@ -351,7 +468,7 @@ def inject_implict_conversion(dag):
             dag.add_edge(task, b, ref=_t_b)
 
         else:
-            report("Reference %s is valid" % ref, 'D', 1562)
+            log.debug("Reference %s is valid" % ref)
     return dag
 
 

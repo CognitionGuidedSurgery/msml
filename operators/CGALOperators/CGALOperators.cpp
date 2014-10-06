@@ -310,9 +310,20 @@ namespace MSML{
     //mesh polydata->vtu
     vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
     string errorMessage;
+    vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
+
     MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
-    C3t3_poly c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
-      theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
+    C3t3_poly c3t3;
+    try 
+    {
+      c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
+        theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
+    }
+    catch (...) //only works in debug mode - release version crashes with access violation.
+    {
+      cerr << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
+      return "error in CGAL::make_mesh_3";
+    }
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
     remove((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
 

@@ -40,7 +40,6 @@ entry point, where you can access to various subsystem.
 from __future__ import print_function
 
 from .env import *
-from msml.log import report
 
 # need first step caused of sys.path
 # this is terrible to execute on module load
@@ -50,6 +49,8 @@ load_envconfig()
 
 from .analytics.alphabet_analytics import *
 
+
+from . import log
 
 from collections import OrderedDict
 from msml.run.GraphDotWriter import *
@@ -151,6 +152,7 @@ class App(object):
     :type options: dict[str, T]
 
     """
+
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
                  add_operator_path=None, memory_init_file=None, output_dir = None, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
@@ -258,10 +260,11 @@ class App(object):
         return mfile
 
     def _prepare_msml_model(self, mfile):
+        mfile.bind()
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
         #validate is needed for simulation execution, removed if condition "if not self._novalidate:"
-        mfile.validate(msml.env.CURRENT_ALPHABET) 
+        mfile.validate(msml.env.CURRENT_ALPHABET)
 
     def show(self, msml_file = None):
         if not msml_file:
@@ -278,13 +281,24 @@ class App(object):
         newname = path(newname).abspath()
         with open(newname, 'w') as w:
             w.write(writer())
-        report("File %s written." % newname)
+        log.info("File %s written." % newname)
 
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)
-        report("Execute: %s in %s" % (fil, fil.dirname),'I',20)
+        log.info("Execute: %s in %s" % (fil, fil.dirname))
         return self.execute_msml(mfile)
 
+    def init_workflow(self, msml_file):
+        self._prepare_msml_model(msml_file)
+        execlazz = self.executer
+
+        # change to msml-file dirname
+        os.chdir(msml_file.filename.dirname().abspath())
+        self._executor_class = execlazz(msml_file)
+        self._executor_class.options = self._executor_options
+        self._executor_class.working_dir = self.output_dir
+        self._executor_class.init_memory(self.memory_init_file)
+        mem = self._executor_class.initWorkflow()
 
     def execute_msml(self, msml_file):
         self._prepare_msml_model(msml_file)
@@ -297,6 +311,10 @@ class App(object):
         exe.working_dir = self.output_dir
         exe.init_memory(self.memory_init_file)
         mem = exe.run()
+        #self.init_workflow( msml_file)
+        #self.process_workflow( )
+        #self.launch_simulation( )
+        #mem = self.launch_postprocessing( )
         return mem
 
     def execution(self):
@@ -325,11 +343,11 @@ class App(object):
             msml.run.exportpy.exportpy(msml_file)
 
     def _load_alphabet(self):
-        report("READING alphabet...", 'I')
+        log.info("READING alphabet...")
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
-        report("found %d xml files in the alphabet search path" % len(files), 'I')
+        log.info("found %d xml files in the alphabet search path" % len(files))        
         alphabet = msml.xml.load_alphabet(file_list=files)
 
         # debug
@@ -389,7 +407,7 @@ class App(object):
 def main(args=None):
     """main entry of the `msml.py`
 
-    You can call it with command line.
+    You can all it with command line.
     For more control refer to :py:class:`App`.
     """
 

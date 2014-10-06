@@ -145,7 +145,7 @@ class PrintVisitorDisp(VisitorDispatchable, PrintVisitor):
 
 import msml.xml
 def main():
-    msml_file = msml.xml.load_msml_file("/home/weigl/workspace/msml/examples/BunnyExample/bunny.msml.xml")
+    msml_file = msml.xml.load_msml_file("/home/weigl/workspace/msml/examples/BunnyExample/bunny.msml.msml_xml")
 
 
     exporter = msml.exporter.visitor.VisitorExporterFramework(msml_file, PrintVisitor)

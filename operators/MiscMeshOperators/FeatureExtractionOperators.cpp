@@ -15,6 +15,7 @@
 #include <vtkMassProperties.h>
 
 #include "../vtk6_compat.h"
+#include "../common/log.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ namespace MSML {
 namespace FeatureExtractionOperators {
 
 Features ExtractFeatures(std::string infile) {
-    cout << "Extracting features from " << infile << endl;
+    log_info() << "Extracting features from " << infile << endl;
 
     vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
     reader->SetFileName(infile.c_str());

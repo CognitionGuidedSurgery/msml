@@ -83,7 +83,7 @@
         <boxROIToIndexOperator id="bottomToIndexGroup"
                                box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
                                select="points"/>
-                               <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
+        <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
         <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
         
     </workflow>
