@@ -20,27 +20,36 @@ import msml.xml
 import msml.exporter
 import msml.exceptions
 from msml.exceptions import *
+from msml.frontend import App
+
+
+class Lungs(object):
+    def __init__(self, msml_filename, p):
+        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p))
+        self.mf = self.app._load_msml_file(msml_filename)
+        self._surface_pressure = p
+    
+    def __call__(self):
+        self.app.memory_init_file = {
+            "surface_pressure":self._surface_pressure 
+        }
+        mem = self.app.execute_msml(self.mf, ) 
+        return mem._internal['volumeMeasure']['volume']
+
+
+def f_to_minimize(p_array):
+    p = p_array[0]
+    if (p<-50 or p > 70): # 
+        print p
+        return 8119088*10*abs(p)
+    l = Lungs(msml_file, p)
+    volume = l() 
+    return abs(volume- 8400000)
 
 msml_file = os.path.abspath('../CGALi2vLungs/lungs_new.xml')
 
-p_v_history = dict()
-
-def f(p_array):
-    p = p_array[0]
-    if (p<-50 or p > 70): 
-        return 8119088*2 
-    app = frontend.App(exporter='nsofa', output_dir='batchedPressure' + str(p))
-    mfile = app._load_msml_file(msml_file)
-    mfile.scene[0].constraints[0].constraints[1].pressure = str(p)
-    mfile.scene[0].constraints[0].constraints[1].attributes['pressure'] =  str(p)
-    mfile.scene[0].constraints[0].constraints[2].pressure =  str(p)
-    mfile.scene[0].constraints[0].constraints[2].attributes['pressure'] =  str(p)
-    mem = app.execute_msml(mfile)
-    aReturn = abs(mem._internal['volumeMeasure']['volume'] - 8400000)
-    p_v_history[p] = mem._internal['volumeMeasure']['volume']
-    return aReturn
 
 p0 = x0 = np.asarray((20))
-optimize.fmin_cg(f, x0)
-p_v_history
+optimize.fmin_cg(f_to_minimize, x0, epsilon=0.5)
+
     
