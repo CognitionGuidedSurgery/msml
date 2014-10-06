@@ -33,6 +33,7 @@ from ..sorts import *
 from ..exceptions import *
 from msml import sorts
 from msml.exceptions import MSMLUnknownModuleWarning
+from ..log import debug,info, error, warn
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -146,8 +147,6 @@ class Alphabet(object):
         with open(filename, 'w') as file:
             pickle.dump(self, file)
 
-            # import jsonpickle
-            # print(jsonpickle.encode(self))
 
     @staticmethod
     def load(filename):
@@ -457,9 +456,6 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-
-
-        print(args)
         r = self._function(*args)
 
         if len(self.output) == 0:
@@ -476,18 +472,15 @@ class PythonOperator(Operator):
         import importlib
 
         try:
-            #print("LOADING: %s.%s" % (self.modul_name, self.function_name))
             mod = importlib.import_module(self.modul_name)
             self._function = getattr(mod, self.function_name)
 
             return self._function
         except ImportError, e:
-            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownModuleWarning, 0)
+            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
         except AttributeError, e:
-            print(dir(mod))
-            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownFunctionWarning, 0)
+            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
+
 
     def validate(self):
         return self.bind_function() is not None

@@ -6,7 +6,7 @@
 #
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
@@ -40,6 +40,7 @@ import os
 
 from path import path
 
+from . import log
 
 # msml alphabet search path
 alphabet_search_paths = list()
@@ -124,5 +125,5 @@ def load_alphabet(fil="alphabet.cache"):
         CURRENT_ALPHABET = msml.model.alphabet.Alphabet.load(filename)
         return CURRENT_ALPHABET
     else:
-        print("WARNING: alphabet file »%s« not found, please run msml.py alphabet" % fil)
+        log.warn("WARNING: alphabet file »%s« not found, please run msml.py alphabet" % fil)
         return None

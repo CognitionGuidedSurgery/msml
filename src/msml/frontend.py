@@ -350,9 +350,6 @@ class App(object):
         log.info("found %d xml files in the alphabet search path" % len(files))        
         alphabet = msml.xml.load_alphabet(file_list=files)
 
-        # debug
-        #        alphabet.print_nice()
-
         msml.env.CURRENT_ALPHABET = alphabet
         self._alphabet = alphabet
         return alphabet
@@ -373,10 +370,9 @@ class App(object):
         for f in self.files:
             try:
                 self._load_msml_file(f)
-                print(f, "ok")
+                log.info(f)
             except msml.model.MSMLError as e:
-                print(f, "error")
-                print("\t", e)
+                log.error(f, e)
 
     def validate(self):
         """validation of the alphabet via the :py:mod:`msml.analytics`
@@ -401,7 +397,7 @@ class App(object):
                 fn()
                 break
         else:
-            print("could not find a suitable command")
+            log.error("could not find a suitable command")
 
 
 def main(args=None):

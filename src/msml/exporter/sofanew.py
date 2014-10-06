@@ -6,7 +6,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -45,6 +45,8 @@ from .base import XMLExporter, Exporter
 from msml.exceptions import *
 from ..sortdef import VTK
 
+from ..log import error, warn, info, fatal, critical, debug
+
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
 
@@ -61,25 +63,24 @@ class SofaExporter(XMLExporter):
         self.id = 'SOFAExporter'
         Exporter.__init__(self, msml_file)
         self.export_file = None
-        self.working_dir = path() #path.dirname(msml_file.filename)
-        self._memory_update = {} #cache for changes to _memory, updated after execution.
+        self.working_dir = path()  #path.dirname(msml_file.filename)
+        self._memory_update = {}  #cache for changes to _memory, updated after execution.
 
     def init_exec(self, executer):
+        """initialization by the executer, sets memory and executor member
+        :param executer: msml.run.Executer
+        :return:
         """
-     initialization by the executer, sets memory and executor member
-     :param executer: msml.run.Executer
-     :return:
-     """
         self._executer = executer
         self._memory = self._executer._memory
 
     def render(self):
         """
-     Builds the File (XML e.g) for the external tool
-     """
-        print("Converting to sofa scn")
+        Builds the File (XML e.g) for the external tool
+        """
+
         self.export_file = path(self._msml_file.filename).namebase + ".scn"
-        print self.export_file
+        info("Converting to sofa scn: %s", self.export_file)
 
         import codecs
 
@@ -93,30 +94,29 @@ class SofaExporter(XMLExporter):
     def execute(self):
         "should execute the external tool and set the memory"
         import msml.envconfig
-        
+
         filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
 
-
         with open(filenameSofaBatch, 'w') as f:
-                timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-                f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
-                    timeSteps) + ' ' + self.export_file + '.simu \n')
-
+            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
+            f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
+                timeSteps) + ' ' + self.export_file + '.simu \n')
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
-        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
+        if (msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l SofaCUDA -l MediAssist -g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
+            callCom = '-l SofaCUDA -l MediAssist -g batch -n ' + str(timeSteps) + ' ' + os.path.join(os.getcwd(),
+                                                                                                     self.export_file) + '\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
 
         log.info("Executing %s" % cmd)
         log.info("Working directory: %s" % os.getcwd())
 
         os.system(cmd)
-        
-        self._memory._internal.update(self._memory_update) #update output
-        
+
+        self._memory._internal.update(self._memory_update)  #update output
+
         #subprocess.call(cmd)
 
 
@@ -219,13 +219,11 @@ class SofaExporter(XMLExporter):
         poissons = {}
         density = {}
 
-
         for matregion in msmlObject.material:
             assert isinstance(matregion, MaterialRegion)
             indices_key = matregion.indices
             indices_vec = self.get_value_from_memory(matregion)
             indices = '%s' % ', '.join(map(str, indices_vec))
-
 
             indices_int = [int(i) for i in indices.split(",")]
             indices_int.sort()
@@ -237,7 +235,8 @@ class SofaExporter(XMLExporter):
 
                 if currentMaterialType == "linearElasticMaterial":
                     currentYoungs = self.get_value_from_memory(material, "youngModulus")
-                    currentPoissons = self.get_value_from_memory(material, "poissonRatio") # not implemented in sofa yet!
+                    currentPoissons = self.get_value_from_memory(material,
+                                                                 "poissonRatio")  # not implemented in sofa yet!
                     for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
                         youngs[i] = currentYoungs
                         poissons[i] = currentPoissons
@@ -247,7 +246,6 @@ class SofaExporter(XMLExporter):
                         density[i] = currentDensity
                 else:
                     warn("Material Type not supported %s" % currentMaterialType, MSMLSOFAExporterWarning)
-
 
 
         def _to_str(mapping):
@@ -325,7 +323,6 @@ class SofaExporter(XMLExporter):
                              position="@SurfaceTopo.position")
                     p = self.get_value_from_memory(constraint, 'pressure') / 10
 
-
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
@@ -355,7 +352,7 @@ class SofaExporter(XMLExporter):
 
                     displacedLandLMarks = self.sub("Node", constraintNode,
                                                    name="fixedPointsForSpringMeshToFixed")
-                    
+
                     mechObj = self.sub("MechanicalObject", displacedLandLMarks,
                                        template="Vec3f",
                                        name="fixedPoints")
@@ -411,17 +408,18 @@ class SofaExporter(XMLExporter):
 
                     #compute length of time stepo
                     timeSteps = self._msml_file.env.simulation[0].iterations
-                    dt  = self._msml_file.env.simulation[0].dt
-                    timestep = float(timeSteps) *dt
-                    keytimes = '0 '+str(timestep)+ ' ' +str( 100000) # this is a bad hack! -> if simulation runs further, it stays stable
+                    dt = self._msml_file.env.simulation[0].dt
+                    timestep = float(timeSteps) * dt
+                    keytimes = '0 ' + str(timestep) + ' ' + str(
+                        100000)  # this is a bad hack! -> if simulation runs further, it stays stable
 
                     #TODO: How do we get the disp values from memory?
-                    disp_vec = {0,0,0.01}
+                    disp_vec = {0, 0, 0.01}
                     tempMovement = '%s' % ' '.join(map(str, disp_vec))
-                    theMovement = "0 0 0 "+tempMovement+" 0 0 0"
+                    theMovement = "0 0 0 " + tempMovement + " 0 0 0"
                     constraintNode = self.sub('LinearMovementConstraint', objectNode,
                                               name=constraint.id or constraint_set.name,
-                                              indices=indices, movements=theMovement, keyTimes = keytimes)
+                                              indices=indices, movements=theMovement, keyTimes=keytimes)
                     #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
                     #                      name=constraint.id or constraint_set.name,
                     #                      dispIndices=indices, displacements=constraint.displacement)
@@ -438,7 +436,7 @@ class SofaExporter(XMLExporter):
     def createScene(self):
         dt = str(self._msml_file.env.simulation[0].dt)
         root = etree.Element("Node", name="root", dt=dt)
-        theGravityVec =  self._msml_file.env.simulation[0].gravity
+        theGravityVec = self._msml_file.env.simulation[0].gravity
         theGravity = str(theGravityVec)
         #timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
         if theGravity is None:
