@@ -308,7 +308,6 @@ namespace MSML{
 	  reader->Update();
 
     //mesh polydata->vtu
-    vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
     string errorMessage;
     vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
 

@@ -480,9 +480,9 @@ class SofaExporter(XMLExporter):
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
                     
                     if (request.useAsterisk): 
-                        self._memory_update['self.id'] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
+                        self._memory_update[self.id] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
                     else:
-                        self._memory_update['self.id'] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
+                        self._memory_update[self.id] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
 
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
@@ -509,9 +509,9 @@ class SofaExporter(XMLExporter):
                     #     lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
                     #
                     #if (request.useAsterisk): 
-                    #    self._memory_update['self.id'] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
+                    #    self._memory_update[self.id] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
                     #else:
-                    #    self._memory_update['self.id'] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
+                    #    self._memory_update[self.id] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
 
 
 
