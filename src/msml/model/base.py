@@ -757,7 +757,7 @@ def link_algorithm(msmlfile, attributes, node, slots):
         try:
             slot = slots[key]
         except KeyError as e:
-            report("%s is not a valid slot for %s" % (key, node), "F", 610)
+            log.fatal("%s is not a valid slot for %s" % (key, node))
             raise BaseException()
 
         if isinstance(value, Constant):
@@ -773,7 +773,7 @@ def link_algorithm(msmlfile, attributes, node, slots):
             value.link_to_task(node, slot)
             arguments[key] = value
         else:
-            report("Lookup after %s does not succeeded" % value, 'E')
+            log.error("Lookup after %s does not succeeded" % value)
 
     return arguments
 
@@ -787,6 +787,9 @@ class SceneObjectSets(object):
         self.elements = elements or list()
         self.nodes = nodes or list()
         self.surfaces = surfaces or list()
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
 
 
 def call_method_list(seq, method, *args):
@@ -890,6 +893,9 @@ class SceneObject(object):
         self._material = mat
 
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+
 class ObjectElement(object):
     """This class describe an instance of an :py:class:`ObjectAttribute`
 
@@ -990,6 +996,9 @@ class ObjectElement(object):
         except KeyError:
             return default
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+
 
 class ObjectConstraints(object):
     """Constraints for a timestep (``for_step``)
@@ -1065,6 +1074,10 @@ class ObjectConstraints(object):
         self._constraints += constraints
 
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+
+
 SceneSets = SceneObjectSets
 
 
@@ -1080,6 +1093,9 @@ class IndexGroup(object):
     def __init__(self, id, indices):
         self.id = id
         self.indices = indices
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
 
 
 class Mesh(object):
@@ -1122,6 +1138,8 @@ class Mesh(object):
         """
         return True
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
 
 class MaterialRegion(IndexGroup, list):
     """Represents an material region from an MSMLFile within an SceneObject
@@ -1166,3 +1184,6 @@ class MaterialRegion(IndexGroup, list):
         if not a:
             log.error("MaterialRegion %s has no indices" % self.id)
         return a and b and all(map(lambda x: x.validate(), self))
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
