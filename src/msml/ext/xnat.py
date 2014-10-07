@@ -35,7 +35,7 @@ import os
 import os.path
 import urllib2
 import tempfile
-
+from ..log import error, warn, info, fatal, critical, debug
 import requests
 
 from .. import log
@@ -68,7 +68,7 @@ def xnat_get(filename, resource, project, host=None, subject=None, username=None
         url = "{base}/data/archive/projects/{project}/resources/{resource}/files/{file}"
 
     url = url.format(resource=resource, project=project, base=base, file=filename, subject=subject)
-    print url
+    debug(url)
     auth = (username, password)
 
     if not localname:
@@ -134,8 +134,8 @@ def xnat_put(localname, resource, project, filename=None, host=None, deleteBefor
         log.debug(resp.url)
 
         if resp.status_code != 200:
-            pprint(resp.request.headers)
-            pprint(resp.headers)
+            debug(resp.request.headers)
+            debug(resp.headers)
             log.fatal(resp.status_code)
             raise BaseException('Error in Accessing: %s' % resp.url)
 

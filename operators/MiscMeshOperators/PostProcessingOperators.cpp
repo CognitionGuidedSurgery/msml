@@ -78,6 +78,7 @@
 using namespace boost;
 
 #include "../vtk6_compat.h"
+#include "../common/log.h"
 
 
 namespace MSML {
@@ -126,7 +127,7 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
 
     if(numberOfRefPoints != numberOfTestPoints)
     {
-        std::cout<<"Error, meshes have to be the same size!!";
+        log_error() <<"Error, meshes have to be the same size!!" << std::endl;
         return;
     }
 
@@ -145,14 +146,7 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
     {
         refPoints->GetPoint(i, currentRefPoint);
         testPoints->GetPoint(i, currentTestPoint);
-
-//			std::cout<<"Point No "<<i<<": ("<<currentRefPoint[0]<<","<<currentRefPoint[1]<<","<<currentRefPoint[2]<<"),("<<currentTestPoint[0]<<","<<currentTestPoint[1]<<","<<currentTestPoint[2]<<")\n";
-
         currentError =  sqrt(pow((currentRefPoint[0]-currentTestPoint[0]), 2) + pow((currentRefPoint[1]-currentTestPoint[1]), 2) + pow((currentRefPoint[2]-currentTestPoint[2]), 2));// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
-        //		currentError =  sqrt((currentRefPoint[0]-currentTestPoint[0])*(currentRefPoint[0]-currentTestPoint[0]) + (currentRefPoint[1]-currentTestPoint[1])*(currentRefPoint[1]-currentTestPoint[1]) + (currentRefPoint[2]-currentTestPoint[2])*(currentRefPoint[2]-currentTestPoint[2]) );// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
-
-        //		std::cout<<"CurrentError "<<currentError<<"\n";
-
         errorVec[i]= currentError;
 
     }
@@ -210,7 +204,7 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
 
     if(numberOfRefPoints != numberOfTestPoints)
     {
-        std::cout<<"Error, meshes have to be the same size!!";
+        log_error() <<"Error, meshes have to be the same size!!" << std::endl;
         return;
     }
 
@@ -229,9 +223,6 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
 
         currentError =  sqrt(pow((currentRefPoint[0]-currentTestPoint[0]), 2) + pow((currentRefPoint[1]-currentTestPoint[1]), 2) + pow((currentRefPoint[2]-currentTestPoint[2]), 2));// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
         //		currentError =  sqrt((currentRefPoint[0]-currentTestPoint[0])*(currentRefPoint[0]-currentTestPoint[0]) + (currentRefPoint[1]-currentTestPoint[1])*(currentRefPoint[1]-currentTestPoint[1]) + (currentRefPoint[2]-currentTestPoint[2])*(currentRefPoint[2]-currentTestPoint[2]) );// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
-
-        //		std::cout<<"CurrentError "<<currentError<<"\n";
-
         errorRMS += currentError;
 
         if(currentError > errorMax)
@@ -275,7 +266,7 @@ void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid
 
     if(errorVec.size() != inputMesh->GetNumberOfPoints())
     {
-        std::cout<<"Size mismatch between errorVec and inputMesh size\n";
+        log_error() <<"Size mismatch between errorVec and inputMesh size" << std::endl;
         return;
     }
 
@@ -296,14 +287,14 @@ void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid
 
 std::string ColorMeshFromComparisonPython(std::string modelFilename, std::string referenceFilename, std::string coloredModelFilename)
 {
-    std::cout<<"Coloring mesh with errors...";
+    log_debug() <<"Coloring mesh with errors..." << std::endl;
     ColorMeshFromComparison(modelFilename.c_str(), referenceFilename.c_str(),coloredModelFilename.c_str());
     return coloredModelFilename;
 }
 
 std::string ColorMeshPython(std::string modelFilename, std::string coloredModelFilename)
 {
-    std::cout<<"Coloring mesh...";
+    log_debug() << "Coloring mesh..." << std::endl;
     ColorMesh(modelFilename.c_str(), coloredModelFilename.c_str());
     return coloredModelFilename;
 }
@@ -345,7 +336,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
     int cellType = currentGrid->GetCellType(1);
     bool isQuadratic = false;
 
-    std::cout<<"CellType is "<<cellType<<"\n";
+    log_info() <<"CellType is "<<cellType<< std::endl;
 
     if(cellType == 22)
     {
@@ -354,7 +345,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
 
     if(isQuadratic)
     {
-        std::cout<<"QuadraticMeshDetected\n";
+        log_info() <<"QuadraticMeshDetected" << std::endl;
     }
 
     typedef adjacency_list<listS, vecS, undirectedS> Graph;
@@ -399,25 +390,13 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
 
         }
 
-//		if(i==163)
-//			std::cout<<" Neighbors of triangle 163:";
-
-
         std::set<int>::iterator iter;
 
         for(iter=connectedElements.begin(); iter!=connectedElements.end(); ++iter)
         {
             Edge edge = Edge(i, *iter);
             edge_array.push_back(edge);
-
-//			if(i==163)
-//				std::cout<<", "<<(*iter);
-
         }
-
-//		if(i==163)
-//			std::cout<<" \n";
-
     }
 
     // eliminating duplicate edges - needed? seems not!
@@ -436,7 +415,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
     vertices_size_type num_colors = sequential_vertex_coloring(g, color);
 
     //InternalData.m_nColors = num_colors;
-    printf("num_colors = %d \n", num_colors);
+    log_debug() << "num_colors = "<<  num_colors << std::endl;
 
     vtkSmartPointer<vtkFloatArray> colorData =
         vtkSmartPointer<vtkFloatArray>::New();
@@ -523,7 +502,7 @@ std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const 
 
     for (int i=0; i<allRefs->size(); i++)
     {
-        cout << "Generating Deformed image " << currenOutputFile << std::endl;
+        log_info() << "Generating Deformed image " << currenOutputFile << std::endl;
         boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
         currenOutputFile = curentPath.string();
         ApplyDVF(referenceImage, allRefs->at(i).second.c_str(), currenOutputFile.c_str(), reverseDirection, voxelSize);
@@ -548,7 +527,7 @@ void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDef
     #endif
 
     ApplyDVF(refImage, dvfVecImage, outputDefImage, reverseDirection, voxelSize);
-    cout << "Writing Deformed image.. "  << std::endl;
+    log_debug() << "Writing Deformed image.. "  << std::endl;
     //write output
     IOHelper::VTKWriteImage(outputDeformedImage, outputDefImage);
 }
@@ -667,7 +646,7 @@ string GenerateDVFMultipleDefGrids(const char* referenceGridFilename, const char
 
     for (int i=0; i<allDefs->size(); i++)
     {
-        cout << "Generating DVF " << currenOutputFile << std::endl;
+        log_debug() << "Generating DVF " << currenOutputFile << std::endl;
         boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allDefs->at(i).first) + aPath.extension().string());
         currenOutputFile = curentPath.string();
         GenerateDVF(referenceGridFilename, allDefs->at(i).second.c_str(), currenOutputFile.c_str(), spacingParam, referenceCoordinateGrid);
@@ -684,7 +663,7 @@ string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char
 
     for (int i=0; i<allRefs->size(); i++)
     {
-        cout << "Generating DVF " << currenOutputFile << std::endl;
+        log_debug() << "Generating DVF " << currenOutputFile << std::endl;
         boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
         currenOutputFile = curentPath.string();
         GenerateDVF(allRefs->at(i).second.c_str(),  deformedGridFilename, currenOutputFile.c_str(), spacingParam, referenceCoordinateGrid);
@@ -799,7 +778,7 @@ std::string TransformMeshBarycentricMultiple(const char* meshPath, const char* r
 
     for (int i=0; i<allRefs->size(); i++)
     {
-        cout << "TransformMeshBarycentricMultiple " << currenOutputFile << std::endl;
+        log_debug()  << "TransformMeshBarycentricMultiple " << currenOutputFile << std::endl;
         boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
         currenOutputFile = curentPath.string();
         TransformMeshBarycentric(meshPath, referenceGridPath, allRefs->at(i).second.c_str(), currenOutputFile.c_str());

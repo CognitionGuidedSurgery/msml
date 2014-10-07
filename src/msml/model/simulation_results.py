@@ -3,10 +3,10 @@ __author__ = 'suwelack'
 
 class SimulationResults(object):
 
-    def __init__(self, initial_points={0,0,0} , deformed_points={0,0,0}, connectivity={}):
-        self.deformed_Points = deformed_points
-        self.initial_points = initial_points
-        self.connectivity = connectivity
+    def __init__(self, initial_points= None , deformed_points=None, connectivity=None):
+        self.deformed_Points = deformed_points or {0,0,0}
+        self.initial_points = initial_points or {0,0,0}
+        self._connectivity = connectivity or set()
 
     @property
     def deformed_points(self):

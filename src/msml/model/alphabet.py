@@ -35,6 +35,7 @@ from msml import sorts
 
 from sequence import executeOperatorSequence
 from msml.exceptions import MSMLUnknownModuleWarning
+from ..log import debug,info, error, warn
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -443,8 +444,7 @@ class PythonOperator(Operator):
 
     def __str__(self):
         return "<PythonOperator: %s.%s>" % (self.modul_name, self.function_name)
-    
-    
+
     def __call__(self, **kwargs):
         if not self._function:
             self.bind_function()
@@ -464,9 +464,8 @@ class PythonOperator(Operator):
         
         
         if sum('*' in str(arg) for arg in args):        
-                r = executeOperatorSequence(self, args) 
-        else:
-            print(args)
+            r = executeOperatorSequence(self, args) 
+        else:        
             r = self._function(*args)
 
         if len(self.output) == 0:
@@ -483,18 +482,15 @@ class PythonOperator(Operator):
         import importlib
 
         try:
-            #print("LOADING: %s.%s" % (self.modul_name, self.function_name))
             mod = importlib.import_module(self.modul_name)
             self._function = getattr(mod, self.function_name)
 
             return self._function
         except ImportError, e:
-            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownModuleWarning, 0)
+            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
         except AttributeError, e:
-            print(dir(mod))
-            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownFunctionWarning, 0)
+            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
+
 
     def validate(self):
         return self.bind_function() is not None

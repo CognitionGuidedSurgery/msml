@@ -33,7 +33,7 @@ from path import path
 from msml.model.base import (MSMLEnvironment, ObjectConstraints, MSMLVariable, SceneObject, Mesh, SceneObjectSets,
                              MaterialRegion, MSMLFile)
 
-from .base import generate_name, ACTIVE_APP
+from .base import *
 
 
 __author__ = 'Alexander Weigl'
@@ -67,6 +67,7 @@ def Constraints(for_step = 0, *constraints):
 def run(msml_file, filename, output_folder = None):
     assert isinstance(msml_file, MSMLFile)
     msml_file.filename = path(filename)
+    ACTIVE_APP.output_dir = output_folder
     return ACTIVE_APP.execute_msml(msml_file)
 
 
@@ -96,3 +97,16 @@ class SimulationBuilder(object):
         env =  MSMLEnvironment(solver, Steps(*steps))
         self.msml_file._env = env
         return env
+
+def slot_value(obj, slot = None):
+    if isinstance(obj, Task):
+        name = obj.id
+    elif isinstance(obj, TaskDummyResult):
+        name = obj.task_id
+    else:
+        name = obj
+
+    if slot:
+        return "${%s.%s}" % (name, slot)
+    else:
+        return "${%s}" % name

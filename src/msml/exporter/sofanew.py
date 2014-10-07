@@ -45,6 +45,8 @@ from .base import XMLExporter, Exporter
 from msml.exceptions import *
 from ..sortdef import VTK
 
+from ..log import error, warn, info, fatal, critical, debug
+
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
 
@@ -61,25 +63,25 @@ class SofaExporter(XMLExporter):
         self.id = 'SOFAExporter'
         Exporter.__init__(self, msml_file)
         self.export_file = None
-        self.working_dir = path() #path.dirname(msml_file.filename)
-        self._memory_update = {} #cache for changes to _memory, updated after execution.
+        self.working_dir = path()  #path.dirname(msml_file.filename)
+        self._memory_update = {}  #cache for changes to _memory, updated after execution.
 
     def init_exec(self, executer):
+        """initialization by the executer, sets memory and executor member
+        :param executer: msml.run.Executer
+        :return:
         """
-     initialization by the executer, sets memory and executor member
-     :param executer: msml.run.Executer
-     :return:
-     """
+     
         self._executer = executer
         self._memory = self._executer._memory
 
     def render(self):
         """
-     Builds the File (XML e.g) for the external tool
-     """
-        print("Converting to sofa scn")
+        Builds the File (XML e.g) for the external tool
+        """
+
         self.export_file = path(self._msml_file.filename).namebase + ".scn"
-        print self.export_file
+        info("Converting to sofa scn: %s", self.export_file)
 
         import codecs
 
@@ -93,30 +95,30 @@ class SofaExporter(XMLExporter):
     def execute(self):
         "should execute the external tool and set the memory"
         import msml.envconfig
-        
+
         filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
 
-
         with open(filenameSofaBatch, 'w') as f:
-                timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-                f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
-                    timeSteps) + ' ' + self.export_file + '.simu \n')
+            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
+            f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
+                timeSteps) + ' ' + self.export_file + '.simu \n')
 
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
         if(msml.envconfig.SOFA_EXECUTABLE.find('runSofaExtended') > -1):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l SofaCUDA -l MediAssist -g batch -n '+ str(timeSteps) +' ' + os.path.join(os.getcwd(), self.export_file) +'\n'
+            callCom = '-l SofaCUDA -l MediAssist -g batch -n ' + str(timeSteps) + ' ' + os.path.join(os.getcwd(),
+                                                                                                     self.export_file) + '\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
 
         log.info("Executing %s" % cmd)
         log.info("Working directory: %s" % os.getcwd())
 
         os.system(cmd)
-        
-        self._memory._internal.update(self._memory_update) #update output
-        
+
+        self._memory._internal.update(self._memory_update)  #update output
+
         #subprocess.call(cmd)
 
 
@@ -235,7 +237,8 @@ class SofaExporter(XMLExporter):
 
                 if currentMaterialType == "linearElasticMaterial":
                     currentYoungs = self.get_value_from_memory(material, "youngModulus")
-                    currentPoissons = self.get_value_from_memory(material, "poissonRatio") # not implemented in sofa yet!
+                    currentPoissons = self.get_value_from_memory(material,
+                                                                 "poissonRatio")  # not implemented in sofa yet!
                     for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
                         youngs[i] = currentYoungs
                         poissons[i] = currentPoissons
@@ -245,7 +248,6 @@ class SofaExporter(XMLExporter):
                         density[i] = currentDensity
                 else:
                     warn("Material Type not supported %s" % currentMaterialType, MSMLSOFAExporterWarning)
-
 
 
         def _to_str(mapping):

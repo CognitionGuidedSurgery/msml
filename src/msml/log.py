@@ -196,6 +196,7 @@ LOGGING = {
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("root")
 
+
 error = logger.error
 warn = logger.warn
 info = logger.info
