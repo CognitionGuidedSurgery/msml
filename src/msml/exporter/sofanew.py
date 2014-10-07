@@ -412,11 +412,15 @@ class SofaExporter(XMLExporter):
                     #compute length of time stepo
                     timeSteps = self._msml_file.env.simulation[0].iterations
                     dt  = self._msml_file.env.simulation[0].dt
-                    timestep = float(timeSteps) *dt
+                    timestep = float(timeSteps) *float(dt)
                     keytimes = '0 '+str(timestep)+ ' ' +str( 100000) # this is a bad hack! -> if simulation runs further, it stays stable
 
                     #TODO: How do we get the disp values from memory?
-                    disp_vec = {0,0,0.01}
+                    disp_vec = self.get_value_from_memory(constraint, 'displacement')
+                    #disp_vec = {0,0,0.01}
+                    #if '$' not in constraint.displacement:
+                    #    disp_vec = [float(x) for x in constraint.displacement]
+
                     tempMovement = '%s' % ' '.join(map(str, disp_vec))
                     theMovement = "0 0 0 "+tempMovement+" 0 0 0"
                     constraintNode = self.sub('LinearMovementConstraint', objectNode,

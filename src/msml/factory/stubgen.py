@@ -117,7 +117,7 @@ def generate():
 def main():
     content =  generate()
     print content
-    with open("/homes/students/weigl/workspace1/msml/examples/BunnyExample/stub.py", 'w') as fp:
+    with open("examples/BunnyExample/stub.py", 'w') as fp:
         fp.write(content)
 
 

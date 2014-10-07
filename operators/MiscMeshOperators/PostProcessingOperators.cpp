@@ -541,7 +541,7 @@ void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDef
     outputDefImage = MiscMeshOperators::ImageCreate(refImage);
     MiscMeshOperators::ImageChangeVoxelSize(outputDefImage, voxelSize);
     #if VTK_MAJOR_VERSION <= 5
-    outputDefImage->SetScalarTypeToFLOAT();
+    outputDefImage->SetScalarTypeToFloat();
     outputDefImage->AllocateScalars();
     #else
     outputDefImage->AllocateScalars(VTK_FLOAT,1); //one value per 3d coordinate

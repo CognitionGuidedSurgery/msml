@@ -1001,6 +1001,12 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 //
 //}
 
+std::vector<double> ExtractPointPositionsPython( std::vector<int> indices, std::string inputMesh)
+{
+	return ExtractPointPositions(indices, IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()));
+}
+
+
 std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile)
 {
     return ExtractPointPositions(indices, IOHelper::VTKReadUnstructuredGrid(infile));
