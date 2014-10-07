@@ -32,7 +32,10 @@ import pickle
 from ..sorts import *
 from ..exceptions import *
 from msml import sorts
+
+from sequence import executeOperatorSequence
 from msml.exceptions import MSMLUnknownModuleWarning
+from ..log import debug,info, error, warn
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -449,6 +452,7 @@ class PythonOperator(Operator):
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
         
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
         defaults = dict()
         for x in self.parameters.values():
             if x.default is not None:
@@ -457,10 +461,12 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-
-
-        print(args)
-        r = self._function(*args)
+        
+        
+        if sum('*' in str(arg) for arg in args):        
+            r = executeOperatorSequence(self, args) 
+        else:        
+            r = self._function(*args)
 
         if len(self.output) == 0:
             results = None
@@ -470,24 +476,21 @@ class PythonOperator(Operator):
             results = dict(zip(self.output_names(), r))
 
         return results
-
+        
     def bind_function(self):
         """Search and bind the python function. Have to be called before `__call__`"""
         import importlib
 
         try:
-            #print("LOADING: %s.%s" % (self.modul_name, self.function_name))
             mod = importlib.import_module(self.modul_name)
             self._function = getattr(mod, self.function_name)
 
             return self._function
         except ImportError, e:
-            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownModuleWarning, 0)
+            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
         except AttributeError, e:
-            print(dir(mod))
-            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownFunctionWarning, 0)
+            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
+
 
     def validate(self):
         return self.bind_function() is not None
@@ -505,22 +508,42 @@ class ShellOperator(Operator):
 
     def __call__(self, **kwargs):
         import os
-
-        command = self.command_tpl.format(**kwargs)
-        os.system(command)
+        
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
+        defaults = dict()
+        for x in self.parameters.values():
+            if x.default is not None:
+                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
+        kwargsUpdated = defaults
+        kwargsUpdated.update(kwargs)
+                   
+        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        
+        if sum('*' in str(arg) for arg in args):        
+            r = executeOperatorSequence(self, args) 
+        else:
+            self._function(args)
         
         results = None
         if len(self.output) == 1 and 'out_filename' in kwargs:
             results = {self.output_names()[0]: kwargs.get('out_filename')}
         return results
+    
+    def _function(self, *args):
+        if (len(args)==1):
+            args = args[0]
+        kwargs =  dict(zip(self.acceptable_names(), args))
+        command = self.command_tpl.format(**kwargs)
+        os.system(command)
 
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""
+    # TODO: executeOperatorSequence 
 
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
-
+        
         self.symbol_name = runtime['symbol']
         self.filename = runtime['file']
 
@@ -532,3 +555,4 @@ class SharedObjectOperator(PythonOperator):
 
         self.__function = getattr(object, self.symbol_name)
         return self.__function
+

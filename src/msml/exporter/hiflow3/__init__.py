@@ -45,7 +45,7 @@ from .. import log
 
 from path import path
 from collections import namedtuple
-from .base import Exporter
+from ..base import Exporter
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(path(__file__).dirname()))
 

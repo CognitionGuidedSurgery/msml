@@ -37,6 +37,8 @@
 #include <CGAL/IO/Polyhedron_iostream.h>
 
 
+#include "../common/log.h"
+
 
 //Polyhedral domain:
 // Domain poly
@@ -320,7 +322,7 @@ namespace MSML{
     }
     catch (...) //only works in debug mode - release version crashes with access violation.
     {
-      cerr << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
+      log_error() << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
       return "error in CGAL::make_mesh_3";
     }
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
@@ -436,14 +438,14 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
   int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType();
   if(vtk_type != VTK_UNSIGNED_CHAR)
   {
-    cerr << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
+    log_error() << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
     exit(2);
   }
   image->wdim = 1;
   image->wordKind = WK_FIXED;
   image->sign = SGN_UNSIGNED;
   image->data = ::ImageIO_alloc(dims[0]*dims[1]*dims[2]* 1);
-  std::cerr << "GetNumberOfTuples()=" << vtk_image->GetPointData()->GetScalars()->GetNumberOfTuples()
+  log_error() << "GetNumberOfTuples()=" << vtk_image->GetPointData()->GetScalars()->GetNumberOfTuples()
             << "\nimage->size()=" << dims[0]*dims[1]*dims[2]
             << "\nwdim=" << image->wdim << '\n';
   assert(vtk_image->GetPointData()->GetScalars()->GetNumberOfTuples() == dims[0]*dims[1]*dims[2]);

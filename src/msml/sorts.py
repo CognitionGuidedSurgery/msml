@@ -291,7 +291,7 @@ conversion = DEFAULT_CONVERSION_NETWORK.converter
 #
 
 def _bool(s):
-    return (isinstance(s, bool) and s) or (s.lower() in ('true', 'on', 'yes')) or bool(s)
+    return (isinstance(s, bool) and s) or (s.lower() in ('True', 'TRUE','true', 'on', 'yes'))
 
 
 def _list_of_type(s, t):

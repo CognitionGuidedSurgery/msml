@@ -32,7 +32,9 @@ __license__ = 'GPLv3'
 import lxml.etree as etree
 from jinja2 import Template
 
-from .base import XMLExporter, Exporter
+
+from path import path
+from ..base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
 import rdflib
@@ -42,6 +44,7 @@ from rdflib.namespace import RDF
 
 from msml.model import *
 
+from ...log import error, warn, info, fatal, critical, debug
 
 class MSMLAbaqusExporterWarning(MSMLWarning): pass
 
@@ -49,37 +52,27 @@ class MSMLAbaqusExporterWarning(MSMLWarning): pass
 class AbaqusExporter(XMLExporter):
     def __init__(self, msml_file):
         """
-      Args:
-       executer (Executer)
-
-
-      """
+        """
         self.name = 'AbaqusExporter'
         Exporter.__init__(self, msml_file)
 
     def init_exec(self, executer):
+        """initialization by the executer, sets memory and executor member
+         :param executer: msml.run.Executer
+         :return:
         """
-     initialization by the executer, sets memory and executor member
-     :param executer: msml.run.Executer
-     :return:
-     """
         self._executer = executer
         self._memory = self._executer._memory
 
     def render(self):
+        """Builds the File (XML e.g) for the external tool
         """
-     Builds the File (XML e.g) for the external tool
-     """
-        #scene = self.msml_file.scene
-
-        #print os.getcwd()
-
         filename = self._msml_file.filename
 
         fileTree = etree.parse(filename)
         msmlRootNode = fileTree.getroot()
 
-        print("Converting to abaqus input deck.")
+        error("Converting to abaqus input deck.")
         theAbaqusFilename = filename[0:-3] + 'inp'
         print theAbaqusFilename
 
@@ -90,25 +83,20 @@ class AbaqusExporter(XMLExporter):
     def execute(self):
         "should execute the external tool and set the memory"
 
-        print("Executing abaqus.")
+        info("Executing abaqus.")
 
         pass
 
     def write_inp(self, inpfile):
         assert isinstance(inpfile, file)
+        info(" and rdf lib testing")
 
-        #print("Here goes jinja testing...")
-
-        #template = Template('Hello {{ name }}!')
-        #output = template.render(name='John Doe')
+        modulepath = path(__file__).dirname()
 
 
-
-        #print output
-        print(" and rdf lib testing")
-
-        parser = OntologyParser('/home/suwelack/git/MSMLExtended/msml/share/ontology/MSMLOnto.rdf-xml.owl')
-        parser.parse_ontology_from_python_memory(URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
+        parser = OntologyParser(modulepath / 'MSMLOnto.rdf-xml.owl')
+        parser.parse_ontology_from_python_memory(
+            URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
 
         #g=rdflib.Graph()
         #g.load('/home/suwelack/git/MSMLExtended/msml/share/ontology/MSMLOnto.rdf-xml.owl')

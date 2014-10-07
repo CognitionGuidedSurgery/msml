@@ -32,8 +32,13 @@ class WorkflowBuilderBase(object):
         return functools.partial(self.create_task, ACTIVE_APP.alphabet.operators[name])
 
     def create_task(self, operator, **kwargs):
+
+
         if 'id' not in kwargs:
             kwargs["id"] = generate_name()
+
+        if isinstance(operator, str):
+            operator = ACTIVE_APP.alphabet.operators[operator]
 
         task = Task(operator.name, parse_attrib(kwargs))
         for out in operator.output_names():

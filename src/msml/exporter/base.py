@@ -49,6 +49,8 @@ class Exporter(object):
 
         """
         assert isinstance(msml_file, MSMLFile)
+
+        self._datamodel = None
         self._msml_file = msml_file
         self.name = 'base'
         self._output_types_for_tags = {}
@@ -291,6 +293,75 @@ class Exporter(object):
             return self._memory.lookup(reference)
         else:
             raise MSMLException("no suitable reference was given (%s)" % reference)
+
+    @property
+    def datamodel(self):
+        if not self._datamodel:
+            self._datamodel = self.generate_data_model()
+        return self._datamodel
+
+    def generate_data_model(self):
+        def _scene(sceneobject):
+            """
+            :param scene: an object from the scene
+            :type scene: msml.model.base.SceneObject
+            :return: a scene object with references solved
+            """
+            ns = SceneObject(
+                sceneobject.id,
+                _mesh(sceneobject.mesh),
+                _scene_sets(sceneobject.sets),
+                map(_region, sceneobject.material),
+                map(_constraint, sceneobject.constraints)
+            )
+            return ns
+
+        def _scene_sets(sets):
+            assert isinstance(sets, SceneObjectSets)
+
+            def _resolve(indexgroup):
+                assert isinstance(indexgroup, IndexGroup)
+                ig = IndexGroup(indexgroup.id, self.get_value_from_memory(indexgroup))
+                return ig
+
+            _map_resolve = lambda seq: map(_resolve, seq)
+
+            ns = SceneObjectSets(
+                _map_resolve(sets.elements),
+                _map_resolve(sets.nodes),
+                _map_resolve(sets.surfaces),
+            )
+            return ns
+
+        def _mesh(mesh):
+            assert isinstance(mesh, Mesh)
+            return Mesh(mesh.id, mesh.id, self.get_value_from_memory(mesh))
+
+        def _object_element(objectelement):
+            assert isinstance(objectelement, ObjectElement)
+
+            attrib = objectelement.attributes
+            objectelement.meta
+            values = {k: self.get_value_from_memory(objectelement, k) for k in objectelement.meta.parameters}
+
+            return ObjectElement(values, objectelement.meta)
+
+
+        def _region(materialregion):
+            assert isinstance(materialregion, MaterialRegion)
+
+            return MaterialRegion(materialregion.id, self.get_value_from_memory(materialregion),
+                                  map(_object_element, materialregion))
+
+
+        def _constraint(objectconstraints):
+            assert isinstance(objectconstraints, ObjectConstraints)
+            oc = ObjectConstraints(objectconstraints.name, objectconstraints.for_step)
+            oc.constraints = map(_object_element, objectconstraints.constraints)
+            return oc
+
+        return map(_scene, self._msml_file.scene)
+
 
 
 class XMLExporter(Exporter): pass
