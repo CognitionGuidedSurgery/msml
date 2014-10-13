@@ -313,6 +313,8 @@ class ControllableExecutor(LinearSequenceExecutor):
                 node.value = variable_value
                 variable_found = True
                 self._execute_variable(node)
+                #TODO:Remove this hack -> calling _execute_Variable should be sufficient
+                self._memory[node.name] = node.value
 
         if not variable_found:
             print("Error, variable "+variable_name+" could not be found!!")
@@ -373,6 +375,9 @@ class ControllableExecutor(LinearSequenceExecutor):
         #print(self._options)
 
         self._init_workflow()
+        for node in self._var_bucket:
+            self._execute_variable(node)
+
         self.process_workflow()
 
         if self._options != 'PRE':

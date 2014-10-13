@@ -32,15 +32,6 @@ class SimulationRunner(object):
 
         self._executer.update_variable(variable_name, variable_value)
 
-    def save_result(self,  append_string):
-
-
-        print('Saved to..')
-
-    def save_render_output(self, append_string):
-
-        print('Saved to..')
-
 
     def get_results(self, variableName, valueName):
 
@@ -55,7 +46,7 @@ class SimulationRunner(object):
 
 
     def run(self):
-
+        self._executer._init_workflow()
         self._memory = self._theApp.execute_msml(self._mfile)
 
 
