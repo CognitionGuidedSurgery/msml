@@ -149,6 +149,25 @@ class LinearSequenceExecutor(Executer):
     def run(self):
         """starts the execution of the given MSMLFile
         """
+
+        self._init_workflow()
+
+        for node in self._var_bucket:
+            self._execute_variable(node)
+
+        for node in self._pre_bucket:
+            self._execute_operator_task(node)
+
+        for node in self._sim_bucket:
+            self._execute_exporter(node)
+
+        for node in self._post_bucket:
+            self._execute_operator_task(node)
+
+        return self._memory
+
+    def _init_workflow(self):
+
         dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
 
         # dag.show()
@@ -169,16 +188,26 @@ class LinearSequenceExecutor(Executer):
             finally:
                 wd.chdir()
 
+        #fill four buckets:
+        self._pre_bucket =list()
+        self._var_bucket =list()
+        self._sim_bucket = list()
+        self._post_bucket = list()
+
+        is_pre = True
         for bucket in buckets:
             for node in bucket:
                 if isinstance(node, Task):
-                    self._execute_operator_task(node)
+                    if(is_pre):
+                       self._pre_bucket.append(node)
+                    else:
+                        self._post_bucket.append(node)
                 elif isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-                elif isinstance(node, Exporter):
-                    self._execute_exporter(node)
+                    self._var_bucket.append(node)
+                if isinstance(node, Exporter):
+                    self._sim_bucket.append(node)
+                    is_pre = False
 
-        return self._memory
 
     def _render_exporter(self, node):
         """executes the exporter behind node
@@ -267,63 +296,41 @@ class ControllableExecutor(LinearSequenceExecutor):
     def simulation_state(self):
         return self.state == "SIM"
 
-
-    def initWorkflow(self):
-        """starts the execution of the given MSMLFile
-        """
-        dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
-
-        # dag.show()
-
-        self._buckets = dag.toporder()
-
-        # make absolute paths for every string/file literal
-        # wd is msml file dirname
-        initialize_file_literals(self._buckets[0])
-
-        # change to output_dir
-        if self.working_dir:
-            wd = path(self.working_dir)
-            try:
-                wd.mkdir()
-            except:
-                pass
-            finally:
-                wd.chdir()
-
+    def _init_workflow(self):
+        super(ControllableExecutor,self)._init_workflow()
         self.state = "INIT"
 
-        #TODO: Sort nodes into 4 buckets: variables, preprocessing, exporter, postprocessing
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-
-        return self._memory
-
-
-
     def update_variable(self, variable_name, variable_value):
-        if "INIT" != self.state:
+        if "NOINIT" == self.state:
             raise MSMLError('Executor has to be in INIT mode before calling updateVariables')
+        elif "INIT" != self.state:
+            self.state = 'INIT'
 
 
-        #TODO: Only iter over variable bucket
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-        return self._memory
+        variable_found = False
+        for node in self._var_bucket:
+            if node.name == variable_name:
+                node.value = variable_value
+                variable_found = True
+                self._execute_variable(node)
+
+        if not variable_found:
+            print("Error, variable "+variable_name+" could not be found!!")
+
+
+
 
     def process_workflow(self):
         if "INIT" != self.state:
             raise MSMLError('Executor has to be in INIT mode before calling processWorkflow')
 
-        #TODO: Only iter over preprocessing bucket
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, Task):
-                    self._execute_operator_task(node)
+        for node in self._var_bucket:
+            self._execute_variable(node)
+
+        for node in self._pre_bucket:
+            self._execute_operator_task(node)
+
+
 
         self.state = "PRE"
         return self._memory
@@ -332,20 +339,18 @@ class ControllableExecutor(LinearSequenceExecutor):
         if "PRE" != self.state:
             print('Executor has to be in PRE mode before calling renderSimulationInput')
 
-        for bucket in self._buckets:
-            for node in bucket:
-               if isinstance(node, Exporter):
-                    self._render_exporter(node)
+        for node in self._sim_bucket:
+            self._render_exporter(node)
+
         return self._memory
 
     def launch_simulation(self):
         if "PRE" != self.state:
-            print('Executor has to be in PRE mode before calling launchSimulationt')
+            print('Executor has to be in PRE mode before calling launchSimulation')
 
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, Exporter):
-                    self._execute_exporter(node)
+        for node in self._sim_bucket:
+            self._execute_exporter(node)
+
         self.state='SIM'
         return self._memory
 
@@ -353,17 +358,33 @@ class ControllableExecutor(LinearSequenceExecutor):
     def launch_postprocessing(self):
         if "SIM" != self.state:
             print('Executor has to be in SIM mode before calling launchPostProcessing')
-        #TODO: Iter over postprocessing bucket
+
+
+
+        for node in self._post_bucket:
+            self._execute_operator_task(node)
+
         self.state='POST'
         return self._memory
 
 
     #Re-enable the new run method
-    #def run(self):
-    #    self.init_workflow()
-    #    self.process_workflow()
-    #    self.launch_simulation()
-    #    self.launch_postprocessing()
+    def run(self):
+        #print(self._options)
+
+        self._init_workflow()
+        self.process_workflow()
+
+        if self._options != 'PRE':
+            self.render_simulation_input()
+
+            if self._options != 'EXPORT':
+                self.launch_simulation()
+
+                if self._options != 'SIM':
+                    self.launch_postprocessing()
+
+        return self._memory
 
     # def _execute_exporter(self, node):
     #     if not self.options.get('executor.disable_exporter', False):

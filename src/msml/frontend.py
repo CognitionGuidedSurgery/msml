@@ -82,7 +82,7 @@ OPTIONS = """
     |_| |_| |_||___/|_| |_| |_||_|
 
 Usage:
-  msml exec [(-D D)...] [-w] [options] <file>...
+  msml exec [...] [-w] [options] <file>...
   msml show     [options] <file>
   msml writexsd <XSDFile>
   msml check    [<file>...]
@@ -90,14 +90,15 @@ Usage:
   msml expy     [options] [<file>...]
 
 Options:
- -v, --verbose              verbose information on stdout [default: false]
- -o, --output=DIR           output directory
- --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
- -a, --alphabet-dir=DIR     loads an specific alphabet dir
- --operator-dir             path to search for additional python modules
- -x, --xsd-file=FILE        xsd-file
- -e VALUE, --exporter=VALUE    set the exporter (base, nsofa, nabaqus) [default: base]
- -m FILE, --vars=FILE       predefined the memory content
+ -v, --verbose                  verbose information on stdout [default: false]
+ -o, --output=DIR                output directory
+ --start-script=FILE             overwrite the default rc file [default: ~/.config/msmlrc.py]
+ -a, --alphabet-dir=DIR          loads an specific alphabet dir
+ --operator-dir                  path to search for additional python modules
+ -x, --xsd-file=FILE             xsd-file
+ -e VALUE, --exporter=VALUE      set the exporter (base, nsofa, nabaqus) [default: base]
+ -m FILE, --vars=FILE            predefined the memory content
+ -p --partial PRE, EXPORT, SIM, FULL           run only up to pre-processing, simulation export, simulation or post-processing
 
 """
 
@@ -154,7 +155,7 @@ class App(object):
     """
 
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
-                 add_operator_path=None, memory_init_file=None, output_dir = None, options={}):
+                 add_operator_path=None, memory_init_file=None, output_dir = None, execution_options=None, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
         self._files = options.get('<file>') or files or list()
         self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
@@ -163,11 +164,12 @@ class App(object):
         self.output_dir = output_dir or options.get('--output')
         self._novalidate = novalidate
         self._memory_init_file = memory_init_file
-        self._executor_options = _parse_keyvalue_options(options.get('D', list()))
+        self._executor_options = execution_options or options.get('--partial') #_parse_keyvalue_options(options.get('D', list()))
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
         self.init_msml_system()
+        self._executor = None
 
     def init_msml_system(self):
         """initialize the msml system
@@ -250,10 +252,26 @@ class App(object):
         and override this property.
 
         """
-        if 'executor.class' in self._executor_options:
-            return _load_class(self._executor_options['executor.class'])
+        if not self._executor_options is None:
+            return msml.run.ControllableExecutor #_load_class(self._executor_options['executor.class'])
         else:
             return msml.run.LinearSequenceExecutor
+
+    def get_executor(self,msml_file):
+
+        if self._executor == None:
+            self._prepare_msml_model(msml_file)
+            execlazz = self.executer
+
+            # change to msml-file dirname
+            os.chdir(msml_file.filename.dirname().abspath())
+            self._executor = execlazz(msml_file)
+            self._executor.options = self._executor_options
+            self._executor.working_dir = self.output_dir
+            self._executor.init_memory(self.memory_init_file)
+
+        return self._executor
+
 
     def _load_msml_file(self, filename):
         mfile = msml.xml.load_msml_file(filename)
@@ -288,33 +306,9 @@ class App(object):
         log.info("Execute: %s in %s" % (fil, fil.dirname))
         return self.execute_msml(mfile)
 
-    def init_workflow(self, msml_file):
-        self._prepare_msml_model(msml_file)
-        execlazz = self.executer
-
-        # change to msml-file dirname
-        os.chdir(msml_file.filename.dirname().abspath())
-        self._executor_class = execlazz(msml_file)
-        self._executor_class.options = self._executor_options
-        self._executor_class.working_dir = self.output_dir
-        self._executor_class.init_memory(self.memory_init_file)
-        mem = self._executor_class.initWorkflow()
-
     def execute_msml(self, msml_file):
-        self._prepare_msml_model(msml_file)
-        execlazz = self.executer
-
-        # change to msml-file dirname
-        os.chdir(msml_file.filename.dirname().abspath())
-        exe = execlazz(msml_file)
-        exe.options = self._executor_options
-        exe.working_dir = self.output_dir
-        exe.init_memory(self.memory_init_file)
+        exe = self.get_executor(msml_file)
         mem = exe.run()
-        #self.init_workflow( msml_file)
-        #self.process_workflow( )
-        #self.launch_simulation( )
-        #mem = self.launch_postprocessing( )
         return mem
 
     def execution(self):
