@@ -56,6 +56,6 @@ Logger& log_error() {
 }
 
 Logger& log_debug() {
-    static Logger le = Logger("error");
+    static Logger le = Logger("debug");
     return le;
 }
