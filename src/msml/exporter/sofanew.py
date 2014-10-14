@@ -106,10 +106,11 @@ class SofaExporter(XMLExporter):
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
-        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofaExtended') > -1):
+        if(msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l SofaCUDA -l MediAssist -g batch -n ' + str(timeSteps) + ' ' + os.path.join(os.getcwd(),
+            callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -g batch -n ' + str(timeSteps) + ' ' + os.path.join(os.getcwd(),
                                                                                                      self.export_file) + '\n'
+            #callCom = os.path.join(os.getcwd(),self.export_file) + ' ' + str(timeSteps) + ' ' + '/tmp/simoutput.simu -l SofaCUDA -l MediAssist'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
 
         log.info("Executing %s" % cmd)
@@ -285,6 +286,11 @@ class SofaExporter(XMLExporter):
 
 
     def createConstraintRegions(self, objectNode, msmlObject):
+        def _to_str(mapping):
+            if (mapping is str):
+                return mapping
+            return ' '.join(map(str, mapping))
+        
         assert isinstance(msmlObject, SceneObject)
 
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
@@ -348,7 +354,7 @@ class SofaExporter(XMLExporter):
                     constraintNode = self.sub("Node", objectNode, name="springMeshToFixed")
                     mechObj = self.sub("MechanicalObject", constraintNode, template="Vec3f",
                                        name="pointsInDeformingMesh",
-                                       position=constraint.get("movingPoints"))
+                                       position=_to_str(self.get_value_from_memory(constraint, 'movingPoints')))
 
                     self.sub("BarycentricMapping", constraintNode,
                              template=self._processing_unit + ", Vec3f",
@@ -363,7 +369,7 @@ class SofaExporter(XMLExporter):
                                        template="Vec3f",
                                        name="fixedPoints")
 
-                    mechObj.set("position", constraint.get("fixedPoints"))
+                    mechObj.set("position", _to_str(self.get_value_from_memory(constraint, 'fixedPoints')))
 
                     
                     forcefield = self.sub("RestShapeSpringsForceField", constraintNode,

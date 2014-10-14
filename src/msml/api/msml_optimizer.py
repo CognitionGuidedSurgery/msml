@@ -96,10 +96,11 @@ class MSMLOptimizer(object):
         currentValue = self._sim_runner.get_results(self._reference.variable_name ,self._reference.value_name)
 
         currentNumpyValue =  np.asarray(currentValue)
+        referenceNumpyValue =  np.asarray(self._reference.value)
         #sum of squared differences
-        sum = np.sum((currentNumpyValue-self._reference.value)**2)
+        sum = np.sum((currentNumpyValue-referenceNumpyValue)**2)
 
-
+        currentResidual = currentNumpyValue - referenceNumpyValue
 
         #add to history
         self._history['error'].append(sum)
@@ -109,7 +110,7 @@ class MSMLOptimizer(object):
             print(self._history[variable_name])
 
 
-        return currentNumpyValue
+        return currentResidual
 
 
 
