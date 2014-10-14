@@ -294,11 +294,11 @@ class SofaExporter(XMLExporter):
             for constraint in constraint_set.constraints:
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
-                indices_vec = self.get_value_from_memory(constraint, 'indices')
-                if (indices_vec is not None):
-                    indices = '%s' % ', '.join(map(str, indices_vec))
+
 
                 if currentConstraintType == "fixedConstraint":
+                    indices_vec = self.get_value_from_memory(constraint, 'indices')
+                    indices = '%s' % ', '.join(map(str, indices_vec))
                     constraintNode = self.sub("FixedConstraint", objectNode,
                                               name=constraint.id or constraint_set.name,
                                               indices=indices)
@@ -315,6 +315,8 @@ class SofaExporter(XMLExporter):
 
                     #if not -> copy
                 elif currentConstraintType == "surfacePressure":
+                    indices_vec = self.get_value_from_memory(constraint, 'indices')
+                    indices = '%s' % ', '.join(map(str, indices_vec))
                     constraintNode = self.sub("Node", objectNode, name="SurfaceLoad")
 
                     self.sub("MeshTopology", constraintNode,
@@ -411,7 +413,9 @@ class SofaExporter(XMLExporter):
                              template=self._processing_unit + ", Vec3f")
 
                 elif currentConstraintType == "displacementConstraint":
-
+                    indices_vec = self.get_value_from_memory(constraint, 'indices')
+                    indices = '%s' % ', '.join(map(str, indices_vec))
+                    
                     #compute length of time stepo
                     timeSteps = self._msml_file.env.simulation[0].iterations
                     dt  = self._msml_file.env.simulation[0].dt

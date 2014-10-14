@@ -301,7 +301,10 @@ class Slot(object):
 
 
     def __getattr__(self, item):
-        return self.meta[item]
+        if 'meta' in self.__dict__:
+            return self.meta[item]
+        else:
+            super(Slot, self).__getattr__(item)
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)
