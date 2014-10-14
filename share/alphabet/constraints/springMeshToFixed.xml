@@ -16,7 +16,7 @@
             <meta key="doc" value="rayleighStiffnes between fixed and moving points"/>
         </arg>
 
-        <arg name="fixedPoints" physical="int">
+        <arg name="fixedPoints" physical="vector.float">
             <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
 
