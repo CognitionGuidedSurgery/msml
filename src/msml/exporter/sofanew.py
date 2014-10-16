@@ -495,7 +495,7 @@ class SofaExporter(XMLExporter):
                     else:
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
                     
-                    if request.useAsterisk:  #TODO: et_value_from_memory(request, 'useAsterisk')
+                    if _bool(request.useAsterisk):  #TODO: et_value_from_memory(request, 'useAsterisk')
                         self._memory_update[self.id] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
                     else:
                         self._memory_update[self.id] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
@@ -524,7 +524,7 @@ class SofaExporter(XMLExporter):
                     # else:
                     #     lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
                     #
-                    #if (request.useAsterisk): 
+                    #if _bool(request.useAsterisk): 
                     #    self._memory_update[self.id] = {request.id: VTK(str(filename + '*' + ".vtu"))} 
                     #else:
                     #    self._memory_update[self.id] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))} 
@@ -539,3 +539,6 @@ class SofaExporter(XMLExporter):
         skwargs = {k: str(v) for k, v in kwargs.items()}
         if root is None: root = self.node_root
         return etree.SubElement(root, tag, **skwargs)
+    
+def _bool(s):
+    return s in ('true', 'on', 'yes', 'True', 'YES', 'ON')
