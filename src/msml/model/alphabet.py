@@ -329,6 +329,7 @@ class Operator(object):
                  output=None,
                  parameters=None,
                  runtime=None,
+                 settings=None,
                  meta=None):
         """Constructs an operator from the given arguments.
         :type name: str
@@ -353,6 +354,11 @@ class Operator(object):
         """:type: dict"""
 
         self.runtime = runtime
+        """:type: dict"""
+        
+        if settings is None:
+            settings = dict()
+        self.settings = settings
         """:type: dict"""
 
         self._filename = None
@@ -384,6 +390,12 @@ class Operator(object):
         :rtype: list[str]
         """
         return self.input_names() + self.parameter_names()
+            
+    def settings(self):
+        """all settingss
+        :rtype: list[str]
+        """
+        return self.settings
 
     def __contains__(self, attrib):
         """checks if attrib is a valid input or parameter name"""
@@ -429,12 +441,12 @@ class PythonOperator(Operator):
 
     """
 
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
+    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
         """
         :param runtime: should include the key: "function" and "module"
         .. seealso: :py:meth:`Operator.__init__`
         """
-        Operator.__init__(self, name, input, output, parameters, runtime, meta)
+        Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
         self.function_name = runtime['function']
         """name of the pyhton function"""
         self.modul_name = runtime['module']
@@ -467,7 +479,7 @@ class PythonOperator(Operator):
         
         
         if sum('*' in str(arg) for arg in args):        
-            r = executeOperatorSequence(self, args) 
+                r = executeOperatorSequence(self, args, self.settings['seq_parallel']) 
         else:        
             r = self._function(*args)
 
@@ -504,8 +516,8 @@ class ShellOperator(Operator):
 
     """
 
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
-        Operator.__init__(self, name, input, output, parameters, runtime, meta)
+    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
+        Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
 
         self.command_tpl = runtime['template']
 
@@ -522,8 +534,8 @@ class ShellOperator(Operator):
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
         
-        if sum('*' in str(arg) for arg in args):        
-            r = executeOperatorSequence(self, args) 
+        if sum('*' in str(arg) for arg in args):            
+            r = executeOperatorSequence(self, args ,self.settings['seq_parallel']) 
         else:
             self._function(args)
         

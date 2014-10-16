@@ -35,7 +35,7 @@ import multiprocessing
 import itertools
 import time
 
-def executeOperatorSequence(operator, args):
+def executeOperatorSequence(operator, args, parallel):
     count = sum('*' in str(arg) for arg in args)
     if (count == 2):
         assert (count ==2)
@@ -73,7 +73,7 @@ def executeOperatorSequence(operator, args):
             args_new.append(operator)            
             args_list.append(args_new)
             
-        if (1):
+        if (parallel):
             #multiprocessing
             
             num_of_workers = multiprocessing.cpu_count()
