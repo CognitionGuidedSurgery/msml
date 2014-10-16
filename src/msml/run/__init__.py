@@ -125,6 +125,7 @@ class LinearSequenceExecutor(Executer):
         self._memory = Memory()
         self._exporter = self._mfile.exporter
         self.working_dir = None
+        self.seq_parallel = False
 
     def init_memory(self, content):
         if isinstance(content, str):
@@ -239,6 +240,7 @@ class LinearSequenceExecutor(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
+        task.operator.settings['seq_parallel'] = self.seq_parallel
         log.debug('Executing operator of task {} with arguments {}'.format(task, kwargs))
         result = task.operator(**kwargs)
         log.info('--Executing operator of task {} done'.format(task))
