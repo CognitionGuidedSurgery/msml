@@ -14,5 +14,9 @@ Config.xml
 envconfg.py
 examples
 
+operators/bin/
+operators/CMade/
+
+
 src/msml/envconfig.py
 testdata
