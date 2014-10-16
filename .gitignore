@@ -1,8 +1,9 @@
 
 .coverage
-
+.metadata
 .idea/
 .project
+.pydevproject
 dist
 build/
 cbuild/
