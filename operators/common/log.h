@@ -24,13 +24,22 @@ public:
     }
 
     Logger& operator<<(const char* str) {
-        sstream << str;
-        return *this;
+#ifdef PYTHONLOGGING
+      sstream << str;
+#else
+      std::cerr << str << std::endl;
+#endif
+      return *this;
     }
 
     Logger& operator<<(std::string str) {
-        sstream << str;
-        return *this;
+#ifdef PYTHONLOGGING
+    sstream << str;
+#else
+     std::cerr << str << std::endl;
+#endif
+     return *this;
+
     }
 
 
