@@ -287,6 +287,8 @@ class App(object):
         #validate is needed for simulation execution, removed if condition "if not self._novalidate:"
         mfile.validate(msml.env.CURRENT_ALPHABET)
 
+        exporter._match_features()
+
     def show(self, msml_file = None):
         if not msml_file:
             msml_file = self._load_msml_file(self.files[0])

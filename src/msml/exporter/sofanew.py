@@ -68,8 +68,8 @@ class SofaExporter(XMLExporter):
 
     def init_exec(self, executer):
         """initialization by the executer, sets memory and executor member
-        :param executer: msml.run.Executer
-        :return:
+
+         :return:
         """
      
         self._executer = executer
