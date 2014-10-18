@@ -6,7 +6,7 @@
 
 	<input>
         <!-- TODO logical and physical type -->
-		<arg name="image" logical="volume" physical="str" />
+		<arg name="image" logical="volume" physical="file.vtk" />
 	</input>
 
 	<output>
@@ -15,7 +15,7 @@
 
 
 	<parameters>
-      <arg name="out_filename" physical="str" />
+      <arg name="out_filename" logical="str" />
       <arg name="isoValue" physical="float" />
 	</parameters>
 

@@ -10,16 +10,16 @@
     </description>
 
     <parameters>
+        <!--
         <arg name="delay" physical="float">
             <meta key="doc" value="when does the pressure begin to act."/>
         </arg>
 
         <arg name="duration" physical="float">
             <meta key="doc" value="how long does the pressure act."/>
-            <!-- How to implement/represent pressure functions in MSML?! e.g. blood pressure in heart during cardiac cycle -->
         </arg>
-
-        <arg name="indices" physical="vector.float">
+-->
+        <arg name="indices" physical="vector.int">
             <meta key="doc" value="Set indices of points subjected to pressure, separated by spaces."/>
         </arg>
 

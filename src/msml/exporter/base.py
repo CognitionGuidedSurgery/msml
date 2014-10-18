@@ -28,13 +28,14 @@
 
 __author__ = 'Alexander Weigl'
 
-import warnings
-
 from ..model import *
+from ..exceptions import *
 
 import msml.sortdef
 
+from .. import log
 
+from .features import get_needed_features
 class ExporterOutputVariable(MSMLVariable):
     pass
 
@@ -48,9 +49,13 @@ class Exporter(object):
 
         """
         assert isinstance(msml_file, MSMLFile)
+
+        self._datamodel = None
         self._msml_file = msml_file
         self.name = 'base'
         self._output_types_for_tags = {}
+
+        self.id = "__exporter__"
 
         self.mesh_sort = ['VTK', 'Mesh']
         """The physical and logical sort of the input mesh"""
@@ -75,6 +80,21 @@ class Exporter(object):
         :type dict[str,Reference]
         :see Exporter.link
         """
+
+        self._features = set()
+        """Set of supported features from this exporter
+
+        :see :py:meth:`Exporter.match_features`
+        :type set[str]
+        """
+
+    @property
+    def features(self):
+        return self._features
+
+    @features.setter
+    def features(self, value):
+        self._features = value
 
 
     def lookup(self, ref, outarg):
@@ -118,32 +138,75 @@ class Exporter(object):
         :return:
         '''
 
-        for scene_obj in self._msml_file.scene:
-            assert isinstance(scene_obj, SceneObject)
 
-            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
-                                    required=True, parent=self)
-
-            self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
-
+        def register_object_sets():
             for ig in (scene_obj.sets.nodes + scene_obj.sets.elements + scene_obj.sets.surfaces):
                 name = self.get_input_set_name(ig)
                 self._input[name] = Slot(name, 'vector.int', 'Indices', parent=self)
                 self._attributes[name] = parse_attribute_value(ig.indices)
 
+
+        def register_material():
             for mr in scene_obj.material:
                 ind = mr.indices
                 name = self.get_input_material_name(mr)
                 self._input[name] = Slot(name, 'vector.int', parent=self)
                 self._attributes[name] = parse_attribute_value(ind)
 
+                for material in mr:
+                    assert isinstance(material, ObjectElement)
+                    for para in material.meta.parameters.values():
+                        assert isinstance(para, Slot)
+                        name = self.get_input_objectelement_name(material, para)
+                        self._input[name] = Slot(name, para.physical_type, parent=self)
+                        self._attributes[name] = parse_attribute_value(material.attributes[para.name])
+                        log.debug("register %s as input value of material", name)
+
+        def register_constraints():
             for cs in scene_obj.constraints:
                 for const in cs.constraints:
-                    ind = const.indices
-                    name = self.get_input_constraint_name(const)
-                    self._input[name] = Slot(name, 'vector.int', parent=self)
-                    self._attributes[name] = parse_attribute_value(ind)
+                    assert isinstance(const, ObjectElement)
+                    for para in const.meta.parameters.values():
+                        assert isinstance(para, Slot)
 
+                        try:
+                            value = const.attributes[para.name]
+                        except KeyError:
+                            raise MSMLError(
+                                "parameter %s of constraint %s has not proper value" % (para.name, const.id))
+
+                        name = self.get_input_objectelement_name(const, para)
+                        self._input[name] = Slot(name, para.physical_type, parent=self)
+                        self._attributes[name] = parse_attribute_value(value)
+                        log.debug("register %s as input value of material", name)
+
+        for scene_obj in self._msml_file.scene:
+            assert isinstance(scene_obj, SceneObject)
+
+            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
+                                       required=True, parent=self)
+
+            self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
+
+            register_object_sets()
+            register_material()
+            register_constraints()
+
+
+    def get_input_objectelement_name(self, objectelement, parameter):
+        """generates the slot name for an objectelement
+
+        :param objectelement: ObjectElement
+        :type objectelement: msml.model.base.ObjectElement
+        :param parameter: the slot of the given object element
+        :type parameter: msml.model.alphabet.Slot
+        :return:
+        """
+        if hasattr(parameter, "name"):
+            n = parameter.name
+        else:
+            n = parameter
+        return "%s_%s" % (objectelement.id, n)
 
     def get_input_mesh_name(self, mesh):
         """ generates the name for an output request within an object declaration
@@ -184,7 +247,22 @@ class Exporter(object):
         from  msml.model.base import link_algorithm
 
         slots = dict(self._input)
-        self.arguments = link_algorithm(self._msml_file, self._attributes, self,  slots)
+        self.arguments = link_algorithm(self._msml_file, self._attributes, self, slots)
+
+    def _match_features(self):
+
+        needed = get_needed_features(self._msml_file)
+        match = needed <= self.features
+
+        if match:
+            log.info("every features is supported by current exporter")
+        else:
+            log.error("some features are not supported by exporter")
+            log.error("-- msml_file: %s", needed)
+            log.error("-- supported: %s", self.features)
+            log.error("-- not matched: %s", needed - self.features)
+
+        return match
 
     def init_exec(self, executer):
         """
@@ -196,12 +274,13 @@ class Exporter(object):
         self._memory = self._executer._memory
         """:type msml.run.memory.Memory"""
 
+
+
     def render(self):
         """
         Builds the File (XML e.g) for the external tool
         """
         pass
-
 
     def execute(self):
         "should execute the external tool and set the memory"
@@ -216,15 +295,15 @@ class Exporter(object):
 
             return data
         else:
-            return  expression
+            return expression
 
             # every reference should be full, commented out from weigl
             # if isinstance(resultNode, basestring):
-            #    resultExpression = resultNode
-            #else:
+            # resultExpression = resultNode
+            # else:
             # resultExpression = resultNode[resultNode.keys()[0]]
 
-    def get_value_from_memory(self, reference):
+    def get_value_from_memory(self, reference, parameter=None):
         """
 
         :param reference:
@@ -240,11 +319,79 @@ class Exporter(object):
         elif isinstance(reference, IndexGroup):
             return self.get_value_from_memory(self.get_input_set_name(reference))
         elif isinstance(reference, ObjectElement):
-            return self.get_value_from_memory(self.get_input_constraint_name(reference))
+            return self.get_value_from_memory(self.get_input_objectelement_name(reference, parameter))
         elif isinstance(reference, Reference):
             return self._memory.lookup(reference)
         else:
             raise MSMLException("no suitable reference was given (%s)" % reference)
+
+    @property
+    def datamodel(self):
+        if not self._datamodel:
+            self._datamodel = self.generate_data_model()
+        return self._datamodel
+
+    def generate_data_model(self):
+        def _scene(sceneobject):
+            """
+            :param scene: an object from the scene
+            :type scene: msml.model.base.SceneObject
+            :return: a scene object with references solved
+            """
+            ns = SceneObject(
+                sceneobject.id,
+                _mesh(sceneobject.mesh),
+                _scene_sets(sceneobject.sets),
+                map(_region, sceneobject.material),
+                map(_constraint, sceneobject.constraints)
+            )
+            return ns
+
+        def _scene_sets(sets):
+            assert isinstance(sets, SceneObjectSets)
+
+            def _resolve(indexgroup):
+                assert isinstance(indexgroup, IndexGroup)
+                ig = IndexGroup(indexgroup.id, self.get_value_from_memory(indexgroup))
+                return ig
+
+            _map_resolve = lambda seq: map(_resolve, seq)
+
+            ns = SceneObjectSets(
+                _map_resolve(sets.elements),
+                _map_resolve(sets.nodes),
+                _map_resolve(sets.surfaces),
+            )
+            return ns
+
+        def _mesh(mesh):
+            assert isinstance(mesh, Mesh)
+            return Mesh(mesh.id, mesh.id, self.get_value_from_memory(mesh))
+
+        def _object_element(objectelement):
+            assert isinstance(objectelement, ObjectElement)
+
+            attrib = objectelement.attributes
+            objectelement.meta
+            values = {k: self.get_value_from_memory(objectelement, k) for k in objectelement.meta.parameters}
+
+            return ObjectElement(values, objectelement.meta)
+
+
+        def _region(materialregion):
+            assert isinstance(materialregion, MaterialRegion)
+
+            return MaterialRegion(materialregion.id, self.get_value_from_memory(materialregion),
+                                  map(_object_element, materialregion))
+
+
+        def _constraint(objectconstraints):
+            assert isinstance(objectconstraints, ObjectConstraints)
+            oc = ObjectConstraints(objectconstraints.name, objectconstraints.for_step)
+            oc.constraints = map(_object_element, objectconstraints.constraints)
+            return oc
+
+        return map(_scene, self._msml_file.scene)
 
 
 class XMLExporter(Exporter): pass

@@ -28,8 +28,6 @@
 // ****************************************************************************
 #include <vector>
 #include <limits>
-#include "../MSML_Operators.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,14 +37,9 @@
 #include <vtkUnstructuredGrid.h>
 
 #include "TetgenMeshQuality.h"
-
+#include "../MSML_Operators.h"
 
 using namespace std;
-
-
-// ****************************************************************************
-// TetgenOperators
-// ****************************************************************************
 
 /*MSMLDOC
 
@@ -91,8 +84,8 @@ namespace MSML {
             Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
     */
     LIBRARY_API bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenMeshQuality settings, bool isQuadratic );
-    } //end namespace Tetgen
-} // end namespace MediAssist
+    }
+}
 
 
-#endif /* __TetgenOperators_h */
+#endif /* TetgenOperators_h */

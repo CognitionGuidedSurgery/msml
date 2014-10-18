@@ -11,7 +11,7 @@
     </input>
 
     <output>
-        <arg name="ctx" logical="volume" physical="ctx"/>
+        <arg name="ctx" logical="volume" physical="vtk"/>
     </output>
 
     <parameters>

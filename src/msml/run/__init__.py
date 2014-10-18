@@ -125,6 +125,7 @@ class LinearSequenceExecutor(Executer):
         self._memory = Memory()
         self._exporter = self._mfile.exporter
         self.working_dir = None
+        self.seq_parallel = False
 
     def init_memory(self, content):
         if isinstance(content, str):
@@ -149,6 +150,25 @@ class LinearSequenceExecutor(Executer):
     def run(self):
         """starts the execution of the given MSMLFile
         """
+
+        self._init_workflow()
+
+        for node in self._var_bucket:
+            self._execute_variable(node)
+
+        for node in self._pre_bucket:
+            self._execute_operator_task(node)
+
+        for node in self._sim_bucket:
+            self._execute_exporter(node)
+
+        for node in self._post_bucket:
+            self._execute_operator_task(node)
+
+        return self._memory
+
+    def _init_workflow(self):
+
         dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
 
         # dag.show()
@@ -169,16 +189,26 @@ class LinearSequenceExecutor(Executer):
             finally:
                 wd.chdir()
 
+        #fill four buckets:
+        self._pre_bucket =list()
+        self._var_bucket =list()
+        self._sim_bucket = list()
+        self._post_bucket = list()
+
+        is_pre = True
         for bucket in buckets:
             for node in bucket:
                 if isinstance(node, Task):
-                    self._execute_operator_task(node)
+                    if(is_pre):
+                       self._pre_bucket.append(node)
+                    else:
+                        self._post_bucket.append(node)
                 elif isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-                elif isinstance(node, Exporter):
-                    self._execute_exporter(node)
+                    self._var_bucket.append(node)
+                if isinstance(node, Exporter):
+                    self._sim_bucket.append(node)
+                    is_pre = False
 
-        return self._memory
 
     def _render_exporter(self, node):
         """executes the exporter behind node
@@ -210,9 +240,10 @@ class LinearSequenceExecutor(Executer):
 
     def _execute_operator_task(self, task):
         kwargs = self.gather_arguments(task)
-        report('Executing operator of task {} with arguments {}'.format(task, kwargs), 'I', 1)
+        task.operator.settings['seq_parallel'] = self.seq_parallel
+        log.debug('Executing operator of task {} with arguments {}'.format(task, kwargs))
         result = task.operator(**kwargs)
-        report('--Executing operator of task {} done'.format(task), 'I', 2)
+        log.info('--Executing operator of task {} done'.format(task))
 
         if task.id in self._memory and isinstance(self._memory[task.id], dict):
             # converter case, only update the change values
@@ -267,61 +298,43 @@ class ControllableExecutor(LinearSequenceExecutor):
     def simulation_state(self):
         return self.state == "SIM"
 
-
-    def initWorkflow(self):
-        """starts the execution of the given MSMLFile
-        """
-        dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
-
-        # dag.show()
-
-        self._buckets = dag.toporder()
-
-        # make absolute paths for every string/file literal
-        # wd is msml file dirname
-        initialize_file_literals(self._buckets[0])
-
-        # change to output_dir
-        if self.working_dir:
-            wd = path(self.working_dir)
-            try:
-                wd.mkdir()
-            except:
-                pass
-            finally:
-                wd.chdir()
-
+    def _init_workflow(self):
+        super(ControllableExecutor,self)._init_workflow()
         self.state = "INIT"
 
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-
-        return self._memory
-
-
-
     def update_variable(self, variable_name, variable_value):
-        if "INIT" != self.state:
-            print('Executor has to be in INIT mode before calling updateVariables')
+        if "NOINIT" == self.state:
+            raise MSMLError('Executor has to be in INIT mode before calling updateVariables')
+        elif "INIT" != self.state:
+            self.state = 'INIT'
+
+
+        variable_found = False
+        for node in self._var_bucket:
+            if node.name == variable_name:
+                node.value = variable_value
+                variable_found = True
+                self._execute_variable(node)
+                #TODO:Remove this hack -> calling _execute_Variable should be sufficient
+                self._memory[node.name] = node.value
+
+        if not variable_found:
+            print("Error, variable "+variable_name+" could not be found!!")
 
 
 
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-        return self._memory
 
     def process_workflow(self):
         if "INIT" != self.state:
-            print('Executor has to be in INIT mode before calling processWorkflow')
+            raise MSMLError('Executor has to be in INIT mode before calling processWorkflow')
 
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, Task):
-                    self._execute_operator_task(node)
+        for node in self._var_bucket:
+            self._execute_variable(node)
+
+        for node in self._pre_bucket:
+            self._execute_operator_task(node)
+
+
 
         self.state = "PRE"
         return self._memory
@@ -330,20 +343,18 @@ class ControllableExecutor(LinearSequenceExecutor):
         if "PRE" != self.state:
             print('Executor has to be in PRE mode before calling renderSimulationInput')
 
-        for bucket in self._buckets:
-            for node in bucket:
-               if isinstance(node, Exporter):
-                    self._render_exporter(node)
+        for node in self._sim_bucket:
+            self._render_exporter(node)
+
         return self._memory
 
     def launch_simulation(self):
         if "PRE" != self.state:
-            print('Executor has to be in PRE mode before calling launchSimulationt')
+            print('Executor has to be in PRE mode before calling launchSimulation')
 
-        for bucket in self._buckets:
-            for node in bucket:
-                if isinstance(node, Exporter):
-                    self._execute_exporter(node)
+        for node in self._sim_bucket:
+            self._execute_exporter(node)
+
         self.state='SIM'
         return self._memory
 
@@ -352,15 +363,35 @@ class ControllableExecutor(LinearSequenceExecutor):
         if "SIM" != self.state:
             print('Executor has to be in SIM mode before calling launchPostProcessing')
 
+
+
+        for node in self._post_bucket:
+            self._execute_operator_task(node)
+
         self.state='POST'
         return self._memory
 
 
+    #Re-enable the new run method
     def run(self):
-        self.init_workflow()
+        #print(self._options)
+
+        self._init_workflow()
+        for node in self._var_bucket:
+            self._execute_variable(node)
+
         self.process_workflow()
-        self.launch_simulation()
-        self.launch_postprocessing()
+
+        if self._options != 'PRE':
+            self.render_simulation_input()
+
+            if self._options != 'EXPORT':
+                self.launch_simulation()
+
+                if self._options != 'SIM':
+                    self.launch_postprocessing()
+
+        return self._memory
 
     # def _execute_exporter(self, node):
     #     if not self.options.get('executor.disable_exporter', False):
@@ -417,7 +448,7 @@ def build_graph(tasks, exporter, variables):
     return dag
 
 
-from ..log import report
+from .. import log
 from ..sorts import conversion
 
 
@@ -437,7 +468,7 @@ def inject_implict_conversion(dag):
     for a, b, data in dag.edges(data=True):
         ref = data['ref']
         if not ref.valid:
-            report("Reference %s is invalid. Try to implicit conversion" % ref, 'I', 1561)
+            log.info("Reference %s is invalid. Try to implicit conversion" % ref)
             task = create_conversion_task(ref.linked_from, ref.linked_to)
 
             # add new task
@@ -465,7 +496,7 @@ def inject_implict_conversion(dag):
             dag.add_edge(task, b, ref=_t_b)
 
         else:
-            report("Reference %s is valid" % ref, 'D', 1562)
+            log.debug("Reference %s is valid" % ref)
     return dag
 
 

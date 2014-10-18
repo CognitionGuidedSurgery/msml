@@ -1,0 +1,23 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="copyFile">
+
+    <runtime>
+        <python module="msml.ext.misc_python" function="copy_file"/>
+    </runtime>
+
+    <input>
+        <arg name="filename_in" logical="Mesh" physical="vtk"/>
+        <arg name="filename_out" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+
+    </output>
+
+    <parameters>
+     <arg name="working_directory"  physical="bool" optional="true" default="True">
+     </arg>
+    </parameters>
+
+</msml:operator>

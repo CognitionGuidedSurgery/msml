@@ -1,6 +1,5 @@
 %module MiscMeshOperatorsPython
 %{
-
 #include "IOHelper.h"
 #include "IndexRegionOperators.h"
 #include "MiscMeshOperators.h"
@@ -10,7 +9,6 @@
 #include "MeshQualityOperators.h"
 #include "MeshInfoOperators.h"
 #include "FeatureExtractionOperators.h"
-
 %}
 
 %include "../std.i"

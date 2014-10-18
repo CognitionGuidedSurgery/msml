@@ -32,6 +32,8 @@
 
 #include "IOHelper.h"
 
+#include "../common/log.h"
+
 #define EPSILON 1e-10
 
 //#include <boost/graph/sequential_vertex_coloring.hpp>
@@ -42,9 +44,6 @@ namespace MSML {
 
         vector<unsigned int>  computeIndicesFromBoxROI(string filename, vector<double> box, string type)
         {
-//	std::cout<<infile<<"\n";
-//	std::cout<<box[0]<<"\n";
-
             vtkSmartPointer<vtkUnstructuredGridReader> reader =
                 vtkSmartPointer<vtkUnstructuredGridReader>::New();
             reader->SetFileName(filename.c_str());
@@ -57,7 +56,6 @@ namespace MSML {
             vector<unsigned int> indices;
             double* currentPoint = new double[3];
 
-//	std::cout<<"Computing indices for mesh"<<filename<<"in BOX ROI\n";
 
             if(type.compare("points") == 0)
             {
@@ -70,16 +68,12 @@ namespace MSML {
                     if( (currentPoint[0]>=box[0]) && (currentPoint[1]>=box[1]) && (currentPoint[2]>=box[2])
                             && (currentPoint[0]<=box[3]) && (currentPoint[1]<=box[4]) && (currentPoint[2]<=box[5]))
                     {
-//                    	std::cout<<"Coords are: "<<currentPoint[0]<<", "<<currentPoint[1]<<","<<currentPoint[2]<<"\n";
-//                    	if((currentPoint[2]==0.02))
-//                    		std::cout<<"Point is in new box!\n";
                         indices.push_back(i);
                         count++;
                     }
                 }
 
-                //std::cout<<count <<" points found in the new box\n";
-                cerr << count << " points found in box";
+                log_error() << count << " points found in box" << endl;
             }
 
             else if(type.compare("elements") == 0)
@@ -105,7 +99,7 @@ namespace MSML {
                         }
                     }
                 }
-                cerr << count << " elements found in box";
+                log_error() << count << " elements found in box" << endl;
             }
 
             else if(type.compare("surfaceElements") == 0)
@@ -126,9 +120,9 @@ namespace MSML {
 						if( (currentBounds[0]>=box[0]) && (currentBounds[2]>=box[1]) && (currentBounds[4]>=box[2])
 								&& (currentBounds[1]<=box[3]) && (currentBounds[3]<=box[4]) && (currentBounds[5]<=box[5]))
 						{
-							std::cout<<"Triangle found with id "<<i<<"\n";
-							std::cout<<"Bounds are "<<box[0]<<","<<box[1]<<","<<box[2]<<","<<box[3]<<","<<box[4]<<","<<box[5]<<"\n";
-							std::cout<<"CurrentTri bounds are "<<currentBounds[0]<<","<<currentBounds[2]<<","<<currentBounds[4]<<","<<currentBounds[1]<<","<<currentBounds[3]<<","<<currentBounds[5]<<"\n";
+							log_info() << "Triangle found with id "<<i<< endl;
+							log_info() << "Bounds are "<<box[0]<<","<<box[1]<<","<<box[2]<<","<<box[3]<<","<<box[4]<<","<<box[5]<<endl;
+							log_info() << "CurrentTri bounds are "<<currentBounds[0]<<","<<currentBounds[2]<<","<<currentBounds[4]<<","<<currentBounds[1]<<","<<currentBounds[3]<<","<<currentBounds[5]<<endl;
 
 							indices.push_back(i);
 							count++;
@@ -139,13 +133,11 @@ namespace MSML {
 
             else
             {
-                cerr<<"Error, this type is not supported\n";
+                log_error() <<"Error, this type is not supported" << endl;
             }
 
 
             delete [] currentPoint;
-
-//	std::cout<<indices.size()<< "indices found \n";
             return indices;
         }
 
@@ -208,7 +200,7 @@ namespace MSML {
 
             else
             {
-                cout<<"Error, this type is not supported\n";
+                log_info() <<"Error, this type is not supported" << endl;
             }
 
             return indices;
@@ -232,7 +224,7 @@ namespace MSML {
                 for(; it != end; it++)
                 {
                     if(*it >= thePoints->GetNumberOfPoints()) {
-                       cerr << "ID to high" << endl;
+                       log_error() << "ID to high" << endl;
                        continue;
                     }
 
@@ -242,7 +234,7 @@ namespace MSML {
 		    points.push_back(currentPoint[2]);
 		}
 
-                cerr << count << " points found in box";
+                log_info() << count << " points found in box" << endl;
             }/* TODO implement this
 
             else if(type.compare("elements") == 0)
@@ -272,21 +264,13 @@ namespace MSML {
 */
             else
             {
-                cerr<<"Error, this type is not supported\n";
+                log_error() <<"Error, this type is not supported" << std::endl;
             }
 
 
             delete [] currentPoint;
-
-//	std::cout<<indices.size()<< "indices found \n";
             return points;
 
         }
-
-//void PostProcessingOperators::computeIndicesFromBoxROI(vtkUnstructuredGrid* inputMesh, double box[6],std::vector<unsigned int> &indices)
-//{
-//
-//}
-
     }
 }

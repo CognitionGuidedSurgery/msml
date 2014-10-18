@@ -10,14 +10,14 @@
     </description>
 
     <parameters>
-        <arg name="delay" physical="float">
+       <!-- <arg name="delay" physical="float">
             <meta key="doc" value="when does the pressure begin to act."/>
         </arg>
 
         <arg name="duration" physical="float">
             <meta key="doc" value="how long does the pressure act."/>
         </arg>
-
+-->
         <arg name="indices" physical="vector.int">
             <meta key="doc" value="Set indices of points subjected to pressure, separated by spaces."/>
         </arg>

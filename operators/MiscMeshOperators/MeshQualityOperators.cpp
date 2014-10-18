@@ -18,6 +18,8 @@
 #include <vtkMeshQuality.h>
 #include <vtkVersion.h>
 
+#include "../common/log.h"
+
 using namespace std;
 
 namespace MSML {
@@ -82,7 +84,7 @@ MeshQualityStats MeasureTetrahedricMeshQuality(string infile, string qualityMeas
 }
 
 vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<string> qualityMeasureNames) {
-    cout << "MeasureTetrahedricMeshQuality" << endl;
+    log_debug() << "MeasureTetrahedricMeshQuality" << endl;
 
     vector<MeshQualityStats> results;
 
@@ -91,7 +93,7 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
     reader->Update();
 
     vtkUnstructuredGrid* mesh = reader->GetOutput();
-    cout << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
+    log_debug() << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
 
     vtkSmartPointer<vtkMeshQuality> quality = vtkSmartPointer<vtkMeshQuality>::New();
 #if VTK_MAJOR_VERSION <= 5
@@ -121,9 +123,8 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
             result.var = tuple[3];
             result.n = tuple[4];
 
-            cout << result.qualityMeasureName << " min=" << result.min << "; max=" << result.max << "; avg=" << result.avg << "; var="
+            log_debug() << result.qualityMeasureName << " min=" << result.min << "; max=" << result.max << "; avg=" << result.avg << "; var="
                        << result.var << "; n=" << result.n << endl;
-
         }
         results.push_back(result);
     };

@@ -27,7 +27,6 @@ using namespace MSML;
 
 int main( int argc, char * argv[])
 {                                                                                                                                                                        
-  CGALOperators::CreateVolumeMeshs2v("G:/MSML_Data/pelvis/output_extractBladder_30.09.2014/PyDev_test/Calypso10000blase_surface_poly.vtk", "G:/MSML_Data/pelvis/output_extractBladder_30.09.2014/PyDev_test/TestCreateVolumeMeshs2v_with_Calypso10000blase_surface_poly.vtk", 
-    false, 20, 5, 2, 3, 10, 0, 0, 0, 0);
   CGALOperators::CreateVolumeMeshi2v((std::string(TESTDATA_PATH) + "/ircad_segmentation.vti").c_str(), (std::string(TESTDATA_PATH) + "/TestCreateVolumeMeshi2v.vtk").c_str(), 20, 10, 5, 3, 30, 1, 1, 1, 1);
+  CGALOperators::CreateVolumeMeshs2v((std::string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (std::string(TESTDATA_PATH) + "/TestCreateVolumeMeshs2v.vtk").c_str(), false, 20, 0.01, 5, 3, 0.03, 1, 1, 1, 1);
 }

@@ -9,10 +9,10 @@
     </description>
 
     <parameters>
-        <arg name="time" physical="float">
+       <!-- <arg name="time" physical="float">
             <meta key="doc" value="Set time."/>
-        </arg>
-        <arg name="indices" physical="vector.float">
+        </arg> -->
+        <arg name="indices" physical="vector.int">
             <meta key="doc" value="Set indices of fixed points separated by spaces."/>
         </arg> 
     </parameters>

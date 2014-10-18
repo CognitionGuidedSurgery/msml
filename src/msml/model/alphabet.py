@@ -30,10 +30,12 @@ from collections import OrderedDict
 import pickle
 
 from ..sorts import *
-from msml.log import report
 from ..exceptions import *
 from msml import sorts
+
+from sequence import executeOperatorSequence
 from msml.exceptions import MSMLUnknownModuleWarning
+from ..log import debug,info, error, warn
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -217,7 +219,7 @@ class OAConstraint(ObjectAttribute):
         if 'indices' in self.parameters:
             return True
         else:
-            report("OAConstraint: %s does not have an indices attribute defined" % self.name, 'E', 182)
+            log.error("OAConstraint: %s does not have an indices attribute defined" % self.name)
             return False
 
 
@@ -252,8 +254,9 @@ class Slot(object):
     def __init__(self, name, physical, logical=None,
                  required=True, default=None,
                  meta=dict(), parent=None):
-        if (physical is None):
-            warn("Slot %s does not have a physical type defined. This can cause conversion errros.)" % (name), MSMLUnknownModuleWarning, 0)
+        if physical is None:
+            log.critical("Slot %s does not have a physical type defined. This can cause conversion errors.", name)
+
         self.name = name
         """slot name
         :type: str
@@ -293,13 +296,15 @@ class Slot(object):
         try:
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
-            report("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type),
-                   kind="E", number=156)
+            log.error("%s %s has physical_type %s" % (self.parent, self.name, self.physical_type))
             self.sort = None
 
 
     def __getattr__(self, item):
-        return self.meta[item]
+        if 'meta' in self.__dict__:
+            return self.meta[item]
+        else:
+            super(Slot, self).__getattr__(item)
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)
@@ -324,6 +329,7 @@ class Operator(object):
                  output=None,
                  parameters=None,
                  runtime=None,
+                 settings=None,
                  meta=None):
         """Constructs an operator from the given arguments.
         :type name: str
@@ -348,6 +354,11 @@ class Operator(object):
         """:type: dict"""
 
         self.runtime = runtime
+        """:type: dict"""
+        
+        if settings is None:
+            settings = dict()
+        self.settings = settings
         """:type: dict"""
 
         self._filename = None
@@ -379,6 +390,12 @@ class Operator(object):
         :rtype: list[str]
         """
         return self.input_names() + self.parameter_names()
+            
+    def settings(self):
+        """all settingss
+        :rtype: list[str]
+        """
+        return self.settings
 
     def __contains__(self, attrib):
         """checks if attrib is a valid input or parameter name"""
@@ -424,12 +441,12 @@ class PythonOperator(Operator):
 
     """
 
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
+    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
         """
         :param runtime: should include the key: "function" and "module"
         .. seealso: :py:meth:`Operator.__init__`
         """
-        Operator.__init__(self, name, input, output, parameters, runtime, meta)
+        Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
         self.function_name = runtime['function']
         """name of the pyhton function"""
         self.modul_name = runtime['module']
@@ -450,6 +467,7 @@ class PythonOperator(Operator):
         # bad for c++ modules, because of loss of signature
         # r = self.__function(**kwargs)
         
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
         defaults = dict()
         for x in self.parameters.values():
             if x.default is not None:
@@ -458,10 +476,12 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-
-
-        print(args)
-        r = self._function(*args)
+        
+        
+        if sum('*' in str(arg) for arg in args):        
+                r = executeOperatorSequence(self, args, self.settings['seq_parallel']) 
+        else:        
+            r = self._function(*args)
 
         if len(self.output) == 0:
             results = None
@@ -471,24 +491,21 @@ class PythonOperator(Operator):
             results = dict(zip(self.output_names(), r))
 
         return results
-
+        
     def bind_function(self):
         """Search and bind the python function. Have to be called before `__call__`"""
         import importlib
 
         try:
-            #print("LOADING: %s.%s" % (self.modul_name, self.function_name))
             mod = importlib.import_module(self.modul_name)
             self._function = getattr(mod, self.function_name)
 
             return self._function
         except ImportError, e:
-            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownModuleWarning, 0)
+            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
         except AttributeError, e:
-            print(dir(mod))
-            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name),
-                 MSMLUnknownFunctionWarning, 0)
+            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
+
 
     def validate(self):
         return self.bind_function() is not None
@@ -499,29 +516,49 @@ class ShellOperator(Operator):
 
     """
 
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
-        Operator.__init__(self, name, input, output, parameters, runtime, meta)
+    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
+        Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
 
         self.command_tpl = runtime['template']
 
     def __call__(self, **kwargs):
         import os
-
-        command = self.command_tpl.format(**kwargs)
-        os.system(command)
+        
+        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
+        defaults = dict()
+        for x in self.parameters.values():
+            if x.default is not None:
+                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
+        kwargsUpdated = defaults
+        kwargsUpdated.update(kwargs)
+                   
+        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        
+        if sum('*' in str(arg) for arg in args):            
+            r = executeOperatorSequence(self, args ,self.settings['seq_parallel']) 
+        else:
+            self._function(args)
         
         results = None
         if len(self.output) == 1 and 'out_filename' in kwargs:
             results = {self.output_names()[0]: kwargs.get('out_filename')}
         return results
+    
+    def _function(self, *args):
+        if (len(args)==1):
+            args = args[0]
+        kwargs =  dict(zip(self.acceptable_names(), args))
+        command = self.command_tpl.format(**kwargs)
+        os.system(command)
 
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""
+    # TODO: executeOperatorSequence 
 
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta)
-
+        
         self.symbol_name = runtime['symbol']
         self.filename = runtime['file']
 
@@ -533,3 +570,4 @@ class SharedObjectOperator(PythonOperator):
 
         self.__function = getattr(object, self.symbol_name)
         return self.__function
+

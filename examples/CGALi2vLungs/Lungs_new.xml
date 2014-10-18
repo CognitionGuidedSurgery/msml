@@ -7,6 +7,7 @@
              physical="file.vtk"/>
         <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk" logical="str"/>
         <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk" logical="str"/>
+        <var name="surface_pressure" value="50" logical="float" />
     </variables>
 
     <scene>
@@ -38,8 +39,8 @@
             <constraints>
                 <constraint forStep="${initial}" name="1">
                     <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
-                    <surfacePressure name="l1" indices="${lung1facesToIndexGroup}" pressure="50"/>
-                    <surfacePressure name="l2" indices="${lung2facesToIndexGroup}" pressure="50"/>
+                    <surfacePressure name="l1" indices="${lung1facesToIndexGroup}" pressure="${surface_pressure}"/>
+                    <surfacePressure name="l2" indices="${lung2facesToIndexGroup}" pressure="${surface_pressure}"/>
                 </constraint>
             </constraints>
 
@@ -83,7 +84,7 @@
         <boxROIToIndexOperator id="bottomToIndexGroup"
                                box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
                                select="points"/>
-                               <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
+        <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
         <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
         
     </workflow>

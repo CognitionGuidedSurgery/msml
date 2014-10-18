@@ -42,7 +42,7 @@ __date__ = "2013-12-13"
 __updated__ = "2014-02-26"
 
 from .base import *
-from .abaqusnew import AbaqusExporter
+from .abaqus import AbaqusExporter
 from .sofanew import SofaExporter
 from .hiflow3 import HiFlow3Exporter
 from .semantic_tools import OntologyParser
