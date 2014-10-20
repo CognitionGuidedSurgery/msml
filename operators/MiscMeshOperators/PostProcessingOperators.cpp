@@ -850,7 +850,7 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   cellPoints->GetPoint(1, x1);
   cellPoints->GetPoint(2, x2);
   cellPoints->GetPoint(3, x3);
-  containingCellRef->BarycentricCoords(p_mm, x0, x1, x2, x3, bcords);
+  containingCellRef->BarycentricCoords(closestPointInCell, x0, x1, x2, x3, bcords);
 
   //apply bcords with deformed nodes to calculate the
   //cell id in reference and deformed mesh must be equal
@@ -861,9 +861,9 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   cellPoints->GetPoint(2, x2);
   cellPoints->GetPoint(3, x3);
 
-  vec_out[0] = (x0[0]*bcords[0] + x1[0]*bcords[1] + x2[0]*bcords[2] + x3[0]*bcords[3]) - p_mm[0];
-  vec_out[1] = (x0[1]*bcords[0] + x1[1]*bcords[1] + x2[1]*bcords[2] + x3[1]*bcords[3]) - p_mm[1];
-  vec_out[2] = (x0[2]*bcords[0] + x1[2]*bcords[1] + x2[2]*bcords[2] + x3[2]*bcords[3]) - p_mm[2];
+  vec_out[0] = (x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0];
+  vec_out[1] = (x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1];
+  vec_out[2] = (x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2];
 
 }
 }
