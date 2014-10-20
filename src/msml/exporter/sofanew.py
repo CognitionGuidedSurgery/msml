@@ -345,7 +345,7 @@ class SofaExporter(XMLExporter):
                                                              triangleIndices=indices)
 
                     self.sub("BarycentricMapping", constraintNode,
-                             template=self._processing_unit + ", Vec3f",
+                             template=self._processing_unit + ",Vec3f",
                              name="barycentricMapSurfacePressure",
                              input="@..", output="@.")
 
@@ -357,7 +357,7 @@ class SofaExporter(XMLExporter):
                                        position=_to_str(self.get_value_from_memory(constraint, 'movingPoints')))
 
                     self.sub("BarycentricMapping", constraintNode,
-                             template=self._processing_unit + ", Vec3f",
+                             template=self._processing_unit + ",Vec3f",
                              name="barycentricMapSpringMeshToFixed",
                              input="@..",
                              output="@.")
@@ -415,7 +415,7 @@ class SofaExporter(XMLExporter):
                              input="@..",
                              name="barycentricMap",
                              output="@.",
-                             template=self._processing_unit + ", Vec3f")
+                             template=self._processing_unit + ",Vec3f")
 
                 elif currentConstraintType == "displacementConstraint":
                     indices_vec = self.get_value_from_memory(constraint, 'indices')
