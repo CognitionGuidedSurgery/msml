@@ -1,5 +1,5 @@
 Installation
-----------------------
+------------
 
 MSML uses a lot of other libraries for his native operators and requires some Python packages for itself.
 Following libraries are required:
@@ -68,6 +68,12 @@ Create a folder for the build processing and execute `cmake`::
     $ cmake ../operators && make -j
 
 
+Installation of Simulation Environments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 Installation Windows
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -88,19 +94,3 @@ Build for 64bit with Visual Studio 2010
 * Select the "operator" subdirectory of the msml repository as the source folder and choose build folder.
 * Fill in all notFound paths
 
-Configure the Python enviroment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Download and install Python (take care for boost compatibility, version 2.7.5 tested) http://www.python.org/ftp/python/2.7.5/python-2.7.5.amd64.msi
-* Download and install Eclipse (Kepler Service Release 1 tested) http://artfiles.org/eclipse.org//technology/epp/downloads/release/kepler/SR1/eclipse-standard-kepler-SR1-win32-x86_64.zip
-* Download and copy Pydev to eclipse folder (http://sourceforge.net/projects/pydev/files/pydev/PyDev%203.3.3/ tested)
-* Use PIP or easy_install to install required python packages (see requirements.txt)
-
-
-CMake Build Process
-^^^^^^^^^^^^^^^^^^^
-
-.. todo::
-
-   Explain the MODULE_\* Variables
-   Explain how to set own tetgen/vtk library
