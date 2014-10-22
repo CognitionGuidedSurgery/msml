@@ -13,6 +13,6 @@ alphabet.xml
 Config.xml
 envconfg.py
 examples
-
+operators/bin
 src/msml/envconfig.py
 testdata
