@@ -136,7 +136,7 @@ class MSMLFile(object):
     @property
     def env(self):
         """
-        :type: MSMLEnvironment
+        :type: msml.model.base.MSMLEnvironment
         :return:
         """
         return self._env
@@ -841,6 +841,10 @@ class SceneObject(object):
 
     @property
     def sets(self):
+        """
+        :type: msml.model.base.SceneObjectSets
+        :return: the current sets
+        """
         return self._sets
 
     @sets.setter
@@ -938,7 +942,7 @@ class ObjectElement(object):
                 self.__tag__, self.__tag__))
 
         for key, value in self.attributes.items():
-            if key == "__tag__":
+            if key == "__tag__" or key == 'id':
                 continue
 
             if key not in self.meta.parameters:
@@ -1008,6 +1012,13 @@ class ObjectConstraints(object):
         self._name = name
         self._forStep = forStep
         self._constraints = []
+
+    def __iter__(self): return iter(self._constraints)
+    def __getitem__(self, item): return self._constraints[item]
+    def __setitem__(self, key, value): self._constraints[key] = value
+    def __delitem__(self, key): del self._constraints[key]
+    def __len__(self): return len(self._constraints)
+    def __contains__(self, item): return item in self._constraints
 
     def bind(self, alphabet):
         """binds all constraints to the given ``alphabet``

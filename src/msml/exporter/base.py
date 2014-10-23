@@ -35,7 +35,7 @@ import msml.sortdef
 
 from .. import log
 
-
+from .features import get_needed_features
 class ExporterOutputVariable(MSMLVariable):
     pass
 
@@ -80,6 +80,21 @@ class Exporter(object):
         :type dict[str,Reference]
         :see Exporter.link
         """
+
+        self._features = set()
+        """Set of supported features from this exporter
+
+        :see :py:meth:`Exporter.match_features`
+        :type set[str]
+        """
+
+    @property
+    def features(self):
+        return self._features
+
+    @features.setter
+    def features(self, value):
+        self._features = value
 
 
     def lookup(self, ref, outarg):
@@ -234,6 +249,21 @@ class Exporter(object):
         slots = dict(self._input)
         self.arguments = link_algorithm(self._msml_file, self._attributes, self, slots)
 
+    def _match_features(self):
+
+        needed = get_needed_features(self._msml_file)
+        match = needed <= self.features
+
+        if match:
+            log.info("every features is supported by current exporter")
+        else:
+            log.error("some features are not supported by exporter")
+            log.error("-- msml_file: %s", needed)
+            log.error("-- supported: %s", self.features)
+            log.error("-- not matched: %s", needed - self.features)
+
+        return match
+
     def init_exec(self, executer):
         """
         initialization by the executer, sets memory and executor member
@@ -244,12 +274,13 @@ class Exporter(object):
         self._memory = self._executer._memory
         """:type msml.run.memory.Memory"""
 
+
+
     def render(self):
         """
         Builds the File (XML e.g) for the external tool
         """
         pass
-
 
     def execute(self):
         "should execute the external tool and set the memory"
@@ -361,9 +392,6 @@ class Exporter(object):
             return oc
 
         return map(_scene, self._msml_file.scene)
-
-
-
 
 
 class XMLExporter(Exporter): pass

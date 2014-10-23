@@ -200,7 +200,37 @@ MiscMeshOperators
     :returns:
     :rtype:
 
+.. cpp:function:: bool DebugPrint(vector<int> to_print)
 
+    :param vector<int> to_print:
+
+    :returns:
+    :rtype:
+	
+.. cpp:function:: vector<unsigned int> GetMaterialNumbersFromMesh( const char* infile)
+
+    :param const char* infile:
+
+    :returns:
+    :rtype:
+
+.. cpp:function:: bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+										  double feature_angle, double pass_band,bool boundary_smoothing,
+										  bool feature_edge_smoothing, bool non_manifold_smoothing,
+										  bool normalized_coordinates)
+
+    :param const char* infile:
+    :param const char* outfile:
+	:param int iterations:
+	:param double feature_angle:
+	:param double pass_band:
+	:param bool boundary_smoothing:
+	:param bool feature_edge_smoothing:
+	:param bool non_manifold_smoothing:
+	:param bool normalized_coordinates:
+
+    :returns:
+    :rtype:
 
 
 .. cpp:function:: bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
@@ -439,6 +469,15 @@ namespace MSML {
         LIBRARY_API  bool ExtractSurfaceMesh( const char* infile, const char* outfile);
         LIBRARY_API  bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
 
+		LIBRARY_API  bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+										  double feature_angle, double pass_band,bool boundary_smoothing,
+										  bool feature_edge_smoothing, bool non_manifold_smoothing,
+										  bool normalized_coordinates);
+								  
+		LIBRARY_API  vector<unsigned int> GetMaterialNumbersFromMesh( const char* infile);
+		
+		LIBRARY_API  bool DebugPrint(vector<int> to_print);
+        
 
         LIBRARY_API  std::string ExtractAllSurfacesByMaterial( const char* infile, const char* outfile, bool theCutIntoPieces);
         LIBRARY_API  std::map<int,int>* createHist(vtkDataArray* theVtkDataArray);

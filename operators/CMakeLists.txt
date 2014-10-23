@@ -184,5 +184,6 @@ ADD_SUBDIRECTORY(MiscMeshOperators)
 ADD_SUBDIRECTORY(CGALOperators)
 ADD_SUBDIRECTORY(CLI)    
 ADD_SUBDIRECTORY(CGALOperators/CGALOperatorsExamples)      
+ADD_SUBDIRECTORY(ext)      
 
 
