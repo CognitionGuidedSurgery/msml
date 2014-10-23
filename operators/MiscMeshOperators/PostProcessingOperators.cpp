@@ -480,38 +480,7 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
     IOHelper::VTKWriteUnstructuredGrid(outputMeshFilename, mergedGrid);
 }
 
-std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool multipleDVF, bool reverseDirection, const char* voxelSize)
-{
-    if (multipleDVF)
-    {
-        return ApplyMultipleDVF(referenceImage, DVF, outputDeformedImage, reverseDirection, atof(voxelSize));
-    }
-
-    else
-    {
-        ApplyDVF(referenceImage, DVF, outputDeformedImage, reverseDirection, atof(voxelSize));
-        return (std::string) outputDeformedImage;
-    }
-}
-
-std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, double voxelSize)
-{
-    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(DVF);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outputDeformedImage);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        log_info() << "Generating Deformed image " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        ApplyDVF(referenceImage, allRefs->at(i).second.c_str(), currenOutputFile.c_str(), reverseDirection, voxelSize);
-    }
-
-    return currenOutputFile;
-}
-
-void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, double voxelSize)
+ std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, float voxelSize)
 {
     vtkSmartPointer<vtkImageData> refImage =  IOHelper::VTKReadImage(referenceImage);
     vtkSmartPointer<vtkImageData> dvfVecImage = IOHelper::VTKReadImage(DVF);   
@@ -530,6 +499,7 @@ void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDef
     log_debug() << "Writing Deformed image.. "  << std::endl;
     //write output
     IOHelper::VTKWriteImage(outputDeformedImage, outputDefImage);
+    return outputDeformedImage;
 }
 
 /*
@@ -620,59 +590,7 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
     }
 }
 
-std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, bool multipleReferenceGrids, bool multipleDeformedGrids, float spacingParam, const char* referenceCoordinateGrid)
-{
-    if (multipleReferenceGrids)
-    {
-        return GenerateDVFMultipleRefGrids(referenceGridFilename, deformedGridFilename, outputDVFFilename, spacingParam, referenceCoordinateGrid );
-    }
-    else if (multipleDeformedGrids)
-    {
-      return GenerateDVFMultipleDefGrids(referenceGridFilename, deformedGridFilename, outputDVFFilename, spacingParam, referenceCoordinateGrid );
-    }
-
-    else 
-    {
-        GenerateDVF(referenceGridFilename, deformedGridFilename, outputDVFFilename, spacingParam, referenceCoordinateGrid);
-        return (std::string) outputDVFFilename;
-    }
-}
-
-string GenerateDVFMultipleDefGrids(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, float spacingParam, const char* referenceCoordinateGrid)
-{
-    vector<pair<int, string> >* allDefs = IOHelper::getAllFilesOfSeries(deformedGridFilename);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outputDVFFilename);
-
-    for (int i=0; i<allDefs->size(); i++)
-    {
-        log_debug() << "Generating DVF " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allDefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        GenerateDVF(referenceGridFilename, allDefs->at(i).second.c_str(), currenOutputFile.c_str(), spacingParam, referenceCoordinateGrid);
-    }
-
-    return currenOutputFile;
-}
-
-string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, float spacingParam, const char* referenceCoordinateGrid)
-{
-    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(referenceGridFilename);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outputDVFFilename);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        log_debug() << "Generating DVF " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        GenerateDVF(allRefs->at(i).second.c_str(),  deformedGridFilename, currenOutputFile.c_str(), spacingParam, referenceCoordinateGrid);
-    }
-
-    return currenOutputFile;
-}
-
-void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, float spacingParam, const char* referenceCoordinateGrid)
+std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, float spacingParam, const char* referenceCoordinateGrid, float interpolateOutsideDistance)
 {
 
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridFilename);
@@ -697,11 +615,11 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
       MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
     }
 
-    GenerateDVFImp(referenceGrid, deformedGrid, outputDVF);
+    GenerateDVFImp(referenceGrid, deformedGrid, outputDVF, interpolateOutsideDistance);
  
     //write output
     IOHelper::VTKWriteImage(outputDVFFilename, outputDVF);
-
+    return outputDVFFilename;
     //write raw data
     /*
         FILE * pFile;
@@ -717,7 +635,7 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
 //Method: For each point in DVF: Find nearest point in reference mesh, calculate barycentric coordinates, find same point in deformed mesh, calculate displacment.
-void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF)
+void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF, float interpolateOutsideDistance)
 {
     int* dims = outputDVF->GetDimensions();
     double* origin = outputDVF->GetOrigin();
@@ -749,50 +667,20 @@ void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* def
               p_mm[2] = origin[2]+z*spacing[2];
 
               float* vec = static_cast<float*>(outputDVF->GetScalarPointer(x,y,z));
-              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
             } //x
         } //y
     } //z
 
   }
 
-string TransformMeshBarycentricPython(const char* meshPath, const char* referenceGridPath,  const char* deformedGridPath, const char* out_meshPath, bool multipleDeformedGridPath)
-  {
-    if (multipleDeformedGridPath)
-    {
-        return TransformMeshBarycentricMultiple(meshPath, referenceGridPath, deformedGridPath, out_meshPath);
-    }
-
-    else
-    {
-        TransformMeshBarycentric(meshPath, referenceGridPath, deformedGridPath, out_meshPath);
-        return (std::string) out_meshPath;
-    }
-  }
-
-std::string TransformMeshBarycentricMultiple(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath)
-{
-    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(deformedGridPath);
-    string currenOutputFile;
-    boost::filesystem::path aPath(out_meshPath);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        log_debug()  << "TransformMeshBarycentricMultiple " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        TransformMeshBarycentric(meshPath, referenceGridPath, allRefs->at(i).second.c_str(), currenOutputFile.c_str());
-    }
-    return currenOutputFile;
-}
-
-string TransformMeshBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath)
+string TransformMeshBarycentricPython(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance)
   {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridPath);
     vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid(meshPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface);
+    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface, interpolateOutsideDistance);
 
     //write output
     IOHelper::VTKWriteUnstructuredGrid(out_meshPath,out_surface);
@@ -804,7 +692,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
 //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
-void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid,  vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh)
+void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh, float interpolateOutsideDistance)
 {
   out_mesh->DeepCopy(mesh);
     
@@ -818,7 +706,7 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
     double p_mm[3];
     out_mesh->GetPoints()->GetPoint(i, p_mm);
     float vec[3];
-    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
     p_mm[0]=p_mm[0]+vec[0];
     p_mm[1]=p_mm[1]+vec[1];
     p_mm[2]=p_mm[2]+vec[2];
@@ -832,7 +720,7 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
 }
 
 //map closest point to given point from ref mesh to deformed mesh and return displacement
-void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float* vec_out)
+void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vec_out)
 {
   //locate closest cell.
   vtkIdType containingCellRefId;
@@ -861,9 +749,17 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   cellPoints->GetPoint(2, x2);
   cellPoints->GetPoint(3, x3);
 
-  vec_out[0] = (x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0];
-  vec_out[1] = (x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1];
-  vec_out[2] = (x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2];
+  float scale_outside = 1;
+  if (dist > interpolateOutsideDistance)
+  {
+    scale_outside = (interpolateOutsideDistance - dist) / interpolateOutsideDistance; //can be < 0 
+    if (scale_outside < 0)
+      scale_outside = 0;
+  }
+
+  vec_out[0] = scale_outside * ((x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0]);
+  vec_out[1] = scale_outside * ((x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1]);
+  vec_out[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
 
 }
 }
