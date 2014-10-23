@@ -717,7 +717,7 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
 //Method: For each point in DVF: Find nearest point in reference mesh, calculate barycentric coordinates, find same point in deformed mesh, calculate displacment.
-void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF)
+void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF, float interpolateOutsideDistance)
 {
     int* dims = outputDVF->GetDimensions();
     double* origin = outputDVF->GetOrigin();
@@ -749,7 +749,7 @@ void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* def
               p_mm[2] = origin[2]+z*spacing[2];
 
               float* vec = static_cast<float*>(outputDVF->GetScalarPointer(x,y,z));
-              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
             } //x
         } //y
     } //z
@@ -804,7 +804,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
 //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
-void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid,  vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh)
+void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh, float interpolateOutsideDistance)
 {
   out_mesh->DeepCopy(mesh);
     
@@ -818,7 +818,7 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
     double p_mm[3];
     out_mesh->GetPoints()->GetPoint(i, p_mm);
     float vec[3];
-    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
     p_mm[0]=p_mm[0]+vec[0];
     p_mm[1]=p_mm[1]+vec[1];
     p_mm[2]=p_mm[2]+vec[2];
@@ -832,7 +832,7 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
 }
 
 //map closest point to given point from ref mesh to deformed mesh and return displacement
-void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float* vec_out)
+void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vec_out)
 {
   //locate closest cell.
   vtkIdType containingCellRefId;
@@ -861,9 +861,17 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   cellPoints->GetPoint(2, x2);
   cellPoints->GetPoint(3, x3);
 
-  vec_out[0] = (x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0];
-  vec_out[1] = (x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1];
-  vec_out[2] = (x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2];
+  float scale_outside = 1;
+  if (dist > interpolateOutsideDistance)
+  {
+    scale_outside = (interpolateOutsideDistance - dist) / interpolateOutsideDistance; //can be < 0 
+    if (scale_outside < 0)
+      scale_outside = 0;
+  }
+
+  vec_out[0] = scale_outside * ((x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0]);
+  vec_out[1] = scale_outside * ((x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1]);
+  vec_out[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
 
 }
 }
