@@ -1,6 +1,6 @@
 
 .coverage
-
+.metadata
 .idea/
 .project
 dist
