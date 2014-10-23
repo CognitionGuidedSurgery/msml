@@ -905,39 +905,7 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution, const char* referenceCoordinateGrid, bool multipleInputMesh)
-{
-    if (multipleInputMesh)
-    {
-        return VoxelizeMultipleSurfaceMesh(infile.c_str(), outfile.c_str(), resolution, referenceCoordinateGrid);
-    }
-
-    else
-    {
-        VoxelizeSurfaceMesh(infile.c_str(), outfile.c_str(), resolution, referenceCoordinateGrid);
-        return outfile;
-    }
-
-}
-
-std::string VoxelizeMultipleSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
-{
-    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(infile);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outfile);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + boost::lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        log_debug() << "Generating Voxel image " << currenOutputFile << std::endl;
-        VoxelizeSurfaceMesh(allRefs->at(i).second.c_str(), currenOutputFile.c_str(), resolution, referenceCoordinateGrid);
-    }
-
-    return currenOutputFile;
-}
-
-bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
+std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
                 << "Resolution of the longest bound is "<<resolution<< std::endl;
@@ -951,13 +919,7 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
 
     IOHelper::VTKWriteImage(outfile, outputImage);
 
-    //	vtkSmartPointer<vtkPNGWriter> writer2 =
-    //	 vtkSmartPointer<vtkPNGWriter>::New();
-    //	writer2->SetFilePrefix(outfile);
-    //	writer2->SetInput(outputImage);
-    //	writer2->Write();
-
-    return true;
+    return string(outfile);
 }
 
 bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)

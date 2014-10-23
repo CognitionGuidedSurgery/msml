@@ -99,7 +99,7 @@ void TestGenerateDVF()
   std::string def("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\disp20.vtu");
   std::string dvf("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\tmpTes.vtk");
 
-  PostProcessingOperators::GenerateDVF(ref.c_str(),  def.c_str(), dvf.c_str(), 5, "");
+  PostProcessingOperators::GenerateDVF(ref.c_str(),  def.c_str(), dvf.c_str(), 5, "", 10);
 }
 void TestReadCTX()
 {
@@ -192,7 +192,7 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, "", false);
+    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str());
   }
 }
 
@@ -210,7 +210,7 @@ void TestPostProcessingOperators()
     PostProcessingOperators::TransformMeshBarycentricPython((string(TESTDATA_PATH)+"/ircad_tris_labled.vtk").c_str(), (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/TestTransformMeshBarycentricPython.vtu").c_str(), false);
       
     PostProcessingOperators::GenerateDVF((string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),
-      (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "");
+      (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "", 10);
 }
 
 int main( int argc, char * argv[])

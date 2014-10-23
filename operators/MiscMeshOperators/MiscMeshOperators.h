@@ -494,9 +494,7 @@ namespace MSML {
         LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
         LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
 
-        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution, const char* referenceCoordinateGrid, bool multipleInputMesh);
-        LIBRARY_API   bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid);
-        LIBRARY_API   std::string VoxelizeMultipleSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid);
+        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid);
         LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, const char* referenceCoordinateGrid);
 
         LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile);
