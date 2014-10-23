@@ -43,7 +43,7 @@ void TestTransformMeshBarycentric()
 	vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\scenarios_1stmode99\\dispOutput125.vtu");
   vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid("E:\\02_Data\\j_mechanic\\allIn100justCGALOptimizerAllOnResults\\boneMesh16.vtk");
 	vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface, refSurface, deformedGrid);
+  PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface, refSurface, deformedGrid, 10);
 }
 
 void TestPositionFromIndices()
@@ -121,7 +121,7 @@ void TestApplyDVF()
   std::string def = "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_postprocessing_19.09.2014\\defed10.vtk";
   std::string dvf = "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_postprocessing_19.09.2014\\dvf10.vtk";
   
-  PostProcessingOperators::ApplyDVFPython(ref.c_str(), dvf.c_str(), def.c_str(),  false, true, "2" );
+  PostProcessingOperators::ApplyDVFPython(ref.c_str(), dvf.c_str(), def.c_str(), false,  2);
 }
 
 namespace TestMiscMeshoperators
@@ -198,7 +198,7 @@ namespace TestMiscMeshoperators
 
 void TestPostProcessingOperators()
 {
-    PostProcessingOperators::ApplyDVF((string(TESTDATA_PATH)+"/ircad_ct_image.vti").c_str(), (string(TESTDATA_PATH)+"/ircad_dvf.vti").c_str(), (string(TESTDATA_PATH)+"/TestApplyDVF.vtk").c_str(), true, 3);
+    PostProcessingOperators::ApplyDVFPython((string(TESTDATA_PATH)+"/ircad_ct_image.vti").c_str(), (string(TESTDATA_PATH)+"/ircad_dvf.vti").c_str(), (string(TESTDATA_PATH)+"/TestApplyDVF.vtk").c_str(), true, 2.0);
 
     PostProcessingOperators::ColorMeshFromComparisonPython((string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),(string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/ColorMeshFromComparisonPython.vtk").c_str());
     
