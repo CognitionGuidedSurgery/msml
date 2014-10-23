@@ -134,7 +134,7 @@ class LinearSequenceExecutor(Executer):
         elif isinstance(content, dict):
             self._memory._internal.update(content)
         elif content:
-            warnings.warn("init_memory handles only filenames", MSMLWarning)
+            log.fatal("init_memory handles only filenames")
 
     def define_var(self, name, value=None):
         """defines a variable in the current memory.
