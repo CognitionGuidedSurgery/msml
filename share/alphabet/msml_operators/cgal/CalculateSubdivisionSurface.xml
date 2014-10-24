@@ -20,5 +20,12 @@
                 Set number of subdivisions to calculate
             </meta>
         </arg>       
+		<arg name="method" physical="str">
+			<meta key="doc">
+				The method to use for subdivision.
+				Valid methods are: Catmull-Clark, Loop, DoSabin and sqrt3
+				Operator will exit if invalid method name is given!
+			</meta>
+		</arg>        
     </parameters>
 </msml:operator>

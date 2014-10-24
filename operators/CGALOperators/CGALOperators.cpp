@@ -18,7 +18,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =========================================================================*/
-
+#include <vector>
 #include <map>
 #include <assert.h>
 
@@ -34,6 +34,7 @@
 #include <CGAL/Image_3.h>
 #include <CGAL/Labeled_image_mesh_domain_3.h>
 #include <CGAL/Delaunay_triangulation_3.h>
+#include <CGAL/Polyhedron_3.h>
 // IO
 #include <CGAL/IO/Polyhedron_iostream.h>
 
@@ -65,7 +66,7 @@ typedef Polyhedron::Vertex_iterator Vertex_iterator;
 typedef Polyhedron::Vertex_handle Vertex_handle;
 typedef Polyhedron::Facet_iterator Facet_iterator;
 typedef Polyhedron::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
-
+typedef Polyhedron::HalfedgeDS             HalfedgeDS;
 
 
 // To avoid verbose function and named parameters call
@@ -119,6 +120,7 @@ namespace MSML{
                                double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
     Polyhedron OpenOffSurface(const char* infile_off);
     map<int,int>*  CompressImageData(vtkImageData* theImageData);
+	bool VTKPolydataToCGALPolyhedron_converter(vtkPolyData *inputMesh, Polyhedron *outputMesh);
 
 
   std::string CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance,
@@ -298,19 +300,45 @@ namespace MSML{
 	  return c3t3;
   }
   
-  bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions)
-  {	 
+  bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
+  {	     
 	  //read VTK Polydata
       vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
 	  reader->SetFileName(infile);
 	  reader->Update();
+	  	  
+	  Polyhedron subdivpoly;
+	  VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&subdivpoly);
 
-      MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "presubdivmesh__TEMP.off").c_str());
-	  
-	  Polyhedron subdivpoly = OpenOffSurface((string(outfile) + "presubdivmesh__TEMP.off").c_str());
+	  //TODO: perform conversion directly, not via temporary file
+      //MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "presubdivmesh__TEMP.off").c_str());	  
+	  //Polyhedron subdivpoly = OpenOffSurface((string(outfile) + "presubdivmesh__TEMP.off").c_str());	  
+	  //remove the temporary file
+	  //remove((string(outfile) + "presubdivmesh__TEMP.off").c_str());
 
 	  //apply subdivision-method
-	  CGAL::Subdivision_method_3::CatmullClark_subdivision(subdivpoly,subdivisions);	  
+	  if("Catmull-Clark" == method)
+	  {
+		CGAL::Subdivision_method_3::CatmullClark_subdivision(subdivpoly,subdivisions);	  
+	  }
+	  else if("Loop" == method)
+	  {
+		CGAL::Subdivision_method_3::Loop_subdivision(subdivpoly,subdivisions);	  
+	  }
+	  else if("DooSabin" == method)
+	  {
+		CGAL::Subdivision_method_3::DooSabin_subdivision(subdivpoly,subdivisions);	 
+	  }
+	  else if("sqrt3" == method)
+	  {
+		  CGAL::Subdivision_method_3::Sqrt3_subdivision(subdivpoly,subdivisions);	
+	  }
+	  else
+	  {
+		  //invalid method name, log and exit!
+		  log_error()<<"CalculateSubdivisionSurface failed, invalid method name: "<<method<<std::endl;
+		  return false;
+	  }
 
 	  //write to file (vtk/vtu-format), construct vtk polydata object
 	  //first the points
@@ -345,7 +373,10 @@ namespace MSML{
 	  subdivPolyData->SetPolys(faces);	  
 
 	  //write polydata to disk	  
-	  return IOHelper::VTKWritePolyData(outfile,subdivPolyData);	  
+	  bool result = IOHelper::VTKWritePolyData(outfile,subdivPolyData);	  
+	  //cleanup of polyhedron, points, faces and polydata-object??
+
+	  return result;
   }
 
 
@@ -515,5 +546,74 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 }
 //end of taken form CGAL Image_3
 
+
+		/*
+		Delegate for Polyhedron builder. Uses data from vtkPolyData to construct
+		a CGAL Polyhedron.
+		Adapted from: http://doc.cgal.org/latest/Polyhedron/Polyhedron_2polyhedron_prog_incr_builder_8cpp-example.html
+		*/
+		template <class HDS>
+		class Build_triangle : public CGAL::Modifier_base<HDS> {
+			private:
+				vtkPolyData *vtkMesh;
+			public:
+				Build_triangle(vtkPolyData *vtkMesh) 
+				{
+					this->vtkMesh = vtkMesh;
+				}
+				void operator()( HDS& hds) {
+					CGAL::Polyhedron_incremental_builder_3<HDS> B( hds, true);
+					//start surface, number of halfedges is unknown (at least to me)
+					B.begin_surface( vtkMesh->GetNumberOfVerts(),vtkMesh->GetNumberOfPolys(),0);
+					typedef typename HDS::Vertex Vertex;
+					typedef typename Vertex::Point Point;
+					//add vertices to polyhedron
+					for(vtkIdType i = 0; i < vtkMesh->GetNumberOfPoints(); i++)
+					{
+						double p[3];
+						vtkMesh->GetPoint(i,p);
+						B.add_vertex(Point(p[0],p[1],p[2]));
+					}
+					//add faces to polyhedron
+					vtkIdType npts, *pts;
+					vtkMesh->GetPolys()->InitTraversal();
+					while(vtkMesh->GetPolys()->GetNextCell(npts,pts))
+					{		
+						B.begin_facet();
+						B.add_vertex_to_facet(pts[0]);
+						B.add_vertex_to_facet(pts[1]);
+						B.add_vertex_to_facet(pts[2]);
+						B.end_facet();
+					}
+					B.end_surface();					
+				}
+		};
+		/*
+			Convert from vtkPolyData-Mesh to CGAL polyhedron mesh.
+		*/
+		bool VTKPolydataToCGALPolyhedron_converter(vtkPolyData *inputMesh, Polyhedron *outputMesh)
+		{
+			Build_triangle<HalfedgeDS> triangle(inputMesh);
+			outputMesh->delegate( triangle);
+			CGAL_assertion( P.is_triangle( P.halfedges_begin()));	
+			return true;
+		}
+		/*
+			Operator for vtkPolyData to CGAL off conversion.
+		*/
+		bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile)
+		{
+			vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+			reader->SetFileName(inputMeshFile);
+			reader->Update();
+
+			Polyhedron P;
+			VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&P);
+			std::ofstream offout;
+			offout.open(outputMeshFile);
+			offout<<P;
+			offout.close();
+			return true;
+		}
     } //end of namespace CGALOperators
 } // end of namespace MSML
