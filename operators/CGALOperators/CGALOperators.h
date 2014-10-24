@@ -78,6 +78,14 @@ CGALOperators
 
         :returns:
         :rtype:
+		
+	.. cpp:function:: bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions)
+        :param const char* infile:
+        :param const char* outfile: 
+		:param int subdivisions:
+
+        :returns:
+        :rtype:
 
 
 */
@@ -101,5 +109,7 @@ namespace MSML {
                              double theFacetDistance, double theCellRadiusEdgeRatio,
                              double theCellSize, bool theOdtSmoother,
                              bool theLloydSmoother, bool thePerturber, bool theExuder);
+							 
+	 LIBRARY_API bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions);
   }
 }

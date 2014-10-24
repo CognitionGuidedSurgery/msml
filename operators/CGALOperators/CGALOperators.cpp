@@ -23,6 +23,7 @@
 #include <assert.h>
 
 //CGAL Includes:
+#include <CGAL/Subdivision_method_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Mesh_triangulation_3.h>
 #include <CGAL/Mesh_complex_3_in_triangulation_3.h>
@@ -32,10 +33,9 @@
 #include <CGAL/refine_mesh_3.h>
 #include <CGAL/Image_3.h>
 #include <CGAL/Labeled_image_mesh_domain_3.h>
-
+#include <CGAL/Delaunay_triangulation_3.h>
 // IO
 #include <CGAL/IO/Polyhedron_iostream.h>
-
 
 #include "../common/log.h"
 
@@ -60,6 +60,14 @@ typedef CGAL::Mesh_complex_3_in_triangulation_3<Tr_img> C3t3_img;
 // Criteria
 typedef CGAL::Mesh_criteria_3<Tr_img> Mesh_criteria_img;
 
+//iterator for polyhedron vertices
+typedef Polyhedron::Vertex_iterator Vertex_iterator;
+typedef Polyhedron::Vertex_handle Vertex_handle;
+typedef Polyhedron::Facet_iterator Facet_iterator;
+typedef Polyhedron::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
+
+
+
 // To avoid verbose function and named parameters call
 using namespace CGAL::parameters;
 
@@ -82,6 +90,7 @@ using namespace CGAL::parameters;
 #include <vtkPointData.h>
 #include <vtkTransformFilter.h>
 #include <vtkTransform.h>
+#include <vtkPolygon.h>
 
 
 //MSML includes
@@ -288,7 +297,56 @@ namespace MSML{
     C3t3_img c3t3 = CGAL::make_mesh_3<C3t3_img>(domain, criteria, featuresParameter, odtParameter, PertubeParameter, ExudeParameter);
 	  return c3t3;
   }
+  
+  bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions)
+  {	 
+	  //read VTK Polydata
+      vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+	  reader->SetFileName(infile);
+	  reader->Update();
 
+      MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "presubdivmesh__TEMP.off").c_str());
+	  
+	  Polyhedron subdivpoly = OpenOffSurface((string(outfile) + "presubdivmesh__TEMP.off").c_str());
+
+	  //apply subdivision-method
+	  CGAL::Subdivision_method_3::CatmullClark_subdivision(subdivpoly,subdivisions);	  
+
+	  //write to file (vtk/vtu-format), construct vtk polydata object
+	  //first the points
+	  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+	  vtkSmartPointer<vtkCellArray> faces = vtkSmartPointer<vtkCellArray>::New();
+	  
+	  //iterator over all vertices in subdived polyhedron, add them as points
+	  std::map<Vertex_handle, vtkIdType> V;
+	  vtkIdType inum = 0;
+	  for ( Vertex_iterator v = subdivpoly.vertices_begin(); v != subdivpoly.vertices_end(); ++v)
+	  {	     	   
+		   points->InsertNextPoint(v->point()[0],v->point()[1],v->point()[2]);		   
+		   V[v] = inum++;
+	  }
+	  //now iterate over all faces in subdived polyhedron	   	  
+	  for ( Facet_iterator i = subdivpoly.facets_begin(); i != subdivpoly.facets_end(); ++i)
+	  {
+		  Halfedge_around_facet_circulator j = i->facet_begin();		  
+		  faces->InsertNextCell(4);
+		  do
+		  {			  	
+			  //get indice of vertex, insert new cell point into faces
+			  faces->InsertCellPoint(V[j->vertex()]);
+			  		 
+		  } while(++j != i->facet_begin());
+	  }
+
+	  //now create polydata-object
+	  vtkSmartPointer<vtkPolyData> subdivPolyData = vtkSmartPointer<vtkPolyData>::New();	 
+	  // Set the points and faces of the polydata	
+	  subdivPolyData->SetPoints(points);
+	  subdivPolyData->SetPolys(faces);	  
+
+	  //write polydata to disk	  
+	  return IOHelper::VTKWritePolyData(outfile,subdivPolyData);	  
+  }
 
 
   /// <summary>
@@ -315,6 +373,7 @@ namespace MSML{
 
     MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
     C3t3_poly c3t3;
+	
     try 
     {
       c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
@@ -325,6 +384,7 @@ namespace MSML{
       log_error() << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
       return "error in CGAL::make_mesh_3";
     }
+
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
     remove((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
 
