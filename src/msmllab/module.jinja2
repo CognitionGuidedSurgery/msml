@@ -1,0 +1,30 @@
+{{ fullname }}
+--------------
+
+.. py:currentmodule:: {{ fullname }}
+
+{{ documentation }}
+
+{{ summary_instances }}
+
+{{ summary_functions }}
+
+{{ summary_classes }}
+
+
+{% for i in instances %}
+.. py:data:: {{ i.name }}
+
+    {{ i.doc | indent }}
+{% endfor %}
+
+
+{% for f in functions %}
+.. py:function:: {{ f.name }}{{ f.argspec }}
+    {{ f.doc | indent }}
+{% endfor %}
+
+
+{% for c in classes %}
+.. py:class:: {{ c.name }}
+{% endfor %}

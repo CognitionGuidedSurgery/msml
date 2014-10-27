@@ -28,6 +28,9 @@
 
 from ..run import *
 
+from ..exporter import Exporter
+from ..model import Task, MSMLVariable
+
 from jinja2 import Environment, FileSystemLoader, Template
 
 from simplegeneric import generic

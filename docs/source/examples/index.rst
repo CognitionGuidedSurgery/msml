@@ -5,4 +5,4 @@ Examples
 Bunny Example
 -------------
 
-.. figure:: bunny.xml.png
+.. figure:: bunny.png
