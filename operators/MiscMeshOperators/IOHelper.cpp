@@ -136,7 +136,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkImageData> aReturn;
   if (!boost::filesystem::exists(filePath))
-    cerr << filePath << " was not found." << endl;
+    log_error() << "IOHelper::VTKReadImage: "<< filePath << " was not found." << endl;
 
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
@@ -144,7 +144,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->IsFileStructuredPoints())
-      cerr << filePath << " is not an .vtk image." << endl;
+      log_error() << filePath << " is not an .vtk image." << endl;
     aReturn = (vtkImageData*)reader->GetOutput();
   }
   else if (filePath.extension().string() == ".ctx")
@@ -169,7 +169,7 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->GetImageDataOutput())
-      cerr << filePath << " is not an .vti image." << endl;
+      log_error() << filePath << " is not an .vti image." << endl;
     aReturn = reader->GetImageDataOutput();
   }
   return aReturn;
@@ -181,14 +181,14 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
   vtkSmartPointer<vtkUnstructuredGrid> aReturn;
 
   if (!boost::filesystem::exists(filePath))
-    cerr << filePath << " was not found." << endl;
+    log_error() << "IOHelper::VTKReadUnstructuredGrid:" << filePath << " was not found." << endl;
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
     reader->SetFileName(filename);
     reader->Update();
     if (!reader->IsFileUnstructuredGrid())
-      cerr << filePath << " is not an .vtk unstructured grid." << endl;
+      log_error() << filePath << " is not an .vtk unstructured grid." << endl;
     aReturn = reader->GetUnstructuredGridOutput();
   }
   else
@@ -208,7 +208,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
   boost::filesystem::path filePath(filename);
   vtkSmartPointer<vtkPolyData> aReturn;
   if (!boost::filesystem::exists(filePath))
-   cerr << filePath << " was not found." << endl;
+   cerr << "IOHelper::VTKReadPolyData:" << filePath << " was not found." << endl;
 
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
