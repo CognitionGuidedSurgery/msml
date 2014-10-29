@@ -82,8 +82,8 @@ OPTIONS = """
     |_| |_| |_||___/|_| |_| |_||_|
 
 Usage:
-  msml exec [...] [-w] [options] <file>...
-  msml show     [options] <file>
+  msml exec  [options] <file>...
+  msml show  [options] <file>
   msml writexsd <XSDFile>
   msml check    [<file>...]
   msml validate
@@ -99,9 +99,12 @@ Options:
  -e VALUE, --exporter=VALUE      set the exporter (base, nsofa, nabaqus) [default: base]
  --seq_parallel=True/False       enable/disable data-parallel processing of single operators
  -m FILE, --vars=FILE            predefined the memory content
- -p --partial PRE, EXPORT, SIM, FULL           run only up to pre-processing, simulation export, simulation or post-processing
-
+ -p , --partial PRE, EXPORT, SIM, FULL           run only up to pre-processing, simulation export, simulation or post-processing
 """
+
+def create_argument_parser():
+    parse
+
 
 def _parse_keyvalue_options(list_str):
     options = {}
@@ -408,6 +411,11 @@ def main(args=None):
 
     if args is None:
         args = docopt(OPTIONS, version=msml.__version__)
+
+    if '--verbose' in args and args['--verbose']: # set verbosity
+        log.set_verbosity('INFO')
+    else:
+        log.set_verbosity('ERROR')
 
     app = App(options=args)
     app._exec()
