@@ -316,10 +316,10 @@ namespace MSML{
 	  //remove the temporary file
 	  //remove((string(outfile) + "presubdivmesh__TEMP.off").c_str());
 
-	  //apply subdivision-method
+	  //apply subdivision-method	
 	  if("Catmull-Clark" == method)
 	  {
-		CGAL::Subdivision_method_3::CatmullClark_subdivision(subdivpoly,subdivisions);	  
+		CGAL::Subdivision_method_3::CatmullClark_subdivision(subdivpoly,subdivisions);	  	
 	  }
 	  else if("Loop" == method)
 	  {
@@ -338,8 +338,7 @@ namespace MSML{
 		  //invalid method name, log and exit!
 		  log_error()<<"CalculateSubdivisionSurface failed, invalid method name: "<<method<<std::endl;
 		  return false;
-	  }
-
+	  }	 
 	  //write to file (vtk/vtu-format), construct vtk polydata object
 	  //first the points
 	  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -356,8 +355,8 @@ namespace MSML{
 	  //now iterate over all faces in subdived polyhedron	   	  
 	  for ( Facet_iterator i = subdivpoly.facets_begin(); i != subdivpoly.facets_end(); ++i)
 	  {
-		  Halfedge_around_facet_circulator j = i->facet_begin();		  
-		  faces->InsertNextCell(4);
+		  Halfedge_around_facet_circulator j = i->facet_begin();		
+		  faces->InsertNextCell(CGAL::circulator_size(j));		  
 		  do
 		  {			  	
 			  //get indice of vertex, insert new cell point into faces
