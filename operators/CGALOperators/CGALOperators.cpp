@@ -35,6 +35,7 @@
 #include <CGAL/Labeled_image_mesh_domain_3.h>
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Polyhedron_3.h>
+
 // IO
 #include <CGAL/IO/Polyhedron_iostream.h>
 
@@ -65,9 +66,11 @@ typedef CGAL::Mesh_criteria_3<Tr_img> Mesh_criteria_img;
 typedef Polyhedron::Vertex_iterator Vertex_iterator;
 typedef Polyhedron::Vertex_handle Vertex_handle;
 typedef Polyhedron::Facet_iterator Facet_iterator;
+typedef Polyhedron::Edge_iterator Edge_iterator;
 typedef Polyhedron::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
 typedef Polyhedron::HalfedgeDS             HalfedgeDS;
 
+#include <CGAL/Surface_mesh_simplification/HalfedgeGraph_Polyhedron_3.h>
 
 // To avoid verbose function and named parameters call
 using namespace CGAL::parameters;
@@ -121,6 +124,7 @@ namespace MSML{
     Polyhedron OpenOffSurface(const char* infile_off);
     map<int,int>*  CompressImageData(vtkImageData* theImageData);
 	bool VTKPolydataToCGALPolyhedron_converter(vtkPolyData *inputMesh, Polyhedron *outputMesh);
+	void CGALPolyhedronToVTKPolydata_converter(Polyhedron *polyhedron, vtkSmartPointer<vtkPolyData> polydata);
 
 
   std::string CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance,
@@ -257,8 +261,7 @@ namespace MSML{
     }
     return aLUT;
   }
-
-
+  
   C3t3_img mesh_image_domain(CGAL::Image_3 theImage, double theFacetAngle, double theFacetSize, double theFacetDistance,
     double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)
   {
@@ -300,6 +303,7 @@ namespace MSML{
 	  return c3t3;
   }
   
+  
   bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
   {	     
 	  //read VTK Polydata
@@ -308,13 +312,7 @@ namespace MSML{
 	  reader->Update();
 	  	  
 	  Polyhedron subdivpoly;
-	  VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&subdivpoly);
-
-	  //TODO: perform conversion directly, not via temporary file
-      //MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "presubdivmesh__TEMP.off").c_str());	  
-	  //Polyhedron subdivpoly = OpenOffSurface((string(outfile) + "presubdivmesh__TEMP.off").c_str());	  
-	  //remove the temporary file
-	  //remove((string(outfile) + "presubdivmesh__TEMP.off").c_str());
+	  VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&subdivpoly); 
 
 	  //apply subdivision-method	
 	  if("Catmull-Clark" == method)
@@ -339,21 +337,35 @@ namespace MSML{
 		  log_error()<<"CalculateSubdivisionSurface failed, invalid method name: "<<method<<std::endl;
 		  return false;
 	  }	 
-	  //write to file (vtk/vtu-format), construct vtk polydata object
+	  //now create polydata-object
+	  vtkSmartPointer<vtkPolyData> subdivVTKPoly = vtkSmartPointer<vtkPolyData>::New();	
+	  CGALPolyhedronToVTKPolydata_converter(&subdivpoly, subdivVTKPoly);
+
+	  //write polydata to disk	  
+	  bool result = IOHelper::VTKWritePolyData(outfile,subdivVTKPoly);	  
+
+	  //cleanup of polyhedron, points, faces and polydata-object??
+
+	  return result;
+  }
+
+  void CGALPolyhedronToVTKPolydata_converter(Polyhedron *polyhedron, vtkSmartPointer<vtkPolyData> polydata)
+  {
+	  //convert from cgal polyhedron to vtk poly data
 	  //first the points
 	  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	  vtkSmartPointer<vtkCellArray> faces = vtkSmartPointer<vtkCellArray>::New();
 	  
-	  //iterator over all vertices in subdived polyhedron, add them as points
+	  //iterator over all vertices in  polyhedron, add them as points
 	  std::map<Vertex_handle, vtkIdType> V;
 	  vtkIdType inum = 0;
-	  for ( Vertex_iterator v = subdivpoly.vertices_begin(); v != subdivpoly.vertices_end(); ++v)
+	  for ( Vertex_iterator v = polyhedron->vertices_begin(); v != polyhedron->vertices_end(); ++v)
 	  {	     	   
 		   points->InsertNextPoint(v->point()[0],v->point()[1],v->point()[2]);		   
 		   V[v] = inum++;
 	  }
-	  //now iterate over all faces in subdived polyhedron	   	  
-	  for ( Facet_iterator i = subdivpoly.facets_begin(); i != subdivpoly.facets_end(); ++i)
+	  //now iterate over all faces in polyhedron	   	  
+	  for ( Facet_iterator i = polyhedron->facets_begin(); i != polyhedron->facets_end(); ++i)
 	  {
 		  Halfedge_around_facet_circulator j = i->facet_begin();		
 		  faces->InsertNextCell(CGAL::circulator_size(j));		  
@@ -364,18 +376,10 @@ namespace MSML{
 			  		 
 		  } while(++j != i->facet_begin());
 	  }
-
-	  //now create polydata-object
-	  vtkSmartPointer<vtkPolyData> subdivPolyData = vtkSmartPointer<vtkPolyData>::New();	 
+	  
 	  // Set the points and faces of the polydata	
-	  subdivPolyData->SetPoints(points);
-	  subdivPolyData->SetPolys(faces);	  
-
-	  //write polydata to disk	  
-	  bool result = IOHelper::VTKWritePolyData(outfile,subdivPolyData);	  
-	  //cleanup of polyhedron, points, faces and polydata-object??
-
-	  return result;
+	  polydata->SetPoints(points);
+	  polydata->SetPolys(faces);	 
   }
 
 

@@ -87,12 +87,11 @@ CGALOperators
         :returns:
         :rtype:
 	.. cpp:function:: bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile)
-        :param vtkPolyData *inputMesh:
-        :param Polyhedron *outputMesh: 
+        :param vtkPolyData *inputMeshFile:
+        :param Polyhedron *outputMeshFile: 
 
         :returns:
         :rtype:
-
 */
 
 namespace MSML {
