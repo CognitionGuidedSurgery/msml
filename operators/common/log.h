@@ -32,15 +32,17 @@ public:
 
 	}
 
-
 	template<typename T>
-		Logger& operator<<(T s) {
-			sstream << s;
-			return *this;
-		}
-
-	Logger& operator<<(std::ostream&(*f)(std::ostream&)) {
-		const char* msg = sstream.str().c_str();
+	Logger& operator<<(T s) 
+	{
+		sstream << s;
+		return *this;
+	}
+	
+	Logger& operator<<(std::ostream&(*f)(std::ostream&)) 
+	{		
+		std::string msg_str(sstream.str());
+		const char* msg = msg_str.c_str();
 		_log(category, msg);
 		sstream.str(std::string());
 		return *this;
