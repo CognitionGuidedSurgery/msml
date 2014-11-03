@@ -4,8 +4,8 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
-#   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
@@ -49,7 +49,6 @@ load_envconfig()
 
 from .analytics.alphabet_analytics import *
 
-
 from . import log
 
 from collections import OrderedDict
@@ -57,7 +56,6 @@ from msml.run.GraphDotWriter import *
 from msml.run import DefaultGraphBuilder
 
 import os
-from docopt import docopt
 from path import path
 
 import msml
@@ -66,7 +64,8 @@ import msml.model
 import msml.run
 import msml.xml
 import msml.exporter
-
+from docopt import docopt
+import argparse
 
 __all__ = ["App", "main"]
 __author__ = "Alexander Weigl"
@@ -102,26 +101,89 @@ Options:
  -p , --partial PRE, EXPORT, SIM, FULL           run only up to pre-processing, simulation export, simulation or post-processing
 """
 
+prolog = """
+                             _
+                            | | Medical
+  _ __ ___   ___  _ __ ___  | | Simulation
+ | '_ ` _ \ / __|| '_ ` _ \ | | Markup
+ | | | | | |\__ \| | | | | || | Language
+ |_| |_| |_||___/|_| |_| |_||_|
+"""
+
 def create_argument_parser():
-    parse
+    parser = argparse.ArgumentParser("msml.py",
+                                     usage=None,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description=prolog)
+
+
+    parser.add_argument("-v", '--verbose', dest="verbosity", action="count",
+                        help="select the verbosity of this program")
+
+    parser.add_argument('--rc', metavar='FILE', type=str,
+                        default="~/.config/msmlrc.py",
+                        help="overwrite the default rc file [default: ~/.config/msmlrc.py]")
+
+    parser.add_argument('-a', '--alphabet-dir', metavar="FOLDER/FILE", nargs='*', type=str, dest='alphabet_dirs',
+                        help="loads an specific alphabet dir")
+
+    parser.add_argument('--operator-dir', metavar='FOLDER', nargs='*', type=str, dest='operator_dirs',
+                        help="path to search for additional python modules")
+
+    sub_parser = parser.add_subparsers(help="sub command help")
+
+    # execution
+    exec_parser = sub_parser.add_parser("exec", help="specifies the command to be executed")
+    exec_parser.add_argument('-o', '--output', metavar='FOLDER', dest='output_folder', action='store',
+                             help="output directory for all generated data")
+
+    exec_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
+                             help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
+
+    exec_parser.add_argument('--seq-parallel', action='store_true',
+                             help="enable/disable data-parallel processing of single operators", default=False)
+
+    exec_parser.add_argument('-p', '--partial',
+                             action='append', nargs='*',
+                             choices=set(('pre', 'sim', 'export', 'post')),
+                             help="selects the step to be executed")
+
+    exec_parser.add_argument('-m', '--variables', metavar="FILE",
+                             help="predefined memory content")
+
+    exec_parser.add_argument('files', metavar="FILES", nargs='+',
+                             help="MSML files to be executed")
+
+    # show
+    show_parser = sub_parser.add_parser('show', help="prints out the build graph")
+    show_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
+                             help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
+
+    show_parser.add_argument('files', metavar="FILES", nargs='+',
+                             help="MSML files to be executed")
+
+    validate_parser = sub_parser.add_parser('validate',
+                                            help="validates the current msml environment")
+
+    return parser
 
 
 def _parse_keyvalue_options(list_str):
     options = {}
     for s in list_str:
         if "=" in s:
-            k,v = s.split("=")
+            k, v = s.split("=")
             options[k] = v
         else:
             options[s] = True
     return options
 
+
 def _load_class(cl):
     d = cl.rfind(".")
-    classname = cl[d+1:len(cl)]
+    classname = cl[d + 1:len(cl)]
     m = __import__(cl[0:d], globals(), locals(), [classname])
     return getattr(m, classname)
-
 
 
 class App(object):
@@ -159,7 +221,8 @@ class App(object):
     """
 
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
-                 add_operator_path=None, memory_init_file=None, output_dir = None, execution_options=None, seq_parallel=True,options={}):
+                 add_operator_path=None, memory_init_file=None, output_dir=None, execution_options=None,
+                 seq_parallel=True, options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
         self._files = options.get('<file>') or files or list()
         self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
@@ -169,7 +232,8 @@ class App(object):
         self._seq_parallel = seq_parallel or options.get('--seq_parallel')
         self._novalidate = novalidate
         self._memory_init_file = memory_init_file
-        self._executor_options = execution_options or options.get('--partial') #_parse_keyvalue_options(options.get('D', list()))
+        self._executor_options = execution_options or options.get(
+            '--partial')  #_parse_keyvalue_options(options.get('D', list()))
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -258,11 +322,11 @@ class App(object):
 
         """
         if not self._executor_options is None:
-            return msml.run.ControllableExecutor #_load_class(self._executor_options['executor.class'])
+            return msml.run.ControllableExecutor  #_load_class(self._executor_options['executor.class'])
         else:
             return msml.run.LinearSequenceExecutor
 
-    def get_executor(self,msml_file):
+    def get_executor(self, msml_file):
 
         if self._executor == None:
             self._prepare_msml_model(msml_file)
@@ -292,11 +356,11 @@ class App(object):
 
         exporter._match_features()
 
-    def show(self, msml_file = None):
+    def show(self, msml_file=None):
         if not msml_file:
             msml_file = self._load_msml_file(self.files[0])
         elif isinstance(msml_file, str) or \
-             isinstance(msml_file, unicode):
+                isinstance(msml_file, unicode):
             msml_file = self._load_msml_file(msml_file)
 
         self._prepare_msml_model(msml_file)
@@ -339,6 +403,7 @@ class App(object):
         """
 
         import msml.run.exportpy
+
         for fil in self.files:
             msml_file = self._load_msml_file(fil)
             self._prepare_msml_model(msml_file)
@@ -349,7 +414,7 @@ class App(object):
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
-        log.info("found %d xml files in the alphabet search path" % len(files))        
+        log.info("found %d xml files in the alphabet search path" % len(files))
         alphabet = msml.xml.load_alphabet(file_list=files)
 
         msml.env.CURRENT_ALPHABET = alphabet
@@ -364,7 +429,7 @@ class App(object):
         import msml.analytics.schema_creator
 
         content = msml.analytics.schema_creator.xsd(self.alphabet)
-        with open(self._options['<XSDFile>'],'w') as fp:
+        with open(self._options['<XSDFile>'], 'w') as fp:
             fp.write(content)
             print(content)
 
@@ -383,13 +448,13 @@ class App(object):
         """
         for r in check_element_completeness(self.alphabet, ELEMENT_DEFAULT_VALIDATORS):
             print(r)
-        #print(export_alphabet_overview_rst(self.alphabet))
+            #print(export_alphabet_overview_rst(self.alphabet))
 
 
     def _exec(self):
         COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution,
                                 'validate': self.validate,
-                                'expy':self.expy,
+                                'expy': self.expy,
                                 'writexsd': self.writexsd,
                                 'check': self.check_file})
 
@@ -411,8 +476,10 @@ def main(args=None):
 
     if args is None:
         args = docopt(OPTIONS, version=msml.__version__)
+        #parser = create_argument_parser()
+        #print(parser.parse_args())
 
-    if '--verbose' in args and args['--verbose']: # set verbosity
+    if '--verbose' in args and args['--verbose']:  # set verbosity
         log.set_verbosity('INFO')
     else:
         log.set_verbosity('ERROR')
