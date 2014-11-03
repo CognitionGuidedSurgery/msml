@@ -64,42 +64,12 @@ import msml.model
 import msml.run
 import msml.xml
 import msml.exporter
-from docopt import docopt
 import argparse
 
 __all__ = ["App", "main"]
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
-# please read: http://docopt.org/ for more information
-OPTIONS = """
-                                _
-                               | | Medical
-     _ __ ___   ___  _ __ ___  | | Simulation
-    | '_ ` _ \ / __|| '_ ` _ \ | | Markup
-    | | | | | |\__ \| | | | | || | Language
-    |_| |_| |_||___/|_| |_| |_||_|
-
-Usage:
-  msml exec  [options] <file>...
-  msml show  [options] <file>
-  msml writexsd <XSDFile>
-  msml check    [<file>...]
-  msml validate
-  msml expy     [options] [<file>...]
-
-Options:
- -v, --verbose                  verbose information on stdout [default: false]
- -o, --output=DIR                output directory
- --start-script=FILE             overwrite the default rc file [default: ~/.config/msmlrc.py]
- -a, --alphabet-dir=DIR          loads an specific alphabet dir
- --operator-dir                  path to search for additional python modules
- -x, --xsd-file=FILE             xsd-file
- -e VALUE, --exporter=VALUE      set the exporter (base, nsofa, nabaqus) [default: base]
- --seq_parallel=True/False       enable/disable data-parallel processing of single operators
- -m FILE, --vars=FILE            predefined the memory content
- -p , --partial PRE, EXPORT, SIM, FULL           run only up to pre-processing, simulation export, simulation or post-processing
-"""
 
 prolog = """
                              _
@@ -111,6 +81,30 @@ prolog = """
 """
 
 def create_argument_parser():
+    class KeyValueAction(argparse.Action):
+        def __init__(self, option_strings, dest, nargs=None, **kwargs):
+            if nargs is None:
+                raise ValueError("KeyValue action is only for nargs!")
+
+            super(KeyValueAction, self).__init__(option_strings, dest, nargs, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string = None):
+            if hasattr(namespace, self.dest):
+                d = getattr(namespace, self.dest)
+            else:
+                d = {}
+
+            for val in values:
+                try:
+                    k,v = val.split(":")
+                    d[k] = v
+                except:
+                    raise ValueError("Can not split up %s. Expected 'key:value'" % val)
+
+            setattr(namespace, self.dest, d)
+
+
+
     parser = argparse.ArgumentParser("msml.py",
                                      usage=None,
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -134,6 +128,8 @@ def create_argument_parser():
 
     # execution
     exec_parser = sub_parser.add_parser("exec", help="specifies the command to be executed")
+    exec_parser.set_defaults(which="exec")
+
     exec_parser.add_argument('-o', '--output', metavar='FOLDER', dest='output_folder', action='store',
                              help="output directory for all generated data")
 
@@ -142,6 +138,10 @@ def create_argument_parser():
 
     exec_parser.add_argument('--seq-parallel', action='store_true',
                              help="enable/disable data-parallel processing of single operators", default=False)
+
+
+    exec_parser.add_argument("-E", "--exopt", nargs="+", default=dict(), metavar='key:val', action=KeyValueAction)
+    exec_parser.add_argument("-R", "--runopt", nargs="+", default=dict(), metavar='key:val', action=KeyValueAction)
 
     exec_parser.add_argument('-p', '--partial',
                              action='append', nargs='*',
@@ -156,15 +156,16 @@ def create_argument_parser():
 
     # show
     show_parser = sub_parser.add_parser('show', help="prints out the build graph")
+    show_parser.set_defaults(which="show")
     show_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
                              help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
 
-    show_parser.add_argument('files', metavar="FILES", nargs='+',
-                             help="MSML files to be executed")
+    show_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
 
+    # validate
     validate_parser = sub_parser.add_parser('validate',
                                             help="validates the current msml environment")
-
+    validate_parser.set_defaults(which="validate")
     return parser
 
 
@@ -220,20 +221,24 @@ class App(object):
 
     """
 
-    def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
+    def __init__(self, novalidate=False, files=None, exporter="sofa", add_search_path=None,
                  add_operator_path=None, memory_init_file=None, output_dir=None, execution_options=None,
-                 seq_parallel=True, options={}):
-        self._exporter = options.get("--exporter") or exporter or "sofa"
-        self._files = options.get('<file>') or files or list()
-        self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
-        self._additional_operator_search_path = options.get('--operator-path') or add_operator_path or list()
+                 seq_parallel=True, options=None, **kwargs):
+
+        options = dict(options if options else {})  # create copy
+        options.update(kwargs)
+
+        self._exporter = options.get("exporter") or exporter
+        self._files = options.get('files') or files or list()
+        self._additional_alphabet_path = options.get('alphabetdir') or add_search_path or list()
+        self._additional_operator_search_path = options.get('operatorpath') or add_operator_path or list()
         self._options = options
-        self.output_dir = output_dir or options.get('--output')
-        self._seq_parallel = seq_parallel or options.get('--seq_parallel')
+        self.output_dir = output_dir or options.get('output')
+        self._seq_parallel = seq_parallel or options.get('seqparallel')
         self._novalidate = novalidate
         self._memory_init_file = memory_init_file
-        self._executor_options = execution_options or options.get(
-            '--partial')  #_parse_keyvalue_options(options.get('D', list()))
+        self._executor_options = execution_options or options.get('--partial')
+        #_parse_keyvalue_options(options.get('D', list()))
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -452,19 +457,18 @@ class App(object):
 
 
     def _exec(self):
-        COMMANDS = OrderedDict({'show': self.show, 'exec': self.execution,
+        COMMANDS = OrderedDict({'show': self.show,
+                                'exec': self.execution,
                                 'validate': self.validate,
                                 'expy': self.expy,
                                 'writexsd': self.writexsd,
                                 'check': self.check_file})
 
-        # dispatch to COMMANDS
-        for cmd, fn in COMMANDS.items():
-            if self._options[cmd]:
-                fn()
-                break
-        else:
-            log.error("could not find a suitable command")
+        try:
+            cmd = self._options["which"]
+            COMMANDS[cmd]()
+        except IndexError:
+            log.error("Could not find application: %s" % cmd)
 
 
 def main(args=None):
@@ -475,14 +479,17 @@ def main(args=None):
     """
 
     if args is None:
-        args = docopt(OPTIONS, version=msml.__version__)
-        #parser = create_argument_parser()
-        #print(parser.parse_args())
+        parser = create_argument_parser()
+        ns = parser.parse_args()
+        args = vars(ns)
 
-    if '--verbose' in args and args['--verbose']:  # set verbosity
-        log.set_verbosity('INFO')
-    else:
-        log.set_verbosity('ERROR')
+    log.set_verbosity(
+        "WARNING" if ns.verbosity == 1 else
+        "INFO" if ns.verbosity == 2 else
+        "DEBUG" if ns.verbosity == 3 else
+        "ERROR")
+
+    log.debug("cli arguments: %s", args)
 
     app = App(options=args)
     app._exec()
