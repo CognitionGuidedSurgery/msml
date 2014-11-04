@@ -34,6 +34,7 @@ __date__ = "2014-03-13"
 import math
 import os
 import subprocess
+import random
 
 from path import path
 
@@ -103,6 +104,7 @@ class SofaExporter(XMLExporter):
             f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
                 timeSteps) + ' ' + self.export_file + '.simu \n')
 
+        os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
