@@ -188,9 +188,7 @@ from itertools import starmap
 
 def get_needed_features(msml_file):
     def eval_predicate(name, pred):
-        print pred
         r = pred(msml_file)
-        print name, r
         if r:
             if r is True: return (name,)
             else: return r

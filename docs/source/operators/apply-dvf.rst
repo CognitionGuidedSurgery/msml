@@ -13,7 +13,7 @@ apply-dvf
 
 :type: PythonOperator
 :modul: :py:mod:`msml.ext.misc`
-:function: :py:func:`msml.ext.misc.ApplyDVF`
+:function: :py:func:`msml.ext.misc.ApplyDVFPython`
 
 
 
@@ -21,7 +21,11 @@ apply-dvf
 
 :Inputs:
     
-        * **ApplyDVF** : (:py:class:`msml.sortdef.VTK`, :py:class:`msml.sortdef.Image3D`)
+        * **referenceImage** : (:py:class:`msml.sortdef.VTK`, :py:class:`msml.sortdef.Image3D`)
+
+             :red:`DOCUMENTATION MISSING`
+    
+        * **dvf** : (:py:class:`msml.sortdef.VTK`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     
@@ -37,7 +41,7 @@ apply-dvf
 
 :Parameter:
     
-        * **dvf** : (:py:class:`msml.sortdef.VTK`, :py:class:`*`)
+        * **outputDefImageFilename** : (:py:class:`msml.sortdef.MSMLString`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     
@@ -46,6 +50,10 @@ apply-dvf
              :red:`DOCUMENTATION MISSING`
     
         * **reverseDirection** : (:py:class:`bool`, :py:class:`*`)
+
+             :red:`DOCUMENTATION MISSING`
+    
+        * **voxelSize** : (:py:class:`*`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     

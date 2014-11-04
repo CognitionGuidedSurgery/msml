@@ -3,8 +3,8 @@
 
     <style> .red {color: #ff6b59;} </style>
 
-stl2vtk
-=======
+ExtractSurfaceMesh
+==================
 
 
 :red:`DOCUMENTATION MISSING`
@@ -13,7 +13,7 @@ stl2vtk
 
 :type: PythonOperator
 :modul: :py:mod:`msml.ext.misc`
-:function: :py:func:`msml.ext.misc.ConvertSTLToVTKPython`
+:function: :py:func:`msml.ext.misc.ExtractSurfaceMeshPython`
 
 
 
@@ -21,7 +21,7 @@ stl2vtk
 
 :Inputs:
     
-        * **STLMesh** : (:py:class:`msml.sortdef.STL`, :py:class:`*`)
+        * **mesh** : (:py:class:`msml.sortdef.VTK`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     
@@ -29,7 +29,7 @@ stl2vtk
 
 :Output:
     
-        * **VTKMesh** : (:py:class:`msml.sortdef.VTK`, :py:class:`*`)
+        * **surfaceOut** : (:py:class:`msml.sortdef.VTK`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     
@@ -37,7 +37,7 @@ stl2vtk
 
 :Parameter:
     
-        * **vtkFilename** : (:py:class:`msml.sortdef.MSMLString`, :py:class:`*`)
+        * **surfaceMeshFilename** : (:py:class:`msml.sortdef.MSMLString`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     

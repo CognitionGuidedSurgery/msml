@@ -1,7 +1,7 @@
 Getting Started
 ---------------
 
-After the :ref:`Installation` you can start with the examples. Simply use the :file:`run_examples.py`
+After the :doc:`Installation` you can start with the examples. Simply use the :file:`run_examples.py`
 and select an example to run.
 
 If this works, we write and execute our first msml file.

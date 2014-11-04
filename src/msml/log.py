@@ -156,6 +156,17 @@ class ColoredFormatter(logging.Formatter):
 
         return message
 
+def set_verbosity(log_level):
+    LEVELS = { x : getattr(logging, x)
+               for x in ('CRITICAL', 'FATAL', 'ERROR', 'WARNING', 'WARN', 'INFO', 'DEBUG', 'NOTSET')}
+
+    if log_level in LEVELS:
+        log_level = LEVELS[log_level]
+
+    for handler in logging._handlers.values():
+        handler.level = log_level
+
+
 ## https://docs.python.org/2/library/logging.html#logrecord-attributes
 LOGGING = {
     'version': 1,
