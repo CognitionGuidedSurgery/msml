@@ -35,8 +35,8 @@ using namespace std;
 namespace MSML {
     namespace MiscExtOperators
     {
-    	LIBRARY_API  std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount);
-    	LIBRARY_API  bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount);
+        LIBRARY_API  std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput);
+        LIBRARY_API  bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount, bool forceManifold);
 
 
     } //end namespace MiscExtOperators
