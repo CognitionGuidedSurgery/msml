@@ -27,7 +27,6 @@
 
 """
 msml.exporter -- base functionality for all exporters.
-You only need this if you want create your own exporter.
 
 An exporter is like an operator but with great power!
 It is a cut-off in the execution of an msml file and can
@@ -43,10 +42,10 @@ __date__ = "2013-12-13"
 __updated__ = "2014-02-26"
 
 from .base import *
-from .abaqusnew import AbaqusExporter
-from .febio import FeBioExporter
-from .sofanew import SofaExporter as NSofaExporter
+from .abaqus import AbaqusExporter
+from .sofanew import SofaExporter
 from .hiflow3 import HiFlow3Exporter
+from .semantic_tools import OntologyParser
 
 __all__ = ['register_exporter', 'get_exporter',
            'Exporter', 'NAbaqusExporter', 'NSofaExporter',
@@ -55,7 +54,6 @@ __all__ = ['register_exporter', 'get_exporter',
 
 
 # Register for common Exporters
-
 __REGISTER = {'base': Exporter,
               "nabaqus": AbaqusExporter, 'nsofa': SofaExporter,
               "abaqus": AbaqusExporter, 'sofa': SofaExporter,
@@ -78,7 +76,7 @@ def get_exporter(name):
     """Find an Exporter under the given ``name``
 
     Args:
-      name (str): common name of the Exporter, @see ``register_exporter``
+      name (str): common name of the Exporter,
 
     Returns:
       type: a factory function

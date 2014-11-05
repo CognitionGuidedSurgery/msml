@@ -22,15 +22,12 @@
 #include "PostProcessingOperators.h"
 #include "IOHelper.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
-
 
 #include <string.h>
 #include <stdio.h>
 
 #include "vtkUnstructuredGrid.h"
-#include <vtkXMLPolyDataWriter.h>
+
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
@@ -44,18 +41,12 @@
 #include <vtkUnstructuredGridReader.h>
 #include <vtkSTLReader.h>
 #include <vtkPolyDataWriter.h>
-#include <vtkGeometryFilter.h>
-#include <vtkPlane.h>
-#include <vtkCutter.h>
-#include <vtkMassProperties.h>
-#include <vtkBooleanOperationPolyDataFilter.h> 
 
 #include <vtkPointData.h>
 #include <vtkIdList.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkTriangle.h>
 
 #include "vtkSTLWriter.h"
 #include "vtkSTLReader.h"
@@ -91,9 +82,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "MiscMeshOperators.h"
+
 using namespace boost;
 
 #include "../vtk6_compat.h"
+#include "../common/log.h"
 
 
 namespace MSML {
@@ -101,18 +95,8 @@ namespace PostProcessingOperators {
 
 void CompareMeshes(std::vector<double>& errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly)
 {
-    //load the meshes
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(referenceFilename);
-    reader->Update();
-    vtkUnstructuredGrid* referenceGrid = reader->GetOutput();
-
-    vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(testFilename);
-    reader2->Update();
-    vtkUnstructuredGrid* testGrid = reader2->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> testGrid = IOHelper::VTKReadUnstructuredGrid(testFilename);
 
     CompareMeshes(errorVec, referenceGrid, testGrid, surfaceOnly);
 }
@@ -152,7 +136,7 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
 
     if(numberOfRefPoints != numberOfTestPoints)
     {
-        std::cout<<"Error, meshes have to be the same size!!";
+        log_error() <<"Error, meshes have to be the same size!!" << std::endl;
         return;
     }
 
@@ -191,18 +175,8 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
 
 void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly)
 {
-    //load the meshes
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(referenceFilename);
-    reader->Update();
-    vtkUnstructuredGrid* referenceGrid = reader->GetOutput();
-
-    vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(testFilename);
-    reader2->Update();
-    vtkUnstructuredGrid* testGrid = reader2->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> testGrid = IOHelper::VTKReadUnstructuredGrid(testFilename);
 
     CompareMeshes(errorRMS, errorMax, referenceGrid, testGrid, surfaceOnly);
 
@@ -246,7 +220,7 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
 
     if(numberOfRefPoints != numberOfTestPoints)
     {
-        std::cout<<"Error, meshes have to be the same size!!";
+        log_error() <<"Error, meshes have to be the same size!!" << std::endl;
         return;
     }
 
@@ -290,105 +264,16 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
 
 void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename)
 {
-    //load the meshes
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(referenceFilename);
-    reader->Update();
-    vtkUnstructuredGrid* referenceGrid = reader->GetOutput();
-
-    vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(modelFilename);
-    reader2->Update();
-    vtkUnstructuredGrid* modelGrid = reader2->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
+    vtkSmartPointer<vtkUnstructuredGrid> modelGrid = IOHelper::VTKReadUnstructuredGrid(modelFilename);
 
     vtkSmartPointer<vtkUnstructuredGrid> coloredGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     ColorMeshFromComparison(modelGrid, referenceGrid, coloredGrid);
 
     //write output
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetFileName(coloredModelFilename);
-    __SetInput(writer, coloredGrid);
-    writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(coloredModelFilename, coloredGrid);
 }
-
-void ConvertFEBToVTK(const std::string modelFilename, const std::string lastStep, std::string inputMesh)
-{
-	vtkSmartPointer<vtkPoints> thePointsOutput =
-		 vtkSmartPointer<vtkPoints>::New();
-	
-	vtkSmartPointer<vtkUnstructuredGrid> vtkGrid = 
-		vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(inputMesh.c_str());
-	reader->Update();
-	
-	vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = reader->GetOutput();
-	
-	vtkGrid->DeepCopy(referenceGrid);
-
-	fstream f;
-	char cstring[256];
-	f.open(modelFilename, ios::in);
-	std::string prefix = "*";
-	bool start = false;
-	bool started = false;
-
-    while (!f.eof())
-    {
-		double arr [4];
-        f.getline(cstring, sizeof(cstring));
-        int i = 0;
-		stringstream ssin(cstring);
-		std::string temp;
-		if(cstring[0] == '*'){
-			if(started == true){
-				break;
-			}
-			while (ssin >> temp) {
-				if(temp == lastStep) {
-					start = true;
-				}
-			}
-		} else {
-			if(start){
-				started = true;
-				bool end = false;
-				while (ssin.good() && i < 4){	
-					if(!ssin.str().empty()){
-						ssin>>arr[i];
-						++i;
-					} else {
-						end = true;
-						break;
-					}
-				}
-				if(!end){
-					thePointsOutput->InsertNextPoint(arr[1], arr[2], arr[3]);
-				}
-			}
-		}
-		
-    }
-    f.close();
-	string::size_type idx = modelFilename.find('.');
-	std::string vtkFile = modelFilename.substr(0, idx) + ".vtk";
-	vtkGrid->SetPoints(thePointsOutput);
-	vtkGrid->GetPoints()->Modified();
-	vtkGrid->Modified();
-	vtkGrid->Update();
-	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-	vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetFileName(vtkFile.c_str());
-	__SetInput(writer, vtkGrid);
-	writer->Write();
-}
-
 
 void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* referenceMesh,vtkUnstructuredGrid* coloredMesh)
 {
@@ -400,7 +285,7 @@ void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid
 
     if(errorVec.size() != inputMesh->GetNumberOfPoints())
     {
-        std::cout<<"Size mismatch between errorVec and inputMesh size\n";
+        log_error() <<"Size mismatch between errorVec and inputMesh size" << std::endl;
         return;
     }
 
@@ -421,14 +306,14 @@ void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid
 
 std::string ColorMeshFromComparisonPython(std::string modelFilename, std::string referenceFilename, std::string coloredModelFilename)
 {
-    std::cout<<"Coloring mesh with errors...";
+    log_debug() <<"Coloring mesh with errors..." << std::endl;
     ColorMeshFromComparison(modelFilename.c_str(), referenceFilename.c_str(),coloredModelFilename.c_str());
     return coloredModelFilename;
 }
 
 std::string ColorMeshPython(std::string modelFilename, std::string coloredModelFilename)
 {
-    std::cout<<"Coloring mesh...";
+    log_debug() << "Coloring mesh..." << std::endl;
     ColorMesh(modelFilename.c_str(), coloredModelFilename.c_str());
     return coloredModelFilename;
 }
@@ -437,12 +322,7 @@ std::string ColorMeshPython(std::string modelFilename, std::string coloredModelF
 void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
 {
     //load the vtk quadratic mesh
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(modelFilename);
-    reader->Update();
-
-    vtkUnstructuredGrid* currentGrid = reader->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> currentGrid=  IOHelper::VTKReadUnstructuredGrid(modelFilename);
 
     vtkSmartPointer<vtkPolyData> surface =
         vtkSmartPointer<vtkPolyData>::New();
@@ -450,171 +330,7 @@ void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
     ColorMesh(currentGrid, surface);
 
     //write output
-    vtkSmartPointer<vtkPolyDataWriter> polywriter =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    polywriter->SetFileName(coloredModelFilename);
-    __SetInput(polywriter, surface);
-    polywriter->Write();
-
-}
-
-void ComputeOrganVolume(const char* volumeFilename){
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(volumeFilename);
-	reader->Update();
-	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
-	vtkSmartPointer<vtkGeometryFilter> geometryFilter = 
-		vtkSmartPointer<vtkGeometryFilter>::New();
-
-	geometryFilter->SetInput(inputMesh);
-	geometryFilter->Update(); 
-	vtkPolyData* polydata = geometryFilter->GetOutput();
-	
-	vtkMassProperties* mass = vtkMassProperties::New();
-	mass->SetInput(polydata);
-	mass->Modified();
-	mass->Update();
-	
-	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
-
-	/*vtkIdType* currentCellPoints;
-	vtkIdType numberOfNodesPerElement;
-	double volume = 0;
-	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
-	 {
-		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
-		 if(numberOfNodesPerElement == 4) {
-			 double tetraPoints[4][3]; 
-			 double *currentPoint;
-			
-			 for(int j=0; j<numberOfNodesPerElement; j++)
-			 {
-				currentPoint = inputMesh->GetPoint(currentCellPoints[j]);
-
-				for(int m=0; m < 3; m++){
-					tetraPoints[j][m] = currentPoint[m];
-				}
-			 }
-			 vtkTetra* vtkTetra = vtkTetra::New();
-			 volume += vtkTetra->ComputeVolume(tetraPoints[0], tetraPoints[1], tetraPoints[2], tetraPoints[3]);
-	    }
-		
-	 }
-
-	 cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;*/
-
-}
-
-void ComputeDiceCoefficient(const char* filename, const char* filename2)
-{
-		vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(filename);
-		reader->Update();
-		vtkUnstructuredGrid* currentGrid = reader->GetOutput();
-		reader2->SetFileName(filename2);
-		reader2->Update();
-		vtkUnstructuredGrid* referenceGrid = reader2->GetOutput();
-
-		vtkSmartPointer<vtkGeometryFilter> geometryFilter = 
-		vtkSmartPointer<vtkGeometryFilter>::New();
-
-		geometryFilter->SetInput(currentGrid);
-		geometryFilter->Update(); 
-		vtkPolyData* polydata = geometryFilter->GetOutput();
-		
-		vtkSmartPointer<vtkGeometryFilter> geometryFilter2 = 
-		vtkSmartPointer<vtkGeometryFilter>::New();
-
-		geometryFilter2->SetInput(referenceGrid);
-		geometryFilter2->Update(); 
-		vtkPolyData* polydata2 = geometryFilter2->GetOutput();
-		
-		vtkSmartPointer<vtkBooleanOperationPolyDataFilter> booleanOperation = 
-		vtkSmartPointer<vtkBooleanOperationPolyDataFilter>::New(); 
-		booleanOperation->SetInput(0, polydata); 
-		booleanOperation->SetInput(1, polydata2); 
-		booleanOperation->SetOperationToIntersection(); 
-		booleanOperation->Modified();
-		booleanOperation->Update();
-		vtkPolyData* pol = booleanOperation->GetOutput();
-		vtkMassProperties* mass = vtkMassProperties::New();
-		mass->SetInput(pol);
-		mass->Modified();
-		mass->Update();
-		int overlap = mass->GetVolume();
-		std::cout << "Overlapping Volume: " << overlap << "mm^3" << endl;
-		mass->SetInput(polydata);
-		mass->Modified();
-		mass->Update();
-		int volume1  =  mass->GetVolume();
-		std::cout << "1.Volume : " << volume1 << "mm^3" << endl;
-		mass->SetInput(polydata2);
-		mass->Modified();
-		mass->Update();
-		int volume2  =  mass->GetVolume();
-		std::cout << "2.Volume : " << volume2 << "mm^3" << endl;
-		float diceCoeff = (float)(2*overlap)/(volume1 + volume2);
-		cout << "DICE-Coefficient: " << diceCoeff << endl;
-		
-}
-
-void ComputeOrganCrossSectionArea(const char* volumeFilename){
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(volumeFilename);
-	reader->Update();
-	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
-		
-	vtkSmartPointer<vtkGeometryFilter> geometryFilter = 
-	vtkSmartPointer<vtkGeometryFilter>::New();
-
-	geometryFilter->SetInput(inputMesh);
-	geometryFilter->Update(); 
-	vtkPolyData* polydata = geometryFilter->GetOutput();
-	
-	double bounds[6];
-	polydata->GetBounds(bounds);
-	std::cout << "Bounds: " 
-        << bounds[0] << ", " << bounds[1] << " "
-        << bounds[2] << ", " << bounds[3] << " "
-        << bounds[4] << ", " << bounds[5] << std::endl;
-
-	vtkSmartPointer<vtkPlane> plane =
-	vtkSmartPointer<vtkPlane>::New();
-	plane->SetOrigin((bounds[1] + bounds[0]) / 2.0,
-		(bounds[3] + bounds[2]) / 2.0,
-			(bounds[4] + bounds[5]) / 2.0);
-	plane->SetNormal(0,0,1);
-		
-	vtkSmartPointer<vtkCutter> cutter =
-	vtkSmartPointer<vtkCutter>::New();
-	cutter->SetInputConnection(reader->GetOutputPort());;
-	cutter->SetCutFunction(plane);
-	cutter->Update();
-	vtkPolyData *pCutterOutput = cutter->GetOutput();
-	double area = 0;
-	for(vtkIdType i = 0; i < pCutterOutput->GetNumberOfPolys(); i++)
-	{
-		vtkCell* cell = pCutterOutput->GetCell(i);
-		int numberOfPoints = cell->GetNumberOfPoints();
-		if(numberOfPoints == 3) {
-			vtkTriangle* triangle = dynamic_cast<vtkTriangle*>(cell);
-			double p0[3];
-			double p1[3];
-			double p2[3];
-			triangle->GetPoints()->GetPoint(0, p0);
-			triangle->GetPoints()->GetPoint(1, p1);
-			triangle->GetPoints()->GetPoint(2, p2);
-			area += vtkTriangle::TriangleArea(p0, p1, p2);
-		}
-	}
-
-	cout << "Area of cross section: " << area << "mm^2" << endl;
-
+    IOHelper::VTKWritePolyData(coloredModelFilename, surface);
 }
 
 void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
@@ -639,7 +355,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
     int cellType = currentGrid->GetCellType(1);
     bool isQuadratic = false;
 
-    std::cout<<"CellType is "<<cellType<<"\n";
+    log_info() <<"CellType is "<<cellType<< std::endl;
 
     if(cellType == 22)
     {
@@ -648,7 +364,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
 
     if(isQuadratic)
     {
-        std::cout<<"QuadraticMeshDetected\n";
+        log_info() <<"QuadraticMeshDetected" << std::endl;
     }
 
     typedef adjacency_list<listS, vecS, undirectedS> Graph;
@@ -730,7 +446,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
     vertices_size_type num_colors = sequential_vertex_coloring(g, color);
 
     //InternalData.m_nColors = num_colors;
-    printf("num_colors = %d \n", num_colors);
+    log_debug() << "num_colors = "<<  num_colors << std::endl;
 
     vtkSmartPointer<vtkFloatArray> colorData =
         vtkSmartPointer<vtkFloatArray>::New();
@@ -792,97 +508,29 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
 
     MergeMeshes(pointsMesh, cellsMesh, mergedGrid);
 
-    //write output
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetFileName(outputMeshFilename);
-    __SetInput(writer, mergedGrid);
-    writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outputMeshFilename, mergedGrid);
 }
 
-//find all files with the same name (without digit postfix) and any digit postfix.
-//TODO: Refactor+cleanup
-vector<pair<int, string>>* getAllFilesOfSeries(const char* filename)
-{
-    vector<pair<int, string>>* aReturn = new vector<pair<int, string>>();
-    boost::filesystem::path aPath(filename);
-    boost::filesystem::path extension = aPath.extension();
-    boost::filesystem::path file = aPath.filename().stem();
-    std::string aFilename = file.string();
-    
-    //how many digits? 
-    int i=aFilename.length()-1;
-    int numberOfDigits=0;
-    while(i>0 && aFilename[i] >='0' && aFilename[i] <='9')
-    {
-        numberOfDigits++;
-        i--;
-    }
-
-    //find all files with the same name (without digit postfix) and any digit postfix.
-    aFilename = aFilename.substr(0,aFilename.length()-numberOfDigits);
-    for (int i=0; i<pow(10.0,(double)numberOfDigits); i++)
-    {
-        boost::filesystem::path curentPath = aPath.parent_path() / (aFilename + lexical_cast<string>(i) + extension.string());
-
-        if(boost::filesystem::exists(curentPath))
-        {
-            aReturn->push_back(std::make_pair(i, curentPath.string()));
-        }
-    }
-
-    return aReturn;
-}
-
-
-std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool multipleDVF, bool reverseDirection)
-{
-    if (multipleDVF)
-    {
-        return ApplyMultipleDVF(referenceImage, DVF, outputDeformedImage, reverseDirection);
-    }
-
-    else
-    {
-        ApplyDVF(referenceImage, outputDeformedImage, DVF, reverseDirection);
-        return (std::string) outputDeformedImage;
-    }
-
-}
-
-std::string ApplyMultipleDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection)
-{
-    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(DVF);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outputDeformedImage);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        cout << "Generating Deformed image " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        ApplyDVF(referenceImage, allRefs->at(i).second.c_str(), currenOutputFile.c_str(), reverseDirection);
-    }
-
-    return currenOutputFile;
-}
-
-void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection)
+ std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, float voxelSize)
 {
     vtkSmartPointer<vtkImageData> refImage =  IOHelper::VTKReadImage(referenceImage);
-    vtkSmartPointer<vtkImageData> dvfVecImage = IOHelper::VTKReadImage(DVF);
-    vtkSmartPointer<vtkImageData> outputDefImage = vtkSmartPointer<vtkImageData>::New();
+    vtkSmartPointer<vtkImageData> dvfVecImage = IOHelper::VTKReadImage(DVF);   
+    vtkSmartPointer<vtkImageData> outputDefImage;
 
+    outputDefImage = MiscMeshOperators::ImageCreate(refImage);
+    MiscMeshOperators::ImageChangeVoxelSize(outputDefImage, voxelSize);
+    #if VTK_MAJOR_VERSION <= 5
+    outputDefImage->SetScalarTypeToFloat();
+    outputDefImage->AllocateScalars();
+    #else
+    outputDefImage->AllocateScalars(VTK_FLOAT,1); //one value per 3d coordinate
+    #endif
 
-    ApplyDVF(refImage, dvfVecImage, outputDefImage, reverseDirection);
-    cout << "Writing Deformed image.. "  << std::endl;
+    ApplyDVF(refImage, dvfVecImage, outputDefImage, reverseDirection, voxelSize);
+    log_debug() << "Writing Deformed image.. "  << std::endl;
     //write output
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-        vtkSmartPointer<vtkXMLImageDataWriter>::New();
-    writer->SetFileName(outputDeformedImage);
-    __SetInput(writer, outputDefImage);
-    writer->SetCompressorTypeToZLib();
-    writer->Write();
+    IOHelper::VTKWriteImage(outputDeformedImage, outputDefImage);
+    return outputDeformedImage;
 }
 
 /*
@@ -896,14 +544,12 @@ void ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDef
 
     - Areas outside definition zone of DVF or reference image are set to -1024
 */
-void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputDefImage, bool reverseDirection)
-{
-    int* dims = inputImage->GetDimensions();
-    double* origin = inputImage->GetOrigin();
-    double* spacing = inputImage->GetSpacing();
-    outputDefImage->SetDimensions(dims);
-    outputDefImage->SetOrigin(origin);
-    outputDefImage->SetSpacing(spacing);
+void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputDefImage, bool reverseDirection, double voxelSize)
+  {
+    int* dims = outputDefImage->GetDimensions();
+    double* origin = outputDefImage->GetOrigin();
+    double* spacing = outputDefImage->GetSpacing();
+
 
     vtkSmartPointer<vtkImageInterpolator> dvfInterpolator = vtkSmartPointer<vtkImageInterpolator>::New();
     dvfInterpolator->SetOutValue(-1);
@@ -968,59 +614,45 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
                 }
 
                 //write pixel value refImage=>defImage
-                double* pixel = static_cast<double*>(outputDefImage->GetScalarPointer(i,j,k));
+                float* pixel = static_cast<float*>(outputDefImage->GetScalarPointer(i,j,k));
                 pixel[0] = pixelValue;
             }
         }
     }
 }
 
-std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, bool multipleReferenceGrids)
-{
-    if (multipleReferenceGrids)
-    {
-        return GenerateDVFMultipleRefGrids(referenceGridFilename, deformedGridFilename, outputDVFFilename );
-    }
-
-    else
-    {
-        GenerateDVF(referenceGridFilename, deformedGridFilename, outputDVFFilename);
-        return (std::string) outputDVFFilename;
-    }
-}
-
-string GenerateDVFMultipleRefGrids(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename)
-{
-    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(referenceGridFilename);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outputDVFFilename);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        cout << "Generating DVF " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        GenerateDVF(allRefs->at(i).second.c_str(),  deformedGridFilename, currenOutputFile.c_str());
-    }
-
-    return currenOutputFile;
-}
-
-void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename)
+std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, float spacingParam, const char* referenceCoordinateGrid, float interpolateOutsideDistance)
 {
 
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridFilename);
     vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridFilename);
-    vtkSmartPointer<vtkImageData> outputDVF = vtkSmartPointer<vtkImageData>::New();
 
-    GenerateDVF(referenceGrid, deformedGrid, outputDVF);
+    vtkSmartPointer<vtkImageData> outputDVF;
+    if (strlen(referenceCoordinateGrid)>0)
+    {
+      outputDVF = MiscMeshOperators::ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
+      if (spacingParam>0)
+      {
+        MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
+      }
+    }
 
+    else
+    {
+      outputDVF = MiscMeshOperators::ImageCreateWithMesh(referenceGrid, 100);
+    }
+}
+
+    if (spacingParam>0)
+    {
+      MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
+    }
+
+    GenerateDVFImp(referenceGrid, deformedGrid, outputDVF, interpolateOutsideDistance);
+ 
     //write output
-    vtkSmartPointer<vtkStructuredPointsWriter> writer = vtkSmartPointer<vtkStructuredPointsWriter>::New();
-    writer->SetFileName(outputDVFFilename);
-    __SetInput(writer, outputDVF);
-    writer->Write();
-
+    IOHelper::VTKWriteImage(outputDVFFilename, outputDVF);
+    return outputDVFFilename;
     //write raw data
     /*
         FILE * pFile;
@@ -1036,9 +668,11 @@ void GenerateDVF(const char* referenceGridFilename, const char* deformedGridFile
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
 //Method: For each point in DVF: Find nearest point in reference mesh, calculate barycentric coordinates, find same point in deformed mesh, calculate displacment.
-void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkImageData* outputDVF)
+void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF, float interpolateOutsideDistance)
 {
-    float spacing = 5; //TODO use parameter
+    int* dims = outputDVF->GetDimensions();
+    double* origin = outputDVF->GetOrigin();
+    double* spacing = outputDVF->GetSpacing();
 
     //TODO: refactor this block wirh mishmeshoperators::
     //generate empty vector field
@@ -1069,7 +703,7 @@ void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deform
     outputDVF->SetNumberOfScalarComponents(3);
     outputDVF->AllocateScalars();
 #else
-    outputDVF->AllocateScalars(VTK_FLOAT, 3);
+    outputDVF->AllocateScalars(VTK_FLOAT, 3); //3 component per voxel (vectors)
 #endif
 
 
@@ -1078,69 +712,35 @@ void GenerateDVF(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deform
     cellLocatorRef->SetDataSet(referenceGrid);
     cellLocatorRef->BuildLocator();
 
-    for (int z = 0; z < dim[2]; z++)
+    for (int z = 0; z < dims[2]; z++)
     {
-        for (int y = 0; y < dim[1]; y++)
+        for (int y = 0; y < dims[1]; y++)
         {
-            for (int x = 0; x < dim[0]; x++)
+            for (int x = 0; x < dims[0]; x++)
             {
               double p_mm[3];
-              p_mm[0] = origin[0]+x*spacingArray[0];
-              p_mm[1] = origin[1]+y*spacingArray[1];
-              p_mm[2] = origin[2]+z*spacingArray[2];
+              p_mm[0] = origin[0]+x*spacing[0];
+              p_mm[1] = origin[1]+y*spacing[1];
+              p_mm[2] = origin[2]+z*spacing[2];
 
               float* vec = static_cast<float*>(outputDVF->GetScalarPointer(x,y,z));
-              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
             } //x
         } //y
     } //z
 
   }
 
-string TransformMeshBarycentricPython(const char* meshPath, const char* referenceGridPath,  const char* deformedGridPath, const char* out_meshPath, bool multipleDeformedGridPath)
-  {
-    if (multipleDeformedGridPath)
-    {
-        return TransformMeshBarycentricMultiple(meshPath, referenceGridPath, deformedGridPath, out_meshPath);
-    }
-
-    else
-    {
-        TransformMeshBarycentric(meshPath, referenceGridPath, deformedGridPath, out_meshPath);
-        return (std::string) out_meshPath;
-    }
-  }
-
-std::string TransformMeshBarycentricMultiple(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath)
-{
-    vector<pair<int, string>>* allRefs = getAllFilesOfSeries(deformedGridPath);
-    string currenOutputFile;
-    boost::filesystem::path aPath(out_meshPath);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        cout << "TransformMeshBarycentricMultiple " << currenOutputFile << std::endl;
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        TransformMeshBarycentric(meshPath, referenceGridPath, allRefs->at(i).second.c_str(), currenOutputFile.c_str());
-    }
-    return currenOutputFile;
-}
-
-string TransformMeshBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath)
+string TransformMeshBarycentricPython(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance)
   {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridPath);
     vtkSmartPointer<vtkUnstructuredGrid> refSurface = IOHelper::VTKReadUnstructuredGrid(meshPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> out_surface = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface);
+    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface, interpolateOutsideDistance);
 
     //write output
-		vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-		vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-		writer->SetFileName(out_meshPath);
-		writer->SetInput(out_surface);
-		writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(out_meshPath,out_surface);
 
     return string(out_meshPath);
   }
@@ -1149,7 +749,7 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
 //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
-void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid,  vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh)
+void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh, float interpolateOutsideDistance)
 {
   out_mesh->DeepCopy(mesh);
     
@@ -1163,7 +763,7 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
     double p_mm[3];
     out_mesh->GetPoints()->GetPoint(i, p_mm);
     float vec[3];
-    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, vec);
+    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
     p_mm[0]=p_mm[0]+vec[0];
     p_mm[1]=p_mm[1]+vec[1];
     p_mm[2]=p_mm[2]+vec[2];
@@ -1171,11 +771,13 @@ void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* re
   }
   out_mesh->GetPoints()->Modified();
   out_mesh->Modified();
+#if VTK_MAJOR_VERSION <= 5
   out_mesh->Update();
+#endif
 }
 
 //map closest point to given point from ref mesh to deformed mesh and return displacement
-void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float* vec_out)
+void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vec_out)
 {
   //locate closest cell.
   vtkIdType containingCellRefId;
@@ -1193,7 +795,7 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   cellPoints->GetPoint(1, x1);
   cellPoints->GetPoint(2, x2);
   cellPoints->GetPoint(3, x3);
-  containingCellRef->BarycentricCoords(p_mm, x0, x1, x2, x3, bcords);
+  containingCellRef->BarycentricCoords(closestPointInCell, x0, x1, x2, x3, bcords);
 
   //apply bcords with deformed nodes to calculate the
   //cell id in reference and deformed mesh must be equal
@@ -1204,9 +806,17 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   cellPoints->GetPoint(2, x2);
   cellPoints->GetPoint(3, x3);
 
-  vec_out[0] = (x0[0]*bcords[0] + x1[0]*bcords[1] + x2[0]*bcords[2] + x3[0]*bcords[3]) - p_mm[0];
-  vec_out[1] = (x0[1]*bcords[0] + x1[1]*bcords[1] + x2[1]*bcords[2] + x3[1]*bcords[3]) - p_mm[1];
-  vec_out[2] = (x0[2]*bcords[0] + x1[2]*bcords[1] + x2[2]*bcords[2] + x3[2]*bcords[3]) - p_mm[2];
+  float scale_outside = 1;
+  if (dist > interpolateOutsideDistance)
+  {
+    scale_outside = (interpolateOutsideDistance - dist) / interpolateOutsideDistance; //can be < 0 
+    if (scale_outside < 0)
+      scale_outside = 0;
+  }
+
+  vec_out[0] = scale_outside * ((x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0]);
+  vec_out[1] = scale_outside * ((x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1]);
+  vec_out[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
 
 }
 }

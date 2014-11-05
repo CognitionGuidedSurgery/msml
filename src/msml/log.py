@@ -7,7 +7,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -37,54 +37,181 @@ __date__ = "2014-05-05"
 import inspect
 import os.path
 
+import logging
+import logging.config
+
 try:
     import colorama
-    colorama.init()
 except:
     pass
+else:
+    colorama.init()
 
-__all__ = ['report', '_reported']
-
-COLOR_TABLE = {'I': 94, 'W': 33, 'E': 31, 'D': 90, 'F': 35}
-
-FORMAT = "{color}{type}-{number:04d}: {msg} {grey}(from {file}:{lineno}){nocolor}"
+__all__ = ['_reported', 'ColoredFormatter', 'logger']
 
 _reported = []
 
-def report(msg, kind="W", number=0, filename=None, lineno=-1):
-    """prints a report information on stdout
 
-    if `filename` is empty, the method tries to find the source of the caller.
+# # below from https://github.com/borntyping/python-colorlog/blob/master/colorlog/colorlog.py
+default_log_colors = {
+    'DEBUG': 'white',
+    'INFO': 'green',
+    'WARNING': 'yellow',
+    'ERROR': 'red',
+    'CRITICAL': 'bold_red',
+}
 
-    :param msg: Message
-    :type msg: str
-    :param kind: I, W, E, D, F -- kind of message
-    :param number: some random error number
-    :param filename: a filename (location of event)
-    :param lineno: a line number (location of event)
-    :return:
-    """
-    if not filename:
-        frame = inspect.stack()[1][0]
-        info = inspect.getframeinfo(frame)
+# Returns escape codes from format codes
+esc = lambda *x: '\033[' + ';'.join(x) + 'm'
 
-        color = COLOR_TABLE.get(kind, 0)
+# The initial list of escape codes
+escape_codes = {
+    'reset': esc('0'),
+    'bold': esc('01'),
+}
 
-        filename = os.path.basename(info.filename)
-        lineno = info.lineno
-        if filename == "__init__.py":
-            filename = os.path.join(os.path.basename(
-                os.path.dirname(info.filename)), filename)
+# The color names
+COLORS = [
+    'black',
+    'red',
+    'green',
+    'yellow',
+    'blue',
+    'purple',
+    'cyan',
+    'white'
+]
 
-    _reported.append((kind, number, lineno, filename, msg))
+PREFIXES = [
+    # Foreground without prefix
+    ('3', ''), ('01;3', 'bold_'),
 
-    print FORMAT.format(
-        type=kind,
-        number=number,
-        lineno=lineno,
-        file=filename,
-        msg=msg,
-        color="\x1b[%dm" % color,
-        nocolor="\x1b[0m",
-        grey="\x1b[37m"
-    )
+    # Foreground with fg_ prefix
+    ('3', 'fg_'), ('01;3', 'fg_bold_'),
+
+    # Background with bg_ prefix - bold/light works differently
+    ('4', 'bg_'), ('10', 'bg_bold_'),
+]
+
+for prefix, prefix_name in PREFIXES:
+    for code, name in enumerate(COLORS):
+        escape_codes[prefix_name + name] = esc(prefix + str(code))
+
+import sys
+
+
+class ColoredFormatter(logging.Formatter):
+    """A formatter that allows colors to be placed in the format string.
+
+    Intended to help in creating more readable logging output."""
+
+    def __init__(self, format, datefmt=None,
+                 log_colors=default_log_colors, reset=True, style='%'):
+        """
+        :Parameters:
+        - format (str): The format string to use
+        - datefmt (str): A format string for the date
+        - log_colors (dict):
+            A mapping of log level names to color names
+        - reset (bool):
+            Implictly append a color reset to all records unless False
+        - style ('%' or '{' or '$'):
+            The format style to use. No meaning prior to Python 3.2.
+
+        The ``format``, ``datefmt`` and ``style`` args are passed on to the
+        Formatter constructor.
+        """
+        if sys.version_info > (3, 2):
+            super(ColoredFormatter, self).__init__(
+                format, datefmt, style=style)
+        elif sys.version_info > (2, 7):
+            super(ColoredFormatter, self).__init__(format, datefmt)
+        else:
+            logging.Formatter.__init__(self, format, datefmt)
+        self.log_colors = log_colors
+        self.reset = reset
+
+    def format(self, record):
+        # Add the color codes to the record
+        record.__dict__.update(escape_codes)
+
+        # If we recognise the level name,
+        # add the levels color as `log_color`
+        if record.levelname in self.log_colors:
+            color = self.log_colors[record.levelname]
+            record.log_color = escape_codes[color]
+        else:
+            record.log_color = ""
+
+        # Format the message
+        if sys.version_info > (2, 7):
+            message = super(ColoredFormatter, self).format(record)
+        else:
+            message = logging.Formatter.format(self, record)
+
+        # Add a reset code to the end of the message
+        # (if it wasn't explicitly added in format str)
+        if self.reset and not message.endswith(escape_codes['reset']):
+            message += escape_codes['reset']
+
+        return message
+
+def set_verbosity(log_level):
+    LEVELS = { x : getattr(logging, x)
+               for x in ('CRITICAL', 'FATAL', 'ERROR', 'WARNING', 'WARN', 'INFO', 'DEBUG', 'NOTSET')}
+
+    if log_level in LEVELS:
+        log_level = LEVELS[log_level]
+
+    for handler in logging._handlers.values():
+        handler.level = log_level
+
+
+## https://docs.python.org/2/library/logging.html#logrecord-attributes
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'long':{
+          'format': "%(asctime)-20s %(levelname)-8s %(name)-20s  %(message)s [%(filename)s:%(lineno)d in %(module)s:%(funcName)s]"
+        },
+        'default': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+        },
+        'color': {
+            '()': ColoredFormatter,
+            'format': "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s"
+        }
+    },
+    'handlers': {
+        'file': {
+            '()': 'logging.FileHandler',
+            'level': 'DEBUG',
+            'formatter': 'long',
+            'filename': 'msml.log',
+            'mode': 'w',
+            'encoding': 'utf-8',
+        },
+        'console': {
+            '()': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'level': 'INFO',
+            'formatter': 'color',
+        },
+    },
+    'root': {
+        'handlers': ['file', 'console'],
+        'level': 'DEBUG',
+    },
+}
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger("root")
+
+
+error = logger.error
+warn = logger.warn
+info = logger.info
+debug = logger.debug
+critical = logger.critical
+exception = logger.exception
+fatal = logger.fatal

@@ -27,7 +27,7 @@
 # endregion
 
 
-""" msml.xml provides functionality to read and process MSML XML-Files to the msml Python models.
+""" msml.msml_xml provides functionality to read and process MSML XML-Files to the msml Python models.
 
 """
 from __future__ import print_function
@@ -38,6 +38,8 @@ from path import path
 
 from msml.model import *
 from msml.model.base import SceneObject
+import msml.log
+from .exceptions import MSMLError
 
 
 __author__ = "Alexander Weigl"
@@ -82,10 +84,6 @@ def load_msml_file(fil):
     """
     msml_node = xmldom(fil)
     obj = msml_file_factory(msml_node)
-    #if(isinstance(cs, string)):
-    #    print('converting string to path')
-    #    obj.filename = fil
-    #else:
     obj.filename = path(fil)
     return obj
 
@@ -97,7 +95,7 @@ def parse_file(R):
         hook = _parse_hooks[tag]
         return hook(R)
     else:
-        print("for element %s is no parse hook registered" % tag)
+        msml.log.fatal("for element %s is no parse hook registered" % tag)
 
 
 def get_default_scheme():
@@ -181,6 +179,7 @@ def _attributes(node, attribs, **defaults):
         return (_get(x) for x in attribs)
 
 import itertools
+
 
 def _parse_task(task_node):
     if task_node is None:
@@ -274,9 +273,8 @@ def msml_file_factory(msml_node):
 		</object>
         '''
         if _tag_name(object_node.tag) != 'object':
-            warn("only 'object' is supported, group or "
-                 "other elements are not allowed, found: %s'" % object_node.tag,
-                 MSMLXMlWarning, 2)
+            msml.log.warn("only 'object' is supported, group or "
+                 "other elements are not allowed, found: %s'" % object_node.tag)
 
         def _parse_mesh(mesh_node):
             'example: 	<linearTet id="bunnyMesh" mesh="${bunnyVolumeMesher}" />'
@@ -329,7 +327,7 @@ def msml_file_factory(msml_node):
         mesh = _parse_mesh(mesh_node)
 
         sets_node = object_node.find('sets')
-        sets = SceneSets()
+        sets = SceneObjectSets()
         if (sets_node is not None):
             element_sets = sets_node.find('elements')
             nodes_sets = sets_node.find('nodes')
@@ -382,7 +380,8 @@ def msml_file_factory(msml_node):
         for s in simulation_node.iterchildren():
             env.simulation.add_step(name=s.get('name'),
                                     dt=s.get('dt'),
-                                    iterations=s.get('iterations'))
+                                    iterations=s.get('iterations'),
+                                    gravity=s.get('gravity'))
 
         return env
 

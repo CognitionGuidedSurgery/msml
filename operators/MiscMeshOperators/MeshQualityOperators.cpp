@@ -18,6 +18,8 @@
 #include <vtkMeshQuality.h>
 #include <vtkVersion.h>
 
+#include "../common/log.h"
+
 using namespace std;
 
 namespace MSML {
@@ -30,8 +32,8 @@ MeshQualityStats::MeshQualityStats():
 }
 
 // NOT using an std::set since querying a non-existent name will insert it with value 0!
-static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
-    vector<pair<string, int>> m;
+static vector<pair<string, int> > FillTetQualityMeasureVtkIdsForTypeName() {
+    vector<pair<string, int> > m;
     m.push_back(pair<string, int>("AspectRatio", VTK_QUALITY_ASPECT_RATIO));
     m.push_back(pair<string, int>("AspectFrobenius", VTK_QUALITY_ASPECT_FROBENIUS));
     m.push_back(pair<string, int>("EdgeRatio", VTK_QUALITY_EDGE_RATIO));
@@ -48,10 +50,10 @@ static vector<pair<string, int>> FillTetQualityMeasureVtkIdsForTypeName() {
     m.push_back(pair<string, int>("Distortion", VTK_QUALITY_DISTORTION));
     return m;
 }
-static vector<pair<string, int>> TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
+static vector<pair<string, int> > TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
 
 static int tetQualityMeasureVtkIdForName(string name) {
-    for(vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
+    for(vector<pair<string, int> >::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
         if(it->first == name) {
             return it->second;
         }
@@ -61,7 +63,7 @@ static int tetQualityMeasureVtkIdForName(string name) {
 
 static vector<string> FillTetQualityMeasureTypeNames() {
     vector<string> names;
-    for(vector<pair<string, int>>::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
+    for(vector<pair<string, int> >::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin(); it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
         names.push_back(it->first);
     }
     return names;
@@ -71,7 +73,7 @@ const vector<string> TET_QUALITY_MEASURE_TYPE_NAMES = FillTetQualityMeasureTypeN
 const int DERP = 235;
 
 MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName) {
-    cout << "MeasureTetrahedricMeshQuality" << endl;
+    log_debug() << "MeasureTetrahedricMeshQuality" << endl;
 
     MeshQualityStats stats;
     stats.qualityMeasureName = qualityMeasureName;
@@ -88,7 +90,7 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
     reader->Update();
 
     vtkUnstructuredGrid* mesh = reader->GetOutput();
-    cout << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
+    log_debug() << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
 
     vtkSmartPointer<vtkMeshQuality> quality = vtkSmartPointer<vtkMeshQuality>::New();
 #if VTK_MAJOR_VERSION <= 5
@@ -103,11 +105,10 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
     vtkFieldData* fieldData = quality->GetOutput()->GetFieldData();
     vtkSmartPointer<vtkDoubleArray> qualityArray = vtkDoubleArray::SafeDownCast(cellData->GetArray("Quality"));
 
-    std::cout << "There are " << qualityArray->GetNumberOfTuples() << " values." << std::endl;
+    log_info() << "There are " << qualityArray->GetNumberOfTuples() << " values." << std::endl;
 
     for (vtkIdType i = 0; i < qualityArray->GetNumberOfTuples(); i++) {
         double val = qualityArray->GetValue(i);
-        //std::cout << "value " << i << " : " << val << std::endl;
     }
 
     vtkDataArray* aggregate = fieldData->GetArray("Mesh Tetrahedron Quality");
@@ -118,7 +119,7 @@ MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string q
     stats.var = tuple[3];
     stats.n = tuple[4];
 
-    cout << qualityMeasureName << " min=" << stats.min << "; max=" << stats.max << "; avg=" << stats.avg << "; var=" << stats.var << "; n=" << stats.n << endl;
+    log_debug() << qualityMeasureName << " min=" << stats.min << "; max=" << stats.max << "; avg=" << stats.avg << "; var=" << stats.var << "; n=" << stats.n << endl;
 
     return stats;
 }

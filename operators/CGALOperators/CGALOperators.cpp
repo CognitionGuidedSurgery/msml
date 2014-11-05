@@ -37,6 +37,8 @@
 #include <CGAL/IO/Polyhedron_iostream.h>
 
 
+#include "../common/log.h"
+
 
 //Polyhedral domain:
 // Domain poly
@@ -129,7 +131,7 @@ namespace MSML{
 #if VTK_MAJOR_VERSION <= 5
     image_data_byte->SetScalarTypeToUnsignedChar(); //does not work as expected. read_vtk_image_data will find double in image_data_byte->GetScalarType()
 #else
-    image_data_byte->AllocateScalars(VTK_UNSIGNED_CHAR,3);
+    image_data_byte->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
 #endif
     //convert vtk image to INRIA Image_3 and mesh it.
     CGAL::Image_3 image = read_vtk_image_data_char(image_data_byte);
@@ -308,13 +310,23 @@ namespace MSML{
 	  reader->Update();
 
     //mesh polydata->vtu
-    vtkUnstructuredGrid* outputMesh = vtkUnstructuredGrid::New();
     string errorMessage;
-    MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), "CreateVolumeMeshs2v__TEMP.off");
-    C3t3_poly c3t3 = mesh_polyhedral_Domain(OpenOffSurface("CreateVolumeMeshs2v__TEMP.off"), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
-      theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
+    vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
+
+    MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
+    C3t3_poly c3t3;
+    try 
+    {
+      c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
+        theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
+    }
+    catch (...) //only works in debug mode - release version crashes with access violation.
+    {
+      log_error() << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
+      return "error in CGAL::make_mesh_3";
+    }
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
-    remove("CreateVolumeMeshs2v__TEMP.off");
+    remove((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
 
     //write vtu
     vtkSmartPointer<vtkUnstructuredGridWriter > aVtkUnstructuredGridWriter =
@@ -424,16 +436,16 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 
   image->endianness = ::_getEndianness();
   int vtk_type = vtk_image->GetPointData()->GetScalars()->GetDataType();
-  if(vtk_type =! VTK_UNSIGNED_CHAR)
+  if(vtk_type != VTK_UNSIGNED_CHAR)
   {
-    cerr << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
+    log_error() << "read_vtk_image_data_char can only handle VTK_UNSIGNED_CHAR";
     exit(2);
   }
   image->wdim = 1;
   image->wordKind = WK_FIXED;
   image->sign = SGN_UNSIGNED;
   image->data = ::ImageIO_alloc(dims[0]*dims[1]*dims[2]* 1);
-  std::cerr << "GetNumberOfTuples()=" << vtk_image->GetPointData()->GetScalars()->GetNumberOfTuples()
+  log_error() << "GetNumberOfTuples()=" << vtk_image->GetPointData()->GetScalars()->GetNumberOfTuples()
             << "\nimage->size()=" << dims[0]*dims[1]*dims[2]
             << "\nwdim=" << image->wdim << '\n';
   assert(vtk_image->GetPointData()->GetScalars()->GetNumberOfTuples() == dims[0]*dims[1]*dims[2]);

@@ -1,6 +1,11 @@
 Development
 ===========
 
+Configure the development environment
+-------------------------------------
+
+
+
 Documentation
 -------------
 

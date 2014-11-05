@@ -21,10 +21,7 @@
 
 #include "MiscMeshOperators.h"
 #include <iostream>
-#include <iomanip>
 #include <sstream>
-#include <algorithm>
-#include <vector>
 
 #include <string.h>
 
@@ -34,8 +31,7 @@
 
 #include "IOHelper.h"
 
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkUnstructuredGridReader.h>
+
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
 #include <vtkSmartPointer.h>
@@ -44,20 +40,12 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
-#include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridReader.h>
-#include <vtkPolyDataWriter.h>
-#include <vtkGenericDataObjectReader.h>
-
 #include <vtkPointData.h>
 #include <vtkIdList.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPoints.h>
 
 #include "vtkSTLWriter.h"
-#include "vtkPolyDataWriter.h"
-#include "vtkPolyDataReader.h"
 #include "vtkPolyData.h"
 #include "vtkPoints.h"
 #include "vtkCellArray.h"
@@ -71,8 +59,8 @@
 #include "vtkSTLReader.h"
 #include "vtkKdTreePointLocator.h"
 #include "vtkVoxelModeller.h"
-#include "vtkImageWriter.h"
 #include "vtkPNGWriter.h"
+#include <vtkPolyDataReader.h>
 
 
 #include <vtkDataSetSurfaceFilter.h>
@@ -81,12 +69,9 @@
 
 
 #include <vtkUnstructuredGridGeometryFilter.h>
-#include <vtkUnstructuredGridWriter.h>
 #include "vtkDataSetSurfaceFilter.h"
 #include "vtkUnstructuredGridGeometryFilter.h"
 
-#include <vtkXMLImageDataReader.h>
-#include <vtkXMLImageDataWriter.h>
 #include <vtkImageData.h>
 #include <vtkPolyDataToImageStencil.h>
 #include <vtkImageStencil.h>
@@ -101,10 +86,22 @@
 #include "vtkCellLocator.h"
 
 
+
+
 #include <vtkThreshold.h>
 #include <vtkMergeCells.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "PostProcessingOperators.h"
 #include "../vtk6_compat.h"
+
+#include "../common/log.h"
+
+#include <vtkWindowedSincPolyDataFilter.h>
+#include <vtkPolyDataMapper.h>
+
 using namespace std;
 
 namespace MSML {
@@ -112,25 +109,15 @@ namespace MiscMeshOperators {
 std::string ConvertSTLToVTKPython(std::string infile, std::string outfile)
 {
     ConvertSTLToVTK( infile.c_str(), outfile.c_str());
-
+	
     return outfile;
 }
 
 bool ConvertSTLToVTK(const char* infile, const char* outfile)
 {
-    vtkSmartPointer<vtkPolyData> mesh =
-        vtkSmartPointer<vtkPolyData>::New();
-
+    vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
     ConvertSTLToVTK( infile, mesh);
-
-    vtkSmartPointer<vtkPolyDataWriter> writer =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    writer->SetFileName(outfile);
-
-    __SetInput(writer, mesh);
-    writer->Write();
-
-    return true;
+    return IOHelper::VTKWritePolyData(outfile, mesh);
 }
 
 bool ConvertSTLToVTK(const char* infile, vtkPolyData* outputMesh)
@@ -155,22 +142,17 @@ std::string ConvertVTKToSTLPython(std::string infile, std::string outfile)
 
 bool ConvertVTKToSTL(const char* infile, const char* outfile)
 {
-    std::cout<<"Converting "<<infile <<" to STL\n";
-    vtkSmartPointer<vtkPolyDataReader> reader =
-        vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-    vtkPolyData* currentPolydata = reader->GetOutput();
+    vtkSmartPointer<vtkPolyData> currentPolydata = IOHelper::VTKReadPolyData(infile);
 
 
     vtkSmartPointer<vtkSTLWriter> writer =
         vtkSmartPointer<vtkSTLWriter>::New();
     writer->SetFileTypeToBinary();
     writer->SetFileName(outfile);
-    __SetInput(writer, reader->GetOutput());
+    __SetInput(writer, currentPolydata);
     writer->Write();
-    std::cout<<"STL file written\n";
 
+    log_debug() <<"STL file written" << std::endl;
     return true;
 }
 
@@ -183,28 +165,14 @@ std::string ConvertVTKToVTUPython(std::string infile, std::string outfile)
 
 bool ConvertVTKToVTU(const char* infile, const char* outfile )
 {
-	std::cout<<"Converting "<<infile <<" to VTU\n";
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	    vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(infile);
-	reader->Update();
-	//vtkPolyData* currentPolydata = reader->GetOutput();
-	// OR: ?!
-	//vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(infile);
+  boost::filesystem::path filePath(outfile);
+  if (filePath.extension() != ".vtu")
+    log_error() << "File extension for XMLUnstructuredGridWriter must be .vtu" << std::endl;
 
-	//write output
-	vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
-	// OR: ?!
-	//vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New(); // vtkUnstructuredGridXML-Writer
-	writer->SetFileName(outfile);
-	writer->SetDataModeToAscii();
-	__SetInput(writer, reader->GetOutput());
-	// OR: ?!
-	//__SetInput(writer, mesh);
-	writer->Write();
-	std::cout<<"VTU file written\n";
+  IOHelper::VTKWriteUnstructuredGrid(outfile, grid, true);
 
-	return true;
+  return true;
 }
 
 /*
@@ -238,12 +206,11 @@ bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile)
     }
 
 
-    // std::cout<<" number of points3"<<inputMesh->GetNumberOfPoints();
     //write Header
     file << "OFF\n"
          <<	 noPoints << " " << inputMesh->GetNumberOfCells() <<" 0\n";
 
-    std::cout <<" write points \n";
+    log_debug() <<" write points" << std::endl;;
 
     double* currentPoint;
 
@@ -276,12 +243,14 @@ bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile)
 
 bool ConvertInpToVTK(const char* infile, const char* outfile)
 {
-    return true;
+  throw "not implemented";
+  return true;
 }
 
 bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh )
 {
-    return true;
+  throw "not implemented";
+  return true;
 }
 
 std::string VTKToInpPython( std::string infile, std::string outfile)
@@ -292,14 +261,7 @@ std::string VTKToInpPython( std::string infile, std::string outfile)
 
 bool VTKToInp( const char* infile, const char* outfile)
 {
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
-
-    return VTKToInp(reader->GetOutput(),  outfile);
-
+    return VTKToInp(IOHelper::VTKReadUnstructuredGrid(infile),  outfile);
 }
 
 bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile)
@@ -324,11 +286,12 @@ bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile)
 
 std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile, bool theCutIntoPieces)
 {
+    vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);
 
-	 vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);
     //cut model in pieces
     if (theCutIntoPieces)
     {
+        cerr << "Experimental !" << std::endl;
         cerr << "Cutting" << std::endl;
         map<int, int> belongstTo;
         std::map<std::pair<int,int>, int> newPrivatePoints; // <oldKey, MaterialId> => newKey
@@ -381,20 +344,17 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
                 }
             }
 
-            std::cout << "There are " << inputGrid->GetNumberOfCells()  << std::endl;
+            log_debug() << "There are " << inputGrid->GetNumberOfCells()  << std::endl;
         }
 
-        vtkSmartPointer<vtkUnstructuredGridWriter> cutGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-        cutGridWriter->SetFileName((string(outfile) + "-cut.vtk").c_str());
-        __SetInput(cutGridWriter,inputGrid);
-        cutGridWriter->Write();
+        IOHelper::VTKWriteUnstructuredGrid((string(outfile) + "-cut.vtk").c_str(), inputGrid);
     }
 
     //done cutting
 
 
 
-    std::cout << "There are " << inputGrid->GetNumberOfCells()  << " cells before thresholding." << std::endl;
+    log_debug() << "There are " << inputGrid->GetNumberOfCells()  << " cells before thresholding." << std::endl;
 
     //get alle surfaces
     vtkIntArray* cellMaterialArray = (vtkIntArray*) inputGrid->GetCellData()->GetArray("Materials");
@@ -406,7 +366,7 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
 
     for (map<int,int>::iterator it=cellDataHist->begin(); it!=cellDataHist->end(); it++) //filter for each material
     {
-        cout << it->second << " cells of MaterialId=" << it->first << " found." << std::endl;
+        log_debug() << it->second << " cells of MaterialId=" << it->first << " found." << std::endl;
         vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
         __SetInput(threshold, inputGrid);
         threshold->ThresholdBetween(it->first, it->first);
@@ -414,15 +374,11 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
         threshold->Update();
 
         //debug out surface
-        vtkSmartPointer<vtkUnstructuredGridWriter> aUGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
         stringstream itFirst;
         itFirst << it->first;
-        aUGridWriter->SetFileName((string(outfile) + "-volume" + itFirst.str() + ".vtk").c_str());
-        __SetInput(aUGridWriter, threshold->GetOutput());
-        aUGridWriter->Write();
-        //done debug out
+        //  IOHelper::VTKWriteUnstructuredGrid((string(outfile) + "-volume" + itFirst.str() + ".vtk").c_str(), threshold->GetOutput());
 
-        cout << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  it->first << std::endl;
+        log_debug() << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  it->first << std::endl;
         //extract surface
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
 
@@ -430,11 +386,7 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
         bool result = ExtractSurfaceMesh(threshold->GetOutput(), mesh);
 
         //debug out surface
-        vtkSmartPointer<vtkPolyDataWriter> aGridWriter = vtkSmartPointer<vtkPolyDataWriter>::New();
-        aGridWriter->SetFileName((string(outfile) + "-surface" + itFirst.str() + ".vtk").c_str());
-        __SetInput(aGridWriter, mesh);
-        aGridWriter->Write();
-        //done debug out
+        //   IOHelper::VTKWritePolyData((string(outfile) + "-surface" + itFirst.str() + ".vtk").c_str(), mesh);
 
         surfaces.push_back(mesh);
     }
@@ -482,10 +434,7 @@ std::string ExtractAllSurfacesByMaterial(const char* infile, const char* outfile
     merger->Finish();
 
     //save the merged data
-    vtkSmartPointer<vtkUnstructuredGridWriter> unioGridWriter = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    unioGridWriter->SetFileName(outfile);
-    __SetInput(unioGridWriter, unionMesh);
-    unioGridWriter->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outfile, unionMesh);
     return outfile;
 }
 
@@ -522,29 +471,90 @@ std::string  ExtractSurfaceMeshPython( std::string infile, std::string outfile)
 
 bool ExtractSurfaceMesh( const char* infile, const char* outfile)
 {
-    //load the vtk quadratic mesh
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
     vtkSmartPointer<vtkPolyData> mesh =
         vtkSmartPointer<vtkPolyData>::New();
 
-    bool result = ExtractSurfaceMesh( reader->GetOutput(), mesh);
-
-
+    bool result = ExtractSurfaceMesh( IOHelper::VTKReadUnstructuredGrid(infile), mesh);
 
     //save the subdivided polydata
-    vtkSmartPointer<vtkPolyDataWriter> polywriter =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    polywriter->SetFileName(outfile);
-    __SetInput(polywriter, mesh);
-    polywriter->Write();
+    IOHelper::VTKWritePolyData(outfile, mesh);
 
     return result;
 
 
+}
+
+/*
+	Get vector of all material numbers used in given mesh
+*/
+vector<unsigned int> GetMaterialNumbersFromMesh(const char* infile)
+{
+	 log_debug()<<"GetMaterialNumbersFromMesh"<<std::endl;
+	 vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);
+
+	 vtkIntArray* cellMaterialArray = (vtkIntArray*) inputGrid->GetCellData()->GetArray("Materials");
+	 std::map<int,int> *matMap = createHist(cellMaterialArray);
+	 vector<unsigned int> materialNumbers; 
+
+	 for(map<int,int>::iterator it = matMap->begin(); it != matMap->end(); ++it) 
+	 {				 
+		 materialNumbers.push_back(it->first);
+	 }
+	 return materialNumbers;
+}
+
+/*
+	Debug print a vector
+*/
+bool DebugPrint(vector<int> to_print)
+{
+	cerr<<"Debug print of vector:"<<std::endl;
+	for(vector<int>::iterator it = to_print.begin(); it != to_print.end(); ++it)
+	{    
+		cerr<<*it<<" ";
+	}
+	cerr<<std::endl;
+	return true;
+}
+
+/*
+  Smooth given surface using this vtk filter:
+  http://vtk.org/Wiki/VTK/Examples/Meshes/WindowedSincPolyDataFilter
+*/
+bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+					  double feature_angle, double pass_band,bool boundary_smoothing,
+					  bool feature_edge_smoothing, bool non_manifold_smoothing,
+					  bool normalized_coordinates)
+{		
+	log_debug()<<"SmoothMesh"<<std::endl;
+
+	//read surface
+	vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+    reader->SetFileName(infile);
+    reader->Update();
+
+	//set up the smoother
+	vtkSmartPointer<vtkWindowedSincPolyDataFilter> smoother =
+    vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
+	smoother->SetInputData(reader->GetOutput());
+	smoother->SetNumberOfIterations(iterations);
+
+	smoother->SetBoundarySmoothing(boundary_smoothing);
+	smoother->SetFeatureEdgeSmoothing(feature_edge_smoothing);
+	
+	smoother->SetFeatureAngle(feature_angle);
+	smoother->SetPassBand(pass_band);
+	
+	smoother->SetNonManifoldSmoothing(non_manifold_smoothing);
+	smoother->SetNormalizeCoordinates(normalized_coordinates);
+	
+	//smooth surface
+	smoother->Update();
+	log_debug()<<"SmoothMesh: smooth ok"<<std::endl;	
+	
+	//write smoothed surface down to file
+	bool result = IOHelper::VTKWritePolyData(outfile, smoother->GetOutput());
+	return result;
 }
 
 bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
@@ -564,7 +574,7 @@ bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh
     int cellType = currentGrid->GetCellType(1);
     bool isQuadratic = false;
 
-    std::cout<<"CellType is "<<cellType<<"\n";
+    log_debug()<<"CellType is "<<cellType<<std::endl;
 
     if(cellType == 22)
     {
@@ -573,7 +583,7 @@ bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh
 
     if(isQuadratic)
     {
-        std::cout<<"QuadraticMeshDetected\n";
+        log_debug()<<"QuadraticMeshDetected"<<std::endl;
     }
 
     vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceTessellator =
@@ -598,12 +608,9 @@ bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh
 bool AssignSurfaceRegion( const char* infile, const char* outfile,  std::vector<std::string> regionMeshes )
 {
     //load the vtk  mesh
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
-    vtkSmartPointer<vtkUnstructuredGrid> mesh =
+   vtkSmartPointer<vtkUnstructuredGrid> inputmesh = IOHelper::VTKReadUnstructuredGrid(infile);
+   
+    vtkSmartPointer<vtkUnstructuredGrid> outputmesh =
         vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     unsigned int meshCount = regionMeshes.size();
@@ -612,31 +619,18 @@ bool AssignSurfaceRegion( const char* infile, const char* outfile,  std::vector<
 
     for(unsigned int i=0; i<meshCount; i++)
     {
-        vtkSmartPointer<vtkPolyDataReader> tempReader =
-            vtkSmartPointer<vtkPolyDataReader>::New();
-        tempReader->SetFileName(regionMeshes[i].c_str());
-        tempReader->Update();
-
-        vtkSmartPointer<vtkPolyData> currentMesh =
+        vtkSmartPointer<vtkPolyData> currentMesh = IOHelper::VTKReadPolyData(regionMeshes[i].c_str());
+        vtkSmartPointer<vtkPolyData> pushBackMesh =
             vtkSmartPointer<vtkPolyData>::New();
 
-        currentMesh->DeepCopy(tempReader->GetOutput());
+        pushBackMesh->DeepCopy(currentMesh);
         regionMeshesVec.push_back(currentMesh);
-
-
     }
 
-
-    bool result = AssignSurfaceRegion( reader->GetOutput() , mesh, regionMeshesVec);
-
-
+    bool result = AssignSurfaceRegion( inputmesh , outputmesh, regionMeshesVec);
 
     //save the subdivided polydata
-    vtkSmartPointer<vtkUnstructuredGridWriter> polywriter =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    polywriter->SetFileName(outfile);
-    __SetInput(polywriter, mesh);
-    polywriter->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outfile, outputmesh);
 
     return result;
 }
@@ -691,9 +685,11 @@ bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* o
     kDTree->SetDataSet(currentSurfaceMesh);
     kDTree->BuildLocator();
 
+
     for(unsigned int i=0; i<meshCount; i++)
     {
         vtkPoints* currentPoints = regionMeshes[i]->GetPoints();
+
 
         //iterate over points
         for( unsigned int iterPoint = 0; iterPoint < currentPoints->GetNumberOfPoints(); iterPoint++)
@@ -721,38 +717,8 @@ bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* o
 
 std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName)
 {
-    //load the vtk  mesh
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(inputMesh.c_str());
-    reader->Update();
-    std::string output = ConvertVTKMeshToAbaqusMeshString( reader->GetOutput(),   partName,  materialName);
+    std::string output = ConvertVTKMeshToAbaqusMeshString( IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()),   partName,  materialName);
     return output;
-
-}
-
-std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh, std::string partName)
-{
-	//load the vtk  mesh
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	  reader->SetFileName(inputMesh.c_str());
-	  reader->Update();
-	  std::string output = ConvertVTKMeshToFeBioMeshString( reader->GetOutput(),   partName);
-	  return output;
-
-}
-
-std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices, std::string id, std::string pressure)
-{
-	//load the vtk  mesh
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	  reader->SetFileName(inputMesh.c_str());
-	  reader->Update();
-	  std::string output = createFeBioPressureOutput( reader->GetOutput(), indices, id, pressure);
-	  return output;
-
 }
 
 std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName)
@@ -824,145 +790,25 @@ std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  s
     return out.str();
 }
 
-std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName)
-{
-	 std::stringstream out;
-	 //write Geometry
-	 out << "<Geometry>\n";
-	 //nodes
-	 out << "<Nodes>\n";
-	 double* currentPoint;
-	 for(int i=0; i<inputMesh->GetNumberOfPoints(); i++)
-	 {
-		 currentPoint = inputMesh->GetPoint(i);
-		 out<<"<node id=\""<<i+1<<"\">"<< std::setprecision(7) << std::scientific;
-		 if(currentPoint[0] < 0 ){ //!!
-			out<<currentPoint[0] << ",";
-		 }else{
-			out<< " " << currentPoint[0] << ",";
-		 }
-		  if(currentPoint[1] < 0 ){
-			out<<currentPoint[1] << ",";
-		 }else{
-			out<< " " << currentPoint[1] << ",";
-		 }
-		 if(currentPoint[2] < 0 ){
-			out<<currentPoint[2];
-		 }else{
-			out<< " " << currentPoint[2];
-		 }
-		out<< "</node>"<<"\n";
-	 }
-	 
-	 out << "</Nodes>\n";
-	 //elements
-	 out << "<Elements>\n";
-	 vtkIdType* currentCellPoints;
-	 vtkIdType numberOfNodesPerElement;
-	 vtkIdType cellType = inputMesh->GetCellType(0);
-	 vtkDataArray* pd = inputMesh->GetCellData()->GetScalars();
-
-	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
-	 {
-		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
-		 double* key = pd->GetTuple(i);
-		 if((int) *key == 100){ // !! 
-			 *key = 5;
-		 }
-		 if(numberOfNodesPerElement == 4) {
-			 out<<"<tet4 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
-		 for(int j=0;j<numberOfNodesPerElement;j++)
-		 {
-			if(j == numberOfNodesPerElement-1){ //!!
-				out<<currentCellPoints[j]+1;
-			} else{
-				out<<currentCellPoints[j]+1<<",";
-			}
-		 }
-		 out<<"</tet4>\n";
-		}
-		/*if(numberOfNodesPerElement == 3) {
-			 out<<"<tri3 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
-		 for(int j=0;j<numberOfNodesPerElement;j++)
-		 {
-			if(j == numberOfNodesPerElement-1){
-				out<<currentCellPoints[j-1]+1;
-			} else if(j == numberOfNodesPerElement-2){
-				out<<currentCellPoints[j+1]+1<<",";
-			}else{
-				out<<currentCellPoints[j]+1<<",";
-			}
-		 }
-		 out<<"</tri3>\n";
-		}*/
-	 }
-	 out << "</Elements>\n";
-	 out << "</Geometry>\n";
-	return out.str();
-}
-
-std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices, std::string id, std::string pressure)
-{
-   	 std::stringstream out;
-	
-	 //elements
-	 out << "<pressure>\n";
-	 vtkIdType* currentCellPoints;
-	 vtkIdType numberOfNodesPerElement;
-	 vtkIdType cellType = inputMesh->GetCellType(0);
-	 vtkDataArray* pd = inputMesh->GetCellData()->GetScalars();
-
-	 for(int i=0;  i<indices.size(); i++)
-	 {
-		 inputMesh->GetCellPoints(indices[i], numberOfNodesPerElement, currentCellPoints);
-		if(numberOfNodesPerElement == 3) {
-			 out<<"<tri3 id=\""<<i+1<< "\" lc=\""<< id << "\" scale=\""<< pressure <<"\" >" ; // lc als Parameter übergeben
-		 for(int j=0;j<numberOfNodesPerElement;j++)
-		 {
-			if(j == numberOfNodesPerElement-1){
-				out<<currentCellPoints[j]+1;
-			} else{
-				out<<currentCellPoints[j]+1<<",";
-			}
-		 }
-		 out<<"</tri3>\n";
-		}
-	 }
-	 out << "</pressure>\n";
-	return out.str();
-}
-
 std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile)
 {
-    std::cout<< " Converting vtkPolydata "<<infile.c_str()<<" to vtkUnstructuredGrid "<<outfile.c_str()<<"\n";
+    log_debug()<< " Converting vtkPolydata "<<infile.c_str()<<" to vtkUnstructuredGrid "<<outfile.c_str()<<std::endl;
     bool result = ConvertVTKPolydataToUnstructuredGrid(infile.c_str(), outfile.c_str());
     return outfile;
 }
 
 bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile )
 {
-    vtkSmartPointer<vtkPolyDataReader> reader =
-        vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-    vtkPolyData* currentPolydata = reader->GetOutput();
+    vtkSmartPointer<vtkPolyData> currentPolydata = IOHelper::VTKReadPolyData(infile);
 
     //load surface model to solid
     vtkSmartPointer<vtkUnstructuredGrid> mesh =
         vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-    //	vtkSmartPointer<vtkPolyData> mesh =
-    //	 vtkSmartPointer<vtkPolyData>::New();
-
     bool returnValue = ConvertVTKPolydataToUnstructuredGrid(currentPolydata ,  mesh);
 
     //write output
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-        vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetFileName(outfile);
-    writer->SetFileTypeToBinary();
-    __SetInput(writer, mesh);
-    writer->Write();
+    IOHelper::VTKWriteUnstructuredGrid(outfile, mesh);
 
     return returnValue;
 }
@@ -986,7 +832,7 @@ bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstruc
 
 std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
 {
-    std::cout<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<<"\n";
+    log_debug()<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<< std::endl;
     bool result = ProjectSurfaceMesh(infile.c_str(), outfile.c_str(), referenceMesh.c_str());
     return outfile;
 }
@@ -994,18 +840,10 @@ std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, st
 
 bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh )
 {
-    vtkSmartPointer<vtkPolyDataReader> reader =
-        vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-    vtkPolyData* currentGrid = reader->GetOutput();
+    vtkSmartPointer<vtkPolyData> currentGrid = IOHelper::VTKReadPolyData(infile);
 
     //load surface model to solid
-    vtkPolyDataReader* readerSTL = vtkPolyDataReader::New();
-    readerSTL->SetFileName(referenceMesh);
-    readerSTL->Update();
-
-    vtkPolyData* reference = readerSTL->GetOutput();
+    vtkSmartPointer<vtkPolyData> reference = IOHelper::VTKReadPolyData(referenceMesh);
 
     //	vtkSmartPointer<vtkPolyData> mesh =
     //	 vtkSmartPointer<vtkPolyData>::New();
@@ -1013,19 +851,13 @@ bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* ref
     ProjectSurfaceMesh(currentGrid,  reference);
 
     //write output
-    vtkSmartPointer<vtkPolyDataWriter> writer =
-        vtkSmartPointer<vtkPolyDataWriter>::New();
-    writer->SetFileName(outfile);
-    writer->SetFileTypeToBinary();
-    __SetInput(writer,currentGrid);
-    writer->Write();
-
+    IOHelper::VTKWritePolyData(outfile, currentGrid);
     return true;
 }
 
 bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
 {
-	std::cout<<"Start surface projection\n";
+	log_debug()<<"Start surface projection" << std::endl;
 
 //	outputMesh->BuildCells();
 	//
@@ -1073,77 +905,45 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution)
+std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
 {
-    std::cout<<"Creating image from surface mesh (voxelization)...";
-    std::cout<<"Resolution of the longest bound is "<<resolution<<"\n";
-    VoxelizeSurfaceMesh(infile.c_str(), outfile.c_str(), resolution);
-    return outfile;
-}
+    log_debug() << "Creating image from surface mesh (voxelization). "
+                << "Resolution of the longest bound is "<<resolution<< std::endl;
 
-bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution)
-{
-    vtkSmartPointer<vtkPolyDataReader> reader =
-        vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
-    //deep copy
-    vtkPolyData* inputMesh = reader->GetOutput();
+    vtkSmartPointer<vtkPolyData> inputMesh = IOHelper::VTKReadPolyData(infile);
 
     vtkSmartPointer<vtkImageData> outputImage =
         vtkSmartPointer<vtkImageData>::New();
 
-    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution);
+    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid);
 
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-        vtkSmartPointer<vtkXMLImageDataWriter>::New();
-    writer->SetFileName(outfile);
-    __SetInput(writer, outputImage);
-    writer->Write();
+    IOHelper::VTKWriteImage(outfile, outputImage);
 
-    //	vtkSmartPointer<vtkPNGWriter> writer2 =
-    //	 vtkSmartPointer<vtkPNGWriter>::New();
-    //	writer2->SetFilePrefix(outfile);
-    //	writer2->SetInput(outputImage);
-    //	writer2->Write();
-
-    return true;
+    return string(outfile);
 }
 
-bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution)
+bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)
 {
-
-    //	vtkSmartPointer<vtkVoxelModeller> voxelizer =
-    //	 vtkSmartPointer<vtkVoxelModeller>::New();
-    //
-    //	voxelizer->SetInput(inputMesh);
-    //	voxelizer->SetScalarTypeToUnsignedChar ();
-    //	voxelizer->SetSampleDimensions (50,50,50);//
-
-    //	voxelizer->Update();
-
-    //clean mesh and fill holes
-    double bounds[6];
-    inputMesh->GetBounds(bounds);
-
-    //find longest bound
-    double longestBoundValue = 0;
-    double spacing = -1;
-
-    for (int i = 0; i < 3; i++)
+    vtkSmartPointer<vtkImageData> whiteImage;
+    //Method A: Generate bounds, spacing and origine based on mesh:
+    if (resolution>0)
     {
-        double currentValue = (bounds[i * 2 + 1] - bounds[i * 2]);
-
-        if(currentValue>longestBoundValue)
-        {
-            longestBoundValue = currentValue;
-            spacing = currentValue / (double)resolution;
-        }
+      whiteImage = ImageCreateWithMesh(inputMesh, resolution);
     }
 
-    std::cout<<"Longest bound is "<<longestBoundValue<<"\n";
-    std::cout<<"Spacing is "<<spacing<<"\n";
+    //Method B: Get bounds, spacing and origin from given grid:
+    else
+    {
+      
+      whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
+    }
+
+#if VTK_MAJOR_VERSION <= 5
+    whiteImage->SetScalarTypeToUnsignedChar();
+    whiteImage->AllocateScalars();
+#else
+    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
+#endif
 
     //detect holes
     vtkSmartPointer<vtkFeatureEdges> featureEdges =
@@ -1159,7 +959,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     if(num_open_edges)
     {
         double holeSize = 1e20;//bounds[1]-bounds[0];
-        std::cout<<"Number of holes is "<<num_open_edges<<", trying to close with hole filler and size of "<< holeSize<<"\n";
+        log_debug() <<"Number of holes is "<<num_open_edges<<", trying to close with hole filler and size of "<< holeSize<< std::endl;
 
         //fill holes
         vtkSmartPointer<vtkFillHolesFilter> fillHolesFilter =
@@ -1168,7 +968,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
         __SetInput(fillHolesFilter, inputMesh);
 
         fillHolesFilter->SetHoleSize(holeSize);;
-
+        fillHolesFilter->Update();
         vtkSmartPointer<vtkCleanPolyData> cleanFilter =
             vtkSmartPointer<vtkCleanPolyData>::New();
 
@@ -1179,50 +979,13 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
         __SetInput(featureEdges, fillHolesFilter->GetOutput());
         featureEdges->Update();
         num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
-        std::cout<<"Number of holes ofter filling is "<<num_open_edges<<"\n";
+        log_debug() <<"Number of holes ofter filling is "<<num_open_edges<< std::endl;
 
         //replace inputMesh with cleaned data
         inputMesh->DeepCopy(cleanFilter->GetOutput());
 
     }
-
-    std::cout<<"Performing voxelization (this might take while)...\n";
-
-    vtkSmartPointer<vtkImageData> whiteImage =
-        vtkSmartPointer<vtkImageData>::New();
-
-    double spacingArray[3]; // desired volume spacing
-    spacingArray[0] = spacing;
-    spacingArray[1] = spacing;
-    spacingArray[2] = spacing;
-    whiteImage->SetSpacing(spacingArray);
-
-    // compute dimensions
-    int dim[3];
-
-    for (int i = 0; i < 3; i++)
-    {
-        dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacingArray[i]));
-    }
-
-    whiteImage->SetDimensions(dim);
-    whiteImage->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
-
-    double origin[3];
-    origin[0] = bounds[0] + spacingArray[0] / 2;
-    origin[1] = bounds[2] + spacingArray[1] / 2;
-    origin[2] = bounds[4] + spacingArray[2] / 2;
-    whiteImage->SetOrigin(origin);
-
-#if VTK_MAJOR_VERSION <= 5
-    whiteImage->SetScalarTypeToUnsignedChar();
-    whiteImage->AllocateScalars();
-#else
-    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,3);
-    // 3 could be wrong, no   image->SetNumberOfScalarComponents(3); found /Weigl
-#endif
-
-
+    log_debug() <<"Performing voxelization (this might take while)..." << std::endl;
     // fill the image with foreground voxels:
     unsigned char inval = 255;
     unsigned char outval = 0;
@@ -1240,9 +1003,8 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     __SetInput(pol2stenc, inputMesh);
 
 
-
-    pol2stenc->SetOutputOrigin(origin);
-    pol2stenc->SetOutputSpacing(spacingArray);
+    pol2stenc->SetOutputOrigin(whiteImage->GetOrigin());
+    pol2stenc->SetOutputSpacing(whiteImage->GetSpacing());
     pol2stenc->SetOutputWholeExtent(whiteImage->GetExtent());
     pol2stenc->Update();
 
@@ -1284,15 +1046,15 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 //
 //}
 
+std::vector<double> ExtractPointPositionsPython( std::vector<int> indices, std::string inputMesh)
+{
+	return ExtractPointPositions(indices, IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()));
+}
+
+
 std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile)
 {
-    vtkSmartPointer<vtkUnstructuredGridReader> reader =
-        vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
-
-    return ExtractPointPositions(indices ,reader->GetOutput());
+    return ExtractPointPositions(indices, IOHelper::VTKReadUnstructuredGrid(infile));
 }
 
 std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh)
@@ -1315,37 +1077,19 @@ std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstruct
 
 }
 
-LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile)
+bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile)
 {
-
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	 vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(infile.c_str());
-	reader->Update();
-
-	//deep copy
-	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
-
 	vtkSmartPointer<vtkUnstructuredGrid> outputMesh =
 	 vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-	ConvertLinearToQuadraticTetrahedralMesh(inputMesh, outputMesh);
+  ConvertLinearToQuadraticTetrahedralMesh(IOHelper::VTKReadUnstructuredGrid(infile.c_str()), outputMesh);
 
-
-	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetFileName(outfile.c_str());
-#if VTK_MAJOR_VERSION <= 5
-	writer->SetInput(outputMesh);
-#else
-	writer->SetInputData(outputMesh);
-#endif
-	writer->Write();
+  IOHelper::VTKWriteUnstructuredGrid(outfile.c_str(), outputMesh);
 
 	return true;
 }
 
-LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh)
+bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh)
 {
 
 
@@ -1469,52 +1213,29 @@ LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* 
 	return true;
 }
 
-LIBRARY_API  bool ProjectSurfaceMesh(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
+ bool ProjectSurfaceMesh(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
 {
 
-	vtkSmartPointer<vtkPolyDataReader> reader =
-	 vtkSmartPointer<vtkPolyDataReader>::New();
-	reader->SetFileName(referenceMeshFile.c_str());
-	reader->Update();
+  vtkSmartPointer<vtkPolyData> referenceMesh = IOHelper::VTKReadPolyData(referenceMeshFile.c_str());
+  vtkSmartPointer<vtkUnstructuredGrid> inputMesh = IOHelper::VTKReadUnstructuredGrid(inputVolumeMeshFile.c_str());
 
-	//deep copy
-	vtkPolyData* referenceMesh = reader->GetOutput();
-
-	vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-	 vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader2->SetFileName(inputVolumeMeshFile.c_str());
-	reader2->Update();
-
-	//deep copy
-	vtkUnstructuredGrid* inputMesh = reader2->GetOutput();
-
-	vtkSmartPointer<vtkUnstructuredGrid> outputMesh =
-	 vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
 	ProjectSurfaceMesh(inputMesh, outputMesh, referenceMesh);
 
-
-	vtkSmartPointer<vtkUnstructuredGridWriter> writer =
-	 vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetFileName(outputMeshFile.c_str());
-	#if VTK_MAJOR_VERSION <= 5
-		writer->SetInput(outputMesh);
-	#else
-		writer->SetInputData(outputMesh);
-	#endif
-	writer->Write();
+  IOHelper::VTKWriteUnstructuredGrid(outputMeshFile.c_str(), outputMesh);
 
 
 	return true;
 }
 
-LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh)
+bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh)
 {
 
-	std::cout<<"Start surface projection\n";
+	log_debug() << "Start surface projection" << std::endl;
 	outputMesh->DeepCopy(inputMesh);
 
-	std::cout<<"deep copy finished\n";
+	log_debug() << "deep copy finished" << std::endl;
 
 //	outputMesh->BuildCells();
 	//
@@ -1539,7 +1260,7 @@ LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstruc
 	displacements->SetNumberOfComponents(3);
 	displacements->SetName("displacements");
 
-	std::cout<<"filling tuples\n";
+	log_debug() << "filling tuples" << std::endl;
 
 	for(unsigned int i=0; i<numberOfPoints;i++) // iterate over all triangles
 	{
@@ -1555,7 +1276,9 @@ LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstruc
 	//extract the surface
 	vtkSmartPointer<vtkUnstructuredGridGeometryFilter> geom =
 		vtkSmartPointer<vtkUnstructuredGridGeometryFilter>::New();
-	geom->SetInput(outputMesh);
+	
+	__SetInput(geom, outputMesh);
+	
 	geom->PassThroughPointIdsOn();
 	geom->SetOriginalPointIdsName("pointIds");
 	geom->Update();
@@ -1625,19 +1348,8 @@ LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstruc
 
 std::vector<unsigned int> ExtractNodeSet(std::string inputVolumeMeshFile, std::string nodeSetName)
 {
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	 vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(inputVolumeMeshFile.c_str());
-	reader->Update();
-
-	//deep copy
-	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
-
-
-	std::vector<unsigned int> result = ExtractNodeSet(inputMesh, nodeSetName);
-
+  std::vector<unsigned int> result = ExtractNodeSet(IOHelper::VTKReadUnstructuredGrid(inputVolumeMeshFile.c_str()), nodeSetName);
 	return result;
-
 }
 
 std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, std::string nodeSetName)
@@ -1666,7 +1378,7 @@ std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, st
 	}
 	else
 	{
-		std::cout<<"Node set with name "<<nodeSetName<<" was not found\n";
+		log_debug()<<"Node set with name "<<nodeSetName<<" was not found" << std::endl;
 		return idList;
 	}
 
@@ -1675,20 +1387,8 @@ std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, st
 
 std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile,  std::string vectorFieldName, std::vector<unsigned int> nodeList)
 {
-
-		vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		 vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(inputVolumeMeshFile.c_str());
-		reader->Update();
-
-		//deep copy
-		vtkUnstructuredGrid* inputMesh = reader->GetOutput();
-
-
-		std::vector<double> result = ExtractVectorField(inputMesh, vectorFieldName, nodeList);
-
+    std::vector<double> result = ExtractVectorField(IOHelper::VTKReadUnstructuredGrid(inputVolumeMeshFile.c_str()), vectorFieldName, nodeList);
 		return result;
-
 }
 
 std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std::string vectorFieldName, std::vector<unsigned int> nodeList)
@@ -1703,7 +1403,7 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 
 		if(numberOfNodes> numberOfFieldValues)
 		{
-			std::cout<<"Indices list and vector field does not match\n";
+			log_debug() <<"Indices list and vector field does not match" << std::endl;
 			return vectorField;
 		}
 
@@ -1721,11 +1421,112 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 	}
 	else
 	{
-		std::cout<<"Vector field with name "<<vectorFieldName<<" was not found\n";
+		log_debug() <<"Vector field with name "<<vectorFieldName<<" was not found" << std::endl;
 		return vectorField;
 	}
 
 }
+vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution)
+{
+  vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();
 
+  double bounds[6];
+  double spacingArray[3]; // desired volume spacing
+  double origin[3];
+  int dim[3];
+  double spacing = -1;
+  //find longest bound
+  double longestBoundValue = 0;
+  grid->GetBounds(bounds);
+  for (int i = 0; i < 3; i++)
+  {
+      double currentValue = (bounds[i * 2 + 1] - bounds[i * 2]);
+
+      if(currentValue>longestBoundValue)
+      {
+          longestBoundValue = currentValue;
+          spacing = currentValue / (double)resolution;
+      }
+  }    
+
+  log_debug() <<"Longest bound is "<<longestBoundValue<< std::endl;
+  log_debug() <<"Spacing is "<<spacing<< std::endl;;
+             
+  spacingArray[0] = spacing;
+  spacingArray[1] = spacing;
+  spacingArray[2] = spacing;
+  
+  // compute dimensions 
+  for (int i = 0; i < 3; i++)
+  {
+      dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing));
+  }
+  //Compute origin
+  origin[0] = bounds[0] + spacing / 2;
+  origin[1] = bounds[2] + spacing / 2;
+  origin[2] = bounds[4] + spacing / 2;
+      
+  newVTKImage->SetSpacing(spacingArray);
+  newVTKImage->SetDimensions(dim);
+  newVTKImage->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
+  newVTKImage->SetOrigin(origin);
+
+  return newVTKImage;
+}
+
+vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid)
+{
+
+  vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();
+
+  int dims[3];
+  dims[0] = refImageGrid->GetDimensions()[0];
+  dims[1] = refImageGrid->GetDimensions()[1];
+  dims[2] = refImageGrid->GetDimensions()[2];
+    
+  double origin[3];
+  origin[0] = refImageGrid->GetOrigin()[0];
+  origin[1] = refImageGrid->GetOrigin()[1];
+  origin[2] = refImageGrid->GetOrigin()[2];
+
+  double spacing[3];
+  spacing[0] = refImageGrid->GetSpacing()[0];
+  spacing[1] = refImageGrid->GetSpacing()[1];
+  spacing[2] = refImageGrid->GetSpacing()[2];
+
+  newVTKImage->SetDimensions(dims);
+  newVTKImage->SetOrigin(origin);
+  newVTKImage->SetSpacing(spacing);
+  newVTKImage->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+
+  return newVTKImage;
+}
+
+void ImageChangeVoxelSize(vtkImageData* image, double voxelSize)
+{
+  double voxelSizeArr[3];
+  voxelSizeArr[0] = voxelSize;
+  voxelSizeArr[1] = voxelSize;
+  voxelSizeArr[2] = voxelSize;
+  ImageChangeVoxelSize(image, voxelSizeArr);
+}
+
+void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize)
+{
+  double* bounds = image->GetBounds();
+  double spacing[3];
+  spacing[0] = voxelSize[0];
+  spacing[1] = voxelSize[1];
+  spacing[2] = voxelSize[2];
+
+  int dims[3];
+  for (int i = 0; i < 3; i++)
+  {
+      dims[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
+  }
+  image->SetDimensions(dims);
+  image->SetSpacing(spacing);
+  image->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+}
 }//end namepace MiscMeshOperators
 }//end namepace MSML

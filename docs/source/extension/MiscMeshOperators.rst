@@ -1,5 +1,5 @@
 IndexRegionOperators
-====================
+^^^^^^^^^^^^^^^^^^^^
 
 
 .. cpp:namespace:: MSML::IndexRegionOperators
@@ -24,6 +24,76 @@ IndexRegionOperators
 
     :returns:
     :rtype:
+
+
+IOHelper
+^^^^^^^^
+
+.. cpp:namespace:: MSML::IOHelper
+
+.. cpp:function:: vtkSmartPointer\<vtkImageData> VTKReadImage(const char* filename)
+
+    :param const char* filename:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: vtkSmartPointer\<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename)
+
+    :param const char* filename:
+
+    :returns:
+    :rtype:
+
+
+
+
+.. cpp:function:: vtkSmartPointer\<vtkPolyData> VTKReadPolyData(const char* filename)
+
+    :param const char* filename:
+
+    :returns:
+    :rtype:
+
+
+MappingOperators
+^^^^^^^^^^^^^^^^
+
+
+.. cpp:function:: std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh )
+
+                :param std::string meshIni:
+                :param std::string meshDeformed:
+                :param std::string meshToMap:
+                :param std::string mappedMesh:
+
+                :rtype:
+                :returns:
+
+
+.. cpp:function:: bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh )
+
+                :param const char* meshIni:
+                :param const char* meshDeformed:
+                :param const char* meshToMap:
+                :param const char* mappedMesh:
+
+                :rtype:
+                :returns:
+
+
+.. cpp:function:: bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh )
+
+                :param vtkUnstructuredGrid* meshIni:
+                :param vtkUnstructuredGrid* meshDeformed:
+                :param vtkUnstructuredGrid* meshToMap:
+                :param vtkUnstructuredGrid* mappedMesh:
+
+                :rtype:
+                :returns:
 
 
 MiscMeshOperators
@@ -391,41 +461,8 @@ MiscMeshOperators
     :rtype:
 
 
-IOHelper
-========
-
-.. cpp:namespace:: MSML::IOHelper
-
-.. cpp:function:: vtkSmartPointer\<vtkImageData> VTKReadImage(const char* filename)
-
-    :param const char* filename:
-
-    :returns:
-    :rtype:
-
-
-
-
-.. cpp:function:: vtkSmartPointer\<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename)
-
-    :param const char* filename:
-
-    :returns:
-    :rtype:
-
-
-
-
-.. cpp:function:: vtkSmartPointer\<vtkPolyData> VTKReadPolyData(const char* filename)
-
-    :param const char* filename:
-
-    :returns:
-    :rtype:
-
-
 Post Processing
-===============
+^^^^^^^^^^^^^^^
 
 .. cpp:function:: void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
 
@@ -551,7 +588,7 @@ Post Processing
 
 
 
-.. cpp:function:: std::string GenerateDVFPython(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids)
+.. cpp:function:: std::string GenerateDVF(const char* referenceGridFilename, const char* outputDVFFilename, const char* deformedGridFilename, bool multipleReferenceGrids)
 
     :param  const char* referenceGridFilename:
     :param  const char* outputDVFFilename:
@@ -626,38 +663,3 @@ Post Processing
     :rtype:
 
 
-MappingOperators
-================
-
-
-.. cpp:function:: std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh )
-
-                :param std\:\:string meshIni:
-                :param std\:\:string meshDeformed:
-                :param std\:\:string meshToMap:
-                :param std\:\:string mappedMesh:
-
-                :rtype:
-                :returns:
-
-
-.. cpp:function:: bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh )
-
-                :param const char* meshIni:
-                :param const char* meshDeformed:
-                :param const char* meshToMap:
-                :param const char* mappedMesh:
-
-                :rtype:
-                :returns:
-
-
-.. cpp:function:: bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh )
-
-                :param vtkUnstructuredGrid* meshIni:
-                :param vtkUnstructuredGrid* meshDeformed:
-                :param vtkUnstructuredGrid* meshToMap:
-                :param vtkUnstructuredGrid* mappedMesh:
-
-                :rtype:
-                :returns:

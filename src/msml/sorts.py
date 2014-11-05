@@ -55,7 +55,7 @@ path     => name/path in the class hierarchy, each class is seperated with ».«
 # __all__ = ["__author__", "__date__", "SortsDefinition", "get_sort", "default_sorts_definition"]
 
 from msml.sortdef import *
-from .log import report
+from . import log
 from .exceptions import MSMLException
 
 __author__ = "Alexander Weigl"
@@ -96,7 +96,7 @@ class SortsDefinition(object):
         try:
             return self.logical_cache[typestr]
         except KeyError as e:
-            report("logical type %s requested, but does not exist" % typestr, 'W', 161)
+            log.warn("logical type %s requested, but does not exist" % typestr)
             return None
 
     def _find_physical(self, fmtstr):
@@ -104,7 +104,7 @@ class SortsDefinition(object):
             return self.physical_cache[fmtstr]
         except KeyError as e:
             s="physical type %s requested, but does not exist" % fmtstr
-            report(s, 'E', 162)
+            log.error(s)
             raise BaseException(s)
 
 
@@ -291,13 +291,13 @@ conversion = DEFAULT_CONVERSION_NETWORK.converter
 #
 
 def _bool(s):
-    return s in ('true', 'on', 'yes', 'True', 'YES', 'ON')
+    return (isinstance(s, bool) and s) or (s.lower() in ('True', 'TRUE','true', 'on', 'yes'))
 
 
 def _list_of_type(s, t):
-    """
-    :param s:
-    :param t:
+    """Convert an input `s` into a list of `t`
+    :param s: string, list or tuple
+    :param t: type of elements
 
     :type s: str
     :type t: type
@@ -305,8 +305,10 @@ def _list_of_type(s, t):
     :rtype: list[t]
     """
 
-    return map(lambda x: t(x.strip(" ")),
-               filter(lambda x: x != "", s.split(" ")))
+    if isinstance(s, str):
+        s = map(lambda x: x.strip(), filter(lambda x: x != "", s.split(" ")))
+
+    return map(t, s)
 
 
 def _list_float(s):
@@ -331,8 +333,18 @@ register_conversion(str, get_sort("ctx"), ctx, 100)
 register_conversion(str, get_sort("vdx"), vdx, 100)
 register_conversion(str, get_sort('vector.int'), _list_integer, 100)
 register_conversion(str, get_sort('vector.float'), _list_float, 100)
+register_conversion(tuple, get_sort('vector.int'), _list_float, 100)
+register_conversion(tuple, get_sort('vector.float'), _list_float, 100)
+register_conversion(list, get_sort('vector.int'), _list_float, 100)
+register_conversion(list, get_sort('vector.float'), _list_float, 100)
 register_conversion(str, get_sort('VTI'), VTI, 100)
 register_conversion(get_sort('int'), get_sort('str'), str, 100)
+register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float,100)
+register_conversion(get_sort('vector.float'), get_sort('vector.int'), _list_integer,100)
+register_conversion(get_sort('float'), get_sort('int'), int, 100)
+register_conversion(float, int, int, 100)
+
+
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
 
@@ -354,4 +366,4 @@ try:
 
     register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
 except:
-    report("No Conversion VTK to VTU avaaible. Hiflow3 may not useable.", 'E', 616)
+    log.error("No Conversion VTK to VTU avaaible. Hiflow3 may not useable")

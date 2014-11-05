@@ -2,6 +2,14 @@
 %{
 #include <vector>
 #include <string>
+#include <cstring>
+
+
+#include "../common/log.h"
+void log_test() {
+    //_log("info", "test info level");
+    log_error() << "test errrrrr level" << std::endl;
+}
 %}
 
 %include "std_vector.i"
@@ -16,8 +24,13 @@ namespace std {
     %template(vectorb) vector<bool>;
  };
 
- %begin %{
+
+void log_test();
+
+
+%begin %{
 #ifdef _MSC_VER
 #define SWIG_PYTHON_INTERPRETER_NO_DEBUG
 #endif
 %}
+

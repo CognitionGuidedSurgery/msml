@@ -35,11 +35,10 @@ import os
 import os.path
 import urllib2
 import tempfile
-
+from ..log import error, warn, info, fatal, critical, debug
 import requests
 
-from  msml.log import report
-
+from .. import log
 
 def xnat_get(filename, resource, project, host=None, subject=None, username=None, password=None, localname=None):
     """
@@ -58,7 +57,7 @@ def xnat_get(filename, resource, project, host=None, subject=None, username=None
     host = host or os.environ['XNAT_HOST']
 
     if localname and os.path.exists(localname):
-        report("Download overjump, File exists locally", 'I')
+        log.info("Download overjump, File exists locally")
         return
 
     base = host if host.startswith("http") else "https://%s" % host
@@ -69,7 +68,7 @@ def xnat_get(filename, resource, project, host=None, subject=None, username=None
         url = "{base}/data/archive/projects/{project}/resources/{resource}/files/{file}"
 
     url = url.format(resource=resource, project=project, base=base, file=filename, subject=subject)
-    print url
+    debug(url)
     auth = (username, password)
 
     if not localname:
@@ -132,12 +131,12 @@ def xnat_put(localname, resource, project, filename=None, host=None, deleteBefor
         f = {'FILE': fp}
         resp = requests.put(url, params=p, auth=auth, files = f,  verify=False)
 
-        report(resp.url, 'D')
+        log.debug(resp.url)
 
         if resp.status_code != 200:
-            pprint(resp.request.headers)
-            pprint(resp.headers)
-            report(resp.status_code, 'F')
+            debug(resp.request.headers)
+            debug(resp.headers)
+            log.fatal(resp.status_code)
             raise BaseException('Error in Accessing: %s' % resp.url)
 
     return

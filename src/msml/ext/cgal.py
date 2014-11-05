@@ -29,12 +29,12 @@
 
 __author__ = 'Alexander Weigl'
 
-from warnings import  warn
+from warnings import warn
 
 from msml.exceptions import MSMLUnknownModuleWarning
 
 try:
-    import CGALOperatorsPython as cpp
+    from CGALOperatorsPython import *
 
 except ImportError, e:
     import sys
@@ -43,32 +43,4 @@ except ImportError, e:
          "Error is %s\n"
          "sys.path is %s" % (e, sys.path),
          MSMLUnknownModuleWarning, 0)
-
-    class _cpp(object):
-        def __getattribute__(self, item):
-            def fn(*args, **kwargs):
-                return None
-            return fn
-    cpp = _cpp()
-
-
-
-def _bool(s):
-    return s in ("on", "True", "true", "yes")
-
-
-def __convert(converters, values):
-    from itertools import starmap
-    args = list(starmap(lambda conv, val: conv(val), zip(converters,values)))
-    return args
-
-def CreateVolumeMeshi2v(*values):
-    converters = 2*[str] + 5 *[float] + 4 *[_bool]
-    values = __convert(converters, values)
-    return cpp.CreateVolumeMeshi2v(*values)
-
-def CreateVolumeMeshs2v(*values):
-    converters = 2*[str] + [_bool] + 5 *[float] + 4 *[_bool]
-    values = __convert(converters, values)
-    return cpp.CreateVolumeMeshs2v(*values)
 

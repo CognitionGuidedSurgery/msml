@@ -40,7 +40,6 @@ entry point, where you can access to various subsystem.
 from __future__ import print_function
 
 from .env import *
-from msml.log import report
 
 # need first step caused of sys.path
 # this is terrible to execute on module load
@@ -50,6 +49,8 @@ load_envconfig()
 
 from .analytics.alphabet_analytics import *
 
+
+from . import log
 
 from collections import OrderedDict
 from msml.run.GraphDotWriter import *
@@ -81,24 +82,29 @@ OPTIONS = """
     |_| |_| |_||___/|_| |_| |_||_|
 
 Usage:
-  msml exec [(-D D)...] [-w] [options] <file>...
-  msml show     [options] <file>
+  msml exec  [options] <file>...
+  msml show  [options] <file>
   msml writexsd <XSDFile>
   msml check    [<file>...]
   msml validate
   msml expy     [options] [<file>...]
 
 Options:
- -v, --verbose              verbose information on stdout [default: false]
- -o, --output=DIR           output directory
- --start-script=FILE        overwrite the default rc file [default: ~/.config/msmlrc.py]
- -a, --alphabet-dir=DIR     loads an specific alphabet dir
- --operator-dir             path to search for additional python modules
- -x, --xsd-file=FILE        xsd-file
- -e VALUE, --exporter=VALUE    set the exporter (base, nsofa, nabaqus) [default: base]
- -m FILE, --vars=FILE       predefined the memory content
-
+ -v, --verbose                  verbose information on stdout [default: false]
+ -o, --output=DIR                output directory
+ --start-script=FILE             overwrite the default rc file [default: ~/.config/msmlrc.py]
+ -a, --alphabet-dir=DIR          loads an specific alphabet dir
+ --operator-dir                  path to search for additional python modules
+ -x, --xsd-file=FILE             xsd-file
+ -e VALUE, --exporter=VALUE      set the exporter (base, nsofa, nabaqus) [default: base]
+ --seq_parallel=True/False       enable/disable data-parallel processing of single operators
+ -m FILE, --vars=FILE            predefined the memory content
+ -p , --partial PRE, EXPORT, SIM, FULL           run only up to pre-processing, simulation export, simulation or post-processing
 """
+
+def create_argument_parser():
+    parse
+
 
 def _parse_keyvalue_options(list_str):
     options = {}
@@ -151,21 +157,24 @@ class App(object):
     :type options: dict[str, T]
 
     """
+
     def __init__(self, novalidate=False, files=None, exporter=None, add_search_path=None,
-                 add_operator_path=None, memory_init_file=None, output_dir = None, options={}):
+                 add_operator_path=None, memory_init_file=None, output_dir = None, execution_options=None, seq_parallel=True,options={}):
         self._exporter = options.get("--exporter") or exporter or "sofa"
         self._files = options.get('<file>') or files or list()
         self._additional_alphabet_path = options.get('--alphabet-dir') or add_search_path or list()
         self._additional_operator_search_path = options.get('--operator-path') or add_operator_path or list()
         self._options = options
         self.output_dir = output_dir or options.get('--output')
+        self._seq_parallel = seq_parallel or options.get('--seq_parallel')
         self._novalidate = novalidate
         self._memory_init_file = memory_init_file
-        self._executor_options = _parse_keyvalue_options(options.get('D', list()))
+        self._executor_options = execution_options or options.get('--partial') #_parse_keyvalue_options(options.get('D', list()))
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
         self.init_msml_system()
+        self._executor = None
 
     def init_msml_system(self):
         """initialize the msml system
@@ -248,20 +257,40 @@ class App(object):
         and override this property.
 
         """
-        if 'executor.class' in self._executor_options:
-            return _load_class(self._executor_options['executor.class'])
+        if not self._executor_options is None:
+            return msml.run.ControllableExecutor #_load_class(self._executor_options['executor.class'])
         else:
             return msml.run.LinearSequenceExecutor
+
+    def get_executor(self,msml_file):
+
+        if self._executor == None:
+            self._prepare_msml_model(msml_file)
+            execlazz = self.executer
+
+            # change to msml-file dirname
+            os.chdir(msml_file.filename.dirname().abspath())
+            self._executor = execlazz(msml_file)
+            self._executor.options = self._executor_options
+            self._executor.working_dir = self.output_dir
+            self._executor.seq_parallel = self._seq_parallel
+            self._executor.init_memory(self.memory_init_file)
+
+        return self._executor
+
 
     def _load_msml_file(self, filename):
         mfile = msml.xml.load_msml_file(filename)
         return mfile
 
     def _prepare_msml_model(self, mfile):
+        mfile.bind()
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
-        if not self._novalidate:
-            mfile.validate(msml.env.CURRENT_ALPHABET)
+        #validate is needed for simulation execution, removed if condition "if not self._novalidate:"
+        mfile.validate(msml.env.CURRENT_ALPHABET)
+
+        exporter._match_features()
 
     def show(self, msml_file = None):
         if not msml_file:
@@ -278,24 +307,15 @@ class App(object):
         newname = path(newname).abspath()
         with open(newname, 'w') as w:
             w.write(writer())
-        report("File %s written." % newname)
+        log.info("File %s written." % newname)
 
     def execute_msml_file(self, fil):
         mfile = self._load_msml_file(fil)
-        report("Execute: %s in %s" % (fil, fil.dirname),'I',20)
+        log.info("Execute: %s in %s" % (fil, fil.dirname))
         return self.execute_msml(mfile)
 
-
     def execute_msml(self, msml_file):
-        self._prepare_msml_model(msml_file)
-        execlazz = self.executer
-
-        # change to msml-file dirname
-        os.chdir(msml_file.filename.dirname().abspath())
-        exe = execlazz(msml_file)
-        exe.options = self._executor_options
-        exe.working_dir = self.output_dir
-        exe.init_memory(self.memory_init_file)
+        exe = self.get_executor(msml_file)
         mem = exe.run()
         return mem
 
@@ -325,15 +345,12 @@ class App(object):
             msml.run.exportpy.exportpy(msml_file)
 
     def _load_alphabet(self):
-        report("READING alphabet...", 'I')
+        log.info("READING alphabet...")
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
         files = msml.env.gather_alphabet_files()
-        report("found %d xml files in the alphabet search path" % len(files), 'I')
+        log.info("found %d xml files in the alphabet search path" % len(files))        
         alphabet = msml.xml.load_alphabet(file_list=files)
-
-        # debug
-        #        alphabet.print_nice()
 
         msml.env.CURRENT_ALPHABET = alphabet
         self._alphabet = alphabet
@@ -355,10 +372,9 @@ class App(object):
         for f in self.files:
             try:
                 self._load_msml_file(f)
-                print(f, "ok")
+                log.info(f)
             except msml.model.MSMLError as e:
-                print(f, "error")
-                print("\t", e)
+                log.error(f, e)
 
     def validate(self):
         """validation of the alphabet via the :py:mod:`msml.analytics`
@@ -383,18 +399,23 @@ class App(object):
                 fn()
                 break
         else:
-            print("could not find a suitable command")
+            log.error("could not find a suitable command")
 
 
 def main(args=None):
     """main entry of the `msml.py`
 
-    You can call it with command line.
+    You can all it with command line.
     For more control refer to :py:class:`App`.
     """
 
     if args is None:
         args = docopt(OPTIONS, version=msml.__version__)
+
+    if '--verbose' in args and args['--verbose']: # set verbosity
+        log.set_verbosity('INFO')
+    else:
+        log.set_verbosity('ERROR')
 
     app = App(options=args)
     app._exec()

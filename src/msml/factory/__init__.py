@@ -4,7 +4,7 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 #   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
@@ -29,165 +29,84 @@
 """
 API for easily creating workflows and msml models.
 """
+from path import path
+from msml.model.base import (MSMLEnvironment, ObjectConstraints, MSMLVariable, SceneObject, Mesh, SceneObjectSets,
+                             MaterialRegion, MSMLFile)
+
+from .base import *
+
+
 __author__ = 'Alexander Weigl'
 __date__ = "2014-04-19"
 __version__ = "0.1"
 
-import operator
-import functools
-import contextlib
 
-from msml.model import *
-from msml.frontend import *
-
-
-active_app = App()
-num = 0
-
-def generate_name(prefix="", suffix=""):
-    global num
-    num += 1
-    return "%s_%d_%s" % (prefix, num, suffix)
-
-def parse_attrib(kwargs):
-    attrib = {}
-    for k,v in kwargs.items():
-        attrib[k] = v
-        if isinstance(v, Task):
-            attrib[k] = v.output_default
-    return attrib
-
-class OperatorFactory(object):
-    def __init__(self, msml_file):
-        self.msml_file = msml_file
-
-    def __getattr__(self, item):
-        return self.get_operator(item)
-
-    def __getitem__(self, item):
-        return self.get_operator(item)
-
-    def get_operator(self, name):
-        return functools.partial(self.create_task, active_app.alphabet.operators[name])
-
-    def create_task(self, operator, **kwargs):
-        id = generate_name("task")
-        kwargs["id"] = id
-
-        task = Task(operator.name, parse_attrib(kwargs))
-        for out in operator.output_names():
-            setattr(task, out, "${%s.%s}" % (id, out))
-
-        if operator.output_names():
-            setattr(task, 'output_default', "${%s.%s}" % (id, operator.output_names()[0]))
-
-        self.msml_file.workflow.add_task(task)
-        return task
-
-class SceneFactory(object):
-    def __init__(self, msml_file):
-        self.msml_file = msml_file
-
-    def object(self, id = None):
-        if not id:
-            id = generate_name("object")
-        o = SceneObject(id)
-        self.msml_file.scene.append(o)
-        return ObjectFactory(o)
-
-class ObjectFactory(object):
-    def __init__(self, scene_object):
-        self.so = scene_object
+class MeshTypes(object):
+    LinearTetraheder = "linearTet"
+    QuadraticTetraeder = "qt"
+    LinearQuader = "lq"
 
 
-    def mesh(self, data, typ):
-        if isinstance(data, Task):
-            data = data.output_default
-        self.so.mesh.mesh = data
-        self.so.mesh.type = typ
-        return self
+Solver = MSMLEnvironment.Solver
+Steps = MSMLEnvironment.Simulation
+Step = MSMLEnvironment.Simulation.Step
 
-    def sets_nodes(self, *sets):
-        #TODO create indexgroup
-        self.so.sets.nodes = sets
+def Material(*regions):
+    assert all(map(lambda x: isinstance(x, MaterialRegion), regions))
+    return regions
 
-    def sets_surfaces(self, *sets):
-        #TODO create indexgroup
-        self.so.sets.surfaces = sets
+def Region(indices, id= None, *materials):
+    return MaterialRegion(id or generate_name(), indices, materials)
 
-    def sets_elements(self, *sets):
-        #TODO create indexgroup
-        self.so.sets.elements = sets
-
-    def material_region(self, name, *args):
-        region = MaterialRegion(name,args)
-        self.so.material.append(region)
-        return self
-
-    def constraints(self, name, for_step = "initial", *elements):
-        oc = ObjectConstraints(name, for_step)
-        oc._constraints = elements
-        self.so.constraints.append(oc)
-        return self
-
-    def output(self,*elements):
-        self.so.output = elements
-        return self
-
-@contextlib.contextmanager
-def define_workflow_of(msml_file):
-    yield OperatorFactory(msml_file)
-
-@contextlib.contextmanager
-def define_scene_of(msml_file):
-    yield SceneFactory(msml_file)
-
-def __list2dict(l, attribute):
-    a = operator.attrgetter(attribute)
-    return {a(i): i for i in l}
+def Constraints(for_step = 0, *constraints):
+    o = ObjectConstraints(generate_name, for_step)
+    o.constraints = constraints
+    return o
 
 
-class _AttributeFactory(object):
+def run(msml_file, filename, output_folder = None):
+    assert isinstance(msml_file, MSMLFile)
+    msml_file.filename = path(filename)
+    ACTIVE_APP.output_dir = output_folder
+    return ACTIVE_APP.execute_msml(msml_file)
+
+
+class SimulationBuilder(object):
     def __init__(self):
-         pass
+        self.msml_file = MSMLFile()
 
-    def __getattr__(self, item):
-        return self.get_element(item)
+    def Variable(self, name=None, physical=None, logical=None, value=None):
+        var = MSMLVariable(name or generate_name(), physical, logical, value)
+        self.msml_file.add_variable(var)
+        return "${%s}" % var.name
 
-    def __getitem__(self, item):
-        return self.get_element(item)
+    @property
+    def workflow(self):
+        return self.msml_file.workflow
 
-    def get_element(self, name):
-        #active_app.alphabet._object_attributes[name]
-        return functools.partial(self.create_element, name)
+    @workflow.setter
+    def workflow(self, value):
+        self.msml_file._workflow = value
 
-    def create_element(self, name, **kwargs):
-        kwargs['__tag__'] = name
-        oe = ObjectElement(parse_attrib(kwargs))
-        oe.bind(active_app.alphabet)
-        return oe
+    def SceneObject(self, name = None, mesh = None, sets = None, material = None, constraints = None, output = None):
+        obj =  SceneObject(name or generate_name(), mesh, sets,  material, constraints,output)
+        self.msml_file.scene.append(obj)
+        return obj
 
-elements = _AttributeFactory()
+    def Environment(self, solver = None, *steps):
+        env =  MSMLEnvironment(solver, Steps(*steps))
+        self.msml_file._env = env
+        return env
 
-def as_operator(input=[], output=[], parameters=[]):
-    def construct(func):
-        name = func.func_name
-        op = PythonOperator(name, __list2dict(input), __list2dict(output), __list2dict(parameters))
-        op.function_name = name
-        op.modul_name = "<unknown>"
-        op.function = func
-        return op
+def slot_value(obj, slot = None):
+    if isinstance(obj, Task):
+        name = obj.id
+    elif isinstance(obj, TaskDummyResult):
+        name = obj.task_id
+    else:
+        name = obj
 
-    return construct
-
-
-
-
-
-
-
-
-
-
-
-
+    if slot:
+        return "${%s.%s}" % (name, slot)
+    else:
+        return "${%s}" % name
