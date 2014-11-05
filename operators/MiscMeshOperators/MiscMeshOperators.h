@@ -457,13 +457,6 @@ namespace MSML {
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, const char* outfile);
         LIBRARY_API  bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh);
 
-
-		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName);
-		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName);
-
-		LIBRARY_API std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<unsigned int> indices, std::string id, std::string pressure);
-		LIBRARY_API std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<unsigned int> indices, std::string id, std::string pressure);
-
         LIBRARY_API  std::string ConvertVTKToVTUPython(std::string infile, std::string outfile); // python: 'convertVTKToVTU()'
 	    LIBRARY_API  bool        ConvertVTKToVTU(const char* infile, const char* outfile );
 		//	LIBRARY_API  static bool ConvertVTKToVTU(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh); // is this needed at all?!

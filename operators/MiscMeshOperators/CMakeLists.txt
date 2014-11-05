@@ -39,6 +39,7 @@ SET(MiscMeshOperators_SRCS
   MeshQualityOperators.cpp
   MeshInfoOperators.cpp
   FeatureExtractionOperators.cpp
+  FeBioSupport.cpp
   )
 
 SET(MiscMeshOperators_LIBS

@@ -1,9 +1,8 @@
 # stub, automatically generated
-operators_path = "C:/MSMLBin/bin"
-operators_path_release = "C:/MSMLBin/bin/Release/"
-operators_path_debug = "C:/MSMLBin/bin/Debug/"
+operators_path = "/home/weigl/workspace/msml/cbuild/bin"
+operators_path_release = "/home/weigl/workspace/msml/cbuild/bin/Release/"
+operators_path_debug = "/home/weigl/workspace/msml/cbuild/bin/Debug/"
 
-SOFA_EXECUTABLE = "C:/SOFA/bin/runSofa.exe"
-HIFLOW_EXECUTABLE = "HIFLOW_EXECUTABLE-NOTFOUND"
+SOFA_EXECUTABLE = "/usr/bin/sofaBatch"
+HIFLOW_EXECUTABLE = "/usr/local/include/hiflow3"
 ABAQUS_EXECUTABLE = "ABAQUS_EXECUTABLE-NOTFOUND"
-FEBIO_EXECUTABLE = "C:/Program Files/PostView1p4/PostView.exe"

@@ -715,6 +715,8 @@ bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* o
 
 }
 
+
+
 std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName)
 {
     std::string output = ConvertVTKMeshToAbaqusMeshString( IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()),   partName,  materialName);

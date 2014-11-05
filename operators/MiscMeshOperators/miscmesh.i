@@ -9,6 +9,7 @@
 #include "MeshQualityOperators.h"
 #include "MeshInfoOperators.h"
 #include "FeatureExtractionOperators.h"
+#include "FeBioSupport.h"
 %}
 
 %include "../std.i"
@@ -22,6 +23,7 @@
 %include "MeshQualityOperators.h"
 %include "MeshInfoOperators.h"
 %include "FeatureExtractionOperators.h"
+%include "FeBioSupport.h"
 
 %begin %{
 #ifdef _MSC_VER

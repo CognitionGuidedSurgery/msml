@@ -277,8 +277,6 @@ LIBRARY_API void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMe
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 
-
-LIBRARY_API void ConvertFEBToVTK(const std::string modelFilename, const std::string lastStep, std::string inputMesh);
 LIBRARY_API void CompareMeshes(std::vector<double>& errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 

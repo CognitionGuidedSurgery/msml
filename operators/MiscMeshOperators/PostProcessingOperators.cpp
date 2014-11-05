@@ -28,6 +28,7 @@
 
 #include "vtkUnstructuredGrid.h"
 
+#include <vtkTriangle.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
@@ -59,6 +60,14 @@
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
 #include "vtkCellData.h"
+
+
+#include <vtkPolyDataWriter.h>
+#include <vtkGeometryFilter.h>
+#include <vtkPlane.h>
+#include <vtkCutter.h>
+#include <vtkMassProperties.h>
+#include <vtkBooleanOperationPolyDataFilter.h>
 
 
 #include <vtkDataSetSurfaceFilter.h>
@@ -641,7 +650,6 @@ std::string GenerateDVF(const char* referenceGridFilename, const char* deformedG
     {
       outputDVF = MiscMeshOperators::ImageCreateWithMesh(referenceGrid, 100);
     }
-}
 
     if (spacingParam>0)
     {
@@ -671,7 +679,7 @@ std::string GenerateDVF(const char* referenceGridFilename, const char* deformedG
 void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF, float interpolateOutsideDistance)
 {
     int* dims = outputDVF->GetDimensions();
-    double* origin = outputDVF->GetOrigin();
+    //double* origin = outputDVF->GetOrigin();
     double* spacing = outputDVF->GetSpacing();
 
     //TODO: refactor this block wirh mishmeshoperators::
@@ -679,9 +687,9 @@ void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* def
     double bounds[6];
     referenceGrid->GetBounds(bounds);
     double spacingArray[3];
-    spacingArray[0] = spacing;
-    spacingArray[1] = spacing;
-    spacingArray[2] = spacing;
+    spacingArray[0] = *spacing;
+    spacingArray[1] = *spacing;
+    spacingArray[2] = *spacing;
     outputDVF->SetSpacing(spacingArray);
     // compute dimensions
     int dim[3];
@@ -819,7 +827,175 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   vec_out[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
 
 }
+
+void ComputeOrganVolume(const char* volumeFilename){
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+	vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(volumeFilename);
+	reader->Update();
+	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+	vtkSmartPointer<vtkGeometryFilter> geometryFilter =
+		vtkSmartPointer<vtkGeometryFilter>::New();
+
+	__SetInput(geometryFilter,inputMesh);
+	geometryFilter->Update();
+	vtkPolyData* polydata = geometryFilter->GetOutput();
+
+	vtkMassProperties* mass = vtkMassProperties::New();
+	__SetInput(mass, polydata);
+	mass->Modified();
+	mass->Update();
+
+	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
+
+	/*vtkIdType* currentCellPoints;
+	vtkIdType numberOfNodesPerElement;
+	double volume = 0;
+	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
+	 {
+		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
+		 if(numberOfNodesPerElement == 4) {
+			 double tetraPoints[4][3];
+			 double *currentPoint;
+
+			 for(int j=0; j<numberOfNodesPerElement; j++)
+			 {
+				currentPoint = inputMesh->GetPoint(currentCellPoints[j]);
+
+				for(int m=0; m < 3; m++){
+					tetraPoints[j][m] = currentPoint[m];
+				}
+			 }
+			 vtkTetra* vtkTetra = vtkTetra::New();
+			 volume += vtkTetra->ComputeVolume(tetraPoints[0], tetraPoints[1], tetraPoints[2], tetraPoints[3]);
+	    }
+
+	 }
+
+	 cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;*/
+
+}
+
+void ComputeDiceCoefficient(const char* filename, const char* filename2)
+{
+		vtkSmartPointer<vtkUnstructuredGridReader> reader =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+		vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
+		vtkSmartPointer<vtkUnstructuredGridReader>::New();
+		reader->SetFileName(filename);
+		reader->Update();
+		vtkUnstructuredGrid* currentGrid = reader->GetOutput();
+		reader2->SetFileName(filename2);
+		reader2->Update();
+		vtkUnstructuredGrid* referenceGrid = reader2->GetOutput();
+
+		vtkSmartPointer<vtkGeometryFilter> geometryFilter =
+		vtkSmartPointer<vtkGeometryFilter>::New();
+
+		__SetInput(geometryFilter,currentGrid);
+		geometryFilter->Update();
+		vtkPolyData* polydata = geometryFilter->GetOutput();
+
+		vtkSmartPointer<vtkGeometryFilter> geometryFilter2 =
+		vtkSmartPointer<vtkGeometryFilter>::New();
+
+		__SetInput(geometryFilter2,referenceGrid);
+		geometryFilter2->Update();
+		vtkPolyData* polydata2 = geometryFilter2->GetOutput();
+
+		vtkSmartPointer<vtkBooleanOperationPolyDataFilter> booleanOperation =
+		vtkSmartPointer<vtkBooleanOperationPolyDataFilter>::New();
+#if VTK_MAJOR_VERSION < 6
+		booleanOperation->SetInput(0, polydata);
+		booleanOperation->SetInput(1, polydata2);
+#else
+		booleanOperation->AddInputData(0, polydata);
+		booleanOperation->AddInputData(1, polydata2);
+#endif
+		booleanOperation->SetOperationToIntersection();
+		booleanOperation->Modified();
+		booleanOperation->Update();
+		vtkPolyData* pol = booleanOperation->GetOutput();
+		vtkMassProperties* mass = vtkMassProperties::New();
+		__SetInput(mass,pol);
+		mass->Modified();
+		mass->Update();
+		int overlap = mass->GetVolume();
+		std::cout << "Overlapping Volume: " << overlap << "mm^3" << endl;
+		__SetInput(mass, polydata);
+		mass->Modified();
+		mass->Update();
+		int volume1  =  mass->GetVolume();
+		std::cout << "1.Volume : " << volume1 << "mm^3" << endl;
+		__SetInput(mass, polydata2);
+		mass->Modified();
+		mass->Update();
+		int volume2  =  mass->GetVolume();
+		std::cout << "2.Volume : " << volume2 << "mm^3" << endl;
+		float diceCoeff = (float)(2*overlap)/(volume1 + volume2);
+		cout << "DICE-Coefficient: " << diceCoeff << endl;
+
+}
+
+void ComputeOrganCrossSectionArea(const char* volumeFilename){
+	vtkSmartPointer<vtkUnstructuredGridReader> reader =
+	vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(volumeFilename);
+	reader->Update();
+	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+
+	vtkSmartPointer<vtkGeometryFilter> geometryFilter =
+	vtkSmartPointer<vtkGeometryFilter>::New();
+
+	__SetInput(geometryFilter,inputMesh);
+	geometryFilter->Update();
+	vtkPolyData* polydata = geometryFilter->GetOutput();
+
+	double bounds[6];
+	polydata->GetBounds(bounds);
+	std::cout << "Bounds: "
+        << bounds[0] << ", " << bounds[1] << " "
+        << bounds[2] << ", " << bounds[3] << " "
+        << bounds[4] << ", " << bounds[5] << std::endl;
+
+	vtkSmartPointer<vtkPlane> plane =
+	vtkSmartPointer<vtkPlane>::New();
+	plane->SetOrigin((bounds[1] + bounds[0]) / 2.0,
+		(bounds[3] + bounds[2]) / 2.0,
+			(bounds[4] + bounds[5]) / 2.0);
+	plane->SetNormal(0,0,1);
+
+	vtkSmartPointer<vtkCutter> cutter =
+	vtkSmartPointer<vtkCutter>::New();
+	cutter->SetInputConnection(reader->GetOutputPort());;
+	cutter->SetCutFunction(plane);
+	cutter->Update();
+	vtkPolyData *pCutterOutput = cutter->GetOutput();
+	double area = 0;
+	for(vtkIdType i = 0; i < pCutterOutput->GetNumberOfPolys(); i++)
+	{
+		vtkCell* cell = pCutterOutput->GetCell(i);
+		int numberOfPoints = cell->GetNumberOfPoints();
+		if(numberOfPoints == 3) {
+			vtkTriangle* triangle = dynamic_cast<vtkTriangle*>(cell);
+			double p0[3];
+			double p1[3];
+			double p2[3];
+			triangle->GetPoints()->GetPoint(0, p0);
+			triangle->GetPoints()->GetPoint(1, p1);
+			triangle->GetPoints()->GetPoint(2, p2);
+			area += vtkTriangle::TriangleArea(p0, p1, p2);
+		}
+	}
+
+	cout << "Area of cross section: " << area << "mm^2" << endl;
+
+}
+
+
+
 }
 }
 
   
+
