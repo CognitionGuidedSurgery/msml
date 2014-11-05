@@ -106,9 +106,7 @@ class FeBioExporter(XMLExporter):
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
 
-            meshObj = msmlObject.mesh
-            meshValue = meshObj.mesh
-            meshFilename = self.evaluate_node(meshValue)
+            meshFilename = self.get_value_from_memory(msmlObject.mesh)
             self.meshFile = meshFilename
 
             self.createControl(self.node_root, msmlObject)

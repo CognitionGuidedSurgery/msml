@@ -1,1 +1,0 @@
-C:\MSML\msml\examples\BunnyExample\bunnyCGAL.msml.scn 100 bunnyCGAL.msml.scn.simu 

@@ -222,6 +222,7 @@ return out.str();
 std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh, std::string partName)
 {
 	//load the vtk mesh
+	log_debug() << "Converting " << inputMesh << " part " << partName << std::endl;
 	vtkSmartPointer<vtkUnstructuredGrid> grid = MSML::IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str());
 	std::string output = ConvertVTKMeshToFeBioMeshString(grid, partName);
 	return output;
