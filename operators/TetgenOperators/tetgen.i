@@ -1,4 +1,4 @@
-%module TetgenOperatorsPython
+%module(threads="1") TetgenOperatorsPython
 %{
 #include "TetgenOperators.h"
 %}
@@ -12,7 +12,7 @@ namespace MSML {
                                            std::string outfile,
                                            bool preserveBoundary);
     }
- }
+}
 
 %begin %{
 #ifdef _MSC_VER
