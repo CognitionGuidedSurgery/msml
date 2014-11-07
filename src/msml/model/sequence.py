@@ -31,37 +31,35 @@ __author__ = "Markus Stoll"
 __date__ = "2014-09-30"
 
 import glob
-import multiprocessing
-import itertools
-import time
+import multiprocessing, multiprocessing.pool
+
 
 def executeOperatorSequence(operator, args, parallel):
     count = sum('*' in str(arg) for arg in args)
-    if (count == 2):
-        assert (count ==2)
+    if count == 2:
         outputPathPattern = ''
         inputPathPattern = ''
-        for i in range(len(args)):
-            arg = args[i]
-            if ('*' in str(arg)):
-                assert str(arg).count('*') == 1
-                fileList = glob.glob(str(arg)) #get file of path in arg with Unix style pathname pattern expansion
-                if (len(fileList)>0):
-                    assert(inputPathPattern == '')
-                    inputFileList = fileList;
-                    inputPathPattern = str(arg);
-                    inputI = i;
+        for i, arg in enumerate(args):
+            arg = str(arg)
+            if '*' in arg:
+                # get file of path in arg with Unix style pathname pattern expansion
+                fileList = glob.glob(arg)
+                if fileList:
+                    inputFileList = fileList
+                    inputPathPattern = arg
+                    inputI = i
                 else:
-                    assert(outputPathPattern == '')
-                    outputPathPattern = str(arg);
-                    outputI = i;
+                    outputPathPattern = arg
+                    outputI = i
+
+        # maybe output directory already contained output files matching output pattern?
+        assert outputPathPattern != '' and inputPathPattern != ''
+
         
-        assert(outputPathPattern != '' and inputPathPattern != '') #maybe output directory already contained output files matching output pattern?
-        
-        [pre, post] = inputPathPattern.split('*')
+        pre, post = inputPathPattern.split('*')
         outputFileList = []
-        for file in inputFileList:
-            tmp = str(file).replace(pre, '')
+        for fil in inputFileList:
+            tmp = str(fil).replace(pre, '')
             tmp = str(tmp).replace(post, '')  
             outputFileList.append(outputPathPattern.replace('*', tmp))
         
@@ -73,19 +71,22 @@ def executeOperatorSequence(operator, args, parallel):
             args_new.append(operator)            
             args_list.append(args_new)
             
-        if (parallel):
-            #multiprocessing
-            
+        if parallel:
+            # multiprocessing
             num_of_workers = multiprocessing.cpu_count()
-            pool = multiprocessing.Pool(num_of_workers-1)
-            
-            pool.map(callWrapper, args_list) #blocks until finished
-
-            
+            pool = multiprocessing.Pool(num_of_workers - 1)
+            # blocks until finished
+            pool.map(callWrapper, args_list)
+        elif parallel:
+            # multiprocessing
+            num_of_workers = multiprocessing.cpu_count()
+            pool = multiprocessing.pool.ThreadPool(num_of_workers - 1)
+            # blocks until finished
+            pool.map(callWrapper, args_list)
         else:
             callWrapper(args_list[0])
-            
-        return outputPathPattern;
+
+        return outputPathPattern
         
 def callWrapper(selfAndArgs):
     operator = selfAndArgs.pop()

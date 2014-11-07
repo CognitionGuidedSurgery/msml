@@ -1,4 +1,4 @@
-%module(threads="1") TetgenOperatorsPython
+%module TetgenOperatorsPython
 %{
 #include "TetgenOperators.h"
 %}

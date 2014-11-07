@@ -116,11 +116,21 @@ class SofaExporter(XMLExporter):
         log.info("Executing %s" % cmd)
         log.info("Working directory: %s" % os.getcwd())
 
-        os.system(cmd)
+        import subprocess
 
-        self._memory._internal.update(self._memory_update)  #update output
+        try:
+            log.info("Start Sofa with: '%s'" % cmd)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            for line in output.split("\n"):
+                log.info("SOFA %s",line)
+            log.info("Sofa ended normally.")
+        except subprocess.CalledProcessError as e:
+            for line in e.output.split("\n"):
+                log.info("SOFA %s",line)
+            log.fatal("SOFA exited with return code > 0 (%s) " % e.returncode)
 
-        #subprocess.call(cmd)
+        #os.system(cmd)
+        return self._memory_update
 
 
     def write_scn(self):
