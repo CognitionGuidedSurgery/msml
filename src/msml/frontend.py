@@ -118,7 +118,7 @@ def create_argument_parser():
                         default="~/.config/msmlrc.py",
                         help="overwrite the default rc file [default: ~/.config/msmlrc.py]")
 
-    parser.add_argument('-a', '--alphabet-dir', metavar="FOLDER/FILE", nargs='*', type=str, dest='alphabet_dirs',
+    parser.add_argument('--alphabet-dir', metavar="PATH", nargs='*', type=str, dest='alphabet_dirs',
                         help="loads an specific alphabet dir")
 
     parser.add_argument('--operator-dir', metavar='FOLDER', nargs='*', type=str, dest='operator_dirs',
@@ -136,19 +136,17 @@ def create_argument_parser():
     exec_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
                              help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
 
-    exec_parser.add_argument('--seq-parallel', action='store_true',
-                             help="enable/disable data-parallel processing of single operators", default=False)
+    exec_parser.add_argument('-r', '--runner', dest='executor', metavar='EXECUTER', action='store',
+                             default = 'sequential',
+                             help='select the wanted executer', choices=set(msml.run.get_known_executors()))
 
 
-    exec_parser.add_argument("-E", "--exopt", nargs="+", default=dict(), metavar='key:val', action=KeyValueAction)
-    exec_parser.add_argument("-R", "--runopt", nargs="+", default=dict(), metavar='key:val', action=KeyValueAction)
+    exec_parser.add_argument("-E", "--exopt", nargs="+", default=dict(), dest="exporter_options",
+                             metavar='key:val', action=KeyValueAction)
+    exec_parser.add_argument("-R", "--runopt", nargs="+", default=dict(), dest="executor_options",
+                             metavar='key:val', action=KeyValueAction)
 
-    exec_parser.add_argument('-p', '--partial',
-                             action='append', nargs='*',
-                             choices=set(('pre', 'sim', 'export', 'post')),
-                             help="selects the step to be executed")
-
-    exec_parser.add_argument('-m', '--variables', metavar="FILE",
+    exec_parser.add_argument('-m', '--variables', metavar="FILE", dest="memoryfile", action="store",
                              help="predefined memory content")
 
     exec_parser.add_argument('files', metavar="FILES", nargs='+',
@@ -222,28 +220,34 @@ class App(object):
     """
 
     def __init__(self, novalidate=False, files=None, exporter="sofa", add_search_path=None,
-                 add_operator_path=None, memory_init_file=None, output_dir=None, execution_options=None,
+                 add_operator_path=None, memory_init_file=None, output_dir=None, executor = None,
+                 execution_options=None, exporter_options=None,
                  seq_parallel=True, options=None, **kwargs):
 
         options = dict(options if options else {})  # create copy
         options.update(kwargs)
+        self._options = options
 
         self._exporter = options.get("exporter") or exporter
+        self._executor = executor or options.get('executor')
+
         self._files = options.get('files') or files or list()
         self._additional_alphabet_path = options.get('alphabetdir') or add_search_path or list()
         self._additional_operator_search_path = options.get('operatorpath') or add_operator_path or list()
-        self._options = options
+
         self.output_dir = output_dir or options.get('output')
         self._seq_parallel = seq_parallel or options.get('seqparallel')
+
         self._novalidate = novalidate
-        self._memory_init_file = memory_init_file
-        self._executor_options = execution_options or options.get('--partial')
-        #_parse_keyvalue_options(options.get('D', list()))
+
+        self._memory_init_file = memory_init_file or options.get('memoryfile')
+
+        self._executor_options = execution_options or options.get('executor_options', {})
+        self._exporter_options = exporter_options or options.get('exporter_options', {})
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
         self.init_msml_system()
-        self._executor = None
 
     def init_msml_system(self):
         """initialize the msml system
@@ -316,7 +320,7 @@ class App(object):
         self._files = files
 
     @property
-    def executer(self):
+    def executor(self):
         """returns a function that creates an
         :py:class:`msml.run.Executor`
 
@@ -326,26 +330,23 @@ class App(object):
         and override this property.
 
         """
-        if not self._executor_options is None:
-            return msml.run.ControllableExecutor  #_load_class(self._executor_options['executor.class'])
-        else:
-            return msml.run.LinearSequenceExecutor
+        return self._executor
+
 
     def get_executor(self, msml_file):
+        self._prepare_msml_model(msml_file)
 
-        if self._executor == None:
-            self._prepare_msml_model(msml_file)
-            execlazz = self.executer
+        execlazz = msml.run.get_executor(self.executor)
 
-            # change to msml-file dirname
-            os.chdir(msml_file.filename.dirname().abspath())
-            self._executor = execlazz(msml_file)
-            self._executor.options = self._executor_options
-            self._executor.working_dir = self.output_dir
-            self._executor.seq_parallel = self._seq_parallel
-            self._executor.init_memory(self.memory_init_file)
+        # change to msml-file dirname
+        os.chdir(msml_file.filename.dirname().abspath())
+        _executor = execlazz(msml_file)
+        _executor.options = self._executor_options
+        _executor.working_dir = self.output_dir
+        _executor.seq_parallel = self._seq_parallel
+        _executor.init_memory(self.memory_init_file)
 
-        return self._executor
+        return _executor
 
 
     def _load_msml_file(self, filename):

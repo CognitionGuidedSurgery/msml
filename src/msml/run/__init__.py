@@ -237,19 +237,19 @@ class PhaseExecutor(LinearSequenceExecutor):
 
         self._prepare()
 
-        if not self.options.get('PE.disable.variable', False):
+        if not bool(self.options.get('PE.disable.variable', False)):
             for node in self.var_bucket:
                 self._execute_variable(node)
 
-        if not self.options.get('PE.disable.pre', False):
+        if not bool(self.options.get('PE.disable.pre', False)):
             for node in self.pre_bucket:
                 self._execute_operator_task(node)
 
-        if not self.options.get('PE.disable.sim', False):
+        if not bool(self.options.get('PE.disable.sim', False)):
             for node in self.sim_bucket:
                 self._execute_exporter(node)
 
-        if not self.options.get('PE.disable.post', False):
+        if not bool(self.options.get('PE.disable.post', False)):
             for node in self.post_bucket:
                 self._execute_operator_task(node)
 
@@ -422,6 +422,20 @@ class ExecutorsHelper(object):
                 outid = ref.linked_from.task.id
                 vals[inname] = memory[outid][outname]
         return vals
+
+
+
+__EXECUTERS = {
+    'parallel' : ParallelExecutor,
+    'sequential': LinearSequenceExecutor,
+    'phase' : PhaseExecutor,
+}
+
+def get_known_executors():
+    return __EXECUTERS.keys()
+
+def get_executor(name):
+    return __EXECUTERS[name]
 
 
 def inject_implict_conversion(dag):
