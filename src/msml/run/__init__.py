@@ -255,16 +255,11 @@ class PhaseExecutor(LinearSequenceExecutor):
 
         return self._memory
 
-    def _init_workflow(self):
-        """Initialised the executor, by gathering all task,
-        exporter and variables from the build graph.
-        :return:
-        """
-
-        # we use a variant of LinearSequenceExecutor to sort the buckets
-        self._shadow_lse.run()
-        self._prepared = True
-
+    def update_variable(self, name, value):
+        log.info("Update variable %s := %r" % (name, value))
+        var = MSMLVariable(name, value = value)
+        self._memory.update(
+            ExecutorsHelper.execute_variable(self._memory, var, True))
 
 class ParallelExecutor(AbstractExecutor):
     """The `ParallelExecutor` makes everything faster,
