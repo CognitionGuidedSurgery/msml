@@ -23,7 +23,7 @@ class SimulationRunner(object):
         self._mfile = self._theApp._load_msml_file(file)
 
         self._executer = self._theApp.get_executor(self._mfile)
-        self._executer._init_workflow()
+        #self._executer._init_workflow()
 
 
 

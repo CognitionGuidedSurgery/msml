@@ -39,6 +39,8 @@ SET(TetgenOperators_LIBS
   ${VTK_LIBRARIES}
   ${TETGEN_LIBRARIES}
   ${Boost_LIBRARIES})
+  
+  message("TETGEN libraries are ${TetgenOperators_LIBS}")
 
 MSML_LIBRARY(
   NAME TetgenOperators
