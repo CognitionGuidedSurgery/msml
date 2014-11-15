@@ -2,19 +2,16 @@ lxml
 path.py
 networkx
 simplegeneric
-docopt
-pyparsing
 jinja2
 
-html5lib
-isodate
-SPARQLWrapper
-rdflib 
+#html5lib
+#isodate
+#SPARQLWrapper
+#rdflib
 
 colorama
 
 ## ReadTheDocs.org / Sphinx
-sphinx
-sphinxcontrib-napoleon 
-sphinx-bootstrap-theme
-
+#sphinx
+#sphinxcontrib-napoleon
+#sphinx-bootstrap-theme

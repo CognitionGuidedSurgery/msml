@@ -13,7 +13,7 @@ cd cache
 # get dump
 
 if [ ! -f $ARCHIV ]; then
-    wget $URL -o $ARCHIV
+    wget $URL -O $ARCHIV
 fi
 
 if [ ! -d $DIRNAME ]; then
@@ -21,6 +21,7 @@ if [ ! -d $DIRNAME ]; then
 fi
 
 if [ ! -d $BUILD_DIR ]; then
+    mkdir $BUILD_DIR
     cd $BUILD_DIR
     cmake ../$DIRNAME
     make -j 2
