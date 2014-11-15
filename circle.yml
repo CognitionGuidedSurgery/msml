@@ -14,7 +14,7 @@ dependencies:
   
 test:
   override:
-    - >
+    - |
       pwd
       source venv/bin/activate
       export PYTHONPATH=$(pwd)/cbuild/bin
