@@ -6,7 +6,8 @@ dependencies:
   cache_directories:
     - cache 
   pre:
-    - sudo apt-get install cmake build-essentials libxml2-dev libtet1.4.2 libtet1.4.2-dev 'libboost-*' libcgal-dev swig
+    -
+    - sudo apt-get install cmake libxml2-dev libtet1.4.2 libtet1.4.2-dev libboost-all-dev libcgal-dev swig
     - pip install -r requirements.txt
     - share/install_vtk.sh 
     - mkdir cbuild
