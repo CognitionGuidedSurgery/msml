@@ -7,7 +7,7 @@ jinja2
 #html5lib
 #isodate
 #SPARQLWrapper
-#rdflib
+rdflib
 
 colorama
 
