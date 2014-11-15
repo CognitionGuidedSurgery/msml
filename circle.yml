@@ -12,3 +12,7 @@ dependencies:
     - share/install_vtk.sh 
     - mkdir cbuild; cd cbuild; cmake ../operators -DVTK_DIR=../cache/VTK-6.1.0-BUILD/; make -j 8; cd ..
   
+test:
+  override:
+    - ( cd src; nosetest )
+
