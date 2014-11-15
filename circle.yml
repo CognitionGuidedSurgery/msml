@@ -10,5 +10,5 @@ dependencies:
     #- sudo apt-get install libboost1.54-dev
     - pip install -r requirements.txt
     - share/install_vtk.sh 
-    - mkdir cbuild; cd cbuild; cmake ..; make -j 2; cd ..
+    - mkdir cbuild; cd cbuild; cmake ../operators; make -j 8; cd ..
   
