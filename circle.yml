@@ -14,10 +14,4 @@ dependencies:
   
 test:
   override:
-    - |
-      pwd
-      source venv/bin/activate
-      export PYTHONPATH=$(pwd)/cbuild/bin
-      cd src
-      nosetest msmltest
-
+    - share/run_test
