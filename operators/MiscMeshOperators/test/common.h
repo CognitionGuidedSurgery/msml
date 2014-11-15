@@ -24,4 +24,17 @@ using namespace MSML;
     BOOST_REQUIRE_MESSAGE( boost::filesystem::exists( x ), \
                            std::string("Could not find file: ") +  x)
 //    BOOST_REQUIRE(boost::filesystem::exists(x))
+
+#include <iostream>
+#include <algorithm>
+#include <boost/iostreams/device/mapped_file.hpp>
+	
+namespace io = boost::iostreams;
+bool file_cmp(const char* f, const char* g) {
+	io::mapped_file_source f1(f);
+	io::mapped_file_source f2(g);
+
+	return f1.size() == f2.size()
+		&& std::equal(f1.data(), f1.data() + f1.size(), f2.data());
+}
 #endif

@@ -63,7 +63,9 @@ FIND_PACKAGE(Boost COMPONENTS
 	unit_test_framework 
 	filesystem iostreams
     system
+	iostreams
 	REQUIRED)
+
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 set(Boost_USE_STATIC_LIBS OFF)
 add_definitions( -DBOOST_ALL_DYN_LINK )
