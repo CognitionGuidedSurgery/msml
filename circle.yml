@@ -6,7 +6,6 @@ dependencies:
   cache_directories:
     - cache 
   pre:
-    -
     - sudo apt-get install cmake libxml2-dev libtet1.4.2 libtet1.4.2-dev swig
     - sudo apt-get install libboost1.54-dev
     - pip install -r requirements.txt
