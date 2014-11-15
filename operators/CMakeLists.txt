@@ -1,7 +1,7 @@
-
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+	"${CMAKE_SOURCE_DIR}/CMake")
 
 
 #########################
@@ -24,10 +24,16 @@ MESSAGE(" #############################")
 MESSAGE(" # CMAKE BUILD TYPE = ${CMAKE_BUILD_TYPE}")    
 MESSAGE(" #############################")
 
+
+## Activating c++0x for gcc 
+## currently supported by VTK6.X (bug)
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x") 
 
+# for deactivating the rpath within shared object (runtime path defines places
+# for loading libraries as abspaths)
 #message("CMAKE does not set RPATH, please adapt your LD_LIBRARY_PATH")
 #set(CMAKE_SKIP_RPATH true)
+
 
 # Find VTK
 FIND_PACKAGE(VTK REQUIRED)
@@ -47,15 +53,17 @@ ELSE()
 ENDIF()
  
 
-
-
-
 #MESSAGE("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
 #message("Libs of Python: " ${PYTHON_LIBRARIES} )
 
 
 # Find Boost
-FIND_PACKAGE(Boost COMPONENTS program_options filesystem iostreams REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS 
+	program_options 
+	unit_test_framework 
+	filesystem iostreams
+    system
+	REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 set(Boost_USE_STATIC_LIBS OFF)
 add_definitions( -DBOOST_ALL_DYN_LINK )
@@ -65,7 +73,13 @@ LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
 #message("cmake module path: " ${CMAKE_MODULE_PATH} )
 #message("Booth2 python library: " ${Boost_PYTHON_LIBRARY} )
 #MESSAGE("Boost Libraries = " ${Boost_LIBRARIES})  
-  
+
+#########################
+# Testing 
+#########################
+INCLUDE(CTest)
+ENABLE_TESTING()
+
 #########################
 # Misc Options
 #########################
@@ -73,8 +87,10 @@ LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
 SET(PYTHON_SITE_PACKAGE ""
     CACHE PATH "Path to python site-package directory")
 
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin) 
-SET(LIBRARY_OUTPUT_PATH  ${CMAKE_BINARY_DIR}/bin) 
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# deprecated
+#SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin) 
+#SET(LIBRARY_OUTPUT_PATH  ${CMAKE_BINARY_DIR}/bin) 
 #SET(BUILD_SHARED_LIBS ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
