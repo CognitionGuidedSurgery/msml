@@ -17,9 +17,9 @@ import MiscMeshOperatorsPython as M
 
 MSML_ROOT = (path(__file__).dirname() / '..' / '..').abspath()
 
-REF_DIR = MSML_ROOT / "src/msmltest/references"
-TMP_DIR = MSML_ROOT / "src/msmltest/tmp"
-INP_DIR = MSML_ROOT / "src/msmltest/input"
+REF_DIR = MSML_ROOT / "share/testdata/references"
+TMP_DIR = MSML_ROOT / "share/testdata/tmp"
+INP_DIR = MSML_ROOT / "share/testdata/input"
 
 import os
 
