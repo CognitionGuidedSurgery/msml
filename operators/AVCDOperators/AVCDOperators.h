@@ -23,7 +23,7 @@
 #ifndef __MiscExtOperators_h
 #define __MiscExtOperators_h
 
-#include "../../MSML_Operators.h"
+#include "../MSML_Operators.h"
 #include "vtkPolyData.h"
 #include <string.h>
 
@@ -33,7 +33,7 @@ using namespace std;
 
 
 namespace MSML {
-    namespace MiscExtOperators
+    namespace AVCDOperators
     {
     	LIBRARY_API  std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount);
     	LIBRARY_API  bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount);

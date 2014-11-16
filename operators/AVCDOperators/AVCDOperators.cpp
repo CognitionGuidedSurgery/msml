@@ -19,13 +19,13 @@
 
     =========================================================================*/
 
-#include "MiscExtOperators.h"
+#include "AVCDOperators.h"
 #include "IOHelper.h"
 
 
-#include "../../vtk6_compat.h"
+#include "../vtk6_compat.h"
 
-#include "../../common/log.h"
+#include "../common/log.h"
 #include "vtkManifoldSimplification.h"
 #include "vtkIsotropicDiscreteRemeshing.h"
 
@@ -33,7 +33,7 @@
 using namespace std;
 
 namespace MSML {
-namespace MiscExtOperators {
+namespace AVCDOperators {
 
 std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount)
 {

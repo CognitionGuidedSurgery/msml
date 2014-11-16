@@ -1,13 +1,13 @@
 %module MiscExtOperatorsPython
 %{
 
-#include "MiscExtOperators.h"
+#include "AVCDOperators.h"
 
 %}
 
 %include "../std.i"
 
-%include "MiscExtOperators.h"
+%include "AVCDOperators.h"
 
 
 %begin %{
