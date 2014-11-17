@@ -915,7 +915,7 @@ std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, i
     vtkSmartPointer<vtkImageData> outputImage =
         vtkSmartPointer<vtkImageData>::New();
 
-    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid);
+    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid, disableFillHoles);
 
     IOHelper::VTKWriteImage(outfile, outputImage);
 
@@ -929,6 +929,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     if (resolution>0)
     {
       whiteImage = ImageCreateWithMesh(inputMesh, resolution);
+      ImageEnlargeIsotropic(whiteImage,30);
     }
 
     //Method B: Get bounds, spacing and origin from given grid:
@@ -944,7 +945,6 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 #else
     whiteImage->AllocateScalars(VTK_DOUBLE,1); //one value per 3d coordinate
 #endif
-
     //TODO: move fill hole functionality to new operator.
     //detect holes
     vtkSmartPointer<vtkFeatureEdges> featureEdges =
@@ -952,11 +952,10 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 
     featureEdges->FeatureEdgesOff();
     featureEdges->BoundaryEdgesOn();
-    featureEdges->NonManifoldEdgesOn();
+    featureEdges->NonManifoldEdgesOff();
     __SetInput(featureEdges, inputMesh);
     featureEdges->Update();
     int num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
-
     if(num_open_edges > 2 && !disableFillHoles)
     {
         double holeSize = 1e20;//bounds[1]-bounds[0];
@@ -1532,5 +1531,34 @@ void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize)
   image->SetSpacing(spacing);
   image->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
 }
+
+void ImageEnlargeIsotropic(vtkImageData* image, double enlargement)
+{
+  double* bounds = image->GetBounds();
+  bounds[0] -= enlargement;
+  bounds[1] += enlargement;
+  bounds[2] -= enlargement;
+  bounds[3] += enlargement;
+  bounds[4] -= enlargement;
+  bounds[5] += enlargement;
+  
+  double* origin = image->GetOrigin();
+  origin[0] -= enlargement;
+  origin[1] -= enlargement;
+  origin[2] -= enlargement;
+  image->SetOrigin(origin);
+
+  double* spacing = image->GetSpacing();
+
+  int dims[3];
+  for (int i = 0; i < 3; i++)
+  {
+      dims[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
+  }
+  image->SetDimensions(dims);
+  image->SetSpacing(spacing);
+  image->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+}
 }//end namepace MiscMeshOperators
 }//end namepace MSML
+

@@ -812,20 +812,35 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
 
 string ImageWeightedSum(std::vector<std::string> polydata, const char* referenceGrid, bool normalize, const char* outfile)
 {
+  int numer_of_images = polydata.size();
+  std::vector<double> weights(numer_of_images);
   vtkSmartPointer<vtkImageWeightedSum> sumFilter = vtkSmartPointer<vtkImageWeightedSum>::New();
+  vtkSmartPointer<vtkImageData> firstVoxelImage;
+  
+  //first iteration
+  firstVoxelImage = vtkSmartPointer<vtkImageData>::New();
+  MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[0].c_str()), firstVoxelImage, 50, "", true);//referenceGrid);
+  string firstImageFile = string(outfile) + "_voxels_0" +".vtk";
+  IOHelper::VTKWriteImage(firstImageFile.c_str(), firstVoxelImage);
+  sumFilter->AddInputData(firstVoxelImage);
+  weights[0] = 1.0;
 
-  for (int i=0; i<polydata.size();i++)
+  //second..Nth iteration
+  for (int i=1; i<numer_of_images;i++)
   {
     vtkSmartPointer<vtkImageData> curentVoxelImage = vtkSmartPointer<vtkImageData>::New();
-    MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[i].c_str()), curentVoxelImage, 0, referenceGrid);
-  
-    IOHelper::VTKWriteImage((string(outfile) + "__" +".vti").c_str(), curentVoxelImage);
+    MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[i].c_str()), curentVoxelImage, 0, firstImageFile.c_str(), true);//referenceGrid);
+    char buffer_i_string [10];
+    itoa (i, buffer_i_string, 10);
+    string firstImageFile = string(outfile) + "_voxels_" + string(buffer_i_string)  +".vtk";
+    IOHelper::VTKWriteImage(firstImageFile.c_str(), firstVoxelImage);
     sumFilter->AddInputData(curentVoxelImage);
+    weights[i] = 1.0;
   }
   
-  double weights[61] = {1,1,1};
+  
   vtkSmartPointer<vtkDoubleArray> vtkWeights = vtkDoubleArray::New();
-  vtkWeights->SetArray(weights, 61, 1);
+  vtkWeights->SetArray(&weights[0], numer_of_images, 1);
   sumFilter->SetWeights(vtkWeights);
   sumFilter->Update();
   IOHelper::VTKWriteImage(outfile, sumFilter->GetOutput());

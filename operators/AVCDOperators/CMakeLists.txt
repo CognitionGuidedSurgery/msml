@@ -35,7 +35,7 @@ ExternalProject_Add(AVCD    # Name for custom target
   #[DEPENDS projects...]       # Targets on which the project depends
   PREFIX avcd                # Root dir for entire project   
   GIT_REPOSITORY  http://github.com/CognitionGuidedSurgery/ACVD.git       # URL of git repo
-  GIT_TAG master              # Git branch name, commit id or tag   
+  GIT_TAG vtk6              # Git branch name, commit id or tag   
   #[SOURCE_DIR dir]            # Source dir to be used for build
   #[CONFIGURE_COMMAND cmd...]  # Build tree configuration command
   #[CMAKE_COMMAND /.../cmake]  # Specify alternative cmake executable

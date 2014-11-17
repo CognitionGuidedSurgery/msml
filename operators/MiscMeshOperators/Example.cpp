@@ -192,7 +192,7 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str());
+    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str(), false);
   }
 }
 
@@ -232,8 +232,9 @@ std::vector<std::string> LoadFileNames(std::string theFileListTxt)
 
 int main( int argc, char * argv[])
 {
-  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\files_CTV1_sparse.txt");
-  PostProcessingOperators::ImageWeightedSum(files, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_1.vti", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV1_sparse_summed.vti");
+  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\files_CTV_2_sparse.txt");
+  //PostProcessingOperators::ImageWeightedSum(files, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_1.vti", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV1_sparse_summed.vti");
+  PostProcessingOperators::ImageWeightedSum(files, "----", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2_sparse_summed_test.vti");
   return 0;
   TestPostProcessingOperators();
   
