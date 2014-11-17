@@ -518,7 +518,7 @@ namespace MSML{
 	{
 		Build_triangle<HalfedgeDS> triangle(inputMesh);
 		outputMesh->delegate( triangle);
-		CGAL_assertion( P.is_triangle( P.halfedges_begin()));	
+		CGAL_assertion( outputMesh->is_triangle( outputMesh->halfedges_begin()));	
 		return true;
 	}
 	/*
