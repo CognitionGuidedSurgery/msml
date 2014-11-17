@@ -942,7 +942,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     whiteImage->SetScalarTypeToUnsignedChar();
     whiteImage->AllocateScalars();
 #else
-    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
+    whiteImage->AllocateScalars(VTK_DOUBLE,1); //one value per 3d coordinate
 #endif
 
     //detect holes
@@ -956,7 +956,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     featureEdges->Update();
     int num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
 
-    if(num_open_edges)
+    if(num_open_edges > 2)
     {
         double holeSize = 1e20;//bounds[1]-bounds[0];
         log_debug() <<"Number of holes is "<<num_open_edges<<", trying to close with hole filler and size of "<< holeSize<< std::endl;
@@ -969,12 +969,13 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 
         fillHolesFilter->SetHoleSize(holeSize);;
         fillHolesFilter->Update();
+        IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test_fillHolesFilter.vtk", fillHolesFilter->GetOutput());
         vtkSmartPointer<vtkCleanPolyData> cleanFilter =
             vtkSmartPointer<vtkCleanPolyData>::New();
 
         __SetInput(cleanFilter, fillHolesFilter->GetOutput());
         cleanFilter->Update();
-
+        IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test_cleanFilter.vtk", cleanFilter->GetOutput());
         //test again
         __SetInput(featureEdges, fillHolesFilter->GetOutput());
         featureEdges->Update();
@@ -987,14 +988,16 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     }
     log_debug() <<"Performing voxelization (this might take while)..." << std::endl;
     // fill the image with foreground voxels:
-    unsigned char inval = 255;
-    unsigned char outval = 0;
+    double inval = 255;
+    double outval = 0;
     vtkIdType count = whiteImage->GetNumberOfPoints();
 
     for (vtkIdType i = 0; i < count; ++i)
     {
         whiteImage->GetPointData()->GetScalars()->SetTuple1(i, inval);
     }
+
+    IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test.vtk", inputMesh);
 
     // polygonal data --> image stencil:
     vtkSmartPointer<vtkPolyDataToImageStencil> pol2stenc =

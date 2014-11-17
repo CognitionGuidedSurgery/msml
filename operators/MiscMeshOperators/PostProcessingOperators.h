@@ -292,6 +292,8 @@ LIBRARY_API void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstruct
 LIBRARY_API std::string TransformSurfaceBarycentricPython(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance);
 LIBRARY_API void TransformSurfaceBarycentric(vtkPolyData* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkPolyData* out_mesh, float interpolateOutsideDistance);
 
+LIBRARY_API std::string ImageWeightedSum(std::vector<std::string> polydata, const char* referenceGrid, bool normalize, const char* outfile);
+
 // member access
 
 

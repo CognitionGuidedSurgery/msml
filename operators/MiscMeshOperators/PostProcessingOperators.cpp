@@ -56,6 +56,8 @@
 #include "vtkDoubleArray.h"
 #include "vtkCellData.h"
 
+#include "vtkImageWeightedSum.h"
+
 
 #include <vtkDataSetSurfaceFilter.h>
 #include "vtkLongLongArray.h"
@@ -805,6 +807,29 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
   vec_out[0] = scale_outside * ((x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0]);
   vec_out[1] = scale_outside * ((x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1]);
   vec_out[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
+
+}
+
+string ImageWeightedSum(std::vector<std::string> polydata, const char* referenceGrid, bool normalize, const char* outfile)
+{
+  vtkSmartPointer<vtkImageWeightedSum> sumFilter = vtkSmartPointer<vtkImageWeightedSum>::New();
+
+  for (int i=0; i<polydata.size();i++)
+  {
+    vtkSmartPointer<vtkImageData> curentVoxelImage = vtkSmartPointer<vtkImageData>::New();
+    MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[i].c_str()), curentVoxelImage, 0, referenceGrid);
+  
+    IOHelper::VTKWriteImage((string(outfile) + "__" +".vti").c_str(), curentVoxelImage);
+    sumFilter->AddInputData(curentVoxelImage);
+  }
+  
+  double weights[61] = {1,1,1};
+  vtkSmartPointer<vtkDoubleArray> vtkWeights = vtkDoubleArray::New();
+  vtkWeights->SetArray(weights, 61, 1);
+  sumFilter->SetWeights(vtkWeights);
+  sumFilter->Update();
+  IOHelper::VTKWriteImage(outfile, sumFilter->GetOutput());
+  return outfile;
 
 }
 }

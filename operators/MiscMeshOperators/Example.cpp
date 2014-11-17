@@ -213,8 +213,28 @@ void TestPostProcessingOperators()
       (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "", 10);
 }
 
+std::vector<std::string> LoadFileNames(std::string theFileListTxt)
+{
+  std::vector<std::string> fileNames;
+	std::ifstream fileStream;
+	fileStream.open(theFileListTxt.c_str(), std::ifstream::in);
+  if (fileStream)
+  {
+	  std::string line;  
+	  while(getline(fileStream,line))
+	  {
+      fileNames.push_back(line);
+	  }
+	  fileStream.close();
+  }
+  return fileNames;
+}
+
 int main( int argc, char * argv[])
 {
+  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\files_CTV1_sparse.txt");
+  PostProcessingOperators::ImageWeightedSum(files, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_1.vti", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV1_sparse_summed.vti");
+  return 0;
   TestPostProcessingOperators();
   
   TestMiscMeshoperators::TestConvertLinearToQuadraticTetrahedralMesh();
