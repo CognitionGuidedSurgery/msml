@@ -4,6 +4,9 @@
 .idea/
 .project
 .pydevproject
+.settings
+.pydevproject
+.project
 dist
 build/
 cbuild/

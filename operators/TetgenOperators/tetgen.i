@@ -12,7 +12,7 @@ namespace MSML {
                                            std::string outfile,
                                            bool preserveBoundary);
     }
- }
+}
 
 %begin %{
 #ifdef _MSC_VER

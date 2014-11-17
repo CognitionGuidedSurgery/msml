@@ -536,7 +536,7 @@ bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
 	//set up the smoother
 	vtkSmartPointer<vtkWindowedSincPolyDataFilter> smoother =
     vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
-	smoother->SetInputData(reader->GetOutput());
+	__SetInput(smoother,reader->GetOutput());
 	smoother->SetNumberOfIterations(iterations);
 
 	smoother->SetBoundarySmoothing(boundary_smoothing);

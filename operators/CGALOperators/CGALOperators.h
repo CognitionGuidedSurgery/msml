@@ -22,7 +22,6 @@
 #include "../MSML_Operators.h"
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
-
 /*MSMLDOC
 
 CGALOperators
@@ -78,10 +77,30 @@ CGALOperators
 
         :returns:
         :rtype:
+		
+	.. cpp:function:: bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
+        :param const char* infile:
+        :param const char* outfile: 
+		:param int subdivisions:
+		:param std::string method;
 
+        :returns:
+        :rtype:
+	.. cpp:function:: bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile)
+        :param vtkPolyData *inputMeshFile:
+        :param Polyhedron *outputMeshFile: 
 
+        :returns:
+        :rtype:
+	.. cpp:function:: bool SimplificateMesh(const char *inputMeshFile, const char *outputMeshFile, int stopnr,std::vector<double> box)
+        :param vtkPolyData *inputMeshFile:
+        :param Polyhedron *outputMeshFile: 
+		:param int stopnr: 
+		:param std::vector<double> box:
+	
+        :returns:
+        :rtype:
 */
-
 
 namespace MSML {
  namespace  CGALOperators {
@@ -101,5 +120,9 @@ namespace MSML {
                              double theFacetDistance, double theCellRadiusEdgeRatio,
                              double theCellSize, bool theOdtSmoother,
                              bool theLloydSmoother, bool thePerturber, bool theExuder);
-  }
+							 
+	 LIBRARY_API bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method);
+	 LIBRARY_API bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile);	 
+	 LIBRARY_API bool SimplificateMesh(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
+ }
 }

@@ -503,9 +503,9 @@ class PythonOperator(Operator):
 
             return self._function
         except ImportError, e:
-            warn("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
+            error("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
         except AttributeError, e:
-            warn("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
+            error("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
 
 
     def validate(self):

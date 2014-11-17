@@ -208,10 +208,25 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("root")
 
 
-error = logger.error
-warn = logger.warn
-info = logger.info
-debug = logger.debug
-critical = logger.critical
-exception = logger.exception
-fatal = logger.fatal
+
+
+from multiprocessing import Lock
+from functools import wraps
+
+logger_lock = Lock()
+def thread_safe(func):
+    @wraps(func)
+    def acrel(*args, **kwargs):
+        logger_lock.acquire()
+        r = func(*args, **kwargs)
+        logger_lock.release()
+        return r
+    return acrel
+
+error     = thread_safe(logger.error)
+warn      = thread_safe(logger.warn)
+info      = thread_safe(logger.info)
+debug     = thread_safe(logger.debug)
+critical  = thread_safe(logger.critical)
+exception = thread_safe(logger.exception)
+fatal     = thread_safe(logger.fatal)
