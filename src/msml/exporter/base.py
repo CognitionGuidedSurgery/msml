@@ -42,38 +42,61 @@ class ExporterOutputVariable(MSMLVariable):
 
 class Exporter(object):
     def __init__(self, msml_file):
-        """
-        Args:
-          executer (Executer)
+        """Create a new exporter instance.
+        This exporter is the base for your exporter developments
+        and can be used as an NOOP-Exporter.
+
+        If you derive this class, you should call :py:func:`self.initialize(...)`
 
 
         """
         assert isinstance(msml_file, MSMLFile)
+        self.initialize(msml_file)
 
+    def initialize(self, msml_file, name = "base",
+                   output_type_of_elements = None,
+                   features = frozenset(),
+                   mesh_sort = ("VTK", "Mesh")):
+        """Call this in derived classes for initializing the input, output and arguments structures.
+
+
+        :param msml_file: the given msml in the constructor
+        :type msml_file: msml.model.base.MSMLFile
+        :param name:  a name for your exporter
+        :type name: str
+        :param output_type_of_elements:  a dictionary of dictionaries for every element and parameter
+        :type output_type_of_elements: dict[str, dict[str, msml.sorts.Sort]]
+        :param features: a list of string with supported features
+        :type features: set
+        :param mesh_sort: a tuple of (physical, logical) type name
+        :type mesh_sort: tuple[str, str]
+        :return:
+        """
         self._datamodel = None
         self._msml_file = msml_file
-        self.name = 'base'
-        self._output_types_for_tags = {}
+        self.name = name
+
+        self._output_types_of_elements = output_type_of_elements
 
         self.id = "__exporter__"
 
-        self.mesh_sort = ['VTK', 'Mesh']
+        self.mesh_sort = mesh_sort
         """The physical and logical sort of the input mesh"""
 
         self._output = {}
-        """Output slots
+        """Output slots (meta data)
         :type dict[str, Slot]"""
 
         self._input = {}
-        """Input slots
+        """Input slots (meta data)
         :type dict[str, Slot]"""
 
         self._attributes = {}
-        """Attribute values for input slots
-        :type dict[str,str]"""
+        """Attribute values for input slots, in the manner
 
-        self.gather_output()
-        self.gather_inputs()
+        bunny_mesh_1 = "${bunnyVolumeMesher.mesh}"
+
+        :type dict[str,str]"""
 
         self.arguments = {}
         """stores the References to the input values
@@ -81,12 +104,15 @@ class Exporter(object):
         :see Exporter.link
         """
 
-        self._features = set()
+        self._features = features
         """Set of supported features from this exporter
 
         :see :py:meth:`Exporter.match_features`
         :type set[str]
         """
+
+        self.gather_output()
+        self.gather_inputs()
 
     @property
     def features(self):
@@ -126,8 +152,9 @@ class Exporter(object):
                 fmt = object
                 typ = object
 
-                if id in self._output_types_for_tags:
-                    typ, fmt = self._output_types_for_tags[id]
+                if self._output_types_of_elements and \
+                                tag in self._output_types_of_elements:
+                    typ, fmt = self._output_types_of_elements[tag]
 
                 v = ExporterOutputVariable(id, fmt, typ)
                 self._output[id] = v

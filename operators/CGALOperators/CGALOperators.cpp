@@ -18,11 +18,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =========================================================================*/
-
+#include <vector>
 #include <map>
 #include <assert.h>
 
 //CGAL Includes:
+#include <CGAL/Unique_hash_map.h>
+#include <CGAL/Point_3.h>
+#include <CGAL/Subdivision_method_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Mesh_triangulation_3.h>
 #include <CGAL/Mesh_complex_3_in_triangulation_3.h>
@@ -32,10 +35,11 @@
 #include <CGAL/refine_mesh_3.h>
 #include <CGAL/Image_3.h>
 #include <CGAL/Labeled_image_mesh_domain_3.h>
+#include <CGAL/Delaunay_triangulation_3.h>
+#include <CGAL/Polyhedron_3.h>
 
 // IO
 #include <CGAL/IO/Polyhedron_iostream.h>
-
 
 #include "../common/log.h"
 
@@ -60,6 +64,21 @@ typedef CGAL::Mesh_complex_3_in_triangulation_3<Tr_img> C3t3_img;
 // Criteria
 typedef CGAL::Mesh_criteria_3<Tr_img> Mesh_criteria_img;
 
+//iterator for polyhedron vertices
+typedef Polyhedron::Vertex_iterator Vertex_iterator;
+typedef Polyhedron::Vertex_handle Vertex_handle;
+typedef Polyhedron::Facet_iterator Facet_iterator;
+typedef Polyhedron::Edge_iterator Edge_iterator;
+typedef Polyhedron::Halfedge_around_facet_circulator Halfedge_around_facet_circulator;
+typedef Polyhedron::HalfedgeDS             HalfedgeDS;
+typedef CGAL::Point_3<K> Point;
+
+#include <CGAL/Surface_mesh_simplification/HalfedgeGraph_Polyhedron_3.h>
+// Simplification function
+#include <CGAL/Surface_mesh_simplification/edge_collapse.h>
+// Stop-condition policy
+#include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Count_stop_predicate.h>
+
 // To avoid verbose function and named parameters call
 using namespace CGAL::parameters;
 
@@ -82,6 +101,7 @@ using namespace CGAL::parameters;
 #include <vtkPointData.h>
 #include <vtkTransformFilter.h>
 #include <vtkTransform.h>
+#include <vtkPolygon.h>
 
 
 //MSML includes
@@ -110,6 +130,8 @@ namespace MSML{
                                double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder);
     Polyhedron OpenOffSurface(const char* infile_off);
     map<int,int>*  CompressImageData(vtkImageData* theImageData);
+	bool VTKPolydataToCGALPolyhedron_converter(vtkPolyData *inputMesh, Polyhedron *outputMesh);
+	void CGALPolyhedronToVTKPolydata_converter(Polyhedron *polyhedron, vtkSmartPointer<vtkPolyData> polydata);
 
 
   std::string CreateVolumeMeshi2v(const char* infile, const char* outfile, double theFacetAngle, double theFacetSize, double theFacetDistance,
@@ -246,8 +268,7 @@ namespace MSML{
     }
     return aLUT;
   }
-
-
+  
   C3t3_img mesh_image_domain(CGAL::Image_3 theImage, double theFacetAngle, double theFacetSize, double theFacetDistance,
     double theCellRadiusEdgeRatio, double theCellSize, bool theOdtSmoother, bool theLloydSmoother, bool thePerturber, bool theExuder)
   {
@@ -288,7 +309,235 @@ namespace MSML{
     C3t3_img c3t3 = CGAL::make_mesh_3<C3t3_img>(domain, criteria, featuresParameter, odtParameter, PertubeParameter, ExudeParameter);
 	  return c3t3;
   }
+  
+  /*
+  Used by SimplificateMesh
+  Map for storage of edges to be marked as non-removable.
+  Code from: https://doc.cgal.org/4.2/CGAL.CGAL.Triangulated-Surface-Mesh-Simplification/html/Surface_mesh_simplification_2edge_collapse_constrained_polyhedron_8cpp-example.html
+  */
+  class Constrains_map : public boost::put_get_helper<bool,Constrains_map>
+  {
+	public:
+		typedef boost::readable_property_map_tag category;
+		typedef bool value_type;
+		typedef bool reference;
+		typedef boost::graph_traits<Polyhedron const>::edge_descriptor key_type;
+		Constrains_map() : mConstrains(false) {}
+		reference operator[](key_type const& e) const { return e->is_border() || is_constrained(e) ; }
+		void set_is_constrained ( key_type const& e, bool is ) { mConstrains[e]=is; }
+		bool is_constrained( key_type const& e ) const { return mConstrains.is_defined(e) ? mConstrains[e] : false ; }
+	private:
+		CGAL::Unique_hash_map<key_type,bool> mConstrains ;
+  }; 
 
+  /*
+  Simplificate a mesh using CGALs Triangulated Surface Mesh Simplification
+  (http://doc.cgal.org/latest/Surface_mesh_simplification/index.html#Chapter_Triangulated_Surface_Mesh_Simplification)
+  */
+  bool SimplificateMesh(const char* inputMeshFile, const char* outputMeshFile, int stopnr,
+					   std::vector<double> box = std::vector<double>())
+  {	
+	  //read VTK Polydata
+      vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+	  reader->SetFileName(inputMeshFile);
+	  reader->Update();
+	  //convert to polyhedron	  
+	  Polyhedron polyhedron;
+	  VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&polyhedron);
+
+	  //create stop predicate
+	  CGAL::Surface_mesh_simplification::Count_stop_predicate<Polyhedron> stop(stopnr);
+	  	    
+	  Constrains_map constrains_map ;
+	  //if box contains exactly six values, use region inside box to mark non-removable edges
+	  if(box.size()==6)
+	  {
+		  int totalEdges=0;
+		  int constrainedEdges=0;  
+		  log_debug()<<"bounding box given"<<std::endl;
+		  //iterate over all edges, edges inside box will be marked as non-removable
+		  for(Polyhedron::Halfedge_iterator eb = polyhedron.halfedges_begin(),
+											 ee = polyhedron.halfedges_end() ; eb != ee ; ++ eb )
+		  {
+			  Point currentPoint = eb->vertex()->point();
+			   //test if edge vertex is within box
+			   if( (currentPoint[0]>=box[0]) && (currentPoint[1]>=box[1]) && (currentPoint[2]>=box[2])
+                            && (currentPoint[0]<=box[3]) && (currentPoint[1]<=box[4]) && (currentPoint[2]<=box[5]))
+			   {    //add to map of non-removable edges
+					constrains_map.set_is_constrained(eb,true);
+				    constrainedEdges++;
+			   }
+			   totalEdges++;
+		  }
+		  log_debug()<<"total edges: "<<totalEdges<<" constrained: "<<constrainedEdges<<std::endl;
+	  }
+	  
+
+	  //simplificate mesh
+	  int r = CGAL::Surface_mesh_simplification::edge_collapse
+				(polyhedron,stop,
+				CGAL::vertex_index_map(boost::get(CGAL::vertex_external_index,polyhedron))
+				.edge_index_map (boost::get(CGAL::edge_external_index ,polyhedron))
+				.edge_is_border_map(constrains_map)
+				);
+	  log_debug()<<"Edges removed: "<<r<<std::endl;
+	  //now create polydata-object
+	  vtkSmartPointer<vtkPolyData> vtkpoly = vtkSmartPointer<vtkPolyData>::New();	
+	  //convert polyhedron to polydata
+	  CGALPolyhedronToVTKPolydata_converter(&polyhedron, vtkpoly);
+
+	  //write polydata to disk	  
+	  bool result = IOHelper::VTKWritePolyData(outputMeshFile,vtkpoly);	  
+	  return result;
+  }
+  /*
+  Calculate Subdivision Surface for given mesh.
+  (http://doc.cgal.org/latest/Subdivision_method_3/index.html)
+  Works for polyhedral meshes only.
+  */
+  bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
+  {	     
+	  //read VTK Polydata
+      vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+	  reader->SetFileName(infile);
+	  reader->Update();
+	  	  
+	  Polyhedron subdivpoly;
+	  VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&subdivpoly); 
+
+	  //apply subdivision-method	
+	  if("Catmull-Clark" == method)
+	  {
+		CGAL::Subdivision_method_3::CatmullClark_subdivision(subdivpoly,subdivisions);	  	
+	  }
+	  else if("Loop" == method)
+	  {
+		CGAL::Subdivision_method_3::Loop_subdivision(subdivpoly,subdivisions);	  
+	  }
+	  else if("DooSabin" == method)
+	  {
+		CGAL::Subdivision_method_3::DooSabin_subdivision(subdivpoly,subdivisions);	 
+	  }
+	  else if("sqrt3" == method)
+	  {
+		  CGAL::Subdivision_method_3::Sqrt3_subdivision(subdivpoly,subdivisions);	
+	  }
+	  else
+	  {
+		  //invalid method name, log and exit!
+		  log_error()<<"CalculateSubdivisionSurface failed, invalid method name: "<<method<<std::endl;
+		  return false;
+	  }	 
+	  //now create polydata-object
+	  vtkSmartPointer<vtkPolyData> subdivVTKPoly = vtkSmartPointer<vtkPolyData>::New();	
+	  CGALPolyhedronToVTKPolydata_converter(&subdivpoly, subdivVTKPoly);
+
+	  //write polydata to disk	  
+	  bool result = IOHelper::VTKWritePolyData(outfile,subdivVTKPoly);	 
+	  //cleanup of polyhedron, points, faces and polydata-object??
+	  return result;
+  }
+
+  void CGALPolyhedronToVTKPolydata_converter(Polyhedron *polyhedron, vtkSmartPointer<vtkPolyData> polydata)
+  {
+	  //convert from cgal polyhedron to vtk poly data
+	  //first the points
+	  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+	  vtkSmartPointer<vtkCellArray> faces = vtkSmartPointer<vtkCellArray>::New();
+	  
+	  //iterator over all vertices in  polyhedron, add them as points
+	  std::map<Vertex_handle, vtkIdType> V;
+	  vtkIdType inum = 0;
+	  for ( Vertex_iterator v = polyhedron->vertices_begin(); v != polyhedron->vertices_end(); ++v)
+	  {	     	   
+		   points->InsertNextPoint(v->point()[0],v->point()[1],v->point()[2]);		   
+		   V[v] = inum++;
+	  }
+	  //now iterate over all faces in polyhedron	   	  
+	  for ( Facet_iterator i = polyhedron->facets_begin(); i != polyhedron->facets_end(); ++i)
+	  {
+		  Halfedge_around_facet_circulator j = i->facet_begin();		
+		  faces->InsertNextCell(CGAL::circulator_size(j));		  
+		  do
+		  {			  	
+			  //get indice of vertex, insert new cell point into faces
+			  faces->InsertCellPoint(V[j->vertex()]);
+			  		 
+		  } while(++j != i->facet_begin());
+	  }
+	  
+	  // Set the points and faces of the polydata	
+	  polydata->SetPoints(points);
+	  polydata->SetPolys(faces);	 
+  }
+  /*
+	Delegate for Polyhedron builder. Uses data from vtkPolyData to construct
+	a CGAL Polyhedron.
+	Adapted from: http://doc.cgal.org/latest/Polyhedron/Polyhedron_2polyhedron_prog_incr_builder_8cpp-example.html
+	*/
+	template <class HDS>
+	class Build_triangle : public CGAL::Modifier_base<HDS> {
+		private:
+			vtkPolyData *vtkMesh;
+		public:
+			Build_triangle(vtkPolyData *vtkMesh) 
+			{
+				this->vtkMesh = vtkMesh;
+			}
+			void operator()( HDS& hds) {
+				CGAL::Polyhedron_incremental_builder_3<HDS> B( hds, true);
+				//start surface, number of halfedges is unknown (at least to me)
+				B.begin_surface( vtkMesh->GetNumberOfVerts(),vtkMesh->GetNumberOfPolys(),0);
+				typedef typename HDS::Vertex Vertex;
+				typedef typename Vertex::Point Point;
+				//add vertices to polyhedron
+				for(vtkIdType i = 0; i < vtkMesh->GetNumberOfPoints(); i++)
+				{
+					double p[3];
+					vtkMesh->GetPoint(i,p);
+					B.add_vertex(Point(p[0],p[1],p[2]));
+				}
+				//add faces to polyhedron
+				vtkIdType npts, *pts;
+				vtkMesh->GetPolys()->InitTraversal();
+				while(vtkMesh->GetPolys()->GetNextCell(npts,pts))
+				{		
+					B.begin_facet();
+					B.add_vertex_to_facet(pts[0]);
+					B.add_vertex_to_facet(pts[1]);
+					B.add_vertex_to_facet(pts[2]);
+					B.end_facet();
+				}
+				B.end_surface();					
+			}
+		};
+	/*
+		Convert from vtkPolyData-Mesh to CGAL polyhedron mesh.
+	*/
+	bool VTKPolydataToCGALPolyhedron_converter(vtkPolyData *inputMesh, Polyhedron *outputMesh)
+	{
+		Build_triangle<HalfedgeDS> triangle(inputMesh);
+		outputMesh->delegate( triangle);
+		CGAL_assertion( P.is_triangle( P.halfedges_begin()));	
+		return true;
+	}
+	/*
+		Operator for vtkPolyData to CGAL off conversion.
+	*/
+	bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile)
+	{
+		vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+		reader->SetFileName(inputMeshFile);
+		reader->Update();
+
+		Polyhedron P;
+		VTKPolydataToCGALPolyhedron_converter(reader->GetOutput(),&P);
+		std::ofstream offout;
+		offout.open(outputMeshFile);
+		offout<<P;
+		offout.close();
+		return true;
+	}
 
 
   /// <summary>
@@ -315,6 +564,7 @@ namespace MSML{
 
     MiscMeshOperators::ConvertVTKToOFF(reader->GetOutput(), (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
     C3t3_poly c3t3;
+	
     try 
     {
       c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
@@ -325,6 +575,7 @@ namespace MSML{
       log_error() << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
       return "error in CGAL::make_mesh_3";
     }
+
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
     remove((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
 
@@ -455,5 +706,7 @@ CGAL::Image_3 read_vtk_image_data_char(vtkImageData* vtk_image)
 }
 //end of taken form CGAL Image_3
 
+
+	
     } //end of namespace CGALOperators
 } // end of namespace MSML
