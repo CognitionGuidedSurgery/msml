@@ -28,6 +28,7 @@
                   either resolution or referenceCoordinateGrid must be set 
             </meta>
         </arg>
-
+        <arg name="disableFillHoles" physical="bool" optional="true" default="false">
+        </arg>
     </parameters>
 </msml:operator>

@@ -905,7 +905,7 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
+std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid, bool disableFillHoles)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
                 << "Resolution of the longest bound is "<<resolution<< std::endl;
@@ -922,7 +922,7 @@ std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, i
     return string(outfile);
 }
 
-bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)
+bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid, bool disableFillHoles)
 {
     vtkSmartPointer<vtkImageData> whiteImage;
     //Method A: Generate bounds, spacing and origine based on mesh:
@@ -945,6 +945,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     whiteImage->AllocateScalars(VTK_DOUBLE,1); //one value per 3d coordinate
 #endif
 
+    //TODO: move fill hole functionality to new operator.
     //detect holes
     vtkSmartPointer<vtkFeatureEdges> featureEdges =
         vtkSmartPointer<vtkFeatureEdges>::New();
@@ -956,7 +957,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     featureEdges->Update();
     int num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
 
-    if(num_open_edges > 2)
+    if(num_open_edges > 2 && !disableFillHoles)
     {
         double holeSize = 1e20;//bounds[1]-bounds[0];
         log_debug() <<"Number of holes is "<<num_open_edges<<", trying to close with hole filler and size of "<< holeSize<< std::endl;

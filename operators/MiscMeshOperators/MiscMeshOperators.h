@@ -522,6 +522,7 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
+        LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
 
     } //end namespace MiscMeshOperators
 } // end namespace MSML
