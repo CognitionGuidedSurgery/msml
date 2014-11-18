@@ -941,7 +941,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     whiteImage->SetScalarTypeToUnsignedChar();
     whiteImage->AllocateScalars();
 #else
-    whiteImage->AllocateScalars(VTK_DOUBLE,1); //one value per 3d coordinate
+    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
 #endif
     //TODO: move fill hole functionality to new operator.
     //detect holes
@@ -950,7 +950,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 
     featureEdges->FeatureEdgesOff();
     featureEdges->BoundaryEdgesOn();
-    featureEdges->NonManifoldEdgesOff();
+    featureEdges->NonManifoldEdgesOn();
     __SetInput(featureEdges, inputMesh);
     featureEdges->Update();
     int num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
@@ -967,13 +967,11 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 
         fillHolesFilter->SetHoleSize(holeSize);;
         fillHolesFilter->Update();
-        IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test_fillHolesFilter.vtk", fillHolesFilter->GetOutput());
         vtkSmartPointer<vtkCleanPolyData> cleanFilter =
             vtkSmartPointer<vtkCleanPolyData>::New();
 
         __SetInput(cleanFilter, fillHolesFilter->GetOutput());
         cleanFilter->Update();
-        IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test_cleanFilter.vtk", cleanFilter->GetOutput());
         //test again
         __SetInput(featureEdges, fillHolesFilter->GetOutput());
         featureEdges->Update();
