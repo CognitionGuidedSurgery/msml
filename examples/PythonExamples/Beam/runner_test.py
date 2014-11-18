@@ -1,15 +1,11 @@
-__author__ = 'suwelack'
+__author__ = 'Stefan Suwelack'
 import imp, sys
 
 import os
 import msml.api.simulation_runner as api
 
 
-
-
 #create one forward simulation
-
-
 
 msml_file = os.path.abspath('beamLinearDisp.msml.xml')
 

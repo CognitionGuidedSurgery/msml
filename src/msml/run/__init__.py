@@ -229,12 +229,16 @@ class PhaseExecutor(LinearSequenceExecutor):
         for bucket in buckets:
             for node in bucket:
                 if isinstance(node, Task):
-                    (self.pre_bucket if is_pre else self.post_bucket).append(node)
+                    if is_pre:
+                        self.pre_bucket.append(node)
+                    else:
+                        self.post_bucket.append(node)
+
                 elif isinstance(node, MSMLVariable):
                     self.var_bucket.append(node)
                 elif isinstance(node, Exporter):
                     self.sim_bucket.append(node)
-                    is_pre = True
+                    is_pre = False
 
         return buckets
 
@@ -267,6 +271,10 @@ class PhaseExecutor(LinearSequenceExecutor):
         var = MSMLVariable(name, value=value)
         self._memory.update(
             ExecutorsHelper.execute_variable(self._memory, var, True))
+
+    def _execute_operator_task(self, task):
+        new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        self._memory.update(new)
 
 
 class ParallelExecutor(AbstractExecutor):
