@@ -111,8 +111,8 @@ class SofaExporter(XMLExporter):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
             f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
                 timeSteps) + ' ' + self.export_file + '.simu \n')
-
-        os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
+        #uncomment to use multiple gpus
+        #os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
 
         cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
