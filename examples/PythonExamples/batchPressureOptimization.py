@@ -25,7 +25,7 @@ from msml.frontend import App
 
 class Lungs(object):
     def __init__(self, msml_filename, p):
-        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p))
+        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p), executor='sequential')
         self.mf = self.app._load_msml_file(msml_filename)
         self._surface_pressure = p
     
@@ -46,7 +46,7 @@ def f_to_minimize(p_array):
     volume = l() 
     return abs(volume- 8400000)
 
-msml_file = os.path.abspath('../CGALi2vLungs/lungs_new.xml')
+msml_file = os.path.abspath('../CGALi2vLungs/Lungs_new.xml')
 
 
 p0 = x0 = np.asarray((20))
