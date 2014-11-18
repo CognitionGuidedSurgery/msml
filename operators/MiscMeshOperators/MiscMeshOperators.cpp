@@ -905,7 +905,7 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
+std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid, bool disableFillHoles)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
                 << "Resolution of the longest bound is "<<resolution<< std::endl;
@@ -915,14 +915,14 @@ std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, i
     vtkSmartPointer<vtkImageData> outputImage =
         vtkSmartPointer<vtkImageData>::New();
 
-    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid);
+    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid, disableFillHoles);
 
     IOHelper::VTKWriteImage(outfile, outputImage);
 
     return string(outfile);
 }
 
-bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)
+bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid, bool disableFillHoles)
 {
     vtkSmartPointer<vtkImageData> whiteImage;
     //Method A: Generate bounds, spacing and origine based on mesh:
@@ -934,7 +934,6 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     //Method B: Get bounds, spacing and origin from given grid:
     else
     {
-      
       whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
     }
 
@@ -942,21 +941,20 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     whiteImage->SetScalarTypeToUnsignedChar();
     whiteImage->AllocateScalars();
 #else
-    whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
+    whiteImage->AllocateScalars(VTK_DOUBLE,1); //one value per 3d coordinate
 #endif
-
+    //TODO: move fill hole functionality to new operator.
     //detect holes
     vtkSmartPointer<vtkFeatureEdges> featureEdges =
         vtkSmartPointer<vtkFeatureEdges>::New();
 
     featureEdges->FeatureEdgesOff();
     featureEdges->BoundaryEdgesOn();
-    featureEdges->NonManifoldEdgesOn();
+    featureEdges->NonManifoldEdgesOff();
     __SetInput(featureEdges, inputMesh);
     featureEdges->Update();
     int num_open_edges = featureEdges->GetOutput()->GetNumberOfCells();
-
-    if(num_open_edges)
+    if(num_open_edges > 2 && !disableFillHoles)
     {
         double holeSize = 1e20;//bounds[1]-bounds[0];
         log_debug() <<"Number of holes is "<<num_open_edges<<", trying to close with hole filler and size of "<< holeSize<< std::endl;
@@ -969,12 +967,13 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 
         fillHolesFilter->SetHoleSize(holeSize);;
         fillHolesFilter->Update();
+        IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test_fillHolesFilter.vtk", fillHolesFilter->GetOutput());
         vtkSmartPointer<vtkCleanPolyData> cleanFilter =
             vtkSmartPointer<vtkCleanPolyData>::New();
 
         __SetInput(cleanFilter, fillHolesFilter->GetOutput());
         cleanFilter->Update();
-
+        IOHelper::VTKWritePolyData("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\inputMesh_voxel_out_test_cleanFilter.vtk", cleanFilter->GetOutput());
         //test again
         __SetInput(featureEdges, fillHolesFilter->GetOutput());
         featureEdges->Update();
@@ -995,6 +994,8 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     {
         whiteImage->GetPointData()->GetScalars()->SetTuple1(i, inval);
     }
+
+
 
     // polygonal data --> image stencil:
     vtkSmartPointer<vtkPolyDataToImageStencil> pol2stenc =
@@ -1528,5 +1529,34 @@ void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize)
   image->SetSpacing(spacing);
   image->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
 }
+
+void ImageEnlargeIsotropic(vtkImageData* image, double enlargement)
+{
+  double* bounds = image->GetBounds();
+  bounds[0] -= enlargement;
+  bounds[1] += enlargement;
+  bounds[2] -= enlargement;
+  bounds[3] += enlargement;
+  bounds[4] -= enlargement;
+  bounds[5] += enlargement;
+  
+  double* origin = image->GetOrigin();
+  origin[0] -= enlargement;
+  origin[1] -= enlargement;
+  origin[2] -= enlargement;
+  image->SetOrigin(origin);
+
+  double* spacing = image->GetSpacing();
+
+  int dims[3];
+  for (int i = 0; i < 3; i++)
+  {
+      dims[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
+  }
+  image->SetDimensions(dims);
+  image->SetSpacing(spacing);
+  image->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+}
 }//end namepace MiscMeshOperators
 }//end namepace MSML
+
