@@ -3,6 +3,9 @@
 .metadata
 .idea/
 .project
+.settings
+.pydevproject
+.project
 dist
 build/
 cbuild/
@@ -16,3 +19,5 @@ examples
 operators/bin
 src/msml/envconfig.py
 testdata
+.pydevproject
+.project
