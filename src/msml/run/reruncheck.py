@@ -61,9 +61,11 @@ class ReRunCheck(object):
         def mtime(filename):
             return os.stat(filename).st_mtime
 
+        if not output_file:
+            return False
 
         if not self.has_entry(task_id):
-            return False
+            r = False
 
         input_times = {k: mtime(k) for k in input_files}
 
@@ -79,9 +81,9 @@ class ReRunCheck(object):
             younger = all(map(lambda a: a <= output_time, input_times.values()))
 
             _, old_args, _ = self.get(task_id)
-            changes = old_args == arguments
+            nochanges = old_args == arguments
 
-            r = not younger and changes
+            r = younger and nochanges
 
         self.store(task_id, input_times, arguments, output_file)
         return r

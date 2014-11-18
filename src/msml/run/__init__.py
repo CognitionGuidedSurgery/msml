@@ -158,6 +158,8 @@ class LinearSequenceExecutor(AbstractExecutor):
 
         buckets = self._prepare()
 
+        self.rerun_check = ReRunCheck(path("."))
+
         for bucket in buckets:
             for node in bucket:
                 if isinstance(node, Task):
@@ -181,7 +183,8 @@ class LinearSequenceExecutor(AbstractExecutor):
             ExecutorsHelper.execute_variable(self._memory, node))
 
     def _execute_operator_task(self, task):
-        new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        #new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        new = ExecutorsHelper.execute_operator_task_if_needed(self.rerun_check, self._memory, task)
         self._memory.update(new)
 
 
@@ -404,20 +407,27 @@ class ExecutorsHelper(object):
     @staticmethod
     def execute_operator_task_if_needed(checker, memory, task):
         assert isinstance(checker, ReRunCheck)
-
         kwargs = ExecutorsHelper.gather_arguments(memory, task)
 
-        input_files = [kwargs[ifile] for ifile in task.operator.input_names()]
-        output_files = task.operator.get_targets()
-
-        if checker.check(task.id, input_files, kwargs, output_files[0]):
-            log.info('Omitting execution of operator %s', task.id)
-            result = checker.get_last_result(task.id)
-        else:
-            log.info('Executing operator of task %s with arguments %r', task, kwargs)
+        #quick shortcut for converter tasks
+        if task.id.startswith("converter_task_"):
             result = task.operator(**kwargs)
-            checker.set_last_result(task.id, result)
-            log.info('--Executing operator of task %s done', task.id)
+        else:
+            input_files = [kwargs[ifile] for ifile in task.operator.input_names()]
+            try:
+                output_files = task.operator.get_targets()[0]
+                output_files = kwargs[output_files]
+            except:
+                output_files = None
+
+            if checker.check(task.id, input_files, kwargs, output_files):
+                log.info('Omitting execution of operator %s', task.id)
+                result = checker.get_last_result(task.id)
+            else:
+                log.info('Executing operator of task %s with arguments %r', task, kwargs)
+                result = task.operator(**kwargs)
+                checker.set_last_result(task.id, result)
+                log.info('--Executing operator of task %s done', task.id)
 
         return {task.id : result}
 
