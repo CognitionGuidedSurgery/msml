@@ -232,9 +232,9 @@ std::vector<std::string> LoadFileNames(std::string theFileListTxt)
 
 int main( int argc, char * argv[])
 {
-  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\files_CTV_2_sparse.txt");
+  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_mesh_mesh_deformed_mc_20141117_19_3_5_15_files.txt");
   //PostProcessingOperators::ImageWeightedSum(files, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_1.vti", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV1_sparse_summed.vti");
-  PostProcessingOperators::ImageWeightedSum(files, "----", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2_sparse_summed_test.vti");
+  PostProcessingOperators::ImageWeightedSum(files, "----", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_mesh_mesh_deformed_mc_20141117_19_3_5_15_summed.vti");
   return 0;
   TestPostProcessingOperators();
   
