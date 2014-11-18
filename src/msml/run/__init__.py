@@ -34,28 +34,30 @@
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-26"
 
+import abc
+
+from path import path
+
 from .memory import Memory
 from .GraphDotWriter import GraphDotWriter
-from path import path
 from ..model import *
 from ..generators import generate_task_id
 from ..exporter import Exporter
 from ..exceptions import *
 from .. import log
 from ..sorts import conversion
-import abc
-
 import msml.sortdef
+from .reruncheck import ReRunCheck
+
 
 __all__ = ['Executor', 'Memory',
            'build_graph', 'create_conversion_task',
            'get_python_conversion_operator', 'initialize_file_literals',
            'inject_implict_conversion',
            'GraphDotWriter', 'DefaultGraphBuilder',
-           #'MemoryError', 'MemoryTypeMismatchError',
+           # 'MemoryError', 'MemoryTypeMismatchError',
            #'MemoryVariableUnknownError',
            'LinearSequenceExecutor']
-
 
 
 class Executor(object):
@@ -116,6 +118,7 @@ class AbstractExecutor(Executor):
         if name not in self._memory:  # do not override
             self._memory[name] = value
 
+
 class LinearSequenceExecutor(AbstractExecutor):
     """ The LinearSequenceExecuter executes the given MSMLFile
     in one sequence with no parallelism in topological order.
@@ -156,6 +159,8 @@ class LinearSequenceExecutor(AbstractExecutor):
 
         buckets = self._prepare()
 
+        self.rerun_check = ReRunCheck(path("."))
+
         for bucket in buckets:
             for node in bucket:
                 if isinstance(node, Task):
@@ -179,7 +184,8 @@ class LinearSequenceExecutor(AbstractExecutor):
             ExecutorsHelper.execute_variable(self._memory, node))
 
     def _execute_operator_task(self, task):
-        new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        # new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        new = ExecutorsHelper.execute_operator_task_if_needed(self.rerun_check, self._memory, task)
         self._memory.update(new)
 
 
@@ -205,17 +211,18 @@ class PhaseExecutor(LinearSequenceExecutor):
         deactivates the execution of postprocessing
 
     """
+
     def __init__(self, msmlfile):
         super(PhaseExecutor, self).__init__(msmlfile)
-        self.pre_bucket =list()
-        self.var_bucket =list()
+        self.pre_bucket = list()
+        self.var_bucket = list()
         self.sim_bucket = list()
         self.post_bucket = list()
         self._prepared = False
 
 
     def _prepare(self):
-        buckets = super(PhaseExecutor,self)._prepare()
+        buckets = super(PhaseExecutor, self)._prepare()
 
         is_pre = True
 
@@ -257,9 +264,10 @@ class PhaseExecutor(LinearSequenceExecutor):
 
     def update_variable(self, name, value):
         log.info("Update variable %s := %r" % (name, value))
-        var = MSMLVariable(name, value = value)
+        var = MSMLVariable(name, value=value)
         self._memory.update(
             ExecutorsHelper.execute_variable(self._memory, var, True))
+
 
 class ParallelExecutor(AbstractExecutor):
     """The `ParallelExecutor` makes everything faster,
@@ -274,15 +282,16 @@ class ParallelExecutor(AbstractExecutor):
     :PaE.cores:
         select maximal parallel threads.
     """
+
     def run(self):
         """
 
         :return:
         """
 
-        kind = self.options.get('PaE.cores','thread')
+        kind = self.options.get('PaE.cores', 'thread')
         if kind == 'thread':
-            from  multiprocessing.pool import  ThreadPool as Pool
+            from  multiprocessing.pool import ThreadPool as Pool
         elif kind == 'process':
             from multiprocessing import Pool
         else:
@@ -290,6 +299,7 @@ class ParallelExecutor(AbstractExecutor):
             return self._memory
 
         import multiprocessing
+
         max_threads = self.options.get('PaE.cores', multiprocessing.cpu_count())
         pool = Pool(max_threads)
 
@@ -357,6 +367,7 @@ class ExecutorsHelper(object):
     """static methods needed by some executors
 
     """
+
     @staticmethod
     def render_exporter(executor, exporter):
         assert isinstance(exporter, Exporter)
@@ -390,7 +401,42 @@ class ExecutorsHelper(object):
         result = task.operator(**kwargs)
         log.info('--Executing operator of task %s done', task.id)
 
-        return {task.id : result}
+        return {task.id: result}
+
+        # if task.id in memory and isinstance(memory[task.id], dict):
+        # # converter case, only update the change values
+        #   self._memory[task.id].update(result)
+        # else:
+        #    # set the values into memory
+        #    self._memory[task.id] = result
+
+    @staticmethod
+    def execute_operator_task_if_needed(checker, memory, task):
+        assert isinstance(checker, ReRunCheck)
+        kwargs = ExecutorsHelper.gather_arguments(memory, task)
+        ExecutorsHelper.inject_target_filename(task, kwargs)
+
+        # quick shortcut for converter tasks
+        if task.id.startswith("converter_task_"):
+            result = task.operator(**kwargs)
+        else:
+            input_files = [kwargs[ifile] for ifile in task.operator.input_names()]
+            try:
+                output_files = task.operator.get_targets()[0]
+                output_files = kwargs[output_files]
+            except:
+                output_files = None
+
+            if checker.check(task.id, input_files, kwargs, output_files):
+                log.info('Omitting execution of operator %s', task.id)
+                result = checker.get_last_result(task.id)
+            else:
+                log.info('Executing operator of task %s with arguments %r', task, kwargs)
+                result = task.operator(**kwargs)
+                checker.set_last_result(task.id, result)
+                log.info('--Executing operator of task %s done', task.id)
+
+        return {task.id: result}
 
         # if task.id in memory and isinstance(memory[task.id], dict):
         #   # converter case, only update the change values
@@ -398,6 +444,15 @@ class ExecutorsHelper(object):
         # else:
         #    # set the values into memory
         #    self._memory[task.id] = result
+
+
+    @staticmethod
+    def inject_target_filename(task, kwargs):
+        output_targets = task.operator.get_targets()
+        for ot in output_targets:
+            if ot not in kwargs:
+                kwargs[ot] = "{task_id}_{name}".format(task_id=task.id, name=ot)
+                log.info("Output target generated of %s" % kwargs[ot])
 
     @staticmethod
     def gather_arguments(memory, task):
@@ -419,15 +474,16 @@ class ExecutorsHelper(object):
         return vals
 
 
-
 __EXECUTERS = {
-    'parallel' : ParallelExecutor,
+    'parallel': ParallelExecutor,
     'sequential': LinearSequenceExecutor,
-    'phase' : PhaseExecutor,
+    'phase': PhaseExecutor,
 }
+
 
 def get_known_executors():
     return __EXECUTERS.keys()
+
 
 def get_executor(name):
     return __EXECUTERS[name]
