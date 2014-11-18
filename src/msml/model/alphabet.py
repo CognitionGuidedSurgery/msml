@@ -411,6 +411,9 @@ class Operator(object):
         """execution of this operator, with the given arguments"""
         pass
 
+    def get_targets(self):
+        return [p.name for p in self.parameters.values()
+                if p.target]
 
     def validate(self):
         """validation of this operator

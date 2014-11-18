@@ -47,6 +47,8 @@ import abc
 
 import msml.sortdef
 
+from .reruncheck import ReRunCheck
+
 __all__ = ['Executor', 'Memory',
            'build_graph', 'create_conversion_task',
            'get_python_conversion_operator', 'initialize_file_literals',
@@ -398,6 +400,35 @@ class ExecutorsHelper(object):
         # else:
         #    # set the values into memory
         #    self._memory[task.id] = result
+
+    @staticmethod
+    def execute_operator_task_if_needed(checker, memory, task):
+        assert isinstance(checker, ReRunCheck)
+
+        kwargs = ExecutorsHelper.gather_arguments(memory, task)
+
+        input_files = [kwargs[ifile] for ifile in task.operator.input_names()]
+        output_files = task.operator.get_targets()
+
+        if checker.check(task.id, input_files, kwargs, output_files[0]):
+            log.info('Omitting execution of operator %s', task.id)
+            result = checker.get_last_result(task.id)
+        else:
+            log.info('Executing operator of task %s with arguments %r', task, kwargs)
+            result = task.operator(**kwargs)
+            checker.set_last_result(task.id, result)
+            log.info('--Executing operator of task %s done', task.id)
+
+        return {task.id : result}
+
+        # if task.id in memory and isinstance(memory[task.id], dict):
+        #   # converter case, only update the change values
+        #   self._memory[task.id].update(result)
+        # else:
+        #    # set the values into memory
+        #    self._memory[task.id] = result
+
+
 
     @staticmethod
     def gather_arguments(memory, task):
