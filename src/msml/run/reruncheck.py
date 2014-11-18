@@ -59,7 +59,10 @@ class ReRunCheck(object):
         """
 
         def mtime(filename):
-            return os.stat(filename).st_mtime
+            try:
+                return os.stat(filename).st_mtime
+            except:
+                return 0
 
         if not output_file:
             return False
