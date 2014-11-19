@@ -830,10 +830,10 @@ string ImageWeightedSum(std::vector<std::string> polydata, const char* reference
   {
     vtkSmartPointer<vtkImageData> curentVoxelImage = vtkSmartPointer<vtkImageData>::New();
     MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[i].c_str()), curentVoxelImage, 0, referenceGrid, true);
-    //debug//char buffer_i_string [10];
-    //debug//itoa (i, buffer_i_string, 10);
-    //debug//string firstImageFile = string(outfile) + "_voxels_" + string(buffer_i_string)  +".vtk";
-    //debug//IOHelper::VTKWriteImage(firstImageFile.c_str(), firstVoxelImage);
+    char buffer_i_string [10];
+    itoa (i, buffer_i_string, 10);
+    string curentVoxelImageFile = string(outfile) + "_voxels_" + string(buffer_i_string)  +".vtk";
+    IOHelper::VTKWriteImage(curentVoxelImageFile.c_str(), curentVoxelImage);
     sumFilter->AddInputData(curentVoxelImage);
     weights[i] = 1.0;
   }
