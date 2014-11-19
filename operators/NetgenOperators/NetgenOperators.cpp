@@ -118,7 +118,7 @@ bool RemeshSurface(const char* infile, const char* outfile )
 
 bool RemeshSurface(vtkPolyData* inputMesh, vtkPolyData* outputMesh )
 {
-	cout << "Netgen (nglib) STL Testing!" << endl;
+	cout << "Netgen (nglib) STL meshing "  << endl;
 
 
 	// Initialise the Netgen Core library
@@ -288,7 +288,7 @@ bool RemeshSurface(vtkPolyData* inputMesh, vtkPolyData* outputMesh )
    std::cout<<"ne is "<<ne<<endl;
 	for(int iter=0; iter<ne; iter++)
 	{
-		std::cout<<"Getting cell no "<<iter<<endl;
+//		std::cout<<"Getting cell no "<<iter<<endl;
 		Ng_GetSurfaceElement(mesh, iter+1, currentElementPoints);
 
 		for(int nodeIter=0; nodeIter<numberOfNodes; nodeIter++)
@@ -296,7 +296,7 @@ bool RemeshSurface(vtkPolyData* inputMesh, vtkPolyData* outputMesh )
 
 			currentVTKElementPoints[nodeIter] = currentElementPoints[nodeIter]-1;
 		 }
-		std::cout<<"Inserting cell no "<<iter<<endl;
+//		std::cout<<"Inserting cell no "<<iter<<endl;
 		 theCellsOutput->InsertNextCell(numberOfNodes,currentVTKElementPoints);
 	}
 
@@ -306,7 +306,7 @@ bool RemeshSurface(vtkPolyData* inputMesh, vtkPolyData* outputMesh )
 	  cout << "elements saved to vtk " << outputMesh->GetNumberOfPolys() << endl;
 	  cout << "points saved to vtk " << outputMesh->GetNumberOfPoints() << endl;
 
-	  Ng_SaveMesh(mesh,"/home/suwelack/Beam97Surface-remeshed.vol");
+//	  Ng_SaveMesh(mesh,"/home/suwelack/Beam97Surface-remeshed.vol");
 
 	delete [] currentElementPoints;
 	delete stl_geom;
