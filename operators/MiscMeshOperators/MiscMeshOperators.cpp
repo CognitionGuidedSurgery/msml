@@ -102,6 +102,11 @@
 #include <vtkWindowedSincPolyDataFilter.h>
 #include <vtkPolyDataMapper.h>
 
+#include <vtkImageDilateErode3D.h>
+#include <vtkImageThreshold.h>
+
+
+
 using namespace std;
 
 namespace MSML {
@@ -514,6 +519,43 @@ bool DebugPrint(vector<int> to_print)
 		cerr<<*it<<" ";
 	}
 	cerr<<std::endl;
+	return true;
+}
+
+/*
+  Morph given image cube file using this vtk filter:
+  http://www.vtk.org/doc/nightly/html/classvtkImageDilateErode3D.html#details
+
+  toDilate specifies image value to be dilated
+  toErode specifies image value to be eroded
+  morph_kernel specifies the kernel size in x,y,z
+
+  output is a vti-image
+*/
+bool MorphCube(const char *infile, const char *outfile, double toDilate, double toErode,
+					std::vector<double> morph_kernel)
+{
+	//fail if morph_kernel does not contain exactly three values
+	if(morph_kernel.size()!=3)
+	{
+		log_error()<<"Exactly three values are needed for kernel size!"<<std::endl;
+		return false;
+	}
+	//load image
+	vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(infile);	
+
+	//set up the morpher and morph image
+	vtkSmartPointer<vtkImageDilateErode3D> dilateErode =
+    vtkSmartPointer<vtkImageDilateErode3D>::New();
+	dilateErode->SetInputData(image);
+	dilateErode->SetDilateValue(toDilate);
+	dilateErode->SetErodeValue(toErode);
+	dilateErode->SetKernelSize(morph_kernel[0],morph_kernel[1],morph_kernel[2]);
+	dilateErode->ReleaseDataFlagOff();
+	dilateErode->Update();
+
+	//save image
+	IOHelper::VTKWriteImage(outfile,dilateErode->GetOutput());
 	return true;
 }
 

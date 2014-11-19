@@ -436,7 +436,16 @@ MiscMeshOperators
 
     :returns:
     :rtype:
+	
+.. cpp:function:: bool MorphCube(const char *infile, const char *outfile, double toDilate, double toErode, std::vector<double> morph_kernel)
+	:param const char *infile:
+	:param const char *outfile:
+	:param double toDilate:
+	:param double toErode:
+	:param std::vector<double> morph_kernel:
 
+	:returns:
+	:rtype:
 */
 
 
@@ -521,8 +530,13 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
         LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
+
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
         LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
+
+        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);		
+		LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
+			                       double toErode, std::vector<double> morph_kernel);
 
     } //end namespace MiscMeshOperators
 } // end namespace MSML

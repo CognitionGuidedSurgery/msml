@@ -1,0 +1,38 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="MorphCube">
+    <runtime>
+        <python module="msml.ext.misc" function="MorphCube" />
+    </runtime>
+
+    <input>
+        <arg name="image" logical="segmentationImage" physical="VTI" />
+    </input>  
+	
+    <parameters>	
+		<arg name="morphed_image" logical="segmentationImage" physical="str">
+			<meta key="doc">
+				The morphed image.
+			</meta>
+		</arg>
+        <arg name="toDilate" physical="float" >
+            <meta key="doc">
+				The image value to dilate.
+            </meta>
+        </arg>
+        <arg name="toErode" physical="float" >
+            <meta key="doc">
+				The image value to erode.
+            </meta>
+        </arg>
+        <arg name="morph_kernel" physical="vector.float" >
+            <meta key="doc">
+				The kernel size used for morphing. 
+				Must contain exactly three values (x,y,z).
+            </meta>
+        </arg>
+	</parameters>
+	<output>
+        <arg name="morphed_image" logical="segmentationImage" physical="str" />
+    </output>
+</msml:operator>
