@@ -485,7 +485,8 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-        
+        log.debug("Parameter: %s" % self.acceptable_names() )
+        log.debug("Args: %s" % args)
         
         if sum('*' in str(arg) for arg in args):        
                 r = executeOperatorSequence(self, args, self.settings['seq_parallel']) 

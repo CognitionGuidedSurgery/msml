@@ -494,8 +494,8 @@ namespace MSML {
         LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
         LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
 
-        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid);
-        LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, const char* referenceCoordinateGrid);
+        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid, bool disableFillHole);
+        LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, const char* referenceCoordinateGrid, bool disableFillHole);
 
         LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile);
         LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile );
@@ -522,6 +522,7 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
+        LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
 
     } //end namespace MiscMeshOperators
 } // end namespace MSML

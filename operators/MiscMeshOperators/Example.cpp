@@ -192,7 +192,7 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str());
+    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str(), false);
   }
 }
 
@@ -213,8 +213,39 @@ void TestPostProcessingOperators()
       (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "", 10);
 }
 
+std::vector<std::string> LoadFileNames(std::string theFileListTxt)
+{
+  std::vector<std::string> fileNames;
+	std::ifstream fileStream;
+	fileStream.open(theFileListTxt.c_str(), std::ifstream::in);
+  if (fileStream)
+  {
+	  std::string line;  
+	  while(getline(fileStream,line))
+	  {
+      fileNames.push_back(line);
+	  }
+	  fileStream.close();
+  }
+  return fileNames;
+}
+void TestImageSumPrivateData() //TODO: Add test with open accesss data.
+{
+  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_mesh_mesh_deformed_mc_20141117_19_3_5_15_files.txt");
+  files.resize(5);
+  std::string refCube = "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_refCube_enlarged.vti";
+  vtkSmartPointer<vtkPolyData> refMesh = IOHelper::VTKReadPolyData(files[0].c_str());
+  vtkSmartPointer<vtkImageData> firstImage = MiscMeshOperators::ImageCreateWithMesh(refMesh, 50);
+  MiscMeshOperators::ImageEnlargeIsotropic(firstImage, 50);
+  IOHelper::VTKWriteImage(refCube.c_str(), firstImage);
+
+  PostProcessingOperators::ImageWeightedSum(files, refCube.c_str(), true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_mesh_mesh_deformed_mc_20141117_19_3_5_15_summed_TEST_KILLME.vti");
+}
+
 int main( int argc, char * argv[])
 {
+  TestImageSumPrivateData();
+  return 0;
   TestPostProcessingOperators();
   
   TestMiscMeshoperators::TestConvertLinearToQuadraticTetrahedralMesh();
