@@ -6,7 +6,7 @@ PROJECT(AVCDOperators)
 option(MODULES_AVCDOperators "Should AVCDOperators be built?" "ON")
 
 IF(NOT MODULES_AVCDOperators)
-  MESSAGE(STATUS "MiscExtOperators disabled")
+  MESSAGE(STATUS "AVCDOperators disabled")
   RETURN()
 ENDIF()
 
@@ -23,7 +23,7 @@ ENDIF()
 # Guard
 
 IF(NOT MODULES_AVCDOperators)
-  MESSAGE("MiscMeshOperators disabled by user!")
+  MESSAGE("AVCDOperators disabled by user!")
   RETURN()
 ENDIF()
 
