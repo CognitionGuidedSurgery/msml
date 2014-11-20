@@ -90,6 +90,7 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkImageData> CTXReadImage(const char* filename);
         LIBRARY_API std::map<std::string, std::string> ReadTextFileToMap(std::string file, char delim);
         LIBRARY_API vector<pair<int, string> >* getAllFilesOfSeries(const char* filename);
+        LIBRARY_API std::vector< std::string > getAllFilesByMask(const char* filename);
  
         LIBRARY_API bool VTKWriteImage(const char* filename, vtkImageData* image, bool asciiMode);
         LIBRARY_API bool VTKWriteUnstructuredGrid(const char* filename, vtkUnstructuredGrid* grid, bool asciiMode);

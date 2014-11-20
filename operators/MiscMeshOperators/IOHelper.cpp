@@ -29,6 +29,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp> 
+#include <boost/regex.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -407,6 +409,8 @@ bool IOHelper::VTKWritePolyData(const char* filename, vtkPolyData* polyData, boo
 }
 
 
+
+
 //find all files with the same name (without digit postfix) and any digit postfix.
 //TODO: move to Python
 vector<pair<int, string> >* IOHelper::getAllFilesOfSeries(const char* filename)
@@ -439,6 +443,35 @@ vector<pair<int, string> >* IOHelper::getAllFilesOfSeries(const char* filename)
     }
 
     return aReturn;
+}
+
+std::vector< std::string > IOHelper::getAllFilesByMask(const char* filename)
+{
+  boost::filesystem::path aPath(filename);
+
+  std::string target_path( aPath.parent_path().string() );
+  std::string filter =  aPath.filename().string();
+  boost::replace_all(filter, "*", ".*\\");
+
+  const boost::regex my_filter( filter );
+
+  std::vector< std::string > all_matching_files;
+
+  boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+  for( boost::filesystem::directory_iterator i( target_path ); i != end_itr; ++i )
+  {
+      // Skip if not a file
+      if( !boost::filesystem::is_regular_file( i->status() ) ) continue;
+
+      boost::smatch what;
+
+      // Skip if no match
+      if( !boost::regex_match( i->path().filename().string(), what, my_filter ) ) continue;
+
+      // File matches, store it
+      all_matching_files.push_back( i->path().string() );
+  }
+  return all_matching_files;
 }
 
 
