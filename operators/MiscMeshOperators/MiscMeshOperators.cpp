@@ -947,7 +947,7 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid, bool disableFillHoles)
+std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
                 << "Resolution of the longest bound is "<<resolution<< std::endl;
@@ -957,14 +957,14 @@ std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, i
     vtkSmartPointer<vtkImageData> outputImage =
         vtkSmartPointer<vtkImageData>::New();
 
-    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, referenceCoordinateGrid, disableFillHoles);
+    bool result = VoxelizeSurfaceMesh(inputMesh, outputImage, resolution, isotropicVoxelSize, referenceCoordinateGrid, disableFillHoles, additionalIsotropicMargin);
 
     IOHelper::VTKWriteImage(outfile, outputImage);
 
     return string(outfile);
 }
 
-bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid, bool disableFillHoles)
+bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
     vtkSmartPointer<vtkImageData> whiteImage;
     //Method A: Generate bounds, spacing and origine based on mesh:
@@ -973,11 +973,19 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
       whiteImage = ImageCreateWithMesh(inputMesh, resolution);
     }
 
+    else if(isotropicVoxelSize>0)
+    {
+      whiteImage = ImageCreateWithMesh(inputMesh, 100);
+      ImageChangeVoxelSize(whiteImage, isotropicVoxelSize);
+    }
+
     //Method B: Get bounds, spacing and origin from given grid:
-    else
+    else 
     {
       whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
     }
+    if (additionalIsotropicMargin!=0)
+      ImageEnlargeIsotropic(whiteImage, additionalIsotropicMargin);
 
 #if VTK_MAJOR_VERSION <= 5
     whiteImage->SetScalarTypeToUnsignedChar();
@@ -1030,7 +1038,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     unsigned char outval = 0;
     vtkIdType count = whiteImage->GetNumberOfPoints();
 
-    for (vtkIdType i = 0; i < count; ++i)
+    for (vtkIdType i = 0; i < count; ++i) //TODO: speed up!
     {
         whiteImage->GetPointData()->GetScalars()->SetTuple1(i, inval);
     }

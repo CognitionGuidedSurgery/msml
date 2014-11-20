@@ -192,7 +192,7 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str(), false);
+    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
   }
 }
 
@@ -231,15 +231,7 @@ std::vector<std::string> LoadFileNames(std::string theFileListTxt)
 }
 void TestImageSumPrivateData() //TODO: Add test with open accesss data.
 {
-  std::vector<std::string> files = LoadFileNames("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_mesh_mesh_deformed_mc_20141117_19_3_5_15_files.txt");
-  files.resize(5);
-  std::string refCube = "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_refCube_enlarged.vti";
-  vtkSmartPointer<vtkPolyData> refMesh = IOHelper::VTKReadPolyData(files[0].c_str());
-  vtkSmartPointer<vtkImageData> firstImage = MiscMeshOperators::ImageCreateWithMesh(refMesh, 50);
-  MiscMeshOperators::ImageEnlargeIsotropic(firstImage, 50);
-  IOHelper::VTKWriteImage(refCube.c_str(), firstImage);
-
-  PostProcessingOperators::ImageWeightedSum(files, refCube.c_str(), true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\CTV_2B_mesh_mesh_deformed_mc_20141117_19_3_5_15_summed_TEST_KILLME.vti");
+  PostProcessingOperators::ImageWeightedSum("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\sum_\\CTV_1*.vtk", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\sum_\\CTV_SUMMED_1_.vtk");
 }
 
 int main( int argc, char * argv[])

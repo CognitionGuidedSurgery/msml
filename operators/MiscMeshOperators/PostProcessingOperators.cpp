@@ -810,34 +810,21 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
 
 }
 
-string ImageWeightedSum(std::vector<std::string> polydata, const char* referenceGrid, bool normalize, const char* outfile)
+string ImageWeightedSum(const char* polydataFilePattern, bool normalize, const char* outfile)
 {
+  std::vector<std::string> polydata = IOHelper::getAllFilesByMask(polydataFilePattern);
+
   int numer_of_images = polydata.size();
   std::vector<double> weights(numer_of_images);
   vtkSmartPointer<vtkImageWeightedSum> sumFilter = vtkSmartPointer<vtkImageWeightedSum>::New();
-  vtkSmartPointer<vtkImageData> firstVoxelImage;
-  
-  //first iteration
-  firstVoxelImage = vtkSmartPointer<vtkImageData>::New();
-  MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[0].c_str()), firstVoxelImage, 0, referenceGrid, true);
-  //debug//string firstImageFile = string(outfile) + "_voxels_0" +".vtk";
-  //debug//IOHelper::VTKWriteImage(firstImageFile.c_str(), firstVoxelImage);
-  __AddInput(sumFilter,firstVoxelImage);
-  weights[0] = 1.0;
+  vtkSmartPointer<vtkImageData> curentVoxelImage;
 
-  //second..Nth iteration
-  for (int i=1; i<numer_of_images;i++)
+  for (int i=0; i<numer_of_images;i++)
   {
-    vtkSmartPointer<vtkImageData> curentVoxelImage = vtkSmartPointer<vtkImageData>::New();
-    MiscMeshOperators::VoxelizeSurfaceMesh(IOHelper::VTKReadPolyData(polydata[i].c_str()), curentVoxelImage, 0, referenceGrid, true);
-    //debug//char buffer_i_string [10];
-    //debug//itoa (i, buffer_i_string, 10);
-    //debug//string firstImageFile = string(outfile) + "_voxels_" + string(buffer_i_string)  +".vtk";
-    //debug//IOHelper::VTKWriteImage(firstImageFile.c_str(), firstVoxelImage);
+    curentVoxelImage = IOHelper::VTKReadImage(polydata[i].c_str());
     __AddInput(sumFilter,curentVoxelImage);
     weights[i] = 1.0;
   }
-  
   
   vtkSmartPointer<vtkDoubleArray> vtkWeights = vtkDoubleArray::New();
   vtkWeights->SetArray(&weights[0], numer_of_images, 1);
@@ -845,7 +832,6 @@ string ImageWeightedSum(std::vector<std::string> polydata, const char* reference
   sumFilter->Update();
   IOHelper::VTKWriteImage(outfile, sumFilter->GetOutput());
   return outfile;
-
 }
 }
 }
