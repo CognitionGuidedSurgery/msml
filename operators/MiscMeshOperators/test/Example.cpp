@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE( TestVoxelizeSurfaceMeshPython )
     MiscMeshOperators::VoxelizeSurfaceMeshPython(
         INPUT("/bunny_polydata.vtk"),
         OUTPUT("/TestVoxelizeSurfaceMeshPython.vtk"),
-        100, "", false);
+        100, 0, "", false, 0);
 }
 
 BOOST_AUTO_TEST_CASE( TestPostProcessingOperators)

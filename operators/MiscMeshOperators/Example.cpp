@@ -192,7 +192,7 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str(), false);
+    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
   }
 }
 
