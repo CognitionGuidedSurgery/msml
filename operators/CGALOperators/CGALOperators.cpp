@@ -85,8 +85,6 @@ typedef CGAL::Point_3<K> Point;
 using namespace CGAL::parameters;
 
 //VTK includes
-#include <vtkXMLGenericDataObjectReader.h>
-#include <vtkGenericDataObjectReader.h>
 #include <vtkPolyData.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
@@ -94,7 +92,6 @@ using namespace CGAL::parameters;
 #include <vtkUnstructuredGrid.h>
 #include <vtkImageReader.h>
 #include <vtkImageData.h>
-#include <vtkXMLImageDataReader.h>
 #include <vtkImageCast.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
