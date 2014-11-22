@@ -48,7 +48,7 @@ if __name__ == '__main__':
         args = { 'p':p, 'msml_file':msml_file}
         args_list.append(dict(args)) #copy
     
-    #createAndRunSimulation(args_list)
+    #createAndRunSimulation(args_list[0])
     
     num_of_workers =   multiprocessing.cpu_count()
     pool = multiprocessing.Pool(num_of_workers-1)
