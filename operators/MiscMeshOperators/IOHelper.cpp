@@ -240,10 +240,7 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
       aReturn =  reader->GetPolyDataOutput();
     else 
     {
-      log_error() << filePath << "  is not a .ply poly data grid. Trying to use MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(..)" << endl;
-      vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
-      MiscMeshOperators::ExtractSurfaceMesh(IOHelper::VTKReadUnstructuredGrid(filename), poly);
-      aReturn = poly;
+      log_error() << filePath << "  is not a .ply poly data grid." << endl;
     }
   }
   return aReturn;
