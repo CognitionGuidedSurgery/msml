@@ -21,7 +21,6 @@
 
 #include "../MSML_Operators.h"
 #include <vtkPolyData.h>
-#include <vtkUnstructuredGrid.h>
 
 /*MSMLDOC
 
@@ -36,7 +35,7 @@ CGALOperators
 
 
 namespace MSML {
- namespace  CGALOperators {							 
-	 LIBRARY_API bool ConvertVTKPolydataToCGALPolyhedron(vtkPolyData *inputMesh);
-  }
+    namespace  CGALOperators {
+        LIBRARY_API bool ConvertVTKPolydataToCGALPolyhedron(vtkPolyData *inputMesh);
+    }
 }

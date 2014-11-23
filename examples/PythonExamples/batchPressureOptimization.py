@@ -45,7 +45,7 @@ def f_to_minimize(p_array):
     l = Lungs(msml_file, p)
     volume = l() 
     return abs(volume- 8400000)
-
+lost
 msml_file = os.path.abspath('../CGALi2vLungs/Lungs_new.xml')
 
 

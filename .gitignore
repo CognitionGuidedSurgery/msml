@@ -20,7 +20,4 @@ examples
 
 operators/bin/
 operators/CMade/
-
-
 src/msml/envconfig.py
-testdata
