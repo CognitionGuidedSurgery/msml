@@ -33,7 +33,7 @@
             <material>
                 <region id="Material" indices="${bodyToIndexGroup}">
                     <linearElasticMaterial youngModulus="80000" poissonRatio="0.35"/>
-                    <mass name="abc" massDensity="1000"/>
+                    <mass name="abc" massDensity="0.001"/>
                 </region>
             </material>
 
