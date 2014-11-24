@@ -297,7 +297,10 @@ LIBRARY_API void ApplyDVF(vtkImageData* refImage, vtkImageData* DVF, vtkImageDat
 LIBRARY_API std::string TransformMeshBarycentricPython(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance);
 LIBRARY_API void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* out_mesh, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance);
 
-  
+LIBRARY_API std::string TransformSurfaceBarycentricPython(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance);
+LIBRARY_API void TransformSurfaceBarycentric(vtkPolyData* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkPolyData* out_mesh, float interpolateOutsideDistance);
+
+LIBRARY_API std::string ImageWeightedSum(const char* polydataFilePattern, bool normalize, const char* outfile);
 
 // member access
 

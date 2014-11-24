@@ -28,28 +28,16 @@
 
 
 // stuff to define the mesh
-#include <vcg/simplex/vertex/base.h>
-#include <vcg/simplex/face/base.h>
-#include <vcg/simplex/edge/base.h>
-#include <vcg/complex/trimesh/base.h>
-#include <vcg/complex/trimesh/append.h>
-
-#include <vcg/math/quadric.h>
-#include <vcg/complex/trimesh/clean.h>
+#include <vcg/complex/complex.h>
 
 // io
 #include <wrap/io_trimesh/import.h>
-#include <wrap/io_trimesh/export_ply.h>
-#include <wrap/io_trimesh/export_stl.h>
-#include <wrap/io_trimesh/export_obj.h>
+#include <wrap/io_trimesh/export.h>
 
-// update
-#include <vcg/complex/trimesh/update/topology.h>
 
 // local optimization
-#include <vcg/complex/local_optimization.h>
-#include <vcg/complex/local_optimization/tri_edge_collapse_quadric.h>
-
+#include <vcg/complex/algorithms/local_optimization.h>
+#include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
 
 using namespace vcg;
 using namespace tri;
@@ -58,6 +46,22 @@ using namespace std;
 namespace MSML
 {
 
+
+/**********************************************************
+Mesh Classes for Quadric Edge collapse based simplification
+
+For edge collpases we need verteses with:
+- V->F adjacency
+- per vertex incremental mark
+- per vertex Normal
+
+
+Moreover for using a quadric based collapse the vertex class
+must have also a Quadric member Q();
+Otherwise the user have to provide an helper function object
+to recover the quadric.
+
+******************************************************/
 // The class prototypes.
 class MyVertex;
 class MyEdge;
@@ -77,49 +81,28 @@ private:
   math::Quadric<double> q;
   };
 
-class DummyType;
-class MyEdge : public Edge<MyUsedTypes,edge::VertexRef> {
-public:
-  inline MyEdge() {};
-  inline MyEdge( MyVertex * v0, MyVertex * v1){V(0) = v0; V(1) = v1; };
-	  static inline MyEdge OrderedEdge(MyVertex* v0,MyVertex* v1){
-   if(v0<v1) return MyEdge(v0,v1);
-   else return MyEdge(v1,v0);
-  }
+class MyEdge : public Edge< MyUsedTypes> {};
 
-//  inline MyEdge( Edge<MyEdge,MyVertex> &e):Edge<MyEdge,MyVertex>(e){};
-};
-
+typedef BasicVertexPair<MyVertex> VertexPair;
 
 class MyFace    : public Face< MyUsedTypes,
   face::VFAdj,
   face::VertexRef,
   face::BitFlags > {};
 
-/// the main mesh class
+// the main mesh class
 class MyMesh    : public vcg::tri::TriMesh<std::vector<MyVertex>, std::vector<MyFace> > {};
 
 
-class MyTriEdgeCollapse: public vcg::tri::TriEdgeCollapseQuadric< MyMesh, MyTriEdgeCollapse, QInfoStandard<MyVertex>  > {
-						public:
-						typedef  vcg::tri::TriEdgeCollapseQuadric< MyMesh,  MyTriEdgeCollapse, QInfoStandard<MyVertex>  > TECQ;
+class MyTriEdgeCollapse: public vcg::tri::TriEdgeCollapseQuadric< MyMesh, VertexPair, MyTriEdgeCollapse, QInfoStandard<MyVertex>  > {
+            public:
+            typedef  vcg::tri::TriEdgeCollapseQuadric< MyMesh,  VertexPair, MyTriEdgeCollapse, QInfoStandard<MyVertex>  > TECQ;
             typedef  MyMesh::VertexType::EdgeType EdgeType;
-            inline MyTriEdgeCollapse(  const EdgeType &p, int i) :TECQ(p,i){}
+            inline MyTriEdgeCollapse(  const VertexPair &p, int i, BaseParameterClass *pp) :TECQ(p,i,pp){}
 };
 
 
-// ****************************************************************************
-// Constructor / Destructor
-// ****************************************************************************
-VCGOperators::VCGOperators()
-{
 
-}
-
-VCGOperators::~VCGOperators()
-{
-	//cleanup here
-}
 
 // ****************************************************************************
 // Methods
@@ -152,8 +135,8 @@ bool VCGOperators::CoarseSurfaceMesh(const char* infile, const char* outfile, un
 		}
 		printf("mesh loaded %d %d \n",referenceMeshVCG.vn,referenceMeshVCG.fn);
 
-		TriEdgeCollapseQuadricParameter &qparams = MyTriEdgeCollapse::Params() ;
-		MyTriEdgeCollapse::SetDefaultParams();
+		TriEdgeCollapseQuadricParameter qparams;// = MyTriEdgeCollapse::Params() ;
+		//MyTriEdgeCollapse::SetDefaultParams();
 		qparams.QualityThr  =.3;
 		float TargetError=numeric_limits<float>::max();
 		bool CleaningFlag =true;
@@ -190,7 +173,7 @@ bool VCGOperators::CoarseSurfaceMesh(const char* infile, const char* outfile, un
 		vcg::tri::UpdateBounding<MyMesh>::Box(currentMeshVCG);
 
 		// decimator initialization
-		vcg::LocalOptimization<MyMesh> DeciSession(currentMeshVCG);
+		vcg::LocalOptimization<MyMesh> DeciSession(currentMeshVCG, &qparams);
 
 		int t1=clock();
 		DeciSession.Init<MyTriEdgeCollapse >();
@@ -211,5 +194,6 @@ bool VCGOperators::CoarseSurfaceMesh(const char* infile, const char* outfile, un
 		vcg::tri::io::ExporterSTL<MyMesh>::Save(currentMeshVCG,outfile);
 
 }
+
 
 }

@@ -69,3 +69,33 @@ TARGET_LINK_LIBRARIES(MiscMeshOperatorsExample
   ${MiscMeshOperators_LIBS}
 )
 
+############################################################################
+## Testing
+
+#FILE( GLOB_RECURSE  TEST_FILES test/*)
+
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
+
+
+ADD_EXECUTABLE(FirstTest test/first_test.cpp)
+TARGET_LINK_LIBRARIES(FirstTest
+	MiscMeshOperators
+	${MiscMeshOperators_LIBS}	
+	${Boost_UNIT_TEST_FRAMEWORK_LIBS}
+)
+
+
+ADD_TEST(FirstTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/FirstTest)
+ADD_EXECUTABLE(MiscMeshOperatorsTest test/Example.cpp)
+TARGET_LINK_LIBRARIES(MiscMeshOperatorsTest
+	MiscMeshOperators
+	${MiscMeshOperators_LIBS}	
+	${Boost_UNIT_TEST_FRAMEWORK_LIBS}
+)
+ADD_TEST(MiscMeshOperatorsTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/MiscMeshOperatorsTest)
+
+	
+
+
+
+

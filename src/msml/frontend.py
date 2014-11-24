@@ -245,6 +245,8 @@ class App(object):
         self._executor_options = execution_options or options.get('executor_options', {})
         self._exporter_options = exporter_options or options.get('exporter_options', {})
 
+        self._output_dir = output_dir or options.get('output_folder', None)
+
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
         self.init_msml_system()
