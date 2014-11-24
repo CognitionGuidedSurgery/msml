@@ -60,8 +60,6 @@
 #include "vtkKdTreePointLocator.h"
 #include "vtkVoxelModeller.h"
 #include "vtkPNGWriter.h"
-#include <vtkPolyDataReader.h>
-
 
 #include <vtkDataSetSurfaceFilter.h>
 #include "vtkLongLongArray.h"
@@ -570,15 +568,10 @@ bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
 {		
 	log_debug()<<"SmoothMesh"<<std::endl;
 
-	//read surface
-	vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile);
-    reader->Update();
-
 	//set up the smoother
 	vtkSmartPointer<vtkWindowedSincPolyDataFilter> smoother =
     vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
-	__SetInput(smoother,reader->GetOutput());
+	__SetInput(smoother, IOHelper::VTKReadPolyData(infile));
 	smoother->SetNumberOfIterations(iterations);
 
 	smoother->SetBoundarySmoothing(boundary_smoothing);
