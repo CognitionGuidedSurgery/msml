@@ -12,6 +12,8 @@
         <MarchingCube id="aMarchingCube" image="${voxelizer}" out_filename="BunnyVoxelImageMarching.vtk" isoValue="255.0" />
         <CalculateSubdivisionSurface id="aCalculateSubdivisionSurface" surfaceMesh="${aMarchingCube}" meshFilename="BunnyVoxelImageMarchingSub.vtk" subdivisions="1" method="Loop" />
         
+        <SmoothMeshPython id="aSmoothMeshPython" mesh="${aMarchingCube}" surfaceMeshFilename="smoothed.vtk" iterations="10"  feature_angle="10" pass_band="0.001" 
+            boundary_smoothing="false" feature_edge_smoothing="false" non_manifold_smoothing="false" normalized_coordinates="true" />
         
         <SimplificateMesh id="aSimplificateMesh" inputMeshFile="${aMarchingCube}" outputMeshFile="BunnyVoxelImageMarchingSimpl.vtk" stopnr="1000" />
 
