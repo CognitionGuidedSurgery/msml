@@ -62,7 +62,8 @@ FIND_PACKAGE(Boost COMPONENTS
 	program_options 
 	unit_test_framework 
 	filesystem iostreams
-    system
+	regex
+        system
 	iostreams
 	REQUIRED)
 
