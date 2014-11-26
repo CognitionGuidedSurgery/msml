@@ -255,7 +255,11 @@ class Slot(object):
                  required=True, default=None,
                  meta=dict(), parent=None):
         if physical is None:
-            log.critical("Slot %s does not have a physical type defined. This can cause conversion errors.", name)
+            pname = None
+            if parent:
+                pname = parent.name
+            log.critical("Slot %s in parent %s does not have a physical type defined. "
+                         "This can cause conversion errors.", name, pname)
 
         self.name = name
         """slot name
