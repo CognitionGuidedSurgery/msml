@@ -1,0 +1,31 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="CalculateSubdivisionSurface">
+
+	<runtime>
+		<python module="msml.ext.cgal" function="CalculateSubdivisionSurface" />
+	</runtime>
+	<input>
+        <arg name="surfaceMesh" logical="triangularMesh" physical="file.vtk"/>  
+    </input>
+
+    <output>
+        <arg name="mesh" logical="linearTetMesh" physical="file.vtk"/>
+    </output>
+
+    <parameters>
+		<arg name="meshFilename" physical="str"/>
+        <arg name="subdivisions" physical="int">
+            <meta key="doc">
+                Set number of subdivisions to calculate
+            </meta>
+        </arg>       
+		<arg name="method" physical="str">
+			<meta key="doc">
+				The method to use for subdivision.
+				Valid methods are: Catmull-Clark, Loop, DooSabin and sqrt3
+				Operator will exit if invalid method name is given!
+			</meta>
+		</arg>        
+    </parameters>
+</msml:operator>

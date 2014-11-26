@@ -1,0 +1,29 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+
+
+
+    <workflow>
+        <stl2vtk id="vtkConverter" STLMesh="BunnyXL.stl" vtkFilename="BunnySurface.vtk"/>
+        <voxelize id="voxelizer" surfaceMesh="${vtkConverter}" imageFilename="BunnyVoxelImage.vti" resolution="250"/>
+
+        <MarchingCube id="aMarchingCube" image="${voxelizer}" out_filename="BunnyVoxelImageMarching.vtk" isoValue="255.0" />
+        <CalculateSubdivisionSurface id="aCalculateSubdivisionSurface" surfaceMesh="${aMarchingCube}" meshFilename="BunnyVoxelImageMarchingSub.vtk" subdivisions="1" method="Loop" />
+        
+        <SmoothMeshPython id="aSmoothMeshPython" mesh="${aMarchingCube}" surfaceMeshFilename="smoothed.vtk" iterations="50"  feature_angle="30" pass_band="0.1" 
+            boundary_smoothing="false" feature_edge_smoothing="false" non_manifold_smoothing="false" normalized_coordinates="true" />
+        
+        <SimplificateMesh id="aSimplificateMesh" inputMeshFile="${aSmoothMeshPython}" outputMeshFile="BunnyVoxelImageMarchingSimpl.vtk" stopnr="1000" />
+
+        <mesherCGALs2v id="bunnyVolumeMesher2" surfaceMesh="${aSimplificateMesh}" meshFilename="bunnyVolumeFromPolydata.vtk"
+                       preserveFeatures="false" facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3"
+                       cell_size="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+                       
+        <mesherCGALi2v id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
+                       facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3"
+                       cell_size="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+    </workflow>
+
+</msml:msml>

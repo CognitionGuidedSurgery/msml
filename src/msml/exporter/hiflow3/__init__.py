@@ -145,6 +145,15 @@ class BcDataEntry(object):
 # namedtuple(...) dynamically creates a class -> class constructor.
 Entry = namedtuple("Entry", "mesh bcdata")
 
+# Hiflow supported features
+
+HIFLOW_FEATURES = frozenset(
+    ['object_element_displacement_supported', 'output_supported', 'object_element_mass_supported',
+     'scene_objects_supported', 'constraints_supported', 'env_processingunit_CPU_supported',
+     'material_region_supported', 'env_linearsolver_iterativeCG_supported', 'env_preconditioner_None_supported',
+     'object_element_linearElasticMaterial_supported', 'sets_elements_supported', 'sets_nodes_supported',
+     'sets_surface_supported', 'environment_simulation_steps_supported', 'object_element_fixedConstraint_supported',
+     'env_timeintegration_dynamicImplicitEuler_supported'])
 
 class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
@@ -159,11 +168,13 @@ class HiFlow3Exporter(Exporter):
         :param msml_file:
         :type msml_file: MSMLFile
         """
-
         self.name = 'HiFlow3Exporter'
-        Exporter.__init__(self, msml_file)
-        self.mesh_sort = ('VTU', 'Mesh')  # i want a VTU file as input
-        self.gather_inputs()
+        self.initialize(
+            msml_file=msml_file,
+            mesh_sort=('VTU', 'Mesh'),
+            features=HIFLOW_FEATURES,
+        )
+
 
     def render(self):
         """

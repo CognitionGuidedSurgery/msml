@@ -124,3 +124,51 @@ class Memory(object):
             return self[reference.linked_from.task.name]
 
         return self[reference.linked_from.task.id][reference.linked_from.name]
+
+
+    def update(self, other):
+        if not other:
+            return
+
+        if isinstance(other, Memory):
+            internal = other._internal
+        else:
+            internal = other
+
+
+        assert isinstance(internal, dict)
+
+        self._internal = merge_dict(self._internal, internal)
+
+
+def merge_dict(base, update):
+    """merges to dictionaries
+
+    >>> merge_dict({}, {})
+    {}
+    >>> merge_dict({}, {'a':1})
+    {'a':1}
+    >>> merge_dict({'a':1},{'a':2, 'b':1})
+    {'a':2,'b':1}
+    """
+    result = {}
+    keys = list(base.keys()) + list(update.keys())
+    for key in keys:
+        try:
+            new = update[key]
+            try:
+                current = base[key]
+
+                # assert key in (update, base)
+
+                if isinstance(new, dict) and isinstance(current, dict):
+                    result[key] = merge_dict(current, new)
+                else:
+                    result[key] = new
+            except:
+                result[key] = new
+
+        except KeyError as e:  # key not in update
+            result[key] = base[key]
+
+    return result

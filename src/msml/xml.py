@@ -427,9 +427,10 @@ def _parse_entry_list(nodelist):
 
 def _argument_sets(node, parent=None, as_ordered_dict=False):
     def _parse_arg(node):
-        n, p, l, r, d = _attributes(node, 'name, physical, logical, required, default', required=True)
+        n, p, l, r, d, t = _attributes(node, 'name, physical, logical, required, default, target', required=True)
         meta = _parse_entry_list(node.iterchildren())
         arg = Slot(n, p, l, bool(int(r)), d, meta, parent)
+        arg.target = msml.sorts._bool(t)
         return arg
 
     # def _parse_struct(node):

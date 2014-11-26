@@ -37,10 +37,12 @@ from path import path
 from ..base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
+
 import rdflib
 from msml.exporter.semantic_tools import OntologyParser
 from rdflib import URIRef
 from rdflib.namespace import RDF
+
 
 from msml.model import *
 

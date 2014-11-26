@@ -13,7 +13,7 @@ namespace MSML {
                                            std::string outfile,
                                            MSML::Tetgen::TetgenMeshQuality settings);
     }
- }
+}
 
 %begin %{
 #ifdef _MSC_VER

@@ -20,14 +20,23 @@
         </arg>
         <arg name="resolution" physical="int" optional="true" default="0">
             <meta key="doc">
-                  either resolution or referenceCoordinateGrid must be set 
+                  either resolution, isotropicVoxelSize or referenceCoordinateGrid must be set 
+            </meta>
+        </arg>
+        <arg name="isotropicVoxelSize" physical="float" optional="true" default="0.0">
+            <meta key="doc">
+                  either resolution, isotropicVoxelSize or referenceCoordinateGrid must be set 
             </meta>
         </arg>
         <arg name="referenceCoordinateGrid" physical="vtk" optional="true" default="">
             <meta key="doc">
-                  either resolution or referenceCoordinateGrid must be set 
+                  either resolution, isotropicVoxelSize or referenceCoordinateGrid must be set 
             </meta>
         </arg>
-
+        <arg name="disableFillHoles" physical="bool" optional="true" default="false">
+        </arg>
+                <arg name="additionalIsotropicMargin" physical="float" optional="true" default="0.0">
+        </arg>
+        
     </parameters>
 </msml:operator>

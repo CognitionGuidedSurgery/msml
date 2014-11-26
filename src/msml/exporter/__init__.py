@@ -71,6 +71,9 @@ def register_exporter(name, clazz):
     """
     __REGISTER[name] = clazz
 
+def get_known_exporters():
+    return __REGISTER.keys()
+
 
 def get_exporter(name):
     """Find an Exporter under the given ``name``

@@ -34,28 +34,33 @@
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-26"
 
+import abc
+
+from path import path
+
 from .memory import Memory
 from .GraphDotWriter import GraphDotWriter
-from path import path
 from ..model import *
 from ..generators import generate_task_id
 from ..exporter import Exporter
 from ..exceptions import *
-
+from .. import log
+from ..sorts import conversion
 import msml.sortdef
+from .reruncheck import ReRunCheck
 
-__all__ = ['Executer', 'Memory',
+
+__all__ = ['Executor', 'Memory',
            'build_graph', 'create_conversion_task',
            'get_python_conversion_operator', 'initialize_file_literals',
            'inject_implict_conversion',
            'GraphDotWriter', 'DefaultGraphBuilder',
-           #'MemoryError', 'MemoryTypeMismatchError',
+           # 'MemoryError', 'MemoryTypeMismatchError',
            #'MemoryVariableUnknownError',
            'LinearSequenceExecutor']
-import abc
 
 
-class Executer(object):
+class Executor(object):
     """Describes the interface of an Executer.
 
     An Executer is responsible for calling the operator with the
@@ -66,6 +71,7 @@ class Executer(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, msmlfile):
+        self._msmlfile = msmlfile
         self._options = None
 
     @property
@@ -85,48 +91,12 @@ class Executer(object):
         pass
 
 
-def contains(a, b):
-    if isinstance(b, type):
-        b = b.__name__
-    elif not isinstance(b, (str, unicode)):
-        b = str(b)
-    try:
-        return b.index(a) >= 0
-    except ValueError:
-        return False
-
-
-def initialize_file_literals(first_bucket):
-    """
-    """
-
-    def var_is_file(var):
-        if isinstance(var, MSMLVariable):
-            return issubclass(var.sort.physical, msml.sortdef.InFile)
-            # return contains("file", var.logical_type) or contains("file", var.physical_type)
-        return False
-
-    def abs_value(var):
-        import os.path
-
-        var.value = os.path.abspath(var.value)
-        return var
-
-    return map(abs_value, filter(var_is_file, first_bucket))
-
-
-
-class LinearSequenceExecutor(Executer):
-    """ The LinearSequenceExecuter executes the given MSMLFile  in one sequence with no parallelism in topological order.
-
-    """
-
+class AbstractExecutor(Executor):
     def __init__(self, msmlfile):
-        self._mfile = msmlfile
+        super(AbstractExecutor, self).__init__(msmlfile)
         self._memory = Memory()
-        self._exporter = self._mfile.exporter
+        self._exporter = self._msmlfile.exporter
         self.working_dir = None
-        self.seq_parallel = False
 
     def init_memory(self, content):
         if isinstance(content, str):
@@ -148,32 +118,23 @@ class LinearSequenceExecutor(Executer):
         if name not in self._memory:  # do not override
             self._memory[name] = value
 
-    def run(self):
-        """starts the execution of the given MSMLFile
+
+class LinearSequenceExecutor(AbstractExecutor):
+    """ The LinearSequenceExecuter executes the given MSMLFile
+    in one sequence with no parallelism in topological order.
+    """
+
+    def _prepare(self):
+        """prepares the exeuction of the workflow.
+
+        * bulding dag
+        * initialize file literals
+        * changing into working dir
+
+        :return: the buckets to be executed
         """
 
-        self._init_workflow()
-
-        for node in self._var_bucket:
-            self._execute_variable(node)
-
-        for node in self._pre_bucket:
-            self._execute_operator_task(node)
-
-        for node in self._sim_bucket:
-            self._execute_exporter(node)
-
-        for node in self._post_bucket:
-            self._execute_operator_task(node)
-
-        return self._memory
-
-    def _init_workflow(self):
-
-        dag = DefaultGraphBuilder(self._mfile, self._exporter).dag
-
-        # dag.show()
-
+        dag = DefaultGraphBuilder(self._msmlfile, self._exporter).dag
         buckets = dag.toporder()
 
         # make absolute paths for every string/file literal
@@ -190,221 +151,182 @@ class LinearSequenceExecutor(Executer):
             finally:
                 wd.chdir()
 
-        #fill four buckets:
-        self._pre_bucket =list()
-        self._var_bucket =list()
-        self._sim_bucket = list()
-        self._post_bucket = list()
+        return buckets
 
-        is_pre = True
+    def run(self):
+        """starts the execution of the given MSMLFile
+        """
+
+        buckets = self._prepare()
+
+        self.rerun_check = ReRunCheck(path("."))
+
         for bucket in buckets:
             for node in bucket:
                 if isinstance(node, Task):
-                    if(is_pre):
-                       self._pre_bucket.append(node)
-                    else:
-                        self._post_bucket.append(node)
+                    self._execute_operator_task(node)
                 elif isinstance(node, MSMLVariable):
-                    self._var_bucket.append(node)
-                if isinstance(node, Exporter):
-                    self._sim_bucket.append(node)
-                    is_pre = False
+                    self._execute_variable(node)
+                elif isinstance(node, Exporter):
+                    self._execute_exporter(node)
 
+        return self._memory
 
-    def _render_exporter(self, node):
-        """executes the exporter behind node
-
-        Args:
-          node (Exporter): the exporter for the msml-file
-
-        """
-        self._exporter.init_exec(self)
-        self._exporter.render()
 
     def _execute_exporter(self, node):
-        """executes the exporter behind node
-
-        Args:
-          node (Exporter): the exporter for the msml-file
-
-        """
-        self._render_exporter(node)
-        self._exporter.execute()
-
+        ExecutorsHelper.render_exporter(self, self._exporter)
+        update = ExecutorsHelper.execute_exporter(self._exporter)
+        self._memory.update(update)
 
     def _execute_variable(self, node):
-        """node is MSMLVariable
-
-        """
-        self.define_var(node.name, node.value)
-
+        log.info("Define variable %s := %r" % (node.name, node.value))
+        self._memory.update(
+            ExecutorsHelper.execute_variable(self._memory, node))
 
     def _execute_operator_task(self, task):
-        kwargs = self.gather_arguments(task)
-        task.operator.settings['seq_parallel'] = self.seq_parallel
-        log.debug('Executing operator of task {} with arguments {}'.format(task, kwargs))
-        result = task.operator(**kwargs)
-        log.info('--Executing operator of task {} done'.format(task))
-
-        if task.id in self._memory and isinstance(self._memory[task.id], dict):
-            # converter case, only update the change values
-            self._memory[task.id].update(result)
-        else:
-            # set the values into memory
-            self._memory[task.id] = result
+        # new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        new = ExecutorsHelper.execute_operator_task_if_needed(self.rerun_check, self._memory, task)
+        self._memory.update(new)
 
 
-    def gather_arguments(self, task):
-        """ Finds and collect all needed input and parameters variables from the current memory.
+class PhaseExecutor(LinearSequenceExecutor):
+    """ PhaseExecutor works similar to :py:class:`LinearSequenceExecutor`, but provides more control over the phases
+    of pre-, postprocessing, render and execution of the exporter.
 
-        Args:
-          task (Task):
+    **Options:**
 
-        """
-        arguments = task.arguments
+    :PE.disable.variable:
+        deactivates the execution of variable bucket
 
-        vals = {}
-        for ref in arguments.values():
-            outname = ref.linked_from.arginfo.name
-            inname = ref.linked_to.arginfo.name
+    :PE.disable.pre:
+        deactivates the execution of preprocessing
 
-            if isinstance(ref.linked_from.task, MSMLVariable):
-                outid = ref.linked_from.task.name
-                vals[inname] = self._memory[outid]
-            else:
-                outid = ref.linked_from.task.id
-                vals[inname] = self._memory[outid][outname]
+    :PE.disable.sim:
+        deactivates the rendering and execution of exporter (no output would be generated)
 
-        return vals
+    :PE.disable.simexec:
+        deactivates the execution of exporter
 
+    :PE.disable.post:
+        deactivates the execution of postprocessing
 
-class ControllableExecutor(LinearSequenceExecutor):
-    #this exporter has 6 states: NOINIT, INIT, PRE, SIM, POST
+    """
+
     def __init__(self, msmlfile):
-        super(ControllableExecutor, self).__init__(msmlfile)
-        self.state = "NOINIT"
-
-    def preprocessing_state(self):
-        return self.state == "PRE"
-
-    def postprocessing_state(self):
-        return self.state == "POST"
-
-    def notInitialized_state(self):
-        return self.state == "NOINIT"
-
-    def initialized_state(self):
-        return self.state == "INIT"
-
-    def simulation_state(self):
-        return self.state == "SIM"
-
-    def _init_workflow(self):
-        super(ControllableExecutor,self)._init_workflow()
-        self.state = "INIT"
-
-    def update_variable(self, variable_name, variable_value):
-        if "NOINIT" == self.state:
-            raise MSMLError('Executor has to be in INIT mode before calling updateVariables')
-        elif "INIT" != self.state:
-            self.state = 'INIT'
+        super(PhaseExecutor, self).__init__(msmlfile)
+        self.pre_bucket = list()
+        self.var_bucket = list()
+        self.sim_bucket = list()
+        self.post_bucket = list()
+        self._prepared = False
 
 
-        variable_found = False
-        for node in self._var_bucket:
-            if node.name == variable_name:
-                node.value = variable_value
-                variable_found = True
-                self._execute_variable(node)
-                #TODO:Remove this hack -> calling _execute_Variable should be sufficient
-                self._memory[node.name] = node.value
+    def _prepare(self):
+        buckets = super(PhaseExecutor, self)._prepare()
 
-        if not variable_found:
-            print("Error, variable "+variable_name+" could not be found!!")
+        is_pre = True
 
+        for bucket in buckets:
+            for node in bucket:
+                if isinstance(node, Task):
+                    if is_pre:
+                        self.pre_bucket.append(node)
+                    else:
+                        self.post_bucket.append(node)
 
+                elif isinstance(node, MSMLVariable):
+                    self.var_bucket.append(node)
+                elif isinstance(node, Exporter):
+                    self.sim_bucket.append(node)
+                    is_pre = False
 
+        return buckets
 
-    def process_workflow(self):
-        if "INIT" != self.state:
-            raise MSMLError('Executor has to be in INIT mode before calling processWorkflow')
-
-        for node in self._var_bucket:
-            self._execute_variable(node)
-
-        for node in self._pre_bucket:
-            self._execute_operator_task(node)
-
-
-
-        self.state = "PRE"
-        return self._memory
-
-    def render_simulation_input(self):
-        if "PRE" != self.state:
-            print('Executor has to be in PRE mode before calling renderSimulationInput')
-
-        for node in self._sim_bucket:
-            self._render_exporter(node)
-
-        return self._memory
-
-    def launch_simulation(self):
-        if "PRE" != self.state:
-            print('Executor has to be in PRE mode before calling launchSimulation')
-
-        for node in self._sim_bucket:
-            self._execute_exporter(node)
-
-        self.state='SIM'
-        return self._memory
-
-
-    def launch_postprocessing(self):
-        if "SIM" != self.state:
-            print('Executor has to be in SIM mode before calling launchPostProcessing')
-
-
-
-        for node in self._post_bucket:
-            self._execute_operator_task(node)
-
-        self.state='POST'
-        return self._memory
-
-
-    #Re-enable the new run method
     def run(self):
-        #print(self._options)
+        """starts the execution of the given MSMLFile
+        """
 
-        self._init_workflow()
-        for node in self._var_bucket:
-            self._execute_variable(node)
+        self._prepare()
 
-        self.process_workflow()
+        if not bool(self.options.get('PE.disable.variable', False)):
+            for node in self.var_bucket:
+                self._execute_variable(node)
 
-        if self._options != 'PRE':
-            self.render_simulation_input()
+        if not bool(self.options.get('PE.disable.pre', False)):
+            for node in self.pre_bucket:
+                self._execute_operator_task(node)
 
-            if self._options != 'EXPORT':
-                self.launch_simulation()
+        if not bool(self.options.get('PE.disable.sim', False)):
+            for node in self.sim_bucket:
+                self._execute_exporter(node)
 
-                if self._options != 'SIM':
-                    self.launch_postprocessing()
+        if not bool(self.options.get('PE.disable.post', False)):
+            for node in self.post_bucket:
+                self._execute_operator_task(node)
 
         return self._memory
 
-    # def _execute_exporter(self, node):
-    #     if not self.options.get('executor.disable_exporter', False):
-    #         super(ControllableExecutor, self)._execute_exporter(node)
-    #     self.state = "POST"
-    #
-    # def _execute_operator_task(self, task):
-    #     if (self.in_preprocessing() and \
-    #                 not self.options.get('executor.disable_pre', False)) or \
-    #             (self.in_postprocessing() and \
-    #                      not self.options.get('executor.disable_post', False)):
-    #         super(ControllableExecutor, self)._execute_operator_task(task)
+    def update_variable(self, name, value):
+        log.info("Update variable %s := %r" % (name, value))
+        var = MSMLVariable(name, value=value)
+        self._memory.update(
+            ExecutorsHelper.execute_variable(self._memory, var, True))
+
+    def _execute_operator_task(self, task):
+        new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        self._memory.update(new)
+
+
+class ParallelExecutor(AbstractExecutor):
+    """The `ParallelExecutor` makes everything faster,
+    by burning your CPU to a new heat level.
+
+
+    **Options:**
+
+    :PaE.kind:
+        select "thread" or "process" (uses threading or multiprocessing library)
+
+    :PaE.cores:
+        select maximal parallel threads.
+    """
+
+    def run(self):
+        """
+
+        :return:
+        """
+
+        kind = self.options.get('PaE.cores', 'thread')
+        if kind == 'thread':
+            from  multiprocessing.pool import ThreadPool as Pool
+        elif kind == 'process':
+            from multiprocessing import Pool
+        else:
+            log.fatal('You selected an unknown threading method: %s. Only "thread" or "process" are supported' % kind)
+            return self._memory
+
+        import multiprocessing
+
+        max_threads = self.options.get('PaE.cores', multiprocessing.cpu_count())
+        pool = Pool(max_threads)
+
+        buckets = self._prepare()
+
+        for b in buckets:
+            updates = pool.map(self.execute_node, b)
+            for update in updates:
+                self._memory.update(update)
+
+    def execute_node(self, b):
+        for node in b:
+            if isinstance(node, Task):
+                return ExecutorsHelper.execute_operator_task(self._memory, node)
+            elif isinstance(node, MSMLVariable):
+                return ExecutorsHelper.execute_variable(self._memory, node)
+            elif isinstance(node, Exporter):
+                ExecutorsHelper.render_exporter(self, node)
+                ExecutorsHelper.execute_exporter(node)
 
 
 def build_graph(tasks, exporter, variables):
@@ -449,8 +371,130 @@ def build_graph(tasks, exporter, variables):
     return dag
 
 
-from .. import log
-from ..sorts import conversion
+class ExecutorsHelper(object):
+    """static methods needed by some executors
+
+    """
+
+    @staticmethod
+    def render_exporter(executor, exporter):
+        assert isinstance(exporter, Exporter)
+        assert isinstance(executor, Executor)
+        exporter.init_exec(executor)
+        exporter.render()
+        return dict()
+
+    @staticmethod
+    def execute_exporter(exporter):
+        """You need to ensure, that `_render_exporter` is called, before this method.
+
+        :param exporter:
+        :return:
+        """
+        assert isinstance(exporter, Exporter)
+        return exporter.execute()
+
+    @staticmethod
+    def execute_variable(memory, variable, overwrite=False):
+        assert isinstance(memory, Memory)
+
+        if variable.name not in memory or overwrite:
+            return {variable.name: variable.value}
+
+
+    @staticmethod
+    def execute_operator_task(memory, task):
+        kwargs = ExecutorsHelper.gather_arguments(memory, task)
+        log.info('Executing operator of task %s with arguments %r', task, kwargs)
+        result = task.operator(**kwargs)
+        log.info('--Executing operator of task %s done', task.id)
+
+        return {task.id: result}
+
+        # if task.id in memory and isinstance(memory[task.id], dict):
+        # # converter case, only update the change values
+        #   self._memory[task.id].update(result)
+        # else:
+        #    # set the values into memory
+        #    self._memory[task.id] = result
+
+    @staticmethod
+    def execute_operator_task_if_needed(checker, memory, task):
+        assert isinstance(checker, ReRunCheck)
+        kwargs = ExecutorsHelper.gather_arguments(memory, task)
+        ExecutorsHelper.inject_target_filename(task, kwargs)
+
+        # quick shortcut for converter tasks
+        if task.id.startswith("converter_task_"):
+            result = task.operator(**kwargs)
+        else:
+            input_files = [kwargs[ifile] for ifile in task.operator.input_names()]
+            try:
+                output_files = task.operator.get_targets()[0]
+                output_files = kwargs[output_files]
+            except:
+                output_files = None
+
+            if checker.check(task.id, input_files, kwargs, output_files):
+                log.info('Omitting execution of operator %s', task.id)
+                result = checker.get_last_result(task.id)
+            else:
+                log.info('Executing operator of task %s with arguments %r', task, kwargs)
+                result = task.operator(**kwargs)
+                checker.set_last_result(task.id, result)
+                log.info('--Executing operator of task %s done', task.id)
+
+        return {task.id: result}
+
+        # if task.id in memory and isinstance(memory[task.id], dict):
+        #   # converter case, only update the change values
+        #   self._memory[task.id].update(result)
+        # else:
+        #    # set the values into memory
+        #    self._memory[task.id] = result
+
+
+    @staticmethod
+    def inject_target_filename(task, kwargs):
+        output_targets = task.operator.get_targets()
+        for ot in output_targets:
+            if ot not in kwargs:
+                kwargs[ot] = "{task_id}_{name}".format(task_id=task.id, name=ot)
+                log.info("Output target generated of %s" % kwargs[ot])
+
+    @staticmethod
+    def gather_arguments(memory, task):
+        """ Finds and collect all needed input and parameters variables from the current memory.
+        """
+        arguments = task.arguments
+
+        vals = {}
+        for ref in arguments.values():
+            outname = ref.linked_from.arginfo.name
+            inname = ref.linked_to.arginfo.name
+
+            if isinstance(ref.linked_from.task, MSMLVariable):
+                outid = ref.linked_from.task.name
+                vals[inname] = memory[outid]
+            else:
+                outid = ref.linked_from.task.id
+                vals[inname] = memory[outid][outname]
+        return vals
+
+
+__EXECUTERS = {
+    'parallel': ParallelExecutor,
+    'sequential': LinearSequenceExecutor,
+    'phase': PhaseExecutor,
+}
+
+
+def get_known_executors():
+    return __EXECUTERS.keys()
+
+
+def get_executor(name):
+    return __EXECUTERS[name]
 
 
 def inject_implict_conversion(dag):
@@ -589,3 +633,34 @@ class DefaultGraphBuilder(object):
             self._dag = inject_implict_conversion(
                 build_graph(self.mfile.workflow._tasks, self.exporter, self.mfile.variables))
         return self._dag
+
+
+def contains(a, b):
+    if isinstance(b, type):
+        b = b.__name__
+    elif not isinstance(b, (str, unicode)):
+        b = str(b)
+    try:
+        return b.index(a) >= 0
+    except ValueError:
+        return False
+
+
+def initialize_file_literals(first_bucket):
+    """
+    """
+
+    def var_is_file(var):
+        if isinstance(var, MSMLVariable):
+            return issubclass(var.sort.physical, msml.sortdef.InFile)
+            # return contains("file", var.logical_type) or contains("file", var.physical_type)
+        return False
+
+    def abs_value(var):
+        import os.path
+
+        var.value = os.path.abspath(var.value)
+        return var
+
+    return map(abs_value, filter(var_is_file, first_bucket))
+
