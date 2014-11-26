@@ -159,16 +159,15 @@ class LinearSequenceExecutor(AbstractExecutor):
 
         buckets = self._prepare()
 
-        self.rerun_check = ReRunCheck(path("."))
-
-        for bucket in buckets:
-            for node in bucket:
-                if isinstance(node, Task):
-                    self._execute_operator_task(node)
-                elif isinstance(node, MSMLVariable):
-                    self._execute_variable(node)
-                elif isinstance(node, Exporter):
-                    self._execute_exporter(node)
+        with ReRunCheck(path(".")) as self.rerun_check:
+            for bucket in buckets:
+                for node in bucket:
+                    if isinstance(node, Task):
+                        self._execute_operator_task(node)
+                    elif isinstance(node, MSMLVariable):
+                        self._execute_variable(node)
+                    elif isinstance(node, Exporter):
+                        self._execute_exporter(node)
 
         return self._memory
 
