@@ -446,13 +446,21 @@ std::vector< std::string > IOHelper::getAllFilesByMask(const char* filename)
 {
   boost::filesystem::path aPath(filename);
 
+  std::vector< std::string > all_matching_files;
+
+  // check if parent directory exists, should fix:
+  // https://github.com/CognitionGuidedSurgery/msml/issues/148
+  if( ! boost::filesystem::exists( aPath.parent_path() )) {
+      return all_matching_files;
+  }
+
   std::string target_path( aPath.parent_path().string() );
   std::string filter =  aPath.filename().string();
   boost::replace_all(filter, "*", ".*\\");
 
   const boost::regex my_filter( filter );
 
-  std::vector< std::string > all_matching_files;
+
 
   boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
   for( boost::filesystem::directory_iterator i( target_path ); i != end_itr; ++i )
