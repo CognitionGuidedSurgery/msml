@@ -561,7 +561,7 @@ bool MorphCube(const char *infile, const char *outfile, double toDilate, double 
   Smooth given surface using this vtk filter:
   http://vtk.org/Wiki/VTK/Examples/Meshes/WindowedSincPolyDataFilter
 */
-bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+const char* SmoothMeshPython(const char* infile, const char* outfile, int iterations,
 					  double feature_angle, double pass_band,bool boundary_smoothing,
 					  bool feature_edge_smoothing, bool non_manifold_smoothing,
 					  bool normalized_coordinates)
@@ -589,7 +589,7 @@ bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
 	
 	//write smoothed surface down to file
 	bool result = IOHelper::VTKWritePolyData(outfile, smoother->GetOutput());
-	return result;
+	return outfile;
 }
 
 bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)

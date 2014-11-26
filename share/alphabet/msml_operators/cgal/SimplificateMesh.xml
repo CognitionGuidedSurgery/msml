@@ -22,10 +22,10 @@
 				simplification will stop
             </meta>
         </arg>  			
-		<arg name="box" physical="vector.float" optional="true">
+		<arg name="box" physical="vector.float" optional="true" default="-1">
 			<meta key="doc">
 				Edges in boundinx box defined by this vector will be excluded from simplification.
-				If no box is given, all edges will be subjected to simplification.
+				If not exactly 6 values are given, all edges will be subjected to simplification.
 			</meta>
 		</arg>
 		

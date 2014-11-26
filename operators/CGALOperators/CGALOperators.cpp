@@ -367,7 +367,7 @@ namespace MSML{
   Simplificate a mesh using CGALs Triangulated Surface Mesh Simplification
   (http://doc.cgal.org/latest/Surface_mesh_simplification/index.html#Chapter_Triangulated_Surface_Mesh_Simplification)
   */
-  bool SimplificateMesh(const char* inputMeshFile,
+   const char* SimplificateMesh(const char* inputMeshFile,
                         const char* outputMeshFile,
                         int stopnr,
                         std::vector<double> box = std::vector<double>()) {
@@ -418,14 +418,14 @@ namespace MSML{
 
 	  //write polydata to disk
 	  bool result = IOHelper::VTKWritePolyData(outputMeshFile,vtkpoly);
-	  return result;
+	  return outputMeshFile;
   }
   /*
   Calculate Subdivision Surface for given mesh.
   (http://doc.cgal.org/latest/Subdivision_method_3/index.html)
   Works for polyhedral meshes only.
   */
-  bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
+  const char* CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
   {
 	  //read VTK Polydata
       vtkSmartPointer<vtkPolyData> polydata = IOHelper::VTKReadPolyData(infile);
@@ -463,7 +463,7 @@ namespace MSML{
 	  //write polydata to disk
 	  bool result = IOHelper::VTKWritePolyData(outfile,subdivVTKPoly);
 	  //cleanup of polyhedron, points, faces and polydata-object??
-	  return result;
+	  return outfile;
   }
 
   void CGALPolyhedronToVTKPolydata_converter(Polyhedron *polyhedron, vtkSmartPointer<vtkPolyData> polydata)

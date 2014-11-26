@@ -478,7 +478,7 @@ namespace MSML {
         LIBRARY_API  bool ExtractSurfaceMesh( const char* infile, const char* outfile);
         LIBRARY_API  bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
 
-		LIBRARY_API  bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+		LIBRARY_API  const char* SmoothMeshPython(const char* infile, const char* outfile, int iterations,
 										  double feature_angle, double pass_band,bool boundary_smoothing,
 										  bool feature_edge_smoothing, bool non_manifold_smoothing,
 										  bool normalized_coordinates);

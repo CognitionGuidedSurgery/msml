@@ -231,7 +231,7 @@ std::vector<std::string> LoadFileNames(std::string theFileListTxt)
 }
 void TestImageSumPrivateData() //TODO: Add test with open accesss data.
 {
-  PostProcessingOperators::ImageWeightedSum("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\sum_\\CTV_1*.vtk", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\sum_\\CTV_SUMMED_1_.vtk");
+  PostProcessingOperators::ImageWeightedSum("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\groundTruth\\*_segmentation.ctx.gz", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\groundTruth\\CTV_SUMMED_1_.vtk");
 }
 
 int main( int argc, char * argv[])

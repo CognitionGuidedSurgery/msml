@@ -161,6 +161,7 @@ namespace MSML
   std::string MarchingCube(const char* infile, const char* outfile, float isoValue)
   {
     vtkSmartPointer<vtkImageData> imageIn = IOHelper::VTKReadImage(infile);
+    
     vtkSmartPointer<vtkMarchingCubes> surface = vtkSmartPointer<vtkMarchingCubes>::New();
     #if VTK_MAJOR_VERSION <= 5
       surface->SetInput(imageIn);
@@ -169,33 +170,8 @@ namespace MSML
     #endif
     surface->ComputeNormalsOn();
     surface->SetValue(0, isoValue);
-
-    vtkSmartPointer<vtkWindowedSincPolyDataFilter> smoother = vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
-    unsigned int smoothingIterations = 15;
-    double passBand = 0.001;
-    double featureAngle = 120.0;
-    smoother->SetInputConnection(surface->GetOutputPort());
-    smoother->SetNumberOfIterations(smoothingIterations);
-    smoother->BoundarySmoothingOff();
-    smoother->FeatureEdgeSmoothingOff();
-    smoother->SetFeatureAngle(featureAngle);
-    smoother->SetPassBand(passBand);
-    smoother->NonManifoldSmoothingOn();
-    smoother->NormalizeCoordinatesOn();
-    smoother->Update();
-
-    vtkSmartPointer<vtkAppendFilter> appendFilter = vtkSmartPointer<vtkAppendFilter>::New();
-    #if VTK_MAJOR_VERSION <= 5
-      appendFilter->AddInput(smoother->GetOutput());
-    #else
-      appendFilter->AddInputData(smoother->GetOutput());
-    #endif
-    appendFilter->Update();
-
-    vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-    writer->SetInputConnection(appendFilter->GetOutputPort());
-    writer->SetFileName(outfile);
-    writer->Write();
+    surface->Update();
+    IOHelper::VTKWritePolyData(outfile, surface->GetOutput());
 
     return outfile;
   }

@@ -121,8 +121,8 @@ namespace MSML {
                              double theCellSize, bool theOdtSmoother,
                              bool theLloydSmoother, bool thePerturber, bool theExuder);
 							 
-	 LIBRARY_API bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method);
+	 LIBRARY_API const char* CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method);
 	 LIBRARY_API bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile);	 
-	 LIBRARY_API bool SimplificateMesh(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
+	 LIBRARY_API const char* SimplificateMesh(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
  }
 }
