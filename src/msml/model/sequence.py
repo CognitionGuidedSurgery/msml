@@ -77,18 +77,19 @@ def executeOperatorSequence(operator, args, parallel):
             pool = multiprocessing.Pool(num_of_workers - 1)
             # blocks until finished
             pool.map(callWrapper, args_list)
-        elif parallel:
-            # multiprocessing
-            num_of_workers = multiprocessing.cpu_count()
-            pool = multiprocessing.pool.ThreadPool(num_of_workers - 1)
-            # blocks until finished
-            pool.map(callWrapper, args_list)
         else:
-            callWrapper(args_list[0])
-
+            for args in args_list:
+                callWrapper(args)
         return outputPathPattern
-        
+
+
+import msml.log, os
 def callWrapper(selfAndArgs):
     operator = selfAndArgs.pop()
-    print("Asnc of operator %s , with args: %s" % (operator, selfAndArgs))
-    return operator._function(*selfAndArgs)
+    pid = os.getpid()
+
+    msml.log.info("[PID %d] operator %s , with args: %s" , pid, operator, selfAndArgs)
+    tmp =  operator._function(*selfAndArgs)
+    msml.log.info("-- finished %d" , pid)
+
+    return tmp
