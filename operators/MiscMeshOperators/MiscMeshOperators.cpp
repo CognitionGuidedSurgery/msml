@@ -545,7 +545,7 @@ bool MorphCube(const char *infile, const char *outfile, double toDilate, double 
 	//set up the morpher and morph image
 	vtkSmartPointer<vtkImageDilateErode3D> dilateErode =
     vtkSmartPointer<vtkImageDilateErode3D>::New();
-	dilateErode->SetInputData(image);
+	__SetInput(dilateErode, image);
 	dilateErode->SetDilateValue(toDilate);
 	dilateErode->SetErodeValue(toErode);
 	dilateErode->SetKernelSize(morph_kernel[0],morph_kernel[1],morph_kernel[2]);
