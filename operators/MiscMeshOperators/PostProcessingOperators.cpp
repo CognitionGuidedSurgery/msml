@@ -489,7 +489,9 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
     vtkSmartPointer<vtkImageData> outputDefImage;
 
     outputDefImage = MiscMeshOperators::ImageCreate(refImage);
-    MiscMeshOperators::ImageChangeVoxelSize(outputDefImage, voxelSize);
+    if (voxelSize>0)
+      MiscMeshOperators::ImageChangeVoxelSize(outputDefImage, voxelSize);
+
     #if VTK_MAJOR_VERSION <= 5
     outputDefImage->SetScalarTypeToFloat();
     outputDefImage->AllocateScalars();

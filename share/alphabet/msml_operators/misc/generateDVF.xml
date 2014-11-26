@@ -17,10 +17,10 @@
 	</output>
 
 	<parameters>
-		<arg name="DVFFilename" physical="str" optional="true" default="false" />
+		<arg name="DVFFilename" physical="str" />
 		<arg name="spacing" physical="float" optional="true" default="5"/>
 		<arg name="refImageCube" physical="file.vtk" optional="true" default=""/>
-        <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
+    <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
 	</parameters>
 
 </msml:operator>
