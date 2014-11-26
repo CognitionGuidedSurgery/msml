@@ -13,7 +13,7 @@ stl2vtk
 
 :type: PythonOperator
 :modul: :py:mod:`msml.ext.misc`
-:function: :py:func:`msml.ext.misc.ConvertSTLToVTK`
+:function: :py:func:`msml.ext.misc.ConvertSTLToVTKPython`
 
 
 

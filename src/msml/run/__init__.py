@@ -40,6 +40,7 @@ from path import path
 from ..model import *
 from ..generators import generate_task_id
 from ..exporter import Exporter
+from ..exceptions import *
 
 import msml.sortdef
 
@@ -48,8 +49,8 @@ __all__ = ['Executer', 'Memory',
            'get_python_conversion_operator', 'initialize_file_literals',
            'inject_implict_conversion',
            'GraphDotWriter', 'DefaultGraphBuilder',
-           'MemoryError', 'MemoryTypeMismatchError',
-           'MemoryVariableUnknownError',
+           #'MemoryError', 'MemoryTypeMismatchError',
+           #'MemoryVariableUnknownError',
            'LinearSequenceExecutor']
 import abc
 
@@ -134,7 +135,7 @@ class LinearSequenceExecutor(Executer):
         elif isinstance(content, dict):
             self._memory._internal.update(content)
         elif content:
-            warnings.warn("init_memory handles only filenames", MSMLWarning)
+            log.fatal("init_memory handles only filenames")
 
     def define_var(self, name, value=None):
         """defines a variable in the current memory.

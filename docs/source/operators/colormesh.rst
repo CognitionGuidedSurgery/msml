@@ -45,3 +45,21 @@ colormesh
 
 
 
+:check.output:
+    True
+
+:check.output.arguments:
+    mesh
+
+:check.output.generated:
+    coloredMesh
+
+:filename-generator:
+    True
+
+:filename-generator.for:
+    coloredMesh
+
+:filename-generator.for.coloredMesh:
+    {mesh}_colored.vtk
+

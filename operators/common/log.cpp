@@ -3,7 +3,6 @@
 #ifdef PYTHONLOGGING
 #include <Python.h>
 
-
 void _log(const char* category, const char* message) {
     const char* const m = message;
 /*
@@ -43,7 +42,6 @@ void _log(const char* category, const char* message) {
 }
 void _log_error(const char* message) { _log("error", message); }
 void _log_info(const char* message) { _log("info", message);}
-#endif
 
 Logger& log_info() {
     static Logger li = Logger("info");
@@ -59,3 +57,22 @@ Logger& log_debug() {
     static Logger le = Logger("debug");
     return le;
 }
+#else
+#include <iostream>
+#include <ostream>
+
+std::ostream& log_info() {
+	std::cout << "INFO     ";
+	return std::cout;
+}
+
+std::ostream& log_error() {
+	std::cerr << "ERROR    ";
+	return std::cerr;
+}
+
+std::ostream& log_debug() {
+	std::cout << "DEBUG    ";
+	return std::cout;
+}
+#endif

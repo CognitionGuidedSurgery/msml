@@ -296,7 +296,8 @@ class Workflow(object):
 
     def add_task(self, task):
         if task.id in self._tasks:
-            log.error("The identifier (id attribute) of the tasks have to be disjoint.")
+            log.fatal("The identifier (id attribute) of the tasks have to be unique.")
+            log.fatal("-- The behaviour you will experience is unexpected, ... told your so!")
 
         self._tasks[task.id] = task
 

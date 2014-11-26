@@ -13,7 +13,7 @@ voxelize
 
 :type: PythonOperator
 :modul: :py:mod:`msml.ext.misc`
-:function: :py:func:`msml.ext.misc.VoxelizeSurfaceMesh`
+:function: :py:func:`msml.ext.misc.VoxelizeSurfaceMeshPython`
 
 
 
@@ -42,6 +42,14 @@ voxelize
              :red:`DOCUMENTATION MISSING`
     
         * **resolution** : (:py:class:`msml.sortdef.MSMLInt`, :py:class:`*`)
+
+             :red:`DOCUMENTATION MISSING`
+    
+        * **referenceCoordinateGrid** : (:py:class:`msml.sortdef.VTK`, :py:class:`*`)
+
+             :red:`DOCUMENTATION MISSING`
+    
+        * **multipleInputMesh** : (:py:class:`bool`, :py:class:`*`)
 
              :red:`DOCUMENTATION MISSING`
     

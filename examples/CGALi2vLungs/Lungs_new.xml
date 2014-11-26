@@ -86,12 +86,14 @@
                                select="points"/>
         <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
         <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
+		<generateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf.vtk" spacing="10"/>
         
     </workflow>
 
+    
 
     <environment>
-        <solver linearSolver="iterativeCG" processingUnit="GPU"
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
             <step name="initial" dt="0.05" iterations="100"/>

@@ -8,3 +8,4 @@ Advanced Topics
 
    concepts
    extendmsml
+   newoperators

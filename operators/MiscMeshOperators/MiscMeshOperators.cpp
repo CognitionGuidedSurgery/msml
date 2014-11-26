@@ -31,6 +31,7 @@
 
 #include "IOHelper.h"
 
+
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
 #include <vtkSmartPointer.h>
@@ -59,6 +60,7 @@
 #include "vtkKdTreePointLocator.h"
 #include "vtkVoxelModeller.h"
 #include "vtkPNGWriter.h"
+#include <vtkPolyDataReader.h>
 
 
 #include <vtkDataSetSurfaceFilter.h>
@@ -97,7 +99,8 @@
 
 #include "../common/log.h"
 
-
+#include <vtkWindowedSincPolyDataFilter.h>
+#include <vtkPolyDataMapper.h>
 
 using namespace std;
 
@@ -106,7 +109,7 @@ namespace MiscMeshOperators {
 std::string ConvertSTLToVTKPython(std::string infile, std::string outfile)
 {
     ConvertSTLToVTK( infile.c_str(), outfile.c_str());
-
+	
     return outfile;
 }
 
@@ -481,6 +484,79 @@ bool ExtractSurfaceMesh( const char* infile, const char* outfile)
 
 }
 
+/*
+	Get vector of all material numbers used in given mesh
+*/
+vector<unsigned int> GetMaterialNumbersFromMesh(const char* infile)
+{
+	 log_debug()<<"GetMaterialNumbersFromMesh"<<std::endl;
+	 vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);
+
+	 vtkIntArray* cellMaterialArray = (vtkIntArray*) inputGrid->GetCellData()->GetArray("Materials");
+	 std::map<int,int> *matMap = createHist(cellMaterialArray);
+	 vector<unsigned int> materialNumbers; 
+
+	 for(map<int,int>::iterator it = matMap->begin(); it != matMap->end(); ++it) 
+	 {				 
+		 materialNumbers.push_back(it->first);
+	 }
+	 return materialNumbers;
+}
+
+/*
+	Debug print a vector
+*/
+bool DebugPrint(vector<int> to_print)
+{
+	cerr<<"Debug print of vector:"<<std::endl;
+	for(vector<int>::iterator it = to_print.begin(); it != to_print.end(); ++it)
+	{    
+		cerr<<*it<<" ";
+	}
+	cerr<<std::endl;
+	return true;
+}
+
+/*
+  Smooth given surface using this vtk filter:
+  http://vtk.org/Wiki/VTK/Examples/Meshes/WindowedSincPolyDataFilter
+*/
+bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+					  double feature_angle, double pass_band,bool boundary_smoothing,
+					  bool feature_edge_smoothing, bool non_manifold_smoothing,
+					  bool normalized_coordinates)
+{		
+	log_debug()<<"SmoothMesh"<<std::endl;
+
+	//read surface
+	vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+    reader->SetFileName(infile);
+    reader->Update();
+
+	//set up the smoother
+	vtkSmartPointer<vtkWindowedSincPolyDataFilter> smoother =
+    vtkSmartPointer<vtkWindowedSincPolyDataFilter>::New();
+	smoother->SetInputData(reader->GetOutput());
+	smoother->SetNumberOfIterations(iterations);
+
+	smoother->SetBoundarySmoothing(boundary_smoothing);
+	smoother->SetFeatureEdgeSmoothing(feature_edge_smoothing);
+	
+	smoother->SetFeatureAngle(feature_angle);
+	smoother->SetPassBand(pass_band);
+	
+	smoother->SetNonManifoldSmoothing(non_manifold_smoothing);
+	smoother->SetNormalizeCoordinates(normalized_coordinates);
+	
+	//smooth surface
+	smoother->Update();
+	log_debug()<<"SmoothMesh: smooth ok"<<std::endl;	
+	
+	//write smoothed surface down to file
+	bool result = IOHelper::VTKWritePolyData(outfile, smoother->GetOutput());
+	return result;
+}
+
 bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
 {
 
@@ -533,7 +609,7 @@ bool AssignSurfaceRegion( const char* infile, const char* outfile,  std::vector<
 {
     //load the vtk  mesh
    vtkSmartPointer<vtkUnstructuredGrid> inputmesh = IOHelper::VTKReadUnstructuredGrid(infile);
-
+   
     vtkSmartPointer<vtkUnstructuredGrid> outputmesh =
         vtkSmartPointer<vtkUnstructuredGrid>::New();
 
@@ -829,39 +905,7 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution, const char* referenceCoordinateGrid, bool multipleInputMesh)
-{
-    if (multipleInputMesh)
-    {
-        return VoxelizeMultipleSurfaceMesh(infile.c_str(), outfile.c_str(), resolution, referenceCoordinateGrid);
-    }
-
-    else
-    {
-        VoxelizeSurfaceMesh(infile.c_str(), outfile.c_str(), resolution, referenceCoordinateGrid);
-        return outfile;
-    }
-
-}
-
-std::string VoxelizeMultipleSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
-{
-    vector<pair<int, string> >* allRefs = IOHelper::getAllFilesOfSeries(infile);
-    string currenOutputFile;
-    boost::filesystem::path aPath(outfile);
-
-    for (int i=0; i<allRefs->size(); i++)
-    {
-        boost::filesystem::path curentPath = aPath.parent_path() / (aPath.filename().stem().string() + boost::lexical_cast<string>(allRefs->at(i).first) + aPath.extension().string());
-        currenOutputFile = curentPath.string();
-        log_debug() << "Generating Voxel image " << currenOutputFile << std::endl;
-        VoxelizeSurfaceMesh(allRefs->at(i).second.c_str(), currenOutputFile.c_str(), resolution, referenceCoordinateGrid);
-    }
-
-    return currenOutputFile;
-}
-
-bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
+std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
                 << "Resolution of the longest bound is "<<resolution<< std::endl;
@@ -875,13 +919,7 @@ bool VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution
 
     IOHelper::VTKWriteImage(outfile, outputImage);
 
-    //	vtkSmartPointer<vtkPNGWriter> writer2 =
-    //	 vtkSmartPointer<vtkPNGWriter>::New();
-    //	writer2->SetFilePrefix(outfile);
-    //	writer2->SetInput(outputImage);
-    //	writer2->Write();
-
-    return true;
+    return string(outfile);
 }
 
 bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, const char* referenceCoordinateGrid)
