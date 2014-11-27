@@ -1,16 +1,16 @@
 /*
- * TetgenMeshQuality.h
+ * TetgenSettings.h
  *
  *  Created on: 04.07.2014
  *      Author: sbungartz
  */
 
-#ifndef TETGENMESHQUALITY_H_
-#define TETGENMESHQUALITY_H_
+#ifndef TETGENSETTINGS_H
+#define TETGENSETTINGS_H
 
 namespace MSML {
 namespace Tetgen {
-struct TetgenMeshQuality {
+struct TetgenSettings {
     bool preserveBoundary;
     double maxEdgeRadiusRatio;
     int minDihedralAngleDegrees;
@@ -20,9 +20,9 @@ struct TetgenMeshQuality {
     bool optimizationUseVertexSmoothing;
     bool optimizationUseVertexInsAndDel;
 
-    TetgenMeshQuality();
+    TetgenSettings();
 };
 }
 }
 
-#endif /* TETGENMESHQUALITY_H_ */
+#endif /* TETGENSETTINGS_H */
