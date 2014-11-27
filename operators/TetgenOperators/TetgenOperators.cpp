@@ -74,14 +74,44 @@ using namespace std;
 namespace MSML {
     namespace Tetgen {
 
-std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary)
+TetgenSettings::TetgenSettings(): // Set default values as they are in Tetgen 1.5
+		preserveBoundary(false),
+		maxEdgeRadiusRatio(2.0),
+		minDihedralAngleDegrees(0),
+		maxTetVolumeOrZero(0),
+		optimizationLevel(2),
+		optimizationUseEdgeAndFaceFlips(true),
+		optimizationUseVertexSmoothing(true),
+		optimizationUseVertexInsAndDel(true) {
+}
+
+std::string CreateVolumeMeshPython(std::string infile, std::string outfile,
+        bool preserveBoundary,
+        double maxEdgeRadiusRatio,
+        int minDihedralAngleDegrees,
+        double maxTetVolumeOrZero,
+        int optimizationLevel, // 0 to disable optimizations, 10 for maximum number of optimization iterations.
+        bool optimizationUseEdgeAndFaceFlips,
+        bool optimizationUseVertexSmoothing,
+        bool optimizationUseVertexInsAndDel)
 {
 	log_info() << "Creating volume mesh with Tetgen..." << std::endl;
-	CreateVolumeMesh(infile.c_str(), outfile.c_str(), preserveBoundary, false);
+
+	TetgenSettings settings;
+	settings.preserveBoundary = preserveBoundary;
+	settings.maxEdgeRadiusRatio = maxEdgeRadiusRatio;
+	settings.minDihedralAngleDegrees = minDihedralAngleDegrees;
+	settings.maxTetVolumeOrZero = maxTetVolumeOrZero;
+	settings.optimizationLevel = optimizationLevel;
+	settings.optimizationUseEdgeAndFaceFlips = optimizationUseEdgeAndFaceFlips;
+	settings.optimizationUseVertexSmoothing = optimizationUseVertexSmoothing;
+	settings.optimizationUseVertexInsAndDel = optimizationUseVertexInsAndDel;
+
+	CreateVolumeMesh(infile.c_str(), outfile.c_str(), settings, false);
 	return outfile;
 }
 
-bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoundary, bool isQuadratic )
+bool CreateVolumeMesh(const char* infile, const char* outfile, TetgenSettings settings, bool isQuadratic )
 {
 
 	vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
@@ -90,8 +120,9 @@ bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoun
 
 	//deep copy
 	vtkPolyData* inputMesh = reader->GetOutput();
+
 	vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
-	CreateVolumeMesh(inputMesh, outputMesh, preserveBoundary, isQuadratic);
+	CreateVolumeMesh(inputMesh, outputMesh, settings, isQuadratic);
 
 
 	vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
@@ -110,7 +141,29 @@ bool CreateVolumeMesh(const char* infile, const char* outfile, bool preserveBoun
 	return true;
 }
 
-bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, bool preserveBoundary, bool isQuadratic )
+static tetgenbehavior tetgenbehaviorForSettings(const TetgenSettings &settings) {
+    tetgenbehavior params;
+    params.plc = 1; // -p
+    params.nobisect = settings.preserveBoundary ? 1 : 0; // -Y
+    params.quality = 1; // -q
+    params.minratio = settings.maxEdgeRadiusRatio; // -q[X]/[] [sic] this variable seems to have changed semantics during the evolution of tetgen.
+    params.mindihedral = settings.minDihedralAngleDegrees; // -q[]/[X]
+    if(settings.maxTetVolumeOrZero > 0) {
+        params.fixedvolume = 1; // -a[]
+        params.maxvolume = settings.maxTetVolumeOrZero; // -a[X]
+    }
+    params.optlevel = settings.optimizationLevel; // -O[X]/[]
+    // The optimization options are a 3 bit bitmap with a flag for each option.
+    // Set the respective bits to 1 for the enabled options:
+    params.optscheme = (0
+            | (settings.optimizationUseEdgeAndFaceFlips ? (1 << 0) : 0)
+            | (settings.optimizationUseVertexSmoothing ? (1 << 1) : 0)
+            | (settings.optimizationUseVertexInsAndDel ? (1 << 2) : 0));
+
+    return params;
+}
+
+bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenSettings settings, bool isQuadratic )
 {
 	tetgenio in, out;
 
@@ -169,34 +222,9 @@ bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, b
 
 		}
 
-		//QString options("pqd");
-//		std::string options("pq3.0");
-		std::string options("pq1.8");
+		tetgenbehavior params = tetgenbehaviorForSettings(settings);
 
-		if(preserveBoundary)
-			options.append("Y");
-
-		char *cpy = new char[options.size()+1] ;
-		strcpy(cpy, options.c_str());
-
-//		if(isQuadratic)
-//			options.append("o2");
-
-		//char* options1 = "pd";
-
-		tetgenbehavior params;
-
-//		params.nobisect = 1;
-//		params.quality = 1;
-
-//		tetrahedralize(&params, &in, &out);
-		tetrahedralize(cpy, &in, &out);
-//		tetrahedralize(options1, &in, &out);
-
-//		  out.save_nodes("barout");
-//		  out.save_elements("barout");
-//		  out.save_faces("barout");
-
+		tetrahedralize(&params, &in, &out);
 
 
 		int numberOfPointsOutput = out.numberofpoints;

@@ -35,18 +35,18 @@ using namespace std;
 namespace MSML {
 namespace ACVDOperators {
 
-std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount)
+std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput)
 {
 	vtkSmartPointer<vtkPolyData> inputPoly = IOHelper::VTKReadPolyData(infile.c_str());
 	vtkSmartPointer<vtkPolyData> outputPoly = vtkSmartPointer<vtkPolyData>::New();
-	ReduceSurfaceMesh( inputPoly, outputPoly, verticesCount);
-	bool success = IOHelper::VTKWritePolyData(outfile.c_str(), outputPoly);
+	ReduceSurfaceMesh(inputPoly, outputPoly, verticesCount, forceManifold);
+	bool success = IOHelper::VTKWritePolyData(outfile.c_str(), outputPoly, asciiOutput);
 	if(!success)
 		std::cout<<"Error: Polydata could not be written\n";
     return outfile;
 }
 
-bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount)
+bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount, bool forceManifold)
 {
 	std::cout<<"Mesh reduce called....";
 
@@ -72,7 +72,7 @@ bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount)
 	Mesh->GetCellData()->Initialize();
 	Mesh->GetPointData()->Initialize();
 
-	Remesh->SetForceManifold(1);
+	Remesh->SetForceManifold(forceManifold ? 1 : 0);
 	Remesh->SetInput(Mesh);
 	Remesh->SetFileLoadSaveOption(0);
 	Remesh->SetNumberOfClusters(verticesCount);

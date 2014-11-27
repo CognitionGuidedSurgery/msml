@@ -10,7 +10,14 @@ namespace MSML {
     namespace Tetgen {
         std::string CreateVolumeMeshPython(std::string infile,
                                            std::string outfile,
-                                           bool preserveBoundary);
+                                           bool preserveBoundary,
+                                           double maxEdgeRadiusRatio,
+                                           int minDihedralAngleDegrees,
+                                           double maxTetVolumeOrZero,
+                                           int optimizationLevel,
+                                           bool optimizationUseEdgeAndFaceFlips,
+                                           bool optimizationUseVertexSmoothing,
+                                           bool optimizationUseVertexInsAndDel);
     }
 }
 
