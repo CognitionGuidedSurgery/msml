@@ -9,7 +9,7 @@ dependencies:
     - sudo apt-get install cmake libxml2-dev libtet1.4.2 libtet1.4.2-dev swig
     #- sudo apt-get install libboost1.54-dev
     - pip install -r requirements.txt
-    - share/install_vtk.sh 
+    - chmod 755 share/install_vtk.sh && share/install_vtk.sh  
     - mkdir cbuild; cd cbuild; cmake ../operators -DVTK_DIR=../cache/VTK-6.1.0-BUILD/; make -j 8; cd ..
   
 test:
