@@ -1,8 +1,8 @@
 # stub, automatically generated
-operators_path = "/home/weigl/workspace/msml/cbuild/bin"
-operators_path_release = "/home/weigl/workspace/msml/cbuild/bin/Release/"
-operators_path_debug = "/home/weigl/workspace/msml/cbuild/bin/Debug/"
+operators_path = "C:/MSMLBin/bin"
+operators_path_release = "C:/MSMLBin/bin/Release/"
+operators_path_debug = "C:/MSMLBin/bin/Debug/"
 
-SOFA_EXECUTABLE = "/usr/bin/sofaBatch"
-HIFLOW_EXECUTABLE = "/usr/local/include/hiflow3"
+SOFA_EXECUTABLE = "SOFA_EXECUTABLE-NOTFOUND"
+HIFLOW_EXECUTABLE = "HIFLOW_EXECUTABLE-NOTFOUND"
 ABAQUS_EXECUTABLE = "ABAQUS_EXECUTABLE-NOTFOUND"
