@@ -57,6 +57,7 @@ ExternalProject_Add(ACVD    # Name for custom target
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
              -DVTK_DIR=${VTK_DIR} # pass VTK_DIR 
              -DCMAKE_SKIP_RPATH:BOOL=1 # not needed if make install
+			 -DBUILD_SHARED_LIBS:bool=FALSE
   #[CMAKE_CACHE_ARGS args...]  # Initial cache arguments, of the form -Dvar:string=on
  #--Build step-----------------
   #[BINARY_DIR dir]            # Specify build dir location
