@@ -14,4 +14,4 @@ dependencies:
   
 test:
   override:
-    - share/run_test
+    - chmod 755 share/run_test && share/run_test
