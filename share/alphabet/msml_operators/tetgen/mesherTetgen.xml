@@ -1,6 +1,7 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://sfb125.de/msml" name="mesherTetgen">
+               xsi:schemaLocation="http://sfb125.de/msml"
+               name="mesherTetgen">
 
     <runtime>
         <python module="msml.ext.tetgen" function="CreateVolumeMeshPython"/>
@@ -15,7 +16,7 @@
     </output>
 
     <parameters>
-          <arg name="meshFilename" physical="str" optional="true">
+        <arg name="meshFilename" physical="str" optional="true" target="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>

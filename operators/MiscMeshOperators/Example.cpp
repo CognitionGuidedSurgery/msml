@@ -192,7 +192,7 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, string("").c_str());
+    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
   }
 }
 
@@ -213,8 +213,31 @@ void TestPostProcessingOperators()
       (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "", 10);
 }
 
+std::vector<std::string> LoadFileNames(std::string theFileListTxt)
+{
+  std::vector<std::string> fileNames;
+	std::ifstream fileStream;
+	fileStream.open(theFileListTxt.c_str(), std::ifstream::in);
+  if (fileStream)
+  {
+	  std::string line;  
+	  while(getline(fileStream,line))
+	  {
+      fileNames.push_back(line);
+	  }
+	  fileStream.close();
+  }
+  return fileNames;
+}
+void TestImageSumPrivateData() //TODO: Add test with open accesss data.
+{
+  PostProcessingOperators::ImageWeightedSum("C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\sum_\\CTV_1*.vtk", true, "C:\\Projekte\\msml_dkfz\\examples\\j_mechanic\\sum_\\CTV_SUMMED_1_.vtk");
+}
+
 int main( int argc, char * argv[])
 {
+  TestImageSumPrivateData();
+  return 0;
   TestPostProcessingOperators();
   
   TestMiscMeshoperators::TestConvertLinearToQuadraticTetrahedralMesh();

@@ -1,0 +1,19 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ConvertVTKPolydataToCGALPolyhedron">
+
+	<runtime>
+		<python module="msml.ext.cgal" function="ConvertVTKPolydataToCGALPolyhedron" />
+	</runtime>
+	<input>
+        <arg name="inputMeshFile" logical="triangularMesh" physical="file.vtk"/>  
+    </input>
+
+    <output>
+        <arg name="" logical="outputMeshFile"/>
+    </output>
+
+    <parameters>
+		<arg name="outputMeshFile" physical="str"/>          
+    </parameters>
+</msml:operator>

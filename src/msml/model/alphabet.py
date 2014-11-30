@@ -293,6 +293,12 @@ class Slot(object):
         """the sort of this slot. derived from `physical_type` and `logical_type`
         :type: Sort
         """
+
+        self.target = False
+        """True iff. this slot holds an output filename.
+        :type: bool
+        """
+
         try:
             self.sort = get_sort(self.physical_type, self.logical_type)
         except AssertionError as ae:
@@ -405,6 +411,9 @@ class Operator(object):
         """execution of this operator, with the given arguments"""
         pass
 
+    def get_targets(self):
+        return [p.name for p in self.parameters.values()
+                if p.target]
 
     def validate(self):
         """validation of this operator
@@ -476,7 +485,8 @@ class PythonOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-        
+        log.debug("Parameter: %s" % self.acceptable_names() )
+        log.debug("Args: %s" % args)
         
         if sum('*' in str(arg) for arg in args):        
                 r = executeOperatorSequence(self, args, self.settings['seq_parallel']) 

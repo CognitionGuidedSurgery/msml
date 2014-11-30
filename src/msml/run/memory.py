@@ -127,10 +127,14 @@ class Memory(object):
 
 
     def update(self, other):
+        if not other:
+            return
+
         if isinstance(other, Memory):
             internal = other._internal
         else:
             internal = other
+
 
         assert isinstance(internal, dict)
 

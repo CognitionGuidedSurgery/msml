@@ -14,7 +14,7 @@
             <element name="output" type="msml:setofparameters_t"
                      minOccurs="1" maxOccurs="1">
             </element>
-            <element name="parameters" type="msml:setofparameters_t"
+            <element name="parameters" type="msml:setofparameters_with_target_t"
                      minOccurs="0" maxOccurs="1">
             </element>
             <element name="annotation" minOccurs="0" maxOccurs="1"
@@ -58,6 +58,19 @@
         <attribute name="optional" type="boolean" use="optional"
                    default="0"/>
         <attribute name="default" type="string" use="optional"/>
+    </complexType>
+
+    <complexType name="arg_with_target_t">
+        <annotation>
+            <documentation>
+                Argument of parameters with the @target attribute.
+            </documentation>
+        </annotation>
+        <complexContent>
+            <extension base="msml:arg_t">
+                <attribute name="target" type="boolean" use="optional"/>
+            </extension>
+        </complexContent>
     </complexType>
 
 
@@ -112,6 +125,14 @@
         </sequence>
     </complexType>
 
+    <complexType name="setofparameters_with_target_t">
+        <sequence minOccurs="0" maxOccurs="unbounded">
+            <choice minOccurs="1" maxOccurs="1">
+                <element name="arg" type="msml:arg_with_target_t"/>
+            </choice>
+        </sequence>
+    </complexType>
+
     <element name="operator" type="msml:operator_t"/>
 
 
@@ -136,7 +157,7 @@
                     <element name="constraints" type="msml:constraints_t"
                              minOccurs="0">
                     </element>
-                      <element name="mesh" type="msml:mesh_t" minOccurs="1"
+                    <element name="mesh" type="msml:mesh_t" minOccurs="1"
                              maxOccurs="1">
                     </element>
                     <element name="sets" type="msml:sets_t" minOccurs="0"

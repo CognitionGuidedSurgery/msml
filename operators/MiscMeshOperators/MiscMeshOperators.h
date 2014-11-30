@@ -436,7 +436,16 @@ MiscMeshOperators
 
     :returns:
     :rtype:
+	
+.. cpp:function:: bool MorphCube(const char *infile, const char *outfile, double toDilate, double toErode, std::vector<double> morph_kernel)
+	:param const char *infile:
+	:param const char *outfile:
+	:param double toDilate:
+	:param double toErode:
+	:param std::vector<double> morph_kernel:
 
+	:returns:
+	:rtype:
 */
 
 
@@ -495,8 +504,8 @@ namespace MSML {
         LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
         LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
 
-        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, const char* referenceCoordinateGrid);
-        LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, const char* referenceCoordinateGrid);
+        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
+        LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
 
         LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile);
         LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile );
@@ -522,9 +531,12 @@ namespace MSML {
         LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
         LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
         LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
-        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
 
-    } //end namespace MiscMeshOperators
+        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
+        LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
+
+		LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
+			                       double toErode, std::vector<double> morph_kernel);    } //end namespace MiscMeshOperators
 } // end namespace MSML
 
 

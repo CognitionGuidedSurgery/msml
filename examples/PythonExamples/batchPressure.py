@@ -20,7 +20,7 @@ from msml.frontend import App
 
 class Lungs(object):
     def __init__(self, msml_filename, p):
-        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p))
+        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p), executor='sequential')
         self.mf = self.app._load_msml_file(msml_filename)
         self._surface_pressure = p
     
@@ -32,8 +32,7 @@ class Lungs(object):
         return mem._internal['volumeMeasure']['volume']
 
 
-
-msml_file = os.path.abspath('../CGALi2vLungs/lungs_new.xml')
+msml_file = os.path.abspath('../CGALi2vLungs/Lungs_new.xml')
 for p in range (5, 80, 5):
     l = Lungs(msml_file, p)
     volume = l()

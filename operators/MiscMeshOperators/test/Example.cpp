@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE( TestExtractNodeSet)
         "nonExtistingNodeset-TestdataNeeded");
 }
 
-double abs(double d)
+double abs_msml(double d) //abs is already defined in msvc
 {
     return d<0?-d:d;
 }
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( TestExtractPointPositions )
     std::vector<double> aReturn = MiscMeshOperators::ExtractPointPositions(
         indices, INPUT("bunny_tets.vtk"));
 
-    BOOST_CHECK( abs(aReturn[1] - 0.0660446) > 0.000001 );
+    BOOST_CHECK( abs_msml(aReturn[1] - 0.0660446) > 0.000001 );
 }
 
 BOOST_AUTO_TEST_CASE( TestExtractVectorField )
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE( TestVoxelizeSurfaceMeshPython )
     MiscMeshOperators::VoxelizeSurfaceMeshPython(
         INPUT("/bunny_polydata.vtk"),
         OUTPUT("/TestVoxelizeSurfaceMeshPython.vtk"),
-        100, "");
+        100, 0, "", false, 0);
 }
 
 BOOST_AUTO_TEST_CASE( TestPostProcessingOperators)
