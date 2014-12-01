@@ -29,7 +29,6 @@
 #include "vtkUnstructuredGrid.h"
 
 #include <vtkTriangle.h>
-#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkTetra.h>
 #include <vtkCellArray.h>
 #include <vtkDataSetMapper.h>
@@ -44,7 +43,6 @@
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkPointSet.h>
 
 #include "vtkSTLWriter.h"
 #include "vtkSTLReader.h"
@@ -73,12 +71,9 @@
 #include "vtkLongLongArray.h"
 
 #include <vtkUnstructuredGridGeometryFilter.h>
-#include <vtkUnstructuredGridWriter.h>
 
 #include <vtkStructuredPoints.h>
 #include <vtkStructuredPointsReader.h>
-#include <vtkStructuredPointsWriter.h>
-#include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkCellLocator.h>
 
 #include <vtkImageInterpolator.h>
@@ -130,13 +125,7 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
         refPoints->DeepCopy(geom->GetOutput()->GetPoints());
         testPoints->DeepCopy(geom2->GetOutput()->GetPoints());
 
-
     }
-
-
-    //get the points
-//	vtkPoints* refPoints = referenceMesh->GetPoints();
-//	vtkPoints* testPoints = testMesh->GetPoints();
 
     unsigned int numberOfRefPoints = refPoints->GetNumberOfPoints();
 
@@ -150,35 +139,17 @@ void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* reference
 
     //initialize errorVec
     errorVec.resize(numberOfRefPoints);
-
-
-
-
     double* currentTestPoint = new double[3];
     double* currentRefPoint = new double[3];
     double currentError;
-
 
     for(unsigned int i=0; i<numberOfRefPoints; i++)
     {
         refPoints->GetPoint(i, currentRefPoint);
         testPoints->GetPoint(i, currentTestPoint);
-
-//			std::cout<<"Point No "<<i<<": ("<<currentRefPoint[0]<<","<<currentRefPoint[1]<<","<<currentRefPoint[2]<<"),("<<currentTestPoint[0]<<","<<currentTestPoint[1]<<","<<currentTestPoint[2]<<")\n";
-
         currentError =  sqrt(pow((currentRefPoint[0]-currentTestPoint[0]), 2) + pow((currentRefPoint[1]-currentTestPoint[1]), 2) + pow((currentRefPoint[2]-currentTestPoint[2]), 2));// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
-        //		currentError =  sqrt((currentRefPoint[0]-currentTestPoint[0])*(currentRefPoint[0]-currentTestPoint[0]) + (currentRefPoint[1]-currentTestPoint[1])*(currentRefPoint[1]-currentTestPoint[1]) + (currentRefPoint[2]-currentTestPoint[2])*(currentRefPoint[2]-currentTestPoint[2]) );// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
-
-        //		std::cout<<"CurrentError "<<currentError<<"\n";
-
         errorVec[i]= currentError;
-
     }
-
-
-
-
-
 }
 
 void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly)
@@ -247,9 +218,6 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
 
         currentError =  sqrt(pow((currentRefPoint[0]-currentTestPoint[0]), 2) + pow((currentRefPoint[1]-currentTestPoint[1]), 2) + pow((currentRefPoint[2]-currentTestPoint[2]), 2));// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
         //		currentError =  sqrt((currentRefPoint[0]-currentTestPoint[0])*(currentRefPoint[0]-currentTestPoint[0]) + (currentRefPoint[1]-currentTestPoint[1])*(currentRefPoint[1]-currentTestPoint[1]) + (currentRefPoint[2]-currentTestPoint[2])*(currentRefPoint[2]-currentTestPoint[2]) );// + pow(refPoints[1]-testPoints[1], 2) + pow(refPoints[2]-testPoints[2], 2) );
-
-        //		std::cout<<"CurrentError "<<currentError<<"\n";
-
         errorRMS += currentError;
 
         if(currentError > errorMax)
@@ -258,16 +226,8 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
         }
 
     }
-
-
     errorRMS = errorRMS / numberOfRefPoints;
     errorRMS = sqrt(errorRMS);
-
-
-
-
-
-
 }
 
 void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename)
@@ -680,33 +640,9 @@ std::string GenerateDVF(const char* referenceGridFilename, const char* deformedG
 void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkSmartPointer<vtkImageData> outputDVF, float interpolateOutsideDistance)
 {
     int* dims = outputDVF->GetDimensions();
-    //double* origin = outputDVF->GetOrigin();
+    double* origin = outputDVF->GetOrigin();
     double* spacing = outputDVF->GetSpacing();
 
-    //TODO: refactor this block wirh mishmeshoperators::
-    //generate empty vector field
-    double bounds[6];
-    referenceGrid->GetBounds(bounds);
-    double spacingArray[3];
-    spacingArray[0] = *spacing;
-    spacingArray[1] = *spacing;
-    spacingArray[2] = *spacing;
-    outputDVF->SetSpacing(spacingArray);
-    // compute dimensions
-    int dim[3];
-
-    for (int i = 0; i < 3; i++)
-    {
-        dim[i] = static_cast<int>(ceil((bounds[i * 2 + 1] - bounds[i * 2]) / spacingArray[i]));
-    }
-
-    outputDVF->SetDimensions(dim);
-    outputDVF->SetExtent(0, dim[0] - 1, 0, dim[1] - 1, 0, dim[2] - 1);
-    double origin[3];
-    origin[0] = bounds[0] + spacingArray[0] / 2;
-    origin[1] = bounds[2] + spacingArray[1] / 2;
-    origin[2] = bounds[4] + spacingArray[2] / 2;
-    outputDVF->SetOrigin(origin);
 #if VTK_MAJOR_VERSION <= 5
     outputDVF->SetScalarTypeToFloat();
     outputDVF->SetNumberOfScalarComponents(3);
@@ -875,11 +811,7 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
 }
 
 void ComputeOrganVolume(const char* volumeFilename){
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(volumeFilename);
-	reader->Update();
-	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+	vtkUnstructuredGrid* inputMesh = IOHelper::VTKReadUnstructuredGrid(volumeFilename);
 	vtkSmartPointer<vtkGeometryFilter> geometryFilter =
 		vtkSmartPointer<vtkGeometryFilter>::New();
 
@@ -893,47 +825,12 @@ void ComputeOrganVolume(const char* volumeFilename){
 	mass->Update();
 
 	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
-
-	/*vtkIdType* currentCellPoints;
-	vtkIdType numberOfNodesPerElement;
-	double volume = 0;
-	 for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
-	 {
-		 inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
-		 if(numberOfNodesPerElement == 4) {
-			 double tetraPoints[4][3];
-			 double *currentPoint;
-
-			 for(int j=0; j<numberOfNodesPerElement; j++)
-			 {
-				currentPoint = inputMesh->GetPoint(currentCellPoints[j]);
-
-				for(int m=0; m < 3; m++){
-					tetraPoints[j][m] = currentPoint[m];
-				}
-			 }
-			 vtkTetra* vtkTetra = vtkTetra::New();
-			 volume += vtkTetra->ComputeVolume(tetraPoints[0], tetraPoints[1], tetraPoints[2], tetraPoints[3]);
-	    }
-
-	 }
-
-	 cout << "Count Tetrahedron: " << inputMesh->GetNumberOfCells() << endl << "Volume: " << volume << " mm^3" << endl;*/
-
 }
 
 void ComputeDiceCoefficient(const char* filename, const char* filename2)
 {
-		vtkSmartPointer<vtkUnstructuredGridReader> reader =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		vtkSmartPointer<vtkUnstructuredGridReader> reader2 =
-		vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(filename);
-		reader->Update();
-		vtkUnstructuredGrid* currentGrid = reader->GetOutput();
-		reader2->SetFileName(filename2);
-		reader2->Update();
-		vtkUnstructuredGrid* referenceGrid = reader2->GetOutput();
+		vtkUnstructuredGrid* currentGrid =  IOHelper::VTKReadUnstructuredGrid(filename);
+		vtkUnstructuredGrid* referenceGrid = IOHelper::VTKReadUnstructuredGrid(filename2);
 
 		vtkSmartPointer<vtkGeometryFilter> geometryFilter =
 		vtkSmartPointer<vtkGeometryFilter>::New();
@@ -984,11 +881,7 @@ void ComputeDiceCoefficient(const char* filename, const char* filename2)
 }
 
 void ComputeOrganCrossSectionArea(const char* volumeFilename){
-	vtkSmartPointer<vtkUnstructuredGridReader> reader =
-	vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(volumeFilename);
-	reader->Update();
-	vtkUnstructuredGrid* inputMesh = reader->GetOutput();
+  vtkUnstructuredGrid* inputMesh = IOHelper::VTKReadUnstructuredGrid(volumeFilename);
 
 	vtkSmartPointer<vtkGeometryFilter> geometryFilter =
 	vtkSmartPointer<vtkGeometryFilter>::New();
@@ -1013,7 +906,7 @@ void ComputeOrganCrossSectionArea(const char* volumeFilename){
 
 	vtkSmartPointer<vtkCutter> cutter =
 	vtkSmartPointer<vtkCutter>::New();
-	cutter->SetInputConnection(reader->GetOutputPort());;
+  __SetInput(cutter,inputMesh);
 	cutter->SetCutFunction(plane);
 	cutter->Update();
 	vtkPolyData *pCutterOutput = cutter->GetOutput();

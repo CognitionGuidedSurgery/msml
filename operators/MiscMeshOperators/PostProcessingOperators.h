@@ -262,28 +262,22 @@ namespace PostProcessingOperators {
 LIBRARY_API  std::string ColorMeshPython(std::string modelFilename, std::string coloredModelFilename);
 LIBRARY_API  std::string ColorMeshFromComparisonPython(std::string modelFilename, std::string referenceFilename, std::string coloredModelFilename);
 
-	LIBRARY_API void ComputeOrganVolume(const char* volumeFilename);
-	LIBRARY_API void ComputeOrganCrossSectionArea(const char* volumeFilename);
-	LIBRARY_API void ComputeDiceCoefficient(const char* filename, const char* filename2);
+LIBRARY_API void ComputeOrganVolume(const char* volumeFilename);
+LIBRARY_API void ComputeOrganCrossSectionArea(const char* volumeFilename);
+LIBRARY_API void ComputeDiceCoefficient(const char* filename, const char* filename2);
 	
-	LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
-	LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
-
 //Returns 4-tuple: RMS Volume, Max Volume, RMS Surface, Max Surface
 // LIBRARY_API  std::vector<double> CompareMeshesPython(std::string referenceFilename, std::string testFilename);
 
 LIBRARY_API void ColorMesh(const char* modelFilename, const char* coloredModelFilename);
 LIBRARY_API void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
+LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
+LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 
-LIBRARY_API void CompareMeshes(std::vector<double>& errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
-LIBRARY_API void CompareMeshes(std::vector<double>& errorVec, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
-
 LIBRARY_API void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename);
 LIBRARY_API void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* referenceMesh,vtkUnstructuredGrid* coloredMesh);
-
-
 
 LIBRARY_API void MergeMeshes(vtkUnstructuredGrid* pointsMesh, vtkUnstructuredGrid* cellsMesh, vtkUnstructuredGrid* outputMesh);
 LIBRARY_API void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, const char* outputMeshFilename);
