@@ -9,6 +9,7 @@
 #include "MeshQualityOperators.h"
 #include "MeshInfoOperators.h"
 #include "FeatureExtractionOperators.h"
+#include "FeBioSupport.h"
 %}
 
 %include "../std.i"
@@ -26,5 +27,6 @@ namespace std {
 %include "MeshQualityOperators.h"
 %include "MeshInfoOperators.h"
 %include "FeatureExtractionOperators.h"
+%include "FeBioSupport.h"
 
  

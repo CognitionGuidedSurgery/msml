@@ -46,6 +46,7 @@ from .abaqus import AbaqusExporter
 from .sofanew import SofaExporter
 from .hiflow3 import HiFlow3Exporter
 from .semantic_tools import OntologyParser
+from .febio import FeBioExporter
 
 __all__ = ['register_exporter', 'get_exporter',
            'Exporter', 'NAbaqusExporter', 'NSofaExporter',
@@ -57,7 +58,7 @@ __all__ = ['register_exporter', 'get_exporter',
 __REGISTER = {'base': Exporter,
               "nabaqus": AbaqusExporter, 'nsofa': SofaExporter,
               "abaqus": AbaqusExporter, 'sofa': SofaExporter,
-              'hiflow3': HiFlow3Exporter,
+              'hiflow3': HiFlow3Exporter, 'febio' : FeBioExporter,
 }
 
 
