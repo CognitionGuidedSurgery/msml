@@ -169,18 +169,15 @@ class FeBioExporter(XMLExporter):
                 assert isinstance(constraint, ObjectElement)
                 currentConstraintType = constraint.tag
                 indices_vec = self.get_value_from_memory(constraint, 'indices')
-                print(type(indices_vec), indices_vec)
                 if currentConstraintType == "fixedConstraint":
                     fixedConstraintNode = self.sub("fix", boundaryNode)
                     bc = "xyz"
                     for index in map(str, indices_vec):
-                        print(index)
                         self.sub("node", fixedConstraintNode, id=int(index) + 1, bc=bc)
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     count += 1
                     pressure = - float(constraint.pressure)
-                    print(indices_vec)
                     pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count),
                                                                      str(pressure))
                     loadNode.append(etree.fromstring(pressureString))
