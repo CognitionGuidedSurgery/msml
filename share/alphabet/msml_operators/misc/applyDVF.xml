@@ -20,7 +20,7 @@
     <parameters>
         <arg name="outputDefImageFilename" physical="str" optional="true" />
         <arg name="reverseDirection" physical="bool" />
-        <arg name="voxelSize" pyhsical="str" optional="true" deault="0"/>
+        <arg name="voxelSize" physical="float" optional="true" default="0.0"/>
     </parameters>
 </msml:operator>
 

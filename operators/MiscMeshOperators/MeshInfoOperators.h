@@ -15,6 +15,7 @@
 namespace MSML {
 namespace MeshInfo {
 
+LIBRARY_API long long SurfaceMeshNumberOfPoints(std::string infile);
 LIBRARY_API long long SurfaceMeshNumberOfElements(std::string infile);
 LIBRARY_API double SurfaceMeshVolume(std::string infile);
 LIBRARY_API double SurfaceMeshSurfaceArea(std::string infile);

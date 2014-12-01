@@ -18,6 +18,16 @@ using namespace std;
 namespace MSML {
 namespace MeshInfo {
 
+LIBRARY_API long long SurfaceMeshNumberOfPoints(std::string infile) {
+    vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+    reader->SetFileName(infile.c_str());
+    reader->Update();
+
+    vtkPolyData *mesh = reader->GetOutput();
+
+    return mesh->GetNumberOfPoints();
+}
+
 long long SurfaceMeshNumberOfElements(std::string infile) {
     vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
     reader->SetFileName(infile.c_str());

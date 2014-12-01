@@ -32,7 +32,9 @@ __version__ = ""
 
 import shelve
 import os
-
+import json
+import atexit
+import gzip
 
 class ReRunCheck(object):
     """This class checks if the execution of operators can be omitted.
@@ -40,10 +42,32 @@ class ReRunCheck(object):
 
     """
 
-    def __init__(self, folder):
-        self._timestamp_file = folder / 'rerun.db'
-        self._timestamps = shelve.open(self._timestamp_file, writeback=True)
+    def __init__(self, folder, gzip_mode = True):
+        self.gzip = gzip_mode
+        if gzip_mode:
+            self._timestamp_file = folder / 'rerun.db.gz'
+            self._fopen = gzip.GzipFile
+        else:
+            self._timestamp_file = folder / 'rerun.db'
+            self._fopen = open
 
+    def __enter__(self):
+        self._timestamps = None
+        try:
+
+            with self._fopen(self._timestamp_file) as fp:
+                self._timestamps = json.load(fp)
+        except IOError:
+            pass
+
+        if self._timestamps is None:
+            self._timestamps = dict()
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        with self._fopen(self._timestamp_file, 'w') as fp:
+            json.dump(self._timestamps, fp)
 
     def check(self, task_id, input_files, arguments, output_file):
         """Determines if you need to rerun the operator, based on modify time.

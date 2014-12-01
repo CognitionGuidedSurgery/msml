@@ -31,11 +31,17 @@ ENDIF()
 # External Dependencies: 
 include(ExternalProject)
 
+
+message("VTK VERSION: ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
+
 IF( VTK_MAJOR_VERSION GREATER 5 )
   SET(ACVD_BRANCH "vtk6")
 ELSE ()
   SET(ACVD_BRANCH "master")
 ENDIF ()
+
+
+message("BRANCH: ${ACVD_BRANCH}")
 
 ExternalProject_Add(ACVD    # Name for custom target
   #[DEPENDS projects...]       # Targets on which the project depends
@@ -103,14 +109,16 @@ INCLUDE_DIRECTORIES(
   ${ACVDOperators_SOURCE_DIR}
   ${ACVDOperators_BINARY_DIR}
   ${PYTHON_INCLUDE_DIRS}
-  
   #for iohelper:
   ${CMAKE_SOURCE_DIR}/MiscMeshOperators
-
   # external project ACVD
   ${install_dir}/include/vtkVolumeProcessing/ 
   ${install_dir}/include/vtkDiscreteRemeshing/
   ${install_dir}/include/vtkSurface/
+  # external project ACVD / vtk6 branch
+  "${install_dir}/include/ACVD/Common/"
+  "${install_dir}/include/ACVD/DiscreteRemeshing/"
+  "${install_dir}/include/ACVD/VolumeProcessing/"
   )
 
 MSML_LIBRARY(
