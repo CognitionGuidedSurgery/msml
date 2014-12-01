@@ -98,6 +98,15 @@ SET(ACVDOperators_SRCS
   ACVDOperators.cpp
   )
 
+IF(WIN32 AND NOT CYGWIN)
+	SET(ACVDOperators_LIBS
+	  ${VTK_LIBRARIES}
+	  ${install_dir}/lib/vtkVolumeProcessing.lib
+	  ${install_dir}/lib/vtkSurface.lib
+	  ${install_dir}/lib/vtkDiscreteRemeshing.lib
+  MiscMeshOperators
+  )
+ELSE()
 SET(ACVDOperators_LIBS
   ${VTK_LIBRARIES}
   ${install_dir}/lib/libvtkVolumeProcessing.so
@@ -105,6 +114,8 @@ SET(ACVDOperators_LIBS
   ${install_dir}/lib/libvtkDiscreteRemeshing.so    
   MiscMeshOperators
   )
+ENDIF()
+
 
 INCLUDE_DIRECTORIES(
   ${ACVDOperators_SOURCE_DIR}
