@@ -19,5 +19,6 @@ envconfg.py
 examples
 
 operators/bin/
+operators/bin_2010/
 operators/CMade/
 src/msml/envconfig.py
