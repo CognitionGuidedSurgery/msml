@@ -6,24 +6,17 @@
 
 
     <description>
-        Set the pressure constraint for a set of indices. (N/m² = (kg/s²)/m²)
+        Sets a load for specified nodes. The force vector can either be the same for all nodes (i.e. one triple) or one force vector has to be specified for each node.
     </description>
 
     <parameters>
-       <!-- <arg name="delay" physical="float">
-            <meta key="doc" value="when does the pressure begin to act."/>
+
+        <arg name="indices" physical="ListI" logical="IndexSet">
+            <meta key="doc" value="Set indices of points subjected to force, separated by spaces."/>
         </arg>
 
-        <arg name="duration" physical="float">
-            <meta key="doc" value="how long does the pressure act."/>
-        </arg>
--->
-        <arg name="indices" physical="vector.int">
-            <meta key="doc" value="Set indices of points subjected to pressure, separated by spaces."/>
-        </arg>
-
-        <arg name="force" physical="vector.float">
-            <meta key="doc" value="Set the pressure force as an 3D-vector."/>
+        <arg name="force" physical="ListF" logical="Force">
+            <meta key="doc" value="Set the force vector of the points given in the indices. Either provide one force vector for all points (DIM = 3) or a force triple for each point (DIM = 3*DIM(indices))."/>
         </arg>
     </parameters>
 </msml:element>

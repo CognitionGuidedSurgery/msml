@@ -337,7 +337,7 @@ class HiFlow3Exporter(Exporter):
             elif constraint.tag == "displacementConstraint":
                 disp_vector = constraint.displacement.split(" ")
                 bcdata.dc.append(count, points, disp_vector)
-            elif constraint.tag == "pressureConstraint":
+            elif constraint.tag == "surfacePressure":
                 force_vector = constraint.pressure.split(" ")
                 bcdata.fp.append(count, points, force_vector)
 

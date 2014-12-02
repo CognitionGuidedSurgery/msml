@@ -350,6 +350,8 @@ class SofaExporter(XMLExporter):
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
                     p = self.get_value_from_memory(constraint, 'pressure')
+                    if len(p) != 1:
+                        p=p[0] #bad hack to implement the new defintion of surfacePressure (pressure can be vector)
                     p_speed = p / 10
 
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
