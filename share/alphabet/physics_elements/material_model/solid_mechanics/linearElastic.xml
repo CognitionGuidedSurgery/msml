@@ -6,16 +6,16 @@
               category="material" quantity="single">
 
     <description>
-        Choose a linear elastic model
+        Linear elastic model
     </description>
 
 
     <parameters>
-        <arg name="poissonRatio" physical="float" default="0.3">
+        <arg name="poissonRatio" physical="float" default="0.3" logical="Scalar">
             <meta key="doc" value="Set the poisson ratio of the model"/>
         </arg>
 
-        <arg name="youngModulus" default="3000" physical="int">
+        <arg name="youngModulus" default="3000" physical="int" logical="Scalar">
             <meta key="doc" value="Set the young modulus of the model"/>
         </arg>
     </parameters>

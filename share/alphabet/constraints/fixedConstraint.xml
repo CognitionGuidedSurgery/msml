@@ -5,14 +5,11 @@
 
 
     <description>
-        Set fixed points
+        Set the displacement of the provided points to zero (fixed points).
     </description>
 
     <parameters>
-       <!-- <arg name="time" physical="float">
-            <meta key="doc" value="Set time."/>
-        </arg> -->
-        <arg name="indices" physical="vector.int">
+        <arg name="indices" physical="ListI" logical="IndexSet">
             <meta key="doc" value="Set indices of fixed points separated by spaces."/>
         </arg> 
     </parameters>

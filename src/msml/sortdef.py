@@ -185,6 +185,9 @@ class Vector(PhysicalQuantities): pass
 class Displacement(Vector): pass
 
 
+class Position(Vector): pass
+
+
 class Force(Vector): pass
 
 

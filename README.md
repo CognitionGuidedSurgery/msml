@@ -42,11 +42,11 @@ Please feel free to ask if you have any problems installing, running or extendin
 
 ## Installation:
 
-You need Python, Boost and the visualization toolkit (VTK) in order to run MSML. Additional components need Tetgen, CGAL and VCG. Please refer to our detailed installation guides for [Linux](https://github.com/CognitionGuidedSurgery/msml/wiki/Installation-Linux) and [Windows](https://github.com/CognitionGuidedSurgery/msml/wiki/Installation-Windows) in the Github-Wiki.
+You need Python, Boost and the visualization toolkit (VTK) in order to run MSML. Additional components need Tetgen, CGAL and VCG. Please refer to our detailed installation guides for [Linux](http://msml.readthedocs.org/en/latest/Installation.html#installation-linux) and [Windows](https://github.com/CognitionGuidedSurgery/msml/wiki/Installation-Windows) in the Github-Wiki.
 
 ## First steps
 
-Run the src/msml.py file with the -h option for help.
+Run the src/msml.py file with the "exec -h" option for help.
 
 MSML contains several simple scenarios to get you started quickly. Here are some examples
 1. In order to generate a volume mesh of the Stanford bunny using Tetgen and export the simulation to the SOFA framework type:

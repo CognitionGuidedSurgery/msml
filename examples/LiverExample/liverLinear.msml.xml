@@ -35,7 +35,7 @@
 
             <constraints>
                 <constraint>
-                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+                    <fixedConstraint id="bodyConstraint" indices="${bottomToIndexGroup}"/>
                 </constraint>
             </constraints>
 
@@ -57,7 +57,7 @@
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="100"/>
+            <step name="initial" dt="0.05" iterations="150"/>
         </simulation>
     </environment>
 

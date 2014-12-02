@@ -1,0 +1,24 @@
+<!-- This physical element represents the linear force field model -->
+
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="linearElasticMaterial"
+              category="material" quantity="single">
+
+    <description>
+       Co-rotated elastic model (geometrically non-linear)
+    </description>
+
+
+    <parameters>
+        <arg name="poissonRatio" physical="float" default="0.3" logical="Scalar">
+            <meta key="doc" value="Set the poisson ratio of the model"/>
+        </arg>
+
+        <arg name="youngModulus" default="3000" physical="int" logical="Scalar">
+            <meta key="doc" value="Set the young modulus of the model"/>
+        </arg>
+    </parameters>
+
+
+</msml:element>

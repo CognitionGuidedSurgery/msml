@@ -172,6 +172,7 @@ DEFAULTS_SORTS = {
         Tensor,
         Stress,
         Displacement,
+        Position,
     ],
 
     'physical': [
