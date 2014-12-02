@@ -181,7 +181,7 @@ MiscMeshOperators
 
 
 
-.. cpp:function:: std::string ExtractSurfaceMeshPython( std::string infile, std::string outfile)
+.. cpp:function:: std::string ExtractSurfaceMesh( std::string infile, std::string outfile)
 
     :param std\:\:string infile:
     :param std\:\:string outfile:
@@ -214,7 +214,7 @@ MiscMeshOperators
     :returns:
     :rtype:
 
-.. cpp:function:: bool SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+.. cpp:function:: bool vtkSmoothMesh(const char* infile, const char* outfile, int iterations,
 										  double feature_angle, double pass_band,bool boundary_smoothing,
 										  bool feature_edge_smoothing, bool non_manifold_smoothing,
 										  bool normalized_coordinates)
@@ -349,7 +349,7 @@ MiscMeshOperators
 
 
 
-.. cpp:function:: std::string VoxelizeSurfaceMeshPython(std::string infile, std::string outfile, int resolution)
+.. cpp:function:: std::string VoxelizeSurfaceMesh(std::string infile, std::string outfile, int resolution)
 
     :param std\:\:string infile:
     :param std\:\:string outfile:
@@ -474,11 +474,11 @@ namespace MSML {
         LIBRARY_API  bool VTKToInp( const char* infile, const char* outfile);
         LIBRARY_API  bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile);
 
-        LIBRARY_API  std::string ExtractSurfaceMeshPython( std::string infile, std::string outfile);
+        LIBRARY_API  std::string ExtractSurfaceMesh( std::string infile, std::string outfile);
         LIBRARY_API  bool ExtractSurfaceMesh( const char* infile, const char* outfile);
         LIBRARY_API  bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
 
-		LIBRARY_API  const char* SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+		LIBRARY_API  const char* vtkSmoothMesh(const char* infile, const char* outfile, int iterations,
 										  double feature_angle, double pass_band,bool boundary_smoothing,
 										  bool feature_edge_smoothing, bool non_manifold_smoothing,
 										  bool normalized_coordinates);
@@ -503,7 +503,7 @@ namespace MSML {
         LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
         LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
 
-        LIBRARY_API   std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
+        LIBRARY_API   std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
         LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
 
         LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile);
