@@ -509,7 +509,7 @@ void MergeMeshes(const char* pointsMeshFilename, const char* cellsMeshFilename, 
     IOHelper::VTKWriteUnstructuredGrid(outputMeshFilename, mergedGrid);
 }
 
- std::string ApplyDVFPython(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, float voxelSize)
+ std::string ApplyDVF(const char* referenceImage, const char* DVF, const char* outputDeformedImage, bool reverseDirection, float voxelSize)
 {
     vtkSmartPointer<vtkImageData> refImage =  IOHelper::VTKReadImage(referenceImage);
     vtkSmartPointer<vtkImageData> dvfVecImage = IOHelper::VTKReadImage(DVF);   
