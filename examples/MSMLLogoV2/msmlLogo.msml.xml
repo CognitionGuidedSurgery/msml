@@ -50,9 +50,9 @@
 
     <workflow>
 
-        <mesherCGALs2v id="msmlLogoVolumeMesher" meshFilename="${vol_mesh_filename}" surfaceMesh="${input_surf_mesh}"
-                       preserveFeatures="true" facet_angle="30" facet_size="0.2" facet_distance="0.3"
-                       cell_radius_edge_ratio="3" cell_size="0.2" odt="false" lloyd="false" pertube="true"
+        <CGALMeshVolumeFromVoxels id="msmlLogoVolumeMesher" meshFilename="${vol_mesh_filename}" surfaceMesh="${input_surf_mesh}"
+                       preserveFeatures="true" facetAngle="30" facetSize="0.2" facetDistance="0.3"
+                       cellRadiusEdgeRatio="3" cellSize="0.2" odt="false" lloyd="false" pertube="true"
                        exude="true"/>
 
         <boxROIToIndexOperator id="bodyToIndexGroup"

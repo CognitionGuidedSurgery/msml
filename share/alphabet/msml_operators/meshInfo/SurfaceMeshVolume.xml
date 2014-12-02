@@ -8,7 +8,7 @@
 	</runtime>
 
 	<input>
-		<arg name="mesh" logical="surface" physical="VTK" />
+		<arg name="mesh" logical="TriangularSurface" physical="file.vtk" />
 	</input>
 
 	<output>

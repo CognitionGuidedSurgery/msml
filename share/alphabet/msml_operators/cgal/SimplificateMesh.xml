@@ -1,33 +1,33 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="SimplificateMesh">
+	xsi:schemaLocation="http://sfb125.de/msml" name="CGALSimplificateSurface">
 
-	<runtime>
-		<python module="msml.ext.cgal" function="SimplificateMesh" />
-	</runtime>
-	<input>
-        <arg name="inputMeshFile" logical="triangularMesh" physical="file.vtk"/>  
+    <runtime>
+        <python module="msml.ext.cgal" function="CGALSimplificateSurface" />
+    </runtime>
+    <input>
+        <arg name="inputMeshFile" logical="TriangularSurface" physical="file.vtk"/>  
     </input>
 
     <output>
-        <arg name="outputMeshFile" logical="triangularMesh" physical="file.vtk"/>
+        <arg name="outputMeshFile" logical="TriangularSurface" physical="file.vtk"/>
     </output>
 
     <parameters>
-		<arg name="outputMeshFile" physical="str"/> 
-		<arg name="stopnr" physical="int">
-			<meta key="doc">
+        <arg name="outputMeshFile" physical="str" optional="true" target="true"/> 
+        <arg name="stopnr" physical="int">
+            <meta key="doc">
 				For the stop predicate:
 				If number of undirected edges left in surface drops below this value, 
 				simplification will stop
             </meta>
         </arg>  			
-		<arg name="box" physical="vector.float" optional="true" default="-1">
-			<meta key="doc">
+        <arg name="box" physical="vector.float" optional="true" default="-1">
+            <meta key="doc">
 				Edges in boundinx box defined by this vector will be excluded from simplification.
 				If not exactly 6 values are given, all edges will be subjected to simplification.
-			</meta>
-		</arg>
-		
+            </meta>
+        </arg>
+
     </parameters>
 </msml:operator>
