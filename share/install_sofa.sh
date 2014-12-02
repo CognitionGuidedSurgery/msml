@@ -13,10 +13,11 @@ if [ ! -d $SOFADIR ]; then
     git clone --depth 1 git://scm.gforge.inria.fr/sofa/sofa.git $SOFADIR
 fi
 
-if [ ! -d $BUILD_DIR ]; then
+#if [ ! -d $BUILD_DIR ]; then
     mkdir $BUILD_DIR
     cd $BUILD_DIR
     cmake ../$SOFADIR
+    cmake ../$SOFADIR
     make -j 2
     cd ..
-fi
+#fi
