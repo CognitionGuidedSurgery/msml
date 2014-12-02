@@ -16,7 +16,8 @@ dependencies:
 
 test:
   override:
-    - chmod 755 share/run_test && share/run_test
+    - chmod 755 share/run_test.sh && share/run_test.sh
+    - cd cbuild/ && make test -j 2 
 
 
 
