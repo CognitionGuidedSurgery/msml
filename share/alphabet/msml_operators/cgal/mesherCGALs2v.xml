@@ -1,8 +1,8 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://sfb125.de/msml" name="mesherCGALs2v">
+               xsi:schemaLocation="http://sfb125.de/msml" name="CGALMeshVolumeFromSurface">
     <runtime>
-        <python module="msml.ext.cgal" function="CreateVolumeMeshs2v"/>
+        <python module="msml.ext.cgal" function=" "/>
     </runtime>
 
     <input>
@@ -20,11 +20,11 @@
             </meta>
         </arg>
         <arg name="preserveFeatures" physical="bool"/>
-        <arg name="facet_angle" physical="float"/>
-        <arg name="facet_size" physical="float"/>
-        <arg name="facet_distance" physical="float"/>
-        <arg name="cell_radius_edge_ratio" physical="float"/>
-        <arg name="cell_size" physical="float"/>
+        <arg name="facetAngle" physical="float"/>
+        <arg name="facetSize" physical="float"/>
+        <arg name="facetDistance" physical="float"/>
+        <arg name="cellRadiusEdgeRatio" physical="float"/>
+        <arg name="cellSize" physical="float"/>
         <arg name="odt" physical="bool" optional="true" default="false"/>
         <arg name="lloyd" physical="bool" optional="true" default="false" />
         <arg name="pertube" physical="bool" optional="true" default="false" />

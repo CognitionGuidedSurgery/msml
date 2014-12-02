@@ -137,7 +137,7 @@ namespace MSML{
                                                    vtkSmartPointer<vtkPolyData> polydata);
 
 
-        std::string CreateVolumeMeshi2v(const char* infile,
+        std::string CGALMeshVolumeFromVoxels(const char* infile,
                                         const char* outfile,
                                         double theFacetAngle,
                                         double theFacetSize,
@@ -344,7 +344,7 @@ namespace MSML{
   }
 
         /**
-           Used by SimplificateMesh
+           Used by CGALSimplificateSurface
            Map for storage of edges to be marked as non-removable.
            Code from: https://doc.cgal.org/4.2/CGAL.CGAL.Triangulated-Surface-Mesh-Simplification/html/Surface_mesh_simplification_2edge_collapse_constrained_polyhedron_8cpp-example.html
         */
@@ -367,7 +367,7 @@ namespace MSML{
   Simplificate a mesh using CGALs Triangulated Surface Mesh Simplification
   (http://doc.cgal.org/latest/Surface_mesh_simplification/index.html#Chapter_Triangulated_Surface_Mesh_Simplification)
   */
-   const char* SimplificateMesh(const char* inputMeshFile,
+   const char* CGALSimplificateSurface(const char* inputMeshFile,
                         const char* outputMeshFile,
                         int stopnr,
                         std::vector<double> box = std::vector<double>()) {
@@ -425,7 +425,7 @@ namespace MSML{
   (http://doc.cgal.org/latest/Subdivision_method_3/index.html)
   Works for polyhedral meshes only.
   */
-  const char* CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
+  const char* CGALCalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
   {
 	  //read VTK Polydata
       vtkSmartPointer<vtkPolyData> polydata = IOHelper::VTKReadPolyData(infile);
@@ -453,7 +453,7 @@ namespace MSML{
 	  else
 	  {
 		  //invalid method name, log and exit!
-		  log_error()<<"CalculateSubdivisionSurface failed, invalid method name: "<<method<<std::endl;
+		  log_error()<<"CGALCalculateSubdivisionSurface failed, invalid method name: "<<method<<std::endl;
 		  return false;
 	  }
 	  //now create polydata-object
@@ -552,7 +552,7 @@ namespace MSML{
         /*
           Operator for vtkPolyData to CGAL off conversion.
         */
-        bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile,
+        const char * ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile,
                                                 const char *outputMeshFile) {
             vtkSmartPointer<vtkPolyData> inputPoly = IOHelper::VTKReadPolyData(inputMeshFile);
 
@@ -562,7 +562,7 @@ namespace MSML{
             offout.open(outputMeshFile);
             offout<<P;
             offout.close();
-            return true;
+            return outputMeshFile;
         }
 
 
@@ -573,7 +573,7 @@ namespace MSML{
         /// <param name="outfile">The outfile.</param>
         /// <param name="preserveBoundary">The preserve boundary.</param>
         /// <returns></returns>
-        std::string CreateVolumeMeshs2v(const char* infile,
+        std::string CGALMeshVolumeFromSurface(const char* infile,
                                         const char* outfile,
                                         bool thePreserveFeatures,
                                         double theFacetAngle,
@@ -595,22 +595,22 @@ namespace MSML{
             vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkUnstructuredGrid::New();
 
             MiscMeshOperators::ConvertVTKToOFF(inputPoly,
-                                               (string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
+                                               (string(outfile) + "CGALMeshVolumeFromSurface__TEMP.off").c_str());
     C3t3_poly c3t3;
 
     try
     {
-      c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
+      c3t3 = mesh_polyhedral_Domain(OpenOffSurface((string(outfile) + "CGALMeshVolumeFromSurface__TEMP.off").c_str()), thePreserveFeatures, theFacetAngle, theFacetSize, theFacetDistance,
         theCellRadiusEdgeRatio, theCellSize, theOdtSmoother, theLloydSmoother, thePerturber, theExuder);
     }
     catch (...) //only works in debug mode - release version crashes with access violation.
     {
-      log_error() << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CreateVolumeMeshs2v__TEMP.off" << std::endl;
+      log_error() << "error in CGAL::make_mesh_3 with meshfile: " << outfile  << "CGALMeshVolumeFromSurface__TEMP.off" << std::endl;
       return "error in CGAL::make_mesh_3";
     }
 
     output_c3t3_to_vtk_unstructured_grid(c3t3, outputMesh);
-    remove((string(outfile) + "CreateVolumeMeshs2v__TEMP.off").c_str());
+    remove((string(outfile) + "CGALMeshVolumeFromSurface__TEMP.off").c_str());
 
     //write vtu
     IOHelper::VTKWriteUnstructuredGrid(outfile, outputMesh);

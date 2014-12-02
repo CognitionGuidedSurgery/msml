@@ -49,9 +49,9 @@
 
     <workflow>
 
-        <mesherCGALi2v id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
-                       facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3"
-                       cell_size="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
+                       facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
+                       cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
 
         <voxelize id="voxelizer" surfaceMesh="${vtkConverter}" imageFilename="BunnyVoxelImage.vti" resolution="110"/>
 

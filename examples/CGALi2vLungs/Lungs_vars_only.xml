@@ -61,8 +61,8 @@
     <ExtractAllSurfacesByMaterial id="surfaceExtraction" meshIn="${VolumeMesher}" meshOutFilename="${combo_mesh_filename}"
                                       cut="false"/>
 
-    <mesherCGALi2v id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
-                       facet_angle="20" facet_size="12" facet_distance="3" cell_radius_edge_ratio="3" cell_size="${meshCellSize}" />
+    <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
+                       facetAngle="20" facetSize="12" facetDistance="3" cellRadiusEdgeRatio="3" cellSize="${meshCellSize}" />
 
     <materialId-to-index id="bodyToIndexGroup"
                              num="${aMatId}" mesh="${surfaceExtraction}"

@@ -47,9 +47,9 @@
 
     <workflow>
 
-        <mesherCGALs2v id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
-                       preserveFeatures="false" facet_angle="20" facet_size="0.008" facet_distance="0.005"
-                       cell_radius_edge_ratio="3" cell_size="0.02" odt="false" lloyd="false" pertube="false"
+        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+                       facetAngle="20" facetSize="0.008" facetDistance="0.005"
+                       cellRadiusEdgeRatio="3" cellSize="0.02" odt="false" lloyd="false" pertube="false"
                        exude="false"/>
 
         <boxROIToIndexOperator id="bodyToIndexGroup"

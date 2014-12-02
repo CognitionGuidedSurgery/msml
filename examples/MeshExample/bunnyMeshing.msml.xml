@@ -17,13 +17,13 @@
         
         <SimplificateMesh id="aSimplificateMesh" inputMeshFile="${aSmoothMeshPython}" outputMeshFile="BunnyVoxelImageMarchingSimpl.vtk" stopnr="1000" />
 
-        <mesherCGALs2v id="bunnyVolumeMesher2" surfaceMesh="${aSimplificateMesh}" meshFilename="bunnyVolumeFromPolydata.vtk"
-                       preserveFeatures="false" facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3"
-                       cell_size="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher2" surfaceMesh="${aSimplificateMesh}" meshFilename="bunnyVolumeFromPolydata.vtk"
+                       preserveFeatures="false" facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
+                       cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
                        
-        <mesherCGALi2v id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
-                       facet_angle="20" facet_size="0.005" facet_distance="0.005" cell_radius_edge_ratio="3"
-                       cell_size="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
+                       facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
+                       cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
     </workflow>
 
 </msml:msml>

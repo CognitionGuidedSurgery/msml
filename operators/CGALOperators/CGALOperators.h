@@ -22,91 +22,12 @@
 #include "../MSML_Operators.h"
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
-/*MSMLDOC
-
-CGALOperators
-=============
-
-.. cpp:namespace:: MSML::CGALOperators
-
-.. cpp:function:: std::string \
-         CreateVolumeMeshs2v(const char* infile, const char* outfile,\
-                             bool thePreserveFeatures, double theFacetAngle,\
-                             double theFacetSize, double theFacetDistance,\
-                             double theCellRadiusEdgeRatio, double theCellSize,\
-                             bool theOdtSmoother, bool theLloydSmoother,\
-                             bool thePerturber, bool theExuder)
-
-        :param const char* infile:
-        :param const char* outfile:
-        :param bool thePreserveFeatures:
-        :param double theFacetAngle:
-        :param double theFacetSize:
-        :param double theFacetDistance:
-        :param double theCellRadiusEdgeRatio:
-        :param double theCellSize:
-        :param bool theOdtSmoother:
-        :param bool theLloydSmoother:
-        :param bool thePerturber:
-        :param bool theExuder:
-
-        :returns:
-        :rtype:
-
-
-.. cpp:function:: std::string \
-         CreateVolumeMeshi2v(const char* infile, const char* outfile,  \
-                             double theFacetAngle, double theFacetSize,\
-                             double theFacetDistance, double theCellRadiusEdgeRatio, \
-                             double theCellSize, bool theOdtSmoother, \
-                             bool theLloydSmoother, bool thePerturber, bool theExuder)
-
-
-        :param const char* infile:
-        :param const char* outfile:
-        :param bool thePreserveFeatures:
-        :param double theFacetAngle:
-        :param double theFacetSize:
-        :param double theFacetDistance:
-        :param double theCellRadiusEdgeRatio:
-        :param double theCellSize:
-        :param bool theOdtSmoother:
-        :param bool theLloydSmoother:
-        :param bool thePerturber:
-        :param bool theExuder:
-
-        :returns:
-        :rtype:
-		
-	.. cpp:function:: bool CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method)
-        :param const char* infile:
-        :param const char* outfile: 
-		:param int subdivisions:
-		:param std::string method;
-
-        :returns:
-        :rtype:
-	.. cpp:function:: bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile)
-        :param vtkPolyData *inputMeshFile:
-        :param Polyhedron *outputMeshFile: 
-
-        :returns:
-        :rtype:
-	.. cpp:function:: bool SimplificateMesh(const char *inputMeshFile, const char *outputMeshFile, int stopnr,std::vector<double> box)
-        :param vtkPolyData *inputMeshFile:
-        :param Polyhedron *outputMeshFile: 
-		:param int stopnr: 
-		:param std::vector<double> box:
-	
-        :returns:
-        :rtype:
-*/
 
 namespace MSML {
  namespace  CGALOperators {
      //vtk polydata -> tetrahedron unstructured grid vtk
      LIBRARY_API std::string
-         CreateVolumeMeshs2v(const char* infile, const char* outfile,
+         CGALMeshVolumeFromSurface(const char* infile, const char* outfile,
                              bool thePreserveFeatures, double theFacetAngle,
                              double theFacetSize, double theFacetDistance,
                              double theCellRadiusEdgeRatio, double theCellSize,
@@ -115,14 +36,14 @@ namespace MSML {
 
      //image vtk => tetrahedron unstructured grid vtk
      LIBRARY_API std::string
-         CreateVolumeMeshi2v(const char* infile, const char* outfile,
+         CGALMeshVolumeFromVoxels(const char* infile, const char* outfile,
                              double theFacetAngle, double theFacetSize,
                              double theFacetDistance, double theCellRadiusEdgeRatio,
                              double theCellSize, bool theOdtSmoother,
                              bool theLloydSmoother, bool thePerturber, bool theExuder);
 							 
-	 LIBRARY_API const char* CalculateSubdivisionSurface(const char* infile, const char* outfile, int subdivisions, std::string method);
-	 LIBRARY_API bool ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile);	 
-	 LIBRARY_API const char* SimplificateMesh(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
+	 LIBRARY_API const char* CGALCalculateSubdivisionSurface(const char* infile, const char* targetMeshFilename, int subdivisions, std::string method);
+	 LIBRARY_API const char* ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile);	 
+	 LIBRARY_API const char* CGALSimplificateSurface(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
  }
 }

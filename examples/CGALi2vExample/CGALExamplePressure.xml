@@ -48,8 +48,8 @@
     </scene>
 
     <workflow>    
-         <mesherCGALi2v id="VolumeMesher" meshFilename="${input_vol_mesh}" image="${input_image}" 
-					facet_angle="20" facet_size="12" facet_distance="12" cell_radius_edge_ratio="3" cell_size="30" odt="false" lloyd="false"  pertube="false" exude="false" />
+         <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${input_vol_mesh}" image="${input_image}" 
+					facetAngle="20" facetSize="12" facetDistance="12" cellRadiusEdgeRatio="3" cellSize="30" odt="false" lloyd="false"  pertube="false" exude="false" />
         <ExtractAllSurfacesByMaterial id="SurfaceExtractor" meshIn="${VolumeMesher}" meshOutFilename="${input_vol_surf_mesh}" cut="false"/>      
         <boxROIToIndexOperator id="bodyToIndexGroup"
                                box="-10 -10 -10 300 300 300" mesh="${SurfaceExtractor}"
