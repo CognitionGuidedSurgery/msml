@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="apply-dvf">
+	xsi:schemaLocation="http://sfb125.de/msml" name="ApplyDVF">
 
     <runtime>
-        <python module="msml.ext.misc" function="ApplyDVFPython" />
+        <python module="msml.ext.misc" function="ApplyDVF" />
     </runtime>
 
     <input>
-        <arg name="referenceImage" logical="Image3D" physical="VTK" />
-        <arg name="dvf" logical="vector" physical="VTK" />
+        <arg name="referenceImage" logical="Image3D" physical="file.vtk" />
+        <arg name="dvf" logical="VectorImage3D" physical="file.vtk" />
     </input>
 
     <output>
-        <arg name="outputDefImage" logical="Image3D" physical="VTI" />
+        <arg name="outputDefImage" logical="Image3D" physical="file.vtk" />
     </output>
 
 
     <parameters>
-        <arg name="outputDefImageFilename" physical="str" optional="true" />
+        <arg name="outputDefImageFilename" physical="str" optional="true" target="true"/>
         <arg name="reverseDirection" physical="bool" />
         <arg name="voxelSize" physical="float" optional="true" default="0.0"/>
     </parameters>

@@ -49,19 +49,19 @@
 
     <workflow>
 
-        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" image="${voxelizer}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
+        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" image="${VoxelizeSurfaceMeshr}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
                        facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
                        cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
 
-        <voxelize id="voxelizer" surfaceMesh="${vtkConverter}" imageFilename="BunnyVoxelImage.vti" resolution="110"/>
+        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr" surfaceMesh="${vtkConverter}" targetImageFilename="BunnyVoxelImage.vti" resolution="110"/>
 
-        <stl2vtk id="vtkConverter" STLMesh="BunnyXL.stl" vtkFilename="BunnySurface.vtk"/>
+        <ConvertSTLToVTK id="vtkConverter" STLMesh="BunnyXL.stl" targetFilename="BunnySurface.vtk"/>
 
-        <boxROIToIndexOperator id="bodyToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup"
                                box="-0.1 -0.03  -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"
                                select="elements"/>
 
-        <boxROIToIndexOperator id="bottomToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
                                select="points"/>
     </workflow>

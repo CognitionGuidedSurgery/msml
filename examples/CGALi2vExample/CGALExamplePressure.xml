@@ -51,14 +51,14 @@
          <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${input_vol_mesh}" image="${input_image}" 
 					facetAngle="20" facetSize="12" facetDistance="12" cellRadiusEdgeRatio="3" cellSize="30" odt="false" lloyd="false"  pertube="false" exude="false" />
         <ExtractAllSurfacesByMaterial id="SurfaceExtractor" meshIn="${VolumeMesher}" meshOutFilename="${input_vol_surf_mesh}" cut="false"/>      
-        <boxROIToIndexOperator id="bodyToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup"
                                box="-10 -10 -10 300 300 300" mesh="${SurfaceExtractor}"
                                select="elements"/>
 
-        <boxROIToIndexOperator id="bottomToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-10 250 -10 300 300 300" mesh="${SurfaceExtractor}"
                                select="points"/>
-         <materialId-to-index id="pressureIndexGroup" num="193" mesh="${SurfaceExtractor}" type="faces" />
+         <computeIndicesFromMaterialId id="pressureIndexGroup" num="193" mesh="${SurfaceExtractor}" type="faces" />
     </workflow>
 
 

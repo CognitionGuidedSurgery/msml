@@ -1,17 +1,16 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="vtk-mesh-to-febio-mesh-str">
+	xsi:schemaLocation="http://sfb125.de/msml" name="ConvertVTKMeshToFeBioMeshString">
 	<runtime>
 		<python module="msml.ext.misc" function="ConvertVTKMeshToFeBioMeshString" />
 	</runtime>
 
 	<input>
-		<arg name="inputMesh" logical="linearTetMesh+quadraticTetMesh"
-			physical="file.vtk" />
+		<arg name="inputMesh" logical="VolumeMesh" physical="file.vtk" />
 	</input>
 
 	<output>
-		<arg name="mesh" logical="linearTetMesh+quadraticTetMesh" physical="string" />
+		<arg name="mesh" logical="VolumeMesh" physical="string" />
 	</output>
 
 	<parameters>

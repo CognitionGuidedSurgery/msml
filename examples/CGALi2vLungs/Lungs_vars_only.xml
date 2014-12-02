@@ -64,31 +64,31 @@
     <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
                        facetAngle="20" facetSize="12" facetDistance="3" cellRadiusEdgeRatio="3" cellSize="${meshCellSize}" />
 
-    <materialId-to-index id="bodyToIndexGroup"
+    <computeIndicesFromMaterialId id="bodyToIndexGroup"
                              num="${aMatId}" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="bonesToIndexGroup"
+    <computeIndicesFromMaterialId id="bonesToIndexGroup"
                              num="25" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="lung1ToIndexGroup"
+    <computeIndicesFromMaterialId id="lung1ToIndexGroup"
                              num="50" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="lung2ToIndexGroup"
+    <computeIndicesFromMaterialId id="lung2ToIndexGroup"
                              num="75" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="lung1facesToIndexGroup"
+    <computeIndicesFromMaterialId id="lung1facesToIndexGroup"
                              num="50" mesh="${surfaceExtraction}"
                              type="faces"/>
 
-    <materialId-to-index id="lung2facesToIndexGroup"
+    <computeIndicesFromMaterialId id="lung2facesToIndexGroup"
                              num="75" mesh="${surfaceExtraction}"
                              type="faces"/>
 
-    <boxROIToIndexOperator id="bottomToIndexGroup"
+    <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="${box_def}" mesh="${surfaceExtraction}"
                                select="points"/>
     <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>

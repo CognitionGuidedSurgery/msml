@@ -1,21 +1,20 @@
-<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="MarchingCube">
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="vtkMarchingCube">
 	
 	<runtime>
-		<python module="msml.ext.misc" function="MarchingCube" />
+		<python module="msml.ext.misc" function=vtkMarchingCube" />
 	</runtime>
 
 	<input>
-        <!-- TODO logical and physical type -->
 		<arg name="image" logical="VolumeMesh" physical="file.vtk" />
 	</input>
 
 	<output>
-		<arg name="out_surface" logical="SurfaceMesh" physical="file.vtk" />
+		<arg name="targetsurface" logical="SurfaceMesh" physical="file.vtk" optional="true" target="true"/>
 	</output>
 
 
 	<parameters>
-      <arg name="out_filename" logical="str" />
+      <arg name="outFilename" logical="str" optional="true" target="true"/>
       <arg name="isoValue" physical="float" />
 	</parameters>
 

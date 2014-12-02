@@ -511,7 +511,7 @@ namespace MSML {
         LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstructuredGrid* outputMesh);
 
 //	LIBRARY_API  boost::python::list ExtractPointPositionsPython( boost::python::list indices, std::string infile);
-        LIBRARY_API  std::vector<double> ExtractPointPositionsPython( std::vector<int> indices, std::string inputMesh);
+        LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, std::string inputMesh);
         LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);
         LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh);
 

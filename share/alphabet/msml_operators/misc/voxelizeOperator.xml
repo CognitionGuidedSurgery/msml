@@ -1,19 +1,19 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="voxelize">
+	xsi:schemaLocation="http://sfb125.de/msml" name="VoxelizeSurfaceMesh">
     <runtime>
-        <python module="msml.ext.misc" function="VoxelizeSurfaceMeshPython" />
+        <python module="msml.ext.misc" function="VoxelizeSurfaceMesh" />
     </runtime>
 
     <input>
-        <arg name="surfaceMesh" logical="triangularMesh" physical="vtk" />
+        <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk" />
     </input>
 
     <output>
-        <arg name="image" logical="segmentationImage" physical="vti" />
+        <arg name="image" logical="VectorImage3D" physical="file.vtk" />
     </output>
     <parameters>
-        <arg name="imageFilename" physical="string" optional="true">
+        <arg name="targetImageFilename" physical="string" optional="true" optional="true" target="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
@@ -28,15 +28,14 @@
                   either resolution, isotropicVoxelSize or referenceCoordinateGrid must be set 
             </meta>
         </arg>
-        <arg name="referenceCoordinateGrid" physical="vtk" optional="true" default="">
+        <arg name="referenceCoordinateGrid" physical="file.vtk" optional="true" default="">
             <meta key="doc">
                   either resolution, isotropicVoxelSize or referenceCoordinateGrid must be set 
             </meta>
         </arg>
         <arg name="disableFillHoles" physical="bool" optional="true" default="false">
-        </arg>
-                <arg name="additionalIsotropicMargin" physical="float" optional="true" default="0.0">
-        </arg>
+        <arg name="additionalIsotropicMargin" physical="float" optional="true" default="0.0">
+
         
     </parameters>
 </msml:operator>

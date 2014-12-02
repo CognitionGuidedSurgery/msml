@@ -170,6 +170,9 @@ class Image3D(Image): pass
 class SegmentationImage3D(Image3D): pass
 
 
+class VectorImage3D(Image3D): pass
+
+
 class PhysicalQuantities(MSMLLTop): pass
 
 
