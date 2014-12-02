@@ -6,11 +6,11 @@
     </runtime>
 
     <input>
-        <arg name="image" logical="segmentationImage" physical="VTI" />
+        <arg name="image" logical="SegmentationImage3D" physical="file.vtk" />
     </input>  
 	
     <parameters>	
-		<arg name="morphed_image" logical="segmentationImage" physical="str">
+		<arg name="TargetMorphedImage" logical="SegmentationImage3D" physical="str" optional="true" target="true">
 			<meta key="doc">
 				The morphed image.
 			</meta>
@@ -33,6 +33,6 @@
         </arg>
 	</parameters>
 	<output>
-        <arg name="morphed_image" logical="segmentationImage" physical="str" />
+        <arg name="morphedImage" logical="SegmentationImage3D" physical="file.vtk" />
     </output>
 </msml:operator>

@@ -55,15 +55,15 @@
                        cellRadiusEdgeRatio="3" cellSize="0.2" odt="false" lloyd="false" pertube="true"
                        exude="true"/>
 
-        <boxROIToIndexOperator id="bodyToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup"
                                box="-12.3 -2.1 -4.3 12.3 0.1 4.3" mesh="${msmlLogoVolumeMesher}"
                                select="elements"/>
 
-        <boxROIToIndexOperator id="leftSideToIndexGroup"
+        <ComputeIndicesFromBoxROI id="leftSideToIndexGroup"
                                box="-12.3 -2.1 -4.3 -9.0 0.1 4.3" mesh="${msmlLogoVolumeMesher}"
                                select="points"/>
 
-        <boxROIToIndexOperator id="rightSideToIndexGroup"
+        <ComputeIndicesFromBoxROI id="rightSideToIndexGroup"
                                box="10.0 -2.1 -4.3 12.3 0.1 4.3" mesh="${msmlLogoVolumeMesher}"
                                select="points"/>
 

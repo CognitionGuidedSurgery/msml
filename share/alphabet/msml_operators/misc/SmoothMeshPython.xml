@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="SmoothMeshPython">
+	xsi:schemaLocation="http://sfb125.de/msml" name="vtkSmoothMesh">
 	<runtime>
-		<python module="msml.ext.misc" function="SmoothMeshPython" />
+		<python module="msml.ext.misc" function="vtkSmoothMesh" />
 	</runtime>
 	<input>
 		<arg name="mesh" logical="volumeMesh" physical="file.vtk" />
 	</input>
 	<parameters>
-		<arg name="surfaceMeshFilename" physical="str"  />	
+		<arg name="targetSurfaceMeshFilename" physical="str" optional="true" target="true" />	
 		<arg name="iterations" physical="int"/>
-		<arg name="feature_angle" physical="float" />
-		<arg name="pass_band" physical="float" />
-		<arg name="boundary_smoothing" physical="bool" />
-		<arg name="feature_edge_smoothing" physical="bool" />
-		<arg name="non_manifold_smoothing" physical="bool" />	
-		<arg name="normalized_coordinates" physical="bool" />
+		<arg name="featureAngle" physical="float" />
+		<arg name="passBand" physical="float" />
+		<arg name="boundarySmoothing" physical="bool" />
+		<arg name="featureEdgeSmoothing" physical="bool" />
+		<arg name="nonManifoldSmoothing" physical="bool" />	
+		<arg name="normalizedCoordinates" physical="bool" />
 	</parameters>
 	<output>
 		<arg name="surfaceOut" logical="surface" physical="file.vtk"/>

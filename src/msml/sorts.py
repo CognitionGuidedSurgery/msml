@@ -163,6 +163,7 @@ DEFAULTS_SORTS = {
         Image3D,
         Image2D,
         SegmentationImage3D,
+        VectorImage3D,
         Scalar,
         Indices,
         VonMisesStress,

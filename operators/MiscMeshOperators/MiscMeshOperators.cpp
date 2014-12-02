@@ -466,7 +466,7 @@ map<int,int>* createHist(vtkDataArray* theVtkDataArray)
     return hist;
 }
 
-std::string  ExtractSurfaceMeshPython( std::string infile, std::string outfile)
+std::string  ExtractSurfaceMesh( std::string infile, std::string outfile)
 {
     ExtractSurfaceMesh(infile.c_str(), outfile.c_str());
     return outfile;
@@ -561,12 +561,12 @@ bool MorphCube(const char *infile, const char *outfile, double toDilate, double 
   Smooth given surface using this vtk filter:
   http://vtk.org/Wiki/VTK/Examples/Meshes/WindowedSincPolyDataFilter
 */
-const char* SmoothMeshPython(const char* infile, const char* outfile, int iterations,
+const char* vtkSmoothMesh(const char* infile, const char* outfile, int iterations,
 					  double feature_angle, double pass_band,bool boundary_smoothing,
 					  bool feature_edge_smoothing, bool non_manifold_smoothing,
 					  bool normalized_coordinates)
 {		
-	log_debug()<<"SmoothMesh"<<std::endl;
+	log_debug()<<"vtkSmoothMesh"<<std::endl;
 
 	//set up the smoother
 	vtkSmartPointer<vtkWindowedSincPolyDataFilter> smoother =
@@ -585,7 +585,7 @@ const char* SmoothMeshPython(const char* infile, const char* outfile, int iterat
 	
 	//smooth surface
 	smoother->Update();
-	log_debug()<<"SmoothMesh: smooth ok"<<std::endl;	
+	log_debug()<<"vtkSmoothMesh: smooth ok"<<std::endl;	
 	
 	//write smoothed surface down to file
 	bool result = IOHelper::VTKWritePolyData(outfile, smoother->GetOutput());
@@ -940,7 +940,7 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
-std::string VoxelizeSurfaceMeshPython(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
+std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
                 << "Resolution of the longest bound is "<<resolution<< std::endl;
@@ -1088,7 +1088,7 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 //
 //}
 
-std::vector<double> ExtractPointPositionsPython( std::vector<int> indices, std::string inputMesh)
+std::vector<double> ExtractPointPositions( std::vector<int> indices, std::string inputMesh)
 {
 	return ExtractPointPositions(indices, IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()));
 }

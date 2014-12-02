@@ -4,14 +4,14 @@
 	xsi:schemaLocation="http://sfb125.de/msml" name="ExtractSurfaceMesh">
 
   <runtime>
-    <python module="msml.ext.misc" function="ExtractSurfaceMeshPython" />
+    <python module="msml.ext.misc" function="ExtractSurfaceMesh" />
   </runtime>
 
   <input>
-    <arg name="mesh" logical="volumeMesh" physical="file.vtk" />
+    <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
   </input>
   <parameters>
-    <arg name="surfaceMeshFilename" physical="str"  />
+    <arg name="targetSurfaceMeshFilename" physical="str" optional="true" target="true" />
   </parameters>
   <output>
     <arg name="surfaceOut" logical="surface" physical="file.vtk"/>

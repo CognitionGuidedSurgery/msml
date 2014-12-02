@@ -47,11 +47,11 @@
     </scene>
 
     <workflow>
-        <boxROIToIndexOperator id="bodyToIndexGroup" box="-76 76 -609 133 245 -417" mesh="${vol_mesh}"
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="-76 76 -609 133 245 -417" mesh="${vol_mesh}"
                                select="elements"/>
-        <boxROIToIndexOperator id="bottomToIndexGroup" box="27.1 81.5 -599 99 208.1 -484" mesh="${vol_mesh}"
+        <ComputeIndicesFromBoxROI id="bottomToIndexGroup" box="27.1 81.5 -599 99 208.1 -484" mesh="${vol_mesh}"
                                select="points"/>
-         <boxROIToIndexOperator id="surfacePressureTriangleIds" box="64.5 212 -490 104 239 -454" mesh="${vol_mesh}"
+         <ComputeIndicesFromBoxROI id="surfacePressureTriangleIds" box="64.5 212 -490 104 239 -454" mesh="${vol_mesh}"
                                select="surfaceElements"/>
     </workflow>
 

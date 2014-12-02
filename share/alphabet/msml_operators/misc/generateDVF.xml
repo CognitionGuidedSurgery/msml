@@ -2,25 +2,24 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="generateDVF">
 
-	<runtime>
-		<python module="msml.ext.misc" function="GenerateDVF" />
-	</runtime>
+    <runtime>
+        <python module="msml.ext.misc" function="GenerateDVF" />
+    </runtime>
 
-	<input>
-		<!-- TODO logical and physical type -->
-		<arg name="RefMesh" logical="Mesh" physical="file.vtk" />
-		<arg name="DeformedMesh" logical="Mesh" physical="file.vtk" />
-	</input>
+    <input>
+        <arg name="RefMesh" logical="TetrahedralVolume" physical="file.vtk" />
+        <arg name="DeformedMesh" logical="TetrahedralVolume" physical="file.vtk" />
+    </input>
 
-	<output>
-		<arg name="DVF" logical="image" physical="file.vtk" />
-	</output>
+    <output>
+        <arg name="DVF" logical="VectorImage3D" physical="file.vtk" />
+    </output>
 
-	<parameters>
-		<arg name="DVFFilename" physical="str" />
-		<arg name="spacing" physical="float" optional="true" default="5"/>
-		<arg name="refImageCube" physical="file.vtk" optional="true" default=""/>
-    <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
-	</parameters>
+    <parameters>
+        <arg name="DVFFilename" physical="str" optional="true" target="true" />
+        <arg name="spacing" physical="float" optional="true" default="5"/>
+        <arg name="refImageCube" logical="Image3D" physical="file.vtk" optional="true" default=""/>
+        <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
+    </parameters>
 
 </msml:operator>

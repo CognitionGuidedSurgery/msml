@@ -1,28 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://sfb125.de/msml" name="boxROIToIndexOperator">
+               xsi:schemaLocation="http://sfb125.de/msml" name="ComputeIndicesFromBoxROI">
 
     <runtime>
         <python module="msml.ext.misc"
-                function="computeIndicesFromBoxROI"/>
+                function="ComputeIndicesFromBoxROI"/>
     </runtime>
 
     <input>
-        <arg name="mesh"
-             logical="VolumeMesh"
-             physical="file.vtk"/>
-        <!--
-        <arg name="meshB"
-             logical="linearTetMesh, quadraticTetMesh"
-             physical="file.vtk"/>
-             -->
+        <arg name="mesh" logical="VolumeMesh" physical="file.vtk"/>
     </input>
 
     <output>
-        <arg name="indices"
-             logical="indexgroup"
-             physical="vector.int"/>
+        <arg name="indices" logical="indexgroup" physical="vector.int"/>
     </output>
 
     <parameters>
