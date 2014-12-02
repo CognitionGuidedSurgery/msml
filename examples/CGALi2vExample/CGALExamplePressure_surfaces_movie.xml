@@ -61,7 +61,7 @@
         <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-10 250 -10 300 300 300" mesh="${SurfaceExtractor}"
                                select="points"/>
-        <computeIndicesFromMaterialId id="pressureIndexGroup" num="193" mesh="${SurfaceExtractor}" type="faces" />
+        <ComputeIndicesFromMaterialId id="pressureIndexGroup" num="193" mesh="${SurfaceExtractor}" type="faces" />
 
         <CGALMeshVolumeFromVoxels id="VizVolumeMesher" meshFilename="${viz_vol_mesh}" image="${input_image}" facetAngle="20" facetSize="5" facetDistance="12" cellRadiusEdgeRatio="3" cellSize="30" odt="false" lloyd="false"  pertube="false" exude="false" />
         <ExtractAllSurfacesByMaterial id="VizSurfaceExtractor" meshIn="${VizVolumeMesher}" meshOutFilename="${viz_input_vol_surf_mesh}" cut="false"/>   

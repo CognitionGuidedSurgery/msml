@@ -42,7 +42,7 @@
 namespace MSML {
     namespace IndexRegionOperators {
 
-        vector<unsigned int>  computeIndicesFromBoxROI(string filename, vector<double> box, string type)
+        vector<unsigned int>  ComputeIndicesFromBoxROI(string filename, vector<double> box, string type)
         {
             vtkSmartPointer<vtkUnstructuredGridReader> reader =
                 vtkSmartPointer<vtkUnstructuredGridReader>::New();
@@ -141,7 +141,7 @@ namespace MSML {
             return indices;
         }
 
-        vector<unsigned int> computeIndicesFromMaterialId(string filename, int id, string type)
+        vector<unsigned int> ComputeIndicesFromMaterialId(string filename, int id, string type)
         {
             vector<unsigned int> indices;
             vtkSmartPointer<vtkUnstructuredGridReader> reader =
@@ -207,7 +207,7 @@ namespace MSML {
         }
 
 
-        vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type) {
+        vector<double> PositionFromIndices(string filename, vector<unsigned int> indices, string type) {
             vector<double> points;
             vtkSmartPointer<vtkUnstructuredGrid> theMesh = MSML::IOHelper::VTKReadUnstructuredGrid(filename.c_str());
             vtkPoints* thePoints = theMesh->GetPoints();

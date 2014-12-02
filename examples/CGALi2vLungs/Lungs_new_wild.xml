@@ -56,34 +56,34 @@
     <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
                        facetAngle="20" facetSize="12" facetDistance="3" cellRadiusEdgeRatio="3" cellSize="18" />
 
-    <computeIndicesFromMaterialId id="bodyToIndexGroup"
+    <ComputeIndicesFromMaterialId id="bodyToIndexGroup"
                              num="100" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <computeIndicesFromMaterialId id="bonesToIndexGroup"
+    <ComputeIndicesFromMaterialId id="bonesToIndexGroup"
                              num="25" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <computeIndicesFromMaterialId id="lung1ToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung1ToIndexGroup"
                              num="50" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <computeIndicesFromMaterialId id="lung2ToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung2ToIndexGroup"
                              num="75" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <computeIndicesFromMaterialId id="lung1facesToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung1facesToIndexGroup"
                              num="50" mesh="${surfaceExtraction}"
                              type="faces"/>
 
-    <computeIndicesFromMaterialId id="lung2facesToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung2facesToIndexGroup"
                              num="75" mesh="${surfaceExtraction}"
                              type="faces"/>
 
     <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
                                select="points"/>
-    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed*.vtk"/>
+    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" targetSurfaceMeshFilename="surfaceOutlineDeformed*.vtk"/>
     <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
 
     <GenerateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf*.vtk" spacing="5"/>

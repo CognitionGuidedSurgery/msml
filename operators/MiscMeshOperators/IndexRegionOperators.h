@@ -34,11 +34,10 @@ namespace MSML {
     namespace IndexRegionOperators {
         typedef std::vector<unsigned int> IndicesListType;
 
-        LIBRARY_API vector<unsigned int> computeIndicesFromBoxROI(string filename, vector<double> box, string type);
-        LIBRARY_API vector<unsigned int> computeIndicesFromMaterialId(string filename, int id, string type);
-        LIBRARY_API vector<double> positionFromIndices(string filename, vector<unsigned int> indices, string type);
+        LIBRARY_API vector<unsigned int> ComputeIndicesFromBoxROI(string filename, vector<double> box, string type);
+        LIBRARY_API vector<unsigned int> ComputeIndicesFromMaterialId(string filename, int id, string type);
+        LIBRARY_API vector<double> PositionFromIndices(string filename, vector<unsigned int> indices, string type);
 
-//void computeIndicesFromBoxROI(vtkUnstructuredGrid* inputMesh, double box[6],IndicesListType &indices);
     }
 }
 

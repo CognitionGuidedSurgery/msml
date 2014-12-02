@@ -1,8 +1,8 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://sfb125.de/msml" name="computeIndicesFromMaterialId">
+               xsi:schemaLocation="http://sfb125.de/msml" name="ComputeIndicesFromMaterialId">
     <runtime>
-        <python module="msml.ext.misc" function="computeIndicesFromMaterialId"/>
+        <python module="msml.ext.misc" function="ComputeIndicesFromMaterialId"/>
     </runtime>
 
     <input>
