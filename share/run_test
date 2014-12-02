@@ -1,6 +1,13 @@
 #!/bin/bash -x
+
 pwd 
-source venv/bin/activate
-export PYTHONPATH=$(pwd)/cbuild/bin
-cd src
+
+set
+
+source /home/ubuntu/virtualenvs/venv-2.7.5/bin
+
+export PYTHONPATH=/home/ubuntu/msml/cbuild/bin
+
+cd /home/ubuntu/msml/src
+
 nosetest msmltest
