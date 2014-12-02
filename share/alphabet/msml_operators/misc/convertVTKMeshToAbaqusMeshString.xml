@@ -6,7 +6,7 @@
 	</runtime>
 
 	<input>
-		<arg name="inputMesh" logical="VolumeMesh"physical="file.vtk" />
+		<arg name="inputMesh" logical="VolumeMesh" physical="file.vtk" />
 	</input>
 
 	<output>

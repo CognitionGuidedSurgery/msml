@@ -39,55 +39,11 @@
 
 using namespace std;
 
-/*MSMLDOC
-MappingOperators
-^^^^^^^^^^^^^^^^
-
-
-
-*/
-
 namespace MSML {
     namespace MappingOperators {
-        /*MSMLDOC
-            .. cpp:function:: std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh )
-
-                :param std::string meshIni:
-                :param std::string meshDeformed:
-                :param std::string meshToMap:
-                :param std::string mappedMesh:
-
-                :rtype:
-                :returns:
-        */
         LIBRARY_API std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh );
-
-        /*MSMLDOC
-            .. cpp:function:: bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh )
-
-                :param const char* meshIni:
-                :param const char* meshDeformed:
-                :param const char* meshToMap:
-                :param const char* mappedMesh:
-
-                :rtype:
-                :returns:
-        */
         LIBRARY_API bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh );
-
-        /*MSMLDOC
-            .. cpp:function:: bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh )
-
-                :param vtkUnstructuredGrid* meshIni:
-                :param vtkUnstructuredGrid* meshDeformed:
-                :param vtkUnstructuredGrid* meshToMap:
-                :param vtkUnstructuredGrid* mappedMesh:
-
-                :rtype:
-                :returns:
-        */
         LIBRARY_API bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh );
-
     }
 } // end namespace MediAssist
 

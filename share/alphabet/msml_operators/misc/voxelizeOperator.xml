@@ -13,7 +13,7 @@
         <arg name="image" logical="VectorImage3D" physical="file.vtk" />
     </output>
     <parameters>
-        <arg name="targetImageFilename" physical="string" optional="true" optional="true" target="true">
+        <arg name="targetImageFilename" physical="string" optional="true" target="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
@@ -33,9 +33,9 @@
                   either resolution, isotropicVoxelSize or referenceCoordinateGrid must be set 
             </meta>
         </arg>
-        <arg name="disableFillHoles" physical="bool" optional="true" default="false">
-        <arg name="additionalIsotropicMargin" physical="float" optional="true" default="0.0">
+        <arg name="disableFillHoles" physical="bool" optional="true" default="false" />
+        <arg name="additionalIsotropicMargin" physical="float" optional="true" default="0.0" />
 
-        
+
     </parameters>
 </msml:operator>

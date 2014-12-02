@@ -30,36 +30,6 @@
 
 using namespace std;
 
-/*MSMLDOC
-IndexRegionOperators
-^^^^^^^^^^^^^^^^^^^^
-
-
-.. cpp:namespace:: MSML::IndexRegionOperators
-
-.. cpp:function:: vector\<unsigned int> computeIndicesFromBoxROI(string filename, vector\<double> box, string type)
-
-    :param string filename:
-    :param vector\<double> box:
-    :param string type:
-
-    :returns:
-    :rtype:
-
-
-
-
-.. cpp:function:: vector\<unsigned int> computeIndicesFromMaterialId(string filename, int id, string type)
-
-    :param string filename:
-    :param int id:
-    :param string type:
-
-    :returns:
-    :rtype:
-
-
-*/
 namespace MSML {
     namespace IndexRegionOperators {
         typedef std::vector<unsigned int> IndicesListType;

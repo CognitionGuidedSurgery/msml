@@ -1,20 +1,20 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="ConvertVTKMeshToFeBioMeshString">
-	<runtime>
-		<python module="msml.ext.misc" function="ConvertVTKMeshToFeBioMeshString" />
-	</runtime>
+	xsi:schemaLocation="http://sfb125.de/msml" name="ConvertVTKMeshToFeBioMeshString" >
+    <runtime>
+        <python module="msml.ext.misc" function="ConvertVTKMeshToFeBioMeshString" />
+    </runtime>
 
-	<input>
-		<arg name="inputMesh" logical="VolumeMesh" physical="file.vtk" />
-	</input>
+    <input>
+        <arg name="inputMesh" logical="VolumeMesh" physical="file.vtk" />
+    </input>
 
-	<output>
-		<arg name="mesh" logical="VolumeMesh" physical="string" />
-	</output>
+    <output>
+        <arg name="mesh" logical="VolumeMesh" physical="string" />
+    </output>
 
-	<parameters>
-		<arg name="partName" physical="string" />
-	</parameters>
+    <parameters>
+        <arg name="partName" physical="string" />
+    </parameters>
 
 </msml:operator>
