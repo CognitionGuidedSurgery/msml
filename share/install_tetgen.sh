@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 BASE=tetgen1.5.0
 DLNAME=$BASE.tar.gz
