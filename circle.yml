@@ -11,8 +11,7 @@ dependencies:
     - pip install -r requirements.txt
     - chmod 755 share/install_vtk.sh && share/install_vtk.sh
     - chmod 755 share/install_tetgen.sh && share/install_tetgen.sh
-    - mkdir cbuild; cd cbuild; cmake ../operators -DVTK_DIR=../cache/VTK-6.1.0-BUILD/; make -j 8; cd ..
-  
+    - chmod 755 share/install_msml.sh && share/install_msml.sh    
 test:
   override:
     - chmod 755 share/run_test && share/run_test

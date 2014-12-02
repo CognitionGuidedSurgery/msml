@@ -7,7 +7,7 @@ BUILD_DIR=$DIRNAME-BUILD
 
 # INSTALL VTK automatically
 
-mkdir cache
+mkdir -p cache
 cd cache
 
 # get dump
