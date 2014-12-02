@@ -50,7 +50,7 @@ void TestPositionFromIndices()
 {
   std::vector<unsigned int> ids;
   ids.push_back(1);
-  vector<double> pos = IndexRegionOperators::positionFromIndices("C:\\Projekte\\msml_github\\examples\\BunnyExample\\bunnyout\\liver0.vtu", ids, "points");
+  vector<double> pos = IndexRegionOperators::PositionFromIndices("C:\\Projekte\\msml_github\\examples\\BunnyExample\\bunnyout\\liver0.vtu", ids, "points");
 }
 
 void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
@@ -108,7 +108,7 @@ void TestReadCTX()
 
 void TestMarchingCube()
 {
-  VTKMeshgen::MarchingCube("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_transformFullRTSSmarching_15.09.2014\\RTSS_BLASE.ctx.gz", 
+  VTKMeshgen::vtkMarchingCube("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_transformFullRTSSmarching_15.09.2014\\RTSS_BLASE.ctx.gz",
     "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_transformFullRTSSmarching_15.09.2014\\RTSS_BLASE.vtk", 0.5);
 }
 
@@ -121,7 +121,7 @@ void TestApplyDVF()
   std::string def = "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_postprocessing_19.09.2014\\defed10.vtk";
   std::string dvf = "C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\output_postprocessing_19.09.2014\\dvf10.vtk";
   
-  PostProcessingOperators::ApplyDVFPython(ref.c_str(), dvf.c_str(), def.c_str(), false,  2);
+  PostProcessingOperators::ApplyDVF(ref.c_str(), dvf.c_str(), def.c_str(), false,  2);
 }
 
 namespace TestMiscMeshoperators
@@ -182,7 +182,7 @@ namespace TestMiscMeshoperators
   }
   void TestExtractSurfaceMeshPython()
   {
-    MiscMeshOperators::ExtractSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestExtractSurfaceMeshPython_AKA_ugrid_to_polydata.vtk").c_str());
+    MiscMeshOperators::ExtractSurfaceMesh((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestExtractSurfaceMeshPython_AKA_ugrid_to_polydata.vtk").c_str());
   }
 
   void TestProjectSurfaceMeshPython()
@@ -192,13 +192,13 @@ namespace TestMiscMeshoperators
 
   void TestVoxelizeSurfaceMeshPython()
   {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
+    MiscMeshOperators::VoxelizeSurfaceMesh((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
   }
 }
 
 void TestPostProcessingOperators()
 {
-    PostProcessingOperators::ApplyDVFPython((string(TESTDATA_PATH)+"/ircad_ct_image.vti").c_str(), (string(TESTDATA_PATH)+"/ircad_dvf.vti").c_str(), (string(TESTDATA_PATH)+"/TestApplyDVF.vtk").c_str(), true, 2.0);
+    PostProcessingOperators::ApplyDVF((string(TESTDATA_PATH)+"/ircad_ct_image.vti").c_str(), (string(TESTDATA_PATH)+"/ircad_dvf.vti").c_str(), (string(TESTDATA_PATH)+"/TestApplyDVF.vtk").c_str(), true, 2.0);
 
     PostProcessingOperators::ColorMeshFromComparisonPython((string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),(string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/ColorMeshFromComparisonPython.vtk").c_str());
     
@@ -207,7 +207,7 @@ void TestPostProcessingOperators()
     if (error_max<1)
       throw;
 
-    PostProcessingOperators::TransformMeshBarycentricPython((string(TESTDATA_PATH)+"/ircad_tris_labled.vtk").c_str(), (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/TestTransformMeshBarycentricPython.vtu").c_str(), false);
+    PostProcessingOperators::TransformMeshBarycentric((string(TESTDATA_PATH)+"/ircad_tris_labled.vtk").c_str(), (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/TestTransformMeshBarycentricPython.vtu").c_str(), false);
       
     PostProcessingOperators::GenerateDVF((string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),
       (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "", 10);

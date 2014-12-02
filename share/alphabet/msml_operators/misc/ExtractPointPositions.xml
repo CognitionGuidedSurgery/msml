@@ -4,14 +4,14 @@
 	xsi:schemaLocation="http://sfb125.de/msml" name="ExtractPointPositions">
 
   <runtime>
-    <python module="msml.ext.misc" function="ExtractPointPositionsPython" />
+    <python module="msml.ext.misc" function="ExtractPointPositions" />
   </runtime>
 
   <input>
      <arg name="indices"
              logical="indexgroup"
              physical="vector.int"/>
-    <arg name="mesh" logical="volumeMesh" physical="file.vtk" />
+    <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
 
 
   </input>
@@ -21,7 +21,7 @@
   </parameters>
 
   <output>
-    <arg name="points" logical="displacement" physical="vector.float"/>
+    <arg name="points" logical="Displacement" physical="vector.float"/>
   </output>
 
 </msml:operator>

@@ -216,11 +216,12 @@ class OAConstraint(ObjectAttribute):
         :rtype: bool
         """
 
-        if 'indices' in self.parameters:
-            return True
-        else:
-            log.error("OAConstraint: %s does not have an indices attribute defined" % self.name)
-            return False
+        #if 'indices' in self.parameters:
+        #    return True
+        #else:
+        #    log.error("OAConstraint: %s does not have an indices attribute defined" % self.name)
+        #    return False
+        return True
 
 
 class OAMaterial(ObjectAttribute):

@@ -7,14 +7,12 @@
               quantity="single">
 
 
-    <description></description>
+    <description>Displacement output request</description>
 
     <parameters>
-        <!--<arg name="id" physical="str">
-            <meta key="doc" value="Set time."/>
-        </arg>-->
-        <arg name="timestep" physical="int">
-            <meta key="doc" value="Set indices of fixed points separated by spaces."/>
+
+        <arg name="timestep" physical="ListF" logical="Displacement">
+            <meta key="doc" value="Contains the displacement of all points in the mesh."/>
         </arg>
     </parameters>
 </msml:element>

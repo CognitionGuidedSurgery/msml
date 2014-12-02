@@ -4,24 +4,24 @@
               quantity="single">
 
     <description>
-        Add a spring from point in mesh to fixed point in space.
+        Add a spring from points in mesh to fixed points in space.
     </description>
 
     <parameters>
-        <arg name="stiffness" physical="int">
+        <arg name="stiffness" physical="float" logical="Scalar">
             <meta key="doc" value="Stiffness between fixed and moving points "/>
         </arg>
 
-        <arg name="rayleighStiffnes" physical="int">
+        <arg name="rayleighStiffnes" physical="float" logical="Scalar">
             <meta key="doc" value="rayleighStiffnes between fixed and moving points"/>
         </arg>
 
-        <arg name="fixedPoints" physical="vector.float">
+        <arg name="fixedPoints" physical="ListF" logical="Position">
             <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
 
-        <arg name="movingPoints" physical="vector.float">
-            <meta key="doc" value="Coordinates of the fixed points: x1 y1 z1 x2 y2 z2..."/>
+        <arg name="movingPoints" physical="ListF" logical="Position">
+            <meta key="doc" value="Coordinates of the moving points: x1 y1 z1 x2 y2 z2..."/>
         </arg>
     </parameters>
 </msml:element>

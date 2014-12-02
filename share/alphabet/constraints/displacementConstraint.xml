@@ -5,19 +5,15 @@
 
 
     <description>
-        Set (fix) displaced points
+        Sets the displacement for specified nodes. The displacement vector can either be the same for all nodes (i.e. one triple) or one displacement vector has to be specified for each node.
     </description>
 
     <parameters>
-        <!--
-        <arg name="time" physical="float">
-            <meta key="doc" value="Set time."/>
-        </arg>-->
-        <arg name="indices" physical="vector.int">
+        <arg name="indices" physical="ListI" logical="IndexSet">
             <meta key="doc" value="Set indices of displaced points separated by spaces."/>
         </arg>
-        <arg name="displacement" physical="vector.float">
-            <meta key="doc" value="Set the displacement vector (DIM = 3) of the points given in the indices."/>
+        <arg name="displacement" physical="ListF" logical="Displacement">
+            <meta key="doc" value="Set the displacement vector of the points given in the indices. Either provide one displacement for all points (DIM = 3) or a displacement triple for each point (DIM = 3*DIM(indices))."/>
         </arg>
     </parameters>
 </msml:element>

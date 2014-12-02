@@ -3,13 +3,13 @@
               xsi:schemaLocation="http://sfb125.de/msml" name="supportingMesh" category="constraint"
               quantity="single">
   <description>
-        Add a secondary mesh to support to main mesh. Usable for vessels or bones.
+        Add a secondary mesh that is embedded into the main mesh. This can be used to simulate a vessel tree or bones in a coarse main mesh.
   </description>
   
   <parameters>
-    <arg name="youngModulus" physical="float" />
-    <arg name="poissonRatio" physical="float" />
-    <arg name="filename" physical="string"/>
-    <arg name="massDensity" physical="float" />
+    <arg name="youngModulus" physical="float" logical="Scalar"/>
+    <arg name="poissonRatio" physical="float" logical="Scalar"/>
+    <arg name="filename" physical="VTK" logical="Tetrahedral"/>
+    <arg name="massDensity" physical="float" logical="Scalar"/>
   </parameters>
 </msml:element>

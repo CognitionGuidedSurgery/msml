@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( TestPositionFromIndices)
 {
     std::vector<unsigned int> ids;
     ids.push_back(1);
-    vector<double> pos = IndexRegionOperators::positionFromIndices(
+    vector<double> pos = IndexRegionOperators::PositionFromIndices(
               INPUT("liver0.vtu"), ids, "points");
 }
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( TestReadCTX)
 
 BOOST_AUTO_TEST_CASE( TestMarchingCube )
 {
-    VTKMeshgen::MarchingCube("RTSS_BLASE.ctx.gz", "RTSS_BLASE.vtk", 0.5);
+    VTKMeshgen::vtkMarchingCube("RTSS_BLASE.ctx.gz", "RTSS_BLASE.vtk", 0.5);
 }
 
 BOOST_AUTO_TEST_CASE( TestApplyDVF)
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( TestApplyDVF)
     const char* def = INPUT("defed10.vtk");
     const char* dvf = OUTPUT("dvf10.vtk");
 
-    PostProcessingOperators::ApplyDVFPython(ref, dvf, def, false,  2);
+    PostProcessingOperators::ApplyDVF(ref, dvf, def, false,  2);
 }
 
 BOOST_AUTO_TEST_CASE( TestConvertLinearToQuadraticTetrahedralMesh)
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( TestExtractVectorField )
 }
 BOOST_AUTO_TEST_CASE( TestExtractSurfaceMeshPython)
 {
-    MiscMeshOperators::ExtractSurfaceMeshPython(
+    MiscMeshOperators::ExtractSurfaceMesh(
         INPUT("/bunny_tets.vtk"),
         INPUT("/TestExtractSurfaceMeshPython_AKA_ugrid_to_polydata.vtk"));
 }
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( TestProjectSurfaceMeshPython )
 
 BOOST_AUTO_TEST_CASE( TestVoxelizeSurfaceMeshPython )
 {
-    MiscMeshOperators::VoxelizeSurfaceMeshPython(
+    MiscMeshOperators::VoxelizeSurfaceMesh(
         INPUT("/bunny_polydata.vtk"),
         OUTPUT("/TestVoxelizeSurfaceMeshPython.vtk"),
         100, 0, "", false, 0);
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE( TestVoxelizeSurfaceMeshPython )
 
 BOOST_AUTO_TEST_CASE( TestPostProcessingOperators)
 {
-    PostProcessingOperators::ApplyDVFPython(
+    PostProcessingOperators::ApplyDVF(
         INPUT("/ircad_ct_image.vti"),
         INPUT("ircad_dvf.vti"),
         OUTPUT("/TestApplyDVF.vtk"), true, 2.0);
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE( TestPostProcessingOperators)
 
     BOOST_REQUIRE(error_max < 1);
 
-    PostProcessingOperators::TransformMeshBarycentricPython(
+    PostProcessingOperators::TransformMeshBarycentric(
         INPUT("ircad_tris_labled.vtk"),
         INPUT("ircad_disp0.vtu"),
         INPUT("ircad_disp50.vtu"),

@@ -50,12 +50,12 @@
     </scene>
 
     <workflow>
-        <boxROIToIndexOperator id="bodyToIndexGroup" box="-0.1 -0.1 -0.1 0.04 0.07  0.21" mesh="${vol_mesh}"
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="-0.1 -0.1 -0.1 0.04 0.07  0.21" mesh="${vol_mesh}"
                                select="points"/>
-        <boxROIToIndexOperator id="rightFaceGroup" box="0 0 0.19999 0.03 0.06 0.21" mesh="${vol_mesh}"
+        <ComputeIndicesFromBoxROI id="rightFaceGroup" box="0 0 0.19999 0.03 0.06 0.21" mesh="${vol_mesh}"
                                select="points"/>
 
-        <boxROIToIndexOperator id="leftFaceGroup" box="0 0 -0.000000001 0.03 0.06 0.00000001" mesh="${vol_mesh}"
+        <ComputeIndicesFromBoxROI id="leftFaceGroup" box="0 0 -0.000000001 0.03 0.06 0.00000001" mesh="${vol_mesh}"
                                select="points"/>
 
         <ExtractPointPositions id="finalPointDisp" mesh="${disp}" indices="${bodyToIndexGroup}"/>

@@ -6,20 +6,12 @@
 
 
     <description>
-        Set properties of the mass
+        Mass of the object specified by its density
     </description>
 
     <parameters>
-        <!--
-        <arg name="name" physical="str">
-            <meta key="doc">
-                Name the mass element
-            </meta>
-        </arg>
--->
 
-
-        <arg name="massDensity" physical="float" default="1">
+        <arg name="massDensity" physical="float" logical="Scalar" default="1">
             <meta key="doc" value="Set the mass density"/>
         </arg>
     </parameters>
