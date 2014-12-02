@@ -230,6 +230,36 @@ void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* refe
     errorRMS = sqrt(errorRMS);
 }
 
+LIBRARY_API double ComputeRelativeMeanErrorOfSolution( const char* initialMeshFilename, const char* referenceMeshFilename, const char* testMeshFilename, bool surfaceOnly)
+{
+	vector<double> dispVec;
+	vector<double> errorVec;
+
+	CompareMeshes(dispVec, initialMeshFilename, referenceMeshFilename,  surfaceOnly);
+	CompareMeshes(errorVec, referenceMeshFilename, testMeshFilename,  surfaceOnly);
+
+	unsigned int numberOfPointsError = errorVec.size();
+	unsigned int numberOfPointsDisp = dispVec.size();
+
+	double sum=0;
+	double dispSum = 0;
+
+	for(int i=0; i<numberOfPointsDisp; i++)
+	{
+		sum+= errorVec[i];
+		dispSum += dispVec[i];
+	}
+
+	sum = sum / dispSum;
+	sum = sum / (double)numberOfPointsError;
+
+	log_error() <<"Relative mean error is " << sum << std::endl;
+
+	return sum;
+
+}
+
+
 void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename)
 {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);

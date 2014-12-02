@@ -276,6 +276,8 @@ LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, vtkUnstructuredGr
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 
+LIBRARY_API double ComputeRelativeMeanErrorOfSolution( const char* initialMeshFilename, const char* referenceMeshFilename, const char* testMeshFilename, bool surfaceOnly);
+
 LIBRARY_API void ColorMeshFromComparison(const char* modelFilename, const char* referenceFilename, const char* coloredModelFilename);
 LIBRARY_API void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* referenceMesh,vtkUnstructuredGrid* coloredMesh);
 

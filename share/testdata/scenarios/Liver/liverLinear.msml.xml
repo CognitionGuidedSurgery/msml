@@ -4,6 +4,10 @@
     <variables>
         <var name="vol_mesh" value="LiverXSTet4.vtk" logical="linearMesh"
              physical="file.vtk"/>
+
+        <var name="vol_mesh_reference" value="LiverXSTet4Reference.vtu" logical="linearMesh"
+             physical="file.vtk"/>
+
     </variables>
 
 
@@ -50,6 +54,7 @@
                                select="elements"/>
         <boxROIToIndexOperator id="bottomToIndexGroup" box="27.1 81.5 -599 99 208.1 -484" mesh="${vol_mesh}"
                                select="points"/>
+        <ComputeMeanError id="meanErrorOperator" initialMesh="${vol_mesh}" referenceMesh="${vol_mesh_reference}" testMesh="${LiverXSTet4Def}" surfaceOnly="False"/>
     </workflow>
 
 
@@ -57,7 +62,7 @@
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="150"/>
+            <step name="initial" dt="0.05" iterations="100"/>
         </simulation>
     </environment>
 
