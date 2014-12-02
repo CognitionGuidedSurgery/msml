@@ -6,11 +6,11 @@
         <python module="msml.ext.cgal" function="CGALSimplificateSurface" />
     </runtime>
     <input>
-        <arg name="inputMeshFile" logical="triangularMesh" physical="file.vtk"/>  
+        <arg name="inputMeshFile" logical="TriangularSurface" physical="file.vtk"/>  
     </input>
 
     <output>
-        <arg name="outputMeshFile" logical="triangularMesh" physical="file.vtk"/>
+        <arg name="outputMeshFile" logical="TriangularSurface" physical="file.vtk"/>
     </output>
 
     <parameters>

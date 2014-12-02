@@ -6,11 +6,11 @@
         <python module="msml.ext.cgal" function="CGALCalculateSubdivisionSurface" />
     </runtime>
     <input>
-        <arg name="surfaceMesh" logical="triangularMesh" physical="file.vtk"/>  
+        <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk"/>  
     </input>
 
     <output>
-        <arg name="mesh" logical="linearTetMesh" physical="file.vtk"/>
+        <arg name="mesh" logical="TetrahedralVolume" physical="file.vtk"/>
     </output>
 
     <parameters>

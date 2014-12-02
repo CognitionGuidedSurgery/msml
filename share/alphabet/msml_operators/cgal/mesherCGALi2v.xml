@@ -6,11 +6,11 @@
         <python module="msml.ext.cgal" function="CGALMeshVolumeFromVoxels" />
     </runtime>
     <input>
-        <arg name="image" logical="segmentationImage" physical="VTI" />
+        <arg name="image" logical="SegmentationImage3D" physical="file.vtk" />
     </input>
 
     <output>
-        <arg name="mesh" logical="linearTetMesh" physical="VTK" />
+        <arg name="mesh" logical="TetrahedralVolume" physical="file.vtk" />
     </output>
 
     <parameters>

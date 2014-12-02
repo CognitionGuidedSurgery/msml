@@ -10,7 +10,7 @@
 
     <input>
         <arg name="mesh"
-             logical="linearTetMesh, quadraticTetMesh"
+             logical="VolumeMesh"
              physical="file.vtk"/>
         <!--
         <arg name="meshB"
