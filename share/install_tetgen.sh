@@ -7,15 +7,15 @@ BUILD=tetgen-build
 mkdir -p cache
 cd cache
 
-if [ -f $DLNAME ]; then
+if [ ! -f $DLNAME ]; then
     wget  http://wias-berlin.de/software/tetgen/1.5/src/$DLNAME
 fi
 
-if [ -d $BASE ]; then
+if [ ! -d $BASE ]; then
    tar xvfz $DLNAME
 fi
 
-if [ -d $BUILD ]; then
+if [ ! -d $BUILD ]; then
     mkdir $BUILD
     cd $BUILD
     cmake -DCMAKE_CXX_FLAGS:STRING="-fPIC -O3" ../$BASE
