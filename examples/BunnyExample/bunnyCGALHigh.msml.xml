@@ -48,16 +48,16 @@
 
     <workflow>
 
-        <mesherCGALs2v id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
-                       preserveFeatures="false" facet_angle="20" facet_size="0.002" facet_distance="0.001"
-                       cell_radius_edge_ratio="3" cell_size="0.01" odt="false" lloyd="false" pertube="false"
+        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+                       preserveFeatures="false" facetAngle="20" facetSize="0.002" facetDistance="0.001"
+                       cellRadiusEdgeRatio="3" cellSize="0.01" odt="false" lloyd="false" pertube="false"
                        exude="false"/>
 
-        <boxROIToIndexOperator id="bodyToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup"
                                box="-0.1 -0.03  -0.07 0.06 0.19 0.06" mesh="${bunnyVolumeMesher}"
                                select="elements"/>
 
-        <boxROIToIndexOperator id="bottomToIndexGroup"
+        <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
                                select="points"/>
     </workflow>

@@ -47,6 +47,7 @@ MESSAGE("CGALOperators: ENABLED and ACTIVE")
 
 SET(CGALOperators_SRCS
   CGALOperators.cpp
+  CGALOperators.h
   cgal_tet_to_vtk.h
   )
 

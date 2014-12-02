@@ -8,11 +8,11 @@
 	</runtime>
 
 	<input>
-		<arg name="mesh" logical="surface" physical="VTK" />
+		<arg name="mesh" logical="TriangularSurface" physical="file.vtk" />
 	</input>
 
 	<output>
-		<arg name="numberOfElements" logical="int" />
+		<arg name="numberOfElements" physical="int" />
 	</output>
 
 </msml:operator>

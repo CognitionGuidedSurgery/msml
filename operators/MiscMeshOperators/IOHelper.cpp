@@ -57,17 +57,33 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkImageData.h>
 
+#include <vtkCommand.h>
+
 #include "MiscMeshOperators.h" //circular, should be refactored
 #include "../vtk6_compat.h"
 #include "../common/log.h"
-
-
-
 #include "IOHelper.h"
 using namespace std;
 
 namespace MSML {
-
+		/*
+		Observer which silently swallows everything.
+		Based on this example: http://www.vtk.org/Wiki/VTK/Examples/Cxx/Utilities/ObserveError
+		*/
+		class SilentErrorObserver : public vtkCommand
+		{		
+			public:	
+			static SilentErrorObserver *New()
+			{
+				return new SilentErrorObserver;
+			}
+			virtual void Execute(vtkObject *vtkNotUsed(caller),
+							   unsigned long event,
+							   void *calldata)
+			{
+				log_debug()<<"error occurred but was silently disposed: "<<(static_cast<char *>(calldata))<<std::endl;	      
+			} 
+		};
 vtkSmartPointer<vtkImageData> IOHelper::CTXReadImage(const char* filename)
 {
   boost::filesystem::path filePath(filename);
@@ -98,6 +114,8 @@ vtkSmartPointer<vtkImageData> IOHelper::CTXReadImage(const char* filename)
 
   vtkSmartPointer<vtkImageData> aReturn = flipFilter->GetOutput();
 
+  //set silent error observer  
+  reader->AddObserver(vtkCommand::ErrorEvent,vtkSmartPointer<SilentErrorObserver>::New());
   reader->SetFileName("");
   reader->Update();
 
@@ -478,7 +496,5 @@ std::vector< std::string > IOHelper::getAllFilesByMask(const char* filename)
   }
   return all_matching_files;
 }
-
-
 } // end namespace MSML
 

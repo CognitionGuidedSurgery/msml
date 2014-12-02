@@ -1,22 +1,22 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="TransformMeshBarycentric">
 
     <runtime>
-        <python module="msml.ext.misc" function="TransformMeshBarycentricPython" />
+        <python module="msml.ext.misc" function="TransformMeshBarycentric" />
     </runtime>
 
     <input>
-        <arg name="mesh" physical="file.vtk"/>
-        <arg name="referenceGrid" logical="Mesh" physical="file.vtk" />
-        <arg name="deformedGrid" physical="file.vtk"/>
+        <arg name="gridToDefrom" logical="TetrahedralVolume" physical="file.vtk"/>
+        <arg name="referenceGrid" logical="TetrahedralVolume" physical="file.vtk" />
+        <arg name="deformedGrid" logical="TetrahedralVolume" physical="file.vtk"/>
     </input>
 
     <output>
-        <arg name="out_surface" logical="Mesh" physical="file.vtk" />
+        <arg name="outSurface" logical="TetrahedralVolume" physical="file.vtk" />
     </output>
 
 
     <parameters>
-        <arg name="out_surface_filename" physical="str" optional="true" />
+        <arg name="targetSurfaceFilename" physical="str" optional="true" target="true" />
         <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
     </parameters>
 

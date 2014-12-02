@@ -158,7 +158,7 @@ namespace MSML
     return outfile;
   }
 
-  std::string MarchingCube(const char* infile, const char* outfile, float isoValue)
+  std::string vtkMarchingCube(const char* infile, const char* outfile, float isoValue)
   {
     vtkSmartPointer<vtkImageData> imageIn = IOHelper::VTKReadImage(infile);
     

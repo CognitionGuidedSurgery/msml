@@ -1,8 +1,8 @@
 /*  =========================================================================
 
     Program:   The Medical Simulation Markup Language
-    Module:    Operators, MiscMeshOperators
-    Authors:   Markus Stoll, Stefan Suwelack
+    Module:    Operators, MiscMeshOperators, FeBioSupport
+    Authors:   Sarah Grimm, Alexander Weigl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,34 +17,34 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
     =========================================================================*/
 
-#ifndef MAPPINGOPERATORS_H_
-#define MAPPINGOPERATORS_H_
+#ifndef FEBIOSUPPORT_H
+#define FEBIOSUPPORT_H
 
 #include "../MSML_Operators.h"
-#include <vector>
-#include <limits>
-#include <map>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <exception>
-
-#include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkSmartPointer.h>
-#include <vtkImageData.h>
+#include <string>
+#include <vector>
 
-using namespace std;
+// should be after VTK imports
+#include "../vtk6_compat.h"
+#include "../common/log.h"
+
 
 namespace MSML {
-    namespace MappingOperators {
-        LIBRARY_API std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh );
-        LIBRARY_API bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh );
-        LIBRARY_API bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh );
-    }
-} // end namespace MediAssist
+    namespace FeBioSupport
+    {
+        LIBRARY_API void ConvertFEBToVTK(const std::string modelFilename, const std::string lastStep, std::string inputMesh);
+		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName);
+		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh,  std::string partName);
 
-#endif /* MAPPINGOPERATORS_H_ */
+		LIBRARY_API std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<double> indices, std::string id, std::string pressure);
+		LIBRARY_API std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector<double> indices, std::string id, std::string pressure);
+    }
+}
+
+#endif

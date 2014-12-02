@@ -1,0 +1,14 @@
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="supportingMesh" category="constraint"
+              quantity="single">
+  <description>
+        Specify a geometry that the object should be matched to. For more information on the algorithm please refer to the paper dx.doi.org/10.1118/1.4896021
+
+  </description>
+  
+  <parameters>
+      <arg name="matchingReference" physical="VTK" logical="Triangular"/>
+  </parameters>
+
+</msml:element>

@@ -1,28 +1,28 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="mesherCGALi2v">
+	xsi:schemaLocation="http://sfb125.de/msml" name="CGALMeshVolumeFromVoxels">
 
-	<runtime>
-		<python module="msml.ext.cgal" function="CreateVolumeMeshi2v" />
-	</runtime>
-	<input>
-		<arg name="image" logical="segmentationImage" physical="VTI" />
-	</input>
+    <runtime>
+        <python module="msml.ext.cgal" function="CGALMeshVolumeFromVoxels" />
+    </runtime>
+    <input>
+        <arg name="image" logical="SegmentationImage3D" physical="file.vtk" />
+    </input>
 
-	<output>
-		<arg name="mesh" logical="linearTetMesh" physical="VTK" />
-	</output>
+    <output>
+        <arg name="mesh" logical="TetrahedralVolume" physical="file.vtk" />
+    </output>
 
-	<parameters>
-    <arg name="meshFilename" physical="str" optional="true" />
-		<arg name="facet_angle" physical="float" />
-		<arg name="facet_size" physical="float" />
-		<arg name="facet_distance" physical="float" />
-		<arg name="cell_radius_edge_ratio" physical="float" />
-		<arg name="cell_size" physical="float" />
-		<arg name="odt" physical="bool" optional="true" default="false"/>
-		<arg name="lloyd" physical="bool" optional="true" default="false" />
-		<arg name="pertube" physical="bool" optional="true" default="false" />
-		<arg name="exude" physical="bool" optional="true" default="false" />
-	</parameters>
+    <parameters>
+        <arg name="meshFilename" physical="str" optional="true" target="true" />
+        <arg name="facetAngle" physical="float" />
+        <arg name="facetSize" physical="float" />
+        <arg name="facetDistance" physical="float" />
+        <arg name="cellRadiusEdgeRatio" physical="float" />
+        <arg name="cellSize" physical="float" />
+        <arg name="odt" physical="bool" optional="true" default="false"/>
+        <arg name="lloyd" physical="bool" optional="true" default="false" />
+        <arg name="pertube" physical="bool" optional="true" default="false" />
+        <arg name="exude" physical="bool" optional="true" default="false" />
+    </parameters>
 </msml:operator>

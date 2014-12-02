@@ -7,11 +7,11 @@
     </runtime>
 
     <input>
-        <arg name="vdx" logical="triangularMesh" physical="vdx"/>
+        <arg name="vdx" logical="TriangularSurfaceMesh" physical="vdx"/>
     </input>
 
     <output>
-        <arg name="ctx" logical="volume" physical="vtk"/>
+        <arg name="ctx" logical="VolumeMesh" physical="vtk"/>
     </output>
 
     <parameters>

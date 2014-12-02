@@ -53,40 +53,40 @@
     <ExtractAllSurfacesByMaterial id="surfaceExtraction" meshIn="${VolumeMesher}" meshOutFilename="${combo_mesh_filename}"
                                       cut="false"/>
 
-    <mesherCGALi2v id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
-                       facet_angle="20" facet_size="12" facet_distance="3" cell_radius_edge_ratio="3" cell_size="18" />
+    <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
+                       facetAngle="20" facetSize="12" facetDistance="3" cellRadiusEdgeRatio="3" cellSize="18" />
 
-    <materialId-to-index id="bodyToIndexGroup"
+    <ComputeIndicesFromMaterialId id="bodyToIndexGroup"
                              num="100" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="bonesToIndexGroup"
+    <ComputeIndicesFromMaterialId id="bonesToIndexGroup"
                              num="25" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="lung1ToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung1ToIndexGroup"
                              num="50" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="lung2ToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung2ToIndexGroup"
                              num="75" mesh="${surfaceExtraction}"
                              type="elements"/>
 
-    <materialId-to-index id="lung1facesToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung1facesToIndexGroup"
                              num="50" mesh="${surfaceExtraction}"
                              type="faces"/>
 
-    <materialId-to-index id="lung2facesToIndexGroup"
+    <ComputeIndicesFromMaterialId id="lung2facesToIndexGroup"
                              num="75" mesh="${surfaceExtraction}"
                              type="faces"/>
 
-    <boxROIToIndexOperator id="bottomToIndexGroup"
+    <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
                                select="points"/>
-    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed*.vtk"/>
+    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" targetSurfaceMeshFilename="surfaceOutlineDeformed*.vtk"/>
     <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
 
-    <generateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf*.vtk" spacing="5"/>
+    <GenerateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf*.vtk" spacing="5"/>
 
   </workflow>
 
