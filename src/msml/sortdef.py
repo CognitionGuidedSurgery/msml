@@ -134,25 +134,28 @@ class ElementSet(IndexSet): pass
 class Mesh(MSMLLTop): pass
 
 
-class Volume(Mesh): pass
+class VolumeMesh(Mesh): pass
 
 
-class Tetrahedral(Volume): pass
+class TetrahedralVolume(VolumeMesh): pass
 
 
-class Hexahedral(Volume): pass
+class HexahedralVolume(VolumeMesh): pass
 
 
-class QuadraticTetraHedral(Volume): pass
+class QuadraticTetrahedral(VolumeMesh): pass
 
 
-class Surface(Mesh): pass
+class SurfaceMesh(Mesh): pass
 
 
-class Triangular(Surface): pass
+class TriangularSurface(SurfaceMesh): pass
 
 
-class Square(Surface): pass
+class SquareSurface(SurfaceMesh): pass
+
+
+class QuadraticTriangularSurface(SurfaceMesh): pass
 
 
 class Image(MSMLLTop): pass
@@ -162,6 +165,9 @@ class Image2D(Image): pass
 
 
 class Image3D(Image): pass
+
+
+class SegmentationImage3D(Image3D): pass
 
 
 class PhysicalQuantities(MSMLLTop): pass
@@ -256,14 +262,15 @@ class ContainerFile(InFile):
 
 class VTK(ContainerFile): pass
 
-class VTU(ContainerFile): pass
-class VTI(ContainerFile): pass
+class VTU(VTK): pass
+
+class VTI(VTK): pass
+
+class VTP(VTK): pass
 
 class STL(InFile): pass
 
-
 class DICOM(ContainerFile): pass
-
 
 class HDF5(ContainerFile): pass
 
