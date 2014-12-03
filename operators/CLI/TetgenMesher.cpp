@@ -72,7 +72,7 @@ int main( int argc, char * argv[])
 
     Tetgen::TetgenSettings settings;
     settings.preserveBoundary = preserveBoundary;
-    Tetgen::CreateVolumeMesh(surfaceMesh.c_str(),volumeMesh.c_str(), settings, false );
+    Tetgen::TetgenCreateVolumeMesh(surfaceMesh.c_str(),volumeMesh.c_str(), settings, false );
 
 
 

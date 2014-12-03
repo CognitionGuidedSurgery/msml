@@ -2,7 +2,7 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://sfb125.de/msml" name="CGALMeshVolumeFromSurface">
     <runtime>
-        <python module="msml.ext.cgal" function=" "/>
+        <python module="msml.ext.cgal" function="CGALMeshVolumeFromSurface"/>
     </runtime>
 
     <input>
@@ -19,7 +19,7 @@
                 Optional input filename for the output.
             </meta>
         </arg>
-        <arg name="preserveFeatures" physical="bool"/>
+        <arg name="preserveFeatures" physical="bool" optional="true" default="false" />
         <arg name="facetAngle" physical="float"/>
         <arg name="facetSize" physical="float"/>
         <arg name="facetDistance" physical="float"/>

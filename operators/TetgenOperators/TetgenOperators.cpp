@@ -107,7 +107,7 @@ std::string TetgenCreateVolumeMesh(std::string infile, std::string outfile,
 	settings.optimizationUseVertexSmoothing = optimizationUseVertexSmoothing;
 	settings.optimizationUseVertexInsAndDel = optimizationUseVertexInsAndDel;
 
-	CreateVolumeMesh(infile.c_str(), outfile.c_str(), settings, false);
+	TetgenCreateVolumeMesh(infile.c_str(), outfile.c_str(), settings, false);
 	return outfile;
 }
 
@@ -122,7 +122,7 @@ bool TetgenCreateVolumeMesh(const char* infile, const char* outfile, TetgenSetti
 	vtkPolyData* inputMesh = reader->GetOutput();
 
 	vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
-	CreateVolumeMesh(inputMesh, outputMesh, settings, isQuadratic);
+	TetgenCreateVolumeMesh(inputMesh, outputMesh, settings, isQuadratic);
 
 
 	vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
