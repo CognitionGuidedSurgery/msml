@@ -104,7 +104,26 @@ class base(object):
 class Module(base):
     def __init__(self, name):
         super(Module, self).__init__()
-        self.relname = name
+        self.relname = name__author__ = 'Alexander Weigl'
+__date__ = '2014-06-06'
+
+from unittest import TestCase
+
+from path import path
+
+import msml.env
+from msml.frontend import App
+#from msml.log import _reported
+from operator import itemgetter
+
+def _reported(*args): return True
+
+msml.env.alphabet_search_paths = []
+
+ROOT = path(__file__).dirname() / "../../share/testdata"
+ALPHABET_DIR = ROOT / 'alphabet'
+
+import msml.generators
 
     def create(self, output_folder):
         render(self.module, output_folder / self.filename)

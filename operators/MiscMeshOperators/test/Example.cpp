@@ -5,7 +5,7 @@
 
 #define INPUT(x) (TESTDATA_PATH "/input/" x)
 #define OUTPUT(x) (TESTDATA_PATH "/tmp/" x)
-#define REFERENCE(x) (TESTDATA_PATH "/reference/" x)
+#define REFERENCE(x) (TESTDATA_PATH "/references/" x)
 
 
 BOOST_AUTO_TEST_CASE( TestAssignRegionOperator )
@@ -27,9 +27,9 @@ BOOST_AUTO_TEST_CASE( TestTransformMeshBarycentric)
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid =
         IOHelper::VTKReadUnstructuredGrid(REFERENCE("dispOutput0.vtu"));
     vtkSmartPointer<vtkUnstructuredGrid> deformedGrid =
-        IOHelper::VTKReadUnstructuredGrid("dispOutput125.vtu");
+        IOHelper::VTKReadUnstructuredGrid(OUTPUT("dispOutput125.vtu"));
     vtkSmartPointer<vtkUnstructuredGrid> refSurface =
-        IOHelper::VTKReadUnstructuredGrid("boneMesh16.vtk");
+        IOHelper::VTKReadUnstructuredGrid(REFERENCE("boneMesh16.vtk"));
     vtkSmartPointer<vtkUnstructuredGrid> out_surface =
         vtkSmartPointer<vtkUnstructuredGrid>::New();
 
