@@ -71,15 +71,6 @@ MSML_LIBRARY(
   SOURCES   ${MiscMeshOperators_SRCS}
   LIBRARIES ${MiscMeshOperators_LIBS})
 
-
-SET(MiscMeshOperatorsExample_SRCS Example.cpp)
-  
-ADD_EXECUTABLE (MiscMeshOperatorsExample ${MiscMeshOperatorsExample_SRCS} )
-TARGET_LINK_LIBRARIES(MiscMeshOperatorsExample 
-  MiscMeshOperators 
-  ${MiscMeshOperators_LIBS}
-)
-
 ############################################################################
 ## Testing
 
