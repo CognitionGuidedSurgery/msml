@@ -183,8 +183,8 @@ class LinearSequenceExecutor(AbstractExecutor):
             ExecutorsHelper.execute_variable(self._memory, node))
 
     def _execute_operator_task(self, task):
-        # new = ExecutorsHelper.execute_operator_task(self._memory, task)
-        new = ExecutorsHelper.execute_operator_task(self.rerun_check, self._memory, task)
+        new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        #new = ExecutorsHelper.execute_operator_task(self.rerun_check, self._memory, task)
         self._memory.update(new)
 
 
