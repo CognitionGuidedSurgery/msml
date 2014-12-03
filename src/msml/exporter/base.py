@@ -196,8 +196,6 @@ class Exporter(object):
                     if const.meta is None:
                         log.error("Element 'const.tag' does not have meta information set. This happens, if this element is not define in the alphabet")
                         continue
-
-
                     for para in const.meta.parameters.values():
                         assert isinstance(para, Slot)
 
