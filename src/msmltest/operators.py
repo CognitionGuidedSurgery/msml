@@ -44,7 +44,7 @@ class OperatorTest(TestCase):
         ref_file = REF_DIR / 'test_tetgen_1.vtk'
         output_file = TMP_DIR / 'test_tetgen_2.vtk'
 
-        P.CreateVolumeMesh(str(input_file),
+        P.TetgenCreateVolumeMesh(str(input_file),
                                  str(output_file),
                                  preserveBoundary,
                                  maxEdgeRadiusRatio,
@@ -64,7 +64,7 @@ class OperatorTest(TestCase):
         ref_file = REF_DIR / 'test_tetgen_1.vtk'
         output_file = TMP_DIR / 'test_tetgen_1.vtk'
 
-        P.CreateVolumeMesh(MSMLString(input_file),
+        P.TetgenCreateVolumeMesh(MSMLString(input_file),
                                  MSMLString(output_file),
                                  preserveBoundary,
                                  maxEdgeRadiusRatio,
