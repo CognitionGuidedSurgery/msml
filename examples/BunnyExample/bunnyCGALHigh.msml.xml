@@ -48,7 +48,7 @@
 
     <workflow>
 
-        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+        <CGALMeshVolumeFromSurface id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
                        preserveFeatures="false" facetAngle="20" facetSize="0.002" facetDistance="0.001"
                        cellRadiusEdgeRatio="3" cellSize="0.01" odt="false" lloyd="false" pertube="false"
                        exude="false"/>

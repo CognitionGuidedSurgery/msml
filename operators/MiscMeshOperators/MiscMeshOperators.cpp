@@ -109,7 +109,7 @@ using namespace std;
 
 namespace MSML {
 namespace MiscMeshOperators {
-std::string ConvertSTLToVTKPython(std::string infile, std::string outfile)
+std::string ConvertSTLToVTK(std::string infile, std::string outfile)
 {
     ConvertSTLToVTK( infile.c_str(), outfile.c_str());
 	
@@ -136,7 +136,7 @@ bool ConvertSTLToVTK(const char* infile, vtkPolyData* outputMesh)
     return true;
 }
 
-std::string ConvertVTKToSTLPython(std::string infile, std::string outfile)
+std::string ConvertVTKToSTL(std::string infile, std::string outfile)
 {
 	ConvertVTKToVTU( infile.c_str(), outfile.c_str());
 
@@ -160,7 +160,7 @@ bool ConvertVTKToSTL(const char* infile, const char* outfile)
 }
 
 //---------------------------- start of new by Nico on 2014-05-10.
-std::string ConvertVTKToVTUPython(std::string infile, std::string outfile)
+std::string ConvertVTKToVTU(std::string infile, std::string outfile)
 {
 	ConvertVTKToVTU( infile.c_str(), outfile.c_str());
 	return outfile;
@@ -256,7 +256,7 @@ bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh )
   return true;
 }
 
-std::string VTKToInpPython( std::string infile, std::string outfile)
+std::string VTKToInp( std::string infile, std::string outfile)
 {
 	VTKToInp( infile.c_str(),  outfile.c_str());
 	return outfile;
@@ -750,7 +750,7 @@ bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* o
 
 }
 
-std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName)
+std::string ConvertVTKMeshToAbaqusMeshString(std::string inputMesh,  std::string partName, std::string materialName)
 {
     std::string output = ConvertVTKMeshToAbaqusMeshString( IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()),   partName,  materialName);
     return output;
@@ -825,7 +825,7 @@ std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  s
     return out.str();
 }
 
-std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile)
+std::string ConvertVTKPolydataToUnstructuredGrid(std::string infile, std::string outfile)
 {
     log_debug()<< " Converting vtkPolydata "<<infile.c_str()<<" to vtkUnstructuredGrid "<<outfile.c_str()<<std::endl;
     bool result = ConvertVTKPolydataToUnstructuredGrid(infile.c_str(), outfile.c_str());
@@ -865,7 +865,7 @@ bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstruc
 
 }
 
-std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh)
+std::string ProjectSurfaceMesh(std::string infile, std::string outfile, std::string referenceMesh)
 {
     log_debug()<< " Projecting surface mesh "<<infile.c_str()<<" to "<<referenceMesh<<" and writing results to "<<outfile<< std::endl;
     bool result = ProjectSurfaceMesh(infile.c_str(), outfile.c_str(), referenceMesh.c_str());
@@ -1066,23 +1066,23 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
     return true;
 }
 
-//boost::python::list ExtractPointPositionsPython( boost::python::list indices, std::string infile)
+//boost::::list ExtractPointPositions( boost::::list indices, std::string infile)
 //{
-//	unsigned int indicesSize = boost::python::len(indices);
+//	unsigned int indicesSize = boost::::len(indices);
 //	std::vector<int> c_indices;
 //	for(int i=0; i<indicesSize; i++)
 //	{
-//		unsigned int currentIndex = boost::python::extract<int>(indices[i]);
+//		unsigned int currentIndex = boost::::extract<int>(indices[i]);
 //		c_indices.push_back(currentIndex);
 //		std::cout<<"Current index "<<currentIndex;
 //	}
 //
 //	std::vector<double> pointPositions = ExtractPointPositions( c_indices, infile.c_str());
-//	boost::python::list positionsPython;
+//	boost::::list positions;
 //
 //	for(int i=0; i< pointPositions.size();i++)
 //	{
-//		positionsPython.append(pointPositions[i]);
+//		positions.append(pointPositions[i]);
 //	}
 //
 //
@@ -1255,7 +1255,7 @@ bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vt
 	return true;
 }
 
- bool ProjectSurfaceMesh(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
+ bool ProjectVolumeMesh(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
 {
 
   vtkSmartPointer<vtkPolyData> referenceMesh = IOHelper::VTKReadPolyData(referenceMeshFile.c_str());
@@ -1263,7 +1263,7 @@ bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vt
 
   vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-	ProjectSurfaceMesh(inputMesh, outputMesh, referenceMesh);
+	ProjectVolumeMesh(inputMesh, outputMesh, referenceMesh);
 
   IOHelper::VTKWriteUnstructuredGrid(outputMeshFile.c_str(), outputMesh);
 
@@ -1271,7 +1271,7 @@ bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vt
 	return true;
 }
 
-bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh)
+bool ProjectVolumeMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh)
 {
 
 	log_debug() << "Start surface projection" << std::endl;

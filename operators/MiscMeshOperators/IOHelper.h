@@ -45,42 +45,6 @@
 
 using namespace std;
 
-/*MSMLDOC
-IOHelper
-^^^^^^^^
-
-.. cpp:namespace:: MSML::IOHelper
-
-.. cpp:function:: vtkSmartPointer\<vtkImageData> VTKReadImage(const char* filename)
-
-    :param const char* filename:
-
-    :returns:
-    :rtype:
-
-
-
-
-.. cpp:function:: vtkSmartPointer\<vtkUnstructuredGrid> VTKReadUnstructuredGrid(const char* filename)
-
-    :param const char* filename:
-
-    :returns:
-    :rtype:
-
-
-
-
-.. cpp:function:: vtkSmartPointer\<vtkPolyData> VTKReadPolyData(const char* filename)
-
-    :param const char* filename:
-
-    :returns:
-    :rtype:
-
-
-*/
-
 namespace MSML {
     namespace IOHelper {
 

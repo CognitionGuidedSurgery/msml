@@ -43,91 +43,90 @@
 using namespace std;
 
 namespace MSML {
-    namespace MiscMeshOperators
-    {
-        LIBRARY_API  std::string ConvertSTLToVTKPython(std::string infile, std::string outfile);
-        LIBRARY_API  bool ConvertSTLToVTK(const char* infile, const char* outfile);
-        LIBRARY_API  bool ConvertSTLToVTK(const char* infile, vtkPolyData* outputMesh);
+namespace MiscMeshOperators
+{
+  LIBRARY_API  std::string ConvertSTLToVTK(std::string infile, std::string outfile);
+  LIBRARY_API  bool ConvertSTLToVTK(const char* infile, const char* outfile);
+  LIBRARY_API  bool ConvertSTLToVTK(const char* infile, vtkPolyData* outputMesh);
 
-        LIBRARY_API  std::string ConvertVTKToSTLPython(std::string infile, std::string outfile);
-        LIBRARY_API  bool ConvertVTKToSTL(const char* infile, const char* outfile);
+  LIBRARY_API  std::string ConvertVTKToSTL(std::string infile, std::string outfile);
+  LIBRARY_API  bool ConvertVTKToSTL(const char* infile, const char* outfile);
 
-        LIBRARY_API  bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile);
+  LIBRARY_API  bool ConvertVTKToOFF(vtkPolyData* inputMesh, const char* outfile);
 
-        //LIBRARY_API  std::string ConvertInpToVTKPython(std::string infile, std::string outfile);
-        LIBRARY_API  bool ConvertInpToVTK(const char* infile, const char* outfile);
-        LIBRARY_API  bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh);
+  LIBRARY_API  bool ConvertInpToVTK(const char* infile, const char* outfile);
+  LIBRARY_API  bool ConvertInpToVTK(const char* infile, vtkUnstructuredGrid* outputMesh);
 
-        LIBRARY_API  std::string ConvertVTKToVTUPython(std::string infile, std::string outfile); // python: 'convertVTKToVTU()'
-	    LIBRARY_API  bool        ConvertVTKToVTU(const char* infile, const char* outfile );
-//	LIBRARY_API  static bool ConvertVTKToVTU(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh); // is this needed at all?!
+  LIBRARY_API  std::string ConvertVTKToVTU(std::string infile, std::string outfile); 
+  LIBRARY_API  bool ConvertVTKToVTU(const char* infile, const char* outfile );
 
-        //LIBRARY_API  std::string VTKToInpPython( std::string infile, std::string outfile);
-        LIBRARY_API  bool VTKToInp( const char* infile, const char* outfile);
-        LIBRARY_API  bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile);
+  
+  LIBRARY_API  bool VTKToInp( const char* infile, const char* outfile);
+  LIBRARY_API  bool VTKToInp( vtkUnstructuredGrid* inputMesh, const char* outfile);
 
-        LIBRARY_API  std::string ExtractSurfaceMesh( std::string infile, std::string outfile);
-        LIBRARY_API  bool ExtractSurfaceMesh( const char* infile, const char* outfile);
-        LIBRARY_API  bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
+  LIBRARY_API  std::string ExtractSurfaceMesh( std::string infile, std::string outfile);
+  LIBRARY_API  bool ExtractSurfaceMesh( const char* infile, const char* outfile);
+  LIBRARY_API  bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
 
-		LIBRARY_API  const char* vtkSmoothMesh(const char* infile, const char* outfile, int iterations,
-										  double feature_angle, double pass_band,bool boundary_smoothing,
-										  bool feature_edge_smoothing, bool non_manifold_smoothing,
-										  bool normalized_coordinates);
+  LIBRARY_API  const char* vtkSmoothMesh(const char* infile, const char* outfile, int iterations,
+				  double feature_angle, double pass_band,bool boundary_smoothing,
+				  bool feature_edge_smoothing, bool non_manifold_smoothing,
+				  bool normalized_coordinates);
 								  
-		LIBRARY_API  vector<unsigned int> GetMaterialNumbersFromMesh( const char* infile);
+  LIBRARY_API  vector<unsigned int> GetMaterialNumbersFromMesh( const char* infile);
 		
-		LIBRARY_API  bool DebugPrint(vector<int> to_print);
+  LIBRARY_API  bool DebugPrint(vector<int> to_print);
         
 
-        LIBRARY_API  std::string ExtractAllSurfacesByMaterial( const char* infile, const char* outfile, bool theCutIntoPieces);
-        LIBRARY_API  std::map<int,int>* createHist(vtkDataArray* theVtkDataArray);
+  LIBRARY_API  std::string ExtractAllSurfacesByMaterial( const char* infile, const char* outfile, bool theCutIntoPieces);
+  LIBRARY_API  std::map<int,int>* createHist(vtkDataArray* theVtkDataArray);
 
-        LIBRARY_API  bool AssignSurfaceRegion( const char* infile, const char* outfile,
-                     std::vector<std::string> regionMeshes );
-        LIBRARY_API  bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh,
-           vtkUnstructuredGrid* outputMesh, std::vector<vtkSmartPointer<vtkPolyData> > & regionMeshes);
+  LIBRARY_API  bool AssignSurfaceRegion( const char* infile, const char* outfile,
+          std::vector<std::string> regionMeshes );
+  LIBRARY_API  bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh,
+  vtkUnstructuredGrid* outputMesh, std::vector<vtkSmartPointer<vtkPolyData> > & regionMeshes);
 
-        LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName);
-        LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshStringPython(std::string inputMesh,  std::string partName, std::string materialName);
+  LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName);
+  LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshString(std::string inputMesh,  std::string partName, std::string materialName);
 
-        LIBRARY_API   std::string ProjectSurfaceMeshPython(std::string infile, std::string outfile, std::string referenceMesh);
-        LIBRARY_API   bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
-        LIBRARY_API   bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
+  LIBRARY_API  std::string ProjectSurfaceMesh(std::string infile, std::string outfile, std::string referenceMesh);
+  LIBRARY_API  bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
+  LIBRARY_API  bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
+  
+  LIBRARY_API  bool ProjectVolumeMesh(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
+  LIBRARY_API  bool ProjectVolumeMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh);
 
-        LIBRARY_API   std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
-        LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
+  LIBRARY_API   std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
+  LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
 
-        LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGridPython(std::string infile, std::string outfile);
-        LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile );
-        LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstructuredGrid* outputMesh);
+  LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGrid(std::string infile, std::string outfile);
+  LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile );
+  LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstructuredGrid* outputMesh);
 
-//	LIBRARY_API  boost::python::list ExtractPointPositionsPython( boost::python::list indices, std::string infile);
-        LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, std::string inputMesh);
-        LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);
-        LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh);
+  LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, std::string inputMesh);
+  LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);
+  LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh);
 
-        LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile);
-        LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh);
+  LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile);
+  LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh);
 
-        LIBRARY_API  bool ProjectSurfaceMesh(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
-        LIBRARY_API  bool ProjectSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh);
 
-        LIBRARY_API  std::vector<unsigned int> ExtractNodeSet(std::string inputVolumeMeshFile, std::string nodeSetName);
-        LIBRARY_API  std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, std::string nodeSetName);
 
-        LIBRARY_API  std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
-        LIBRARY_API  std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
+  LIBRARY_API  std::vector<unsigned int> ExtractNodeSet(std::string inputVolumeMeshFile, std::string nodeSetName);
+  LIBRARY_API  std::vector<unsigned int> ExtractNodeSet( vtkUnstructuredGrid* inputMeshFile, std::string nodeSetName);
 
-        LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
-        LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
-        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
+  LIBRARY_API  std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
+  LIBRARY_API  std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
 
-        LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
-        LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
+  LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
+  LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
+  LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
 
-		LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
-			                       double toErode, std::vector<double> morph_kernel);    } //end namespace MiscMeshOperators
+  LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
+  LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
+
+  LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
+			            double toErode, std::vector<double> morph_kernel);    } //end namespace MiscMeshOperators
 } // end namespace MSML
 
 
