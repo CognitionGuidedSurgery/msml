@@ -68,7 +68,7 @@ namespace MSML {
 
     */
 
-    LIBRARY_API bool CreateVolumeMesh(const char* infile, const char* outfile, TetgenSettings settings, bool isQuadratic );
+    LIBRARY_API bool TetgenCreateVolumeMesh(const char* infile, const char* outfile, TetgenSettings settings, bool isQuadratic );
 
     /*MSMLDOC
         .. cpp:function:: std::string CreateVolumeMeshPython(std::string infile, std::string outfile, bool preserveBoundary)
@@ -76,7 +76,7 @@ namespace MSML {
             Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
     */
 
-    LIBRARY_API std::string CreateVolumeMeshPython(std::string infile, std::string outfile,
+    LIBRARY_API std::string TetgenCreateVolumeMeshPython(std::string infile, std::string outfile,
         bool preserveBoundary,
         double maxEdgeRadiusRatio,
         int minDihedralAngleDegrees,
@@ -91,7 +91,7 @@ namespace MSML {
 
             Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. »Wie ein Hund!« sagte er, es war, als sollte die Scham ihn überleben. Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren.
     */
-    LIBRARY_API bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenSettings settings, bool isQuadratic );
+    LIBRARY_API bool TetgenCreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenSettings settings, bool isQuadratic );
     }
 }
 

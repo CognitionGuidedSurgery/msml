@@ -85,7 +85,7 @@ TetgenSettings::TetgenSettings(): // Set default values as they are in Tetgen 1.
 		optimizationUseVertexInsAndDel(true) {
 }
 
-std::string CreateVolumeMesh(std::string infile, std::string outfile,
+std::string TetgenCreateVolumeMesh(std::string infile, std::string outfile,
         bool preserveBoundary,
         double maxEdgeRadiusRatio,
         int minDihedralAngleDegrees,
@@ -111,7 +111,7 @@ std::string CreateVolumeMesh(std::string infile, std::string outfile,
 	return outfile;
 }
 
-bool CreateVolumeMesh(const char* infile, const char* outfile, TetgenSettings settings, bool isQuadratic )
+bool TetgenCreateVolumeMesh(const char* infile, const char* outfile, TetgenSettings settings, bool isQuadratic )
 {
 
 	vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
@@ -163,7 +163,7 @@ static tetgenbehavior tetgenbehaviorForSettings(const TetgenSettings &settings) 
     return params;
 }
 
-bool CreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenSettings settings, bool isQuadratic )
+bool TetgenCreateVolumeMesh(vtkPolyData* inputMesh, vtkUnstructuredGrid* outputMesh, TetgenSettings settings, bool isQuadratic )
 {
 	tetgenio in, out;
 
