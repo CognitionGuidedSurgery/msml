@@ -33,8 +33,7 @@ BOOST_AUTO_TEST_CASE( TestTransformMeshBarycentric)
     vtkSmartPointer<vtkUnstructuredGrid> out_surface =
         vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-    PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface,
-                                                      refSurface, deformedGrid, 10);
+    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface, 10);
 }
 
 BOOST_AUTO_TEST_CASE( TestPositionFromIndices)
