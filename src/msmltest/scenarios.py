@@ -20,4 +20,6 @@ class Scenarios(TestCase):
         msml_file = ROOT / "scenarios/Liver/liverLinear.msml.xml"
         print("Test %s" % msml_file)
 
-        self.app.execute_msml_file(msml_file)
+        memory = self.app.execute_msml_file(msml_file)
+        error = memory._internal['meanErrorOperator']['error']
+        self.assertTrue( error < 3.14e-4)
