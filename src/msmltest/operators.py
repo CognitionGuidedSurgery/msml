@@ -44,7 +44,7 @@ class OperatorTest(TestCase):
         ref_file = REF_DIR / 'test_tetgen_1.vtk'
         output_file = TMP_DIR / 'test_tetgen_2.vtk'
 
-        P.CreateVolumeMeshPython(str(input_file),
+        P.CreateVolumeMesh(str(input_file),
                                  str(output_file),
                                  preserveBoundary,
                                  maxEdgeRadiusRatio,
@@ -64,7 +64,7 @@ class OperatorTest(TestCase):
         ref_file = REF_DIR / 'test_tetgen_1.vtk'
         output_file = TMP_DIR / 'test_tetgen_1.vtk'
 
-        P.CreateVolumeMeshPython(MSMLString(input_file),
+        P.CreateVolumeMesh(MSMLString(input_file),
                                  MSMLString(output_file),
                                  preserveBoundary,
                                  maxEdgeRadiusRatio,
@@ -91,7 +91,7 @@ class OperatorTest(TestCase):
         output_file = TMP_DIR / "vtu_test1.vtu"
         reference_file = REF_DIR / "vtu_test1.vtu"
 
-        M.ConvertVTKToVTUPython(str(input_file), str(output_file))
+        M.ConvertVTKToVTU(str(input_file), str(output_file))
 
         #self.assertTrue(
         #    fcmp(output_file, reference_file),

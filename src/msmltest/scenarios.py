@@ -16,6 +16,7 @@ class Scenarios(TestCase):
     def setUp(self):
         self.app = msml.frontend.App(executor="phase", exporter="sofa", output_dir=ROOT / "tmp")
 
+
     def test_liver(self):
         msml_file = ROOT / "scenarios/Liver/liverLinear.msml.xml"
         print("Test %s" % msml_file)
