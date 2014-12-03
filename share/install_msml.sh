@@ -2,9 +2,10 @@
 
 mkdir cbuild;
 cd cbuild;
-cmake -DVTK_DIR=../cache/VTK-6.1.0-BUILD/ \
-      -DTETGEN_INCLUDE_DIRS=../cache/tetgen1.5.0 \
-      -DTETGEN_LIBRARY=../cache/tetgen-build/libtet.a \
-      ../operators
+ROOT=/home/ubuntu/msml/
+cmake -DVTK_DIR=$ROOT/cache/VTK-6.1.0-BUILD/ \
+      -DTETGEN_INCLUDE_DIRS=$ROOT/cache/tetgen1.5.0 \
+      -DTETGEN_LIBRARY=$ROOT/cache/tetgen-build/libtet.a \
+	  $ROOT/operators
 make -j 3;
 exit 
