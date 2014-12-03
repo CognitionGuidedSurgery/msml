@@ -25,16 +25,15 @@ BOOST_AUTO_TEST_CASE( TestAssignRegionOperator )
 BOOST_AUTO_TEST_CASE( TestTransformMeshBarycentric)
 {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid =
-        IOHelper::VTKReadUnstructuredGrid(REFERENCE("dispOutput0.vtu"));
+        IOHelper::VTKReadUnstructuredGrid(REFERENCE("ircad_disp0.vtu"));
     vtkSmartPointer<vtkUnstructuredGrid> deformedGrid =
-        IOHelper::VTKReadUnstructuredGrid(OUTPUT("dispOutput125.vtu"));
+        IOHelper::VTKReadUnstructuredGrid(REFERENCE("ircad_disp50.vtu"));
     vtkSmartPointer<vtkUnstructuredGrid> refSurface =
-        IOHelper::VTKReadUnstructuredGrid(REFERENCE("boneMesh16.vtk"));
+        IOHelper::VTKReadUnstructuredGrid(REFERENCE("ircad_tris_kidney.vtu"));
     vtkSmartPointer<vtkUnstructuredGrid> out_surface =
         vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-    PostProcessingOperators::TransformMeshBarycentric(referenceGrid,out_surface,
-                                                      refSurface, deformedGrid, 10);
+    PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface, 10);
 }
 
 BOOST_AUTO_TEST_CASE( TestPositionFromIndices)
