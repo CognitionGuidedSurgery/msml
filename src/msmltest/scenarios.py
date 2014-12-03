@@ -14,7 +14,8 @@ ALPHABET_DIR = ROOT / 'alphabet'
 
 class Scenarios(TestCase):
     def setUp(self):
-        self.app = msml.frontend.App(executor="phase", exporter="sofa", output_dir=ROOT / "tmp")
+        self.app = msml.frontend.App(executor="phase", exporter="sofa", output_dir=ROOT / "tmp",
+                                     add_search_path=['../share/alphabet', 'share/alphabet'])
 
 
     def test_liver(self):

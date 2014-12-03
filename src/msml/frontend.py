@@ -421,6 +421,7 @@ class App(object):
         log.info("READING alphabet...")
 
         msml.env.alphabet_search_paths += self._additional_alphabet_path
+        log.info("Alphabet Paths: %s", msml.env.msml.env.alphabet_search_paths)
         files = msml.env.gather_alphabet_files()
         log.info("found %d xml files in the alphabet search path" % len(files))
         alphabet = msml.xml.load_alphabet(file_list=files)
