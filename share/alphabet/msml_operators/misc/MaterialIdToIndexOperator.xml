@@ -10,7 +10,7 @@
     </input>
 
     <output>
-        <arg name="indices" logical="indexGroup" physical="vector.int"/>
+        <arg name="indices" logical="IndexSet" physical="vector.int"/>
     </output>
 
     <parameters>

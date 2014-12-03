@@ -147,6 +147,7 @@ class SortsDefinition(object):
 DEFAULTS_SORTS = {
     'logical': [
         (MSMLLTop, "top", "object", "*"),
+        Index,
         IndexSet,
         NodeSet,
         FaceSet,

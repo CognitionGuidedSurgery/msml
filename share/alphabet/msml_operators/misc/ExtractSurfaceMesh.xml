@@ -14,7 +14,7 @@
     <arg name="targetSurfaceMeshFilename" physical="str" optional="true" target="true" />
   </parameters>
   <output>
-    <arg name="surfaceOut" logical="surface" physical="file.vtk"/>
+    <arg name="surfaceOut" logical="SurfaceMesh" physical="file.vtk"/>
   </output>
 
 </msml:operator>

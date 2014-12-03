@@ -116,6 +116,9 @@ class MSMLLTop(object):
     pass
 
 
+class Index(MSMLLTop): pass
+
+
 class Indices(MSMLLTop): pass
 
 

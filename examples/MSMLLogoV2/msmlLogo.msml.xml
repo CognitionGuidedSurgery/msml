@@ -3,8 +3,8 @@
            xsi:schemaLocation="http://sfb125.de/msml ../../test.xsd">
 
     <variables>
-        <var name="vol_mesh_filename" value="msmlLogoVMesh.vtk" logical="str"/>
-        <var name="input_surf_mesh" value="msmlLogoSurfaceBinaryVTK.vtk" logical="linearMesh"
+        <var name="vol_mesh_filename" value="msmlLogoVMesh.vtk" />
+        <var name="input_surf_mesh" value="msmlLogoSurfaceBinaryVTK.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     </variables>
 
