@@ -706,7 +706,7 @@ class Task(object):
         self.operator = alphabet.get(self.name)
         if (self.operator is None):
             log.fatal("Could not find the operator: %s", self.name)
-            log.fatal("Known Operators: %s", ', '.join(alphabet._operators.key()))
+            log.fatal("Known Operators: %s", ', '.join(alphabet.operators.keys()))
             raise BindError("unknown operator:{name}".format(name=self.name))
 
         # if this tasks has sub tasks.
