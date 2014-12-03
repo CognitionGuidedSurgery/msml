@@ -5,6 +5,20 @@
 
 
 %include "std_string.i"
-#include "TetgenOperators.h"
+
+namespace MSML {
+    namespace Tetgen {
+        std::string TetgenCreateVolumeMesh(std::string infile,
+                                           std::string outfile,
+                                           bool preserveBoundary,
+                                           double maxEdgeRadiusRatio,
+                                           int minDihedralAngleDegrees,
+                                           double maxTetVolumeOrZero,
+                                           int optimizationLevel,
+                                           bool optimizationUseEdgeAndFaceFlips,
+                                           bool optimizationUseVertexSmoothing,
+                                           bool optimizationUseVertexInsAndDel);
+    }
+}
 
 
