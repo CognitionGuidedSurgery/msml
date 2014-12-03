@@ -275,6 +275,13 @@ class PhaseExecutor(LinearSequenceExecutor):
         new = ExecutorsHelper.execute_operator_task(self._memory, task)
         self._memory.update(new)
 
+    def _execute_exporter(self, node):
+        ExecutorsHelper.render_exporter(self, self._exporter)
+        if not bool(self.options.get('PE.disable.simexec', False)):
+             update = ExecutorsHelper.execute_exporter(self._exporter)
+             self._memory.update(update)
+
+
 
 class ParallelExecutor(AbstractExecutor):
     """The `ParallelExecutor` makes everything faster,

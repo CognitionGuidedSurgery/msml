@@ -195,9 +195,17 @@ class HiFlow3Exporter(Exporter):
         """Execute `runHiFlow3`
 
         """
-        cmd = "runHiFlow3 %s" % ' '.join(self.scenes)
-        log.info("Executing HiFlow3: %s" % cmd)
-        os.system(cmd)
+	import msml.envconfig
+	import os
+
+	try:
+		os.makedirs("SimResults")
+	except: pass
+
+	for scenefile in self.scenes:
+	        cmd = "%s %s" % (msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
+        	log.info("Executing HiFlow3: %s" % cmd)
+	        os.system(cmd)
 
 
     def create_scenes(self):
