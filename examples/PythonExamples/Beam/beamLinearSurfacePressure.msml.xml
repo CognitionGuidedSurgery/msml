@@ -2,7 +2,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="LiverXSTet4WithTriangles.vtk" logical="linearMesh"
+        <var name="vol_mesh" value="LiverXSTet4WithTriangles.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     </variables>
 
