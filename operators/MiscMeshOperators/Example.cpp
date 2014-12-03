@@ -66,26 +66,6 @@ void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 
 }
 
-void TestMergeMeshes()
-{
-  /*
-  std::string inputCells("E:/GIT/msml/MSML_/LungsHighResResults/case1_T00_labled_combo.vtk");
-  std::string inputPoints("E:/GIT/msml/MSML_/LungsHighResResults/dispOutput");
-  std::string outputMesh("E:/GIT/msml/MSML_/LungsHighResResults/case1_T00_labledOutput");*/
-  
-  std::string inputCells("E:/SOFA_trunk/build/applications/projects/runSofa/cycytube_labled_combo.vtk-volume1.vtk");
-  std::string inputPoints("E:/SOFA_trunk/build/applications/projects/runSofa/dispOutputOne");
-  std::string outputMesh("E:/SOFA_trunk/build/applications/projects/runSofa/case1_T00_labledOutputOne");
-
-  for (int i=0; i<=55;i++)
-  {
-    std::ostringstream ss;
-    ss << i;
-    string str = ss.str();
-
-    PostProcessingOperators::MergeMeshes((inputPoints + str + ".vtu").c_str(), inputCells.c_str(), (outputMesh + str + ".vtk").c_str());
-  }
-}
 
 void TestGenerateDVF()
 {

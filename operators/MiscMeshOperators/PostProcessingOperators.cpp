@@ -484,7 +484,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
 }
 
 
-
+//Read positions of points from mesh1 and write them to mesh2.
 void MergeMeshes(vtkUnstructuredGrid* pointsMesh, vtkUnstructuredGrid* cellsMesh, vtkUnstructuredGrid* outputMesh)
 {
     outputMesh->DeepCopy(cellsMesh);
