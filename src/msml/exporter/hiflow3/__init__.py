@@ -328,7 +328,7 @@ class HiFlow3Exporter(Exporter):
 
         for constraint in cs.constraints:
             indices = self.get_value_from_memory(constraint, "indices")
-            points = msml.ext.misc.PositionFromIndices(mesh_name, indices, 'points')
+            points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
             count = len(points) / 3
             points_str = list_to_hf3(points)
 
