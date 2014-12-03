@@ -41,10 +41,10 @@ using namespace std;
 
 namespace MSML {
     namespace MappingOperators {
-        LIBRARY_API std::string MapMeshPython ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh );
+        LIBRARY_API std::string MapMesh ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh );
         LIBRARY_API bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh );
         LIBRARY_API bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh );
     }
-} // end namespace MediAssist
+} // end MSML
 
 #endif /* MAPPINGOPERATORS_H_ */

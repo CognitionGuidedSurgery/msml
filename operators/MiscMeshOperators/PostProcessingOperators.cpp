@@ -302,14 +302,14 @@ void ColorMeshFromComparison(vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid
     coloredMesh->DeepCopy(theMesh);
 }
 
-std::string ColorMeshFromComparisonPython(std::string modelFilename, std::string referenceFilename, std::string coloredModelFilename)
+std::string ColorMeshFromComparison(std::string modelFilename, std::string referenceFilename, std::string coloredModelFilename)
 {
     log_debug() <<"Coloring mesh with errors..." << std::endl;
     ColorMeshFromComparison(modelFilename.c_str(), referenceFilename.c_str(),coloredModelFilename.c_str());
     return coloredModelFilename;
 }
 
-std::string ColorMeshPython(std::string modelFilename, std::string coloredModelFilename)
+std::string ColorMesh(std::string modelFilename, std::string coloredModelFilename)
 {
     log_debug() << "Coloring mesh..." << std::endl;
     ColorMesh(modelFilename.c_str(), coloredModelFilename.c_str());
@@ -693,20 +693,20 @@ void GenerateDVFImp(vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* def
         {
             for (int x = 0; x < dims[0]; x++)
             {
-              double p_mm[3];
-              p_mm[0] = origin[0]+x*spacing[0];
-              p_mm[1] = origin[1]+y*spacing[1];
-              p_mm[2] = origin[2]+z*spacing[2];
+              double pInMM[3];
+              pInMM[0] = origin[0]+x*spacing[0];
+              pInMM[1] = origin[1]+y*spacing[1];
+              pInMM[2] = origin[2]+z*spacing[2];
 
               float* vec = static_cast<float*>(outputDVF->GetScalarPointer(x,y,z));
-              CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
+              CalcVecBarycentric(pInMM, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
             } //x
         } //y
     } //z
 
   }
 
-string TransformMeshBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance)
+string TransformMeshBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* outMeshPath, float interpolateOutsideDistance)
   {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridPath);
@@ -715,43 +715,43 @@ string TransformMeshBarycentric(const char* meshPath, const char* referenceGridP
     PostProcessingOperators::TransformMeshBarycentric(refSurface, referenceGrid, deformedGrid, out_surface, interpolateOutsideDistance);
 
     //write output
-    IOHelper::VTKWriteUnstructuredGrid(out_meshPath,out_surface);
+    IOHelper::VTKWriteUnstructuredGrid(outMeshPath,out_surface);
 
-    return string(out_meshPath);
+    return string(outMeshPath);
   }
 
 //Generate the displacment vector field (DVF) from reference to deformed mesh - sampled in reference. 
 //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
-void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* out_mesh, float interpolateOutsideDistance)
+void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkUnstructuredGrid* outMesh, float interpolateOutsideDistance)
 {
-  out_mesh->DeepCopy(mesh);
+  outMesh->DeepCopy(mesh);
     
   //octree
   vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
   cellLocatorRef->SetDataSet(referenceGrid);
   cellLocatorRef->BuildLocator();
 
-  for (int i=0; i<out_mesh->GetPoints()->GetNumberOfPoints();i++)
+  for (int i=0; i<outMesh->GetPoints()->GetNumberOfPoints();i++)
   {
-    double p_mm[3];
-    out_mesh->GetPoints()->GetPoint(i, p_mm);
+    double pInMM[3];
+    outMesh->GetPoints()->GetPoint(i, pInMM);
     float vec[3];
-    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
-    p_mm[0]=p_mm[0]+vec[0];
-    p_mm[1]=p_mm[1]+vec[1];
-    p_mm[2]=p_mm[2]+vec[2];
-    out_mesh->GetPoints()->SetPoint(i, p_mm);
+    PostProcessingOperators::CalcVecBarycentric(pInMM, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
+    pInMM[0]=pInMM[0]+vec[0];
+    pInMM[1]=pInMM[1]+vec[1];
+    pInMM[2]=pInMM[2]+vec[2];
+    outMesh->GetPoints()->SetPoint(i, pInMM);
   }
-  out_mesh->GetPoints()->Modified();
-  out_mesh->Modified();
+  outMesh->GetPoints()->Modified();
+  outMesh->Modified();
 #if VTK_MAJOR_VERSION <= 5
-  out_mesh->Update();
+  outMesh->Update();
 #endif
 }
 
-string TransformSurfaceBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* out_meshPath, float interpolateOutsideDistance)
+string TransformSurfaceBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* outMeshPath, float interpolateOutsideDistance)
   {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridPath);
 	  vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridPath);
@@ -760,51 +760,51 @@ string TransformSurfaceBarycentric(const char* meshPath, const char* referenceGr
     PostProcessingOperators::TransformSurfaceBarycentric(refSurface, referenceGrid, deformedGrid, out_surface, interpolateOutsideDistance);
 
     //write output
-    IOHelper::VTKWritePolyData(out_meshPath,out_surface);
+    IOHelper::VTKWritePolyData(outMeshPath,out_surface);
 
-    return string(out_meshPath);
+    return string(outMeshPath);
   }
 
 //Generate the displacment vector field (DVF) from reference to deformed surface - sampled in reference. 
 //The results can be used to transfom points and meshes from Reference mesh to deformed mesh.
 //To transform voxel data, it is useful to generate the DFV using the deformed mesh as reference.
 // pDef - pRef = d     =>     pRef + d = pDef
-void TransformSurfaceBarycentric(vtkPolyData* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkPolyData* out_mesh, float interpolateOutsideDistance)
+void TransformSurfaceBarycentric(vtkPolyData* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkPolyData* outMesh, float interpolateOutsideDistance)
 {
-  out_mesh->DeepCopy(mesh);
+  outMesh->DeepCopy(mesh);
     
   //octree
   vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
   cellLocatorRef->SetDataSet(referenceGrid);
   cellLocatorRef->BuildLocator();
 
-  for (int i=0; i<out_mesh->GetPoints()->GetNumberOfPoints();i++)
+  for (int i=0; i<outMesh->GetPoints()->GetNumberOfPoints();i++)
   {
-    double p_mm[3];
-    out_mesh->GetPoints()->GetPoint(i, p_mm);
+    double pInMM[3];
+    outMesh->GetPoints()->GetPoint(i, pInMM);
     float vec[3];
-    PostProcessingOperators::CalcVecBarycentric(p_mm, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
-    p_mm[0]=p_mm[0]+vec[0];
-    p_mm[1]=p_mm[1]+vec[1];
-    p_mm[2]=p_mm[2]+vec[2];
-    out_mesh->GetPoints()->SetPoint(i, p_mm);
+    PostProcessingOperators::CalcVecBarycentric(pInMM, referenceGrid, cellLocatorRef, deformedGrid, interpolateOutsideDistance, vec);
+    pInMM[0]=pInMM[0]+vec[0];
+    pInMM[1]=pInMM[1]+vec[1];
+    pInMM[2]=pInMM[2]+vec[2];
+    outMesh->GetPoints()->SetPoint(i, pInMM);
   }
-  out_mesh->GetPoints()->Modified();
-  out_mesh->Modified();
+  outMesh->GetPoints()->Modified();
+  outMesh->Modified();
 #if VTK_MAJOR_VERSION <= 5
-  out_mesh->Update();
+  outMesh->Update();
 #endif
 }
 
 //map closest point to given point from ref mesh to deformed mesh and return displacement
-void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vec_out)
+void CalcVecBarycentric(double* pInMM, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vecOut)
 {
   //locate closest cell.
   vtkIdType containingCellRefId;
   double closestPointInCell[3];
   int subId=0;
   double dist=0;
-  cellLocatorRef->FindClosestPoint(p_mm,  closestPointInCell, containingCellRefId, subId, dist);
+  cellLocatorRef->FindClosestPoint(pInMM,  closestPointInCell, containingCellRefId, subId, dist);
 
   //calculate bcords: The barycentric coordinate uses 4 coeff [0..1] to linear combine the vertices of the cell to represent a point inside the cell. 
   vtkTetra*  containingCellRef = (vtkTetra*) referenceGrid->GetCell(containingCellRefId);
@@ -834,9 +834,9 @@ void CalcVecBarycentric(double* p_mm, vtkUnstructuredGrid* referenceGrid, vtkCel
       scale_outside = 0;
   }
 
-  vec_out[0] = scale_outside * ((x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0]);
-  vec_out[1] = scale_outside * ((x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1]);
-  vec_out[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
+  vecOut[0] = scale_outside * ((x0[0] * bcords[0] + x1[0] * bcords[1] + x2[0] * bcords[2] + x3[0] * bcords[3]) - closestPointInCell[0]);
+  vecOut[1] = scale_outside * ((x0[1] * bcords[0] + x1[1] * bcords[1] + x2[1] * bcords[2] + x3[1] * bcords[3]) - closestPointInCell[1]);
+  vecOut[2] = scale_outside * ((x0[2] * bcords[0] + x1[2] * bcords[1] + x2[2] * bcords[2] + x3[2] * bcords[3]) - closestPointInCell[2]);
 
 }
 

@@ -97,7 +97,7 @@ using namespace std;
 namespace MSML {
     namespace MappingOperators {
 
-        std::string MapMeshPython ( std::string meshIni, std::string meshDeformed,
+        std::string MapMesh ( std::string meshIni, std::string meshDeformed,
                                     std::string meshToMap, std::string mappedMesh )
         {
             MapMesh ( meshIni.c_str(), meshDeformed.c_str(),meshToMap.c_str(), mappedMesh.c_str() );

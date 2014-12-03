@@ -85,7 +85,7 @@ TetgenSettings::TetgenSettings(): // Set default values as they are in Tetgen 1.
 		optimizationUseVertexInsAndDel(true) {
 }
 
-std::string CreateVolumeMeshPython(std::string infile, std::string outfile,
+std::string CreateVolumeMesh(std::string infile, std::string outfile,
         bool preserveBoundary,
         double maxEdgeRadiusRatio,
         int minDihedralAngleDegrees,

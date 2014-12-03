@@ -69,9 +69,9 @@ void TestExtractSurfaceMeshFromVolumeMeshByCelldataOperator()
 void TestMergeMeshes()
 {
   /*
-  std::string inputCells("E:/GIT/msml/MSML_Python/LungsHighResResults/case1_T00_labled_combo.vtk");
-  std::string inputPoints("E:/GIT/msml/MSML_Python/LungsHighResResults/dispOutput");
-  std::string outputMesh("E:/GIT/msml/MSML_Python/LungsHighResResults/case1_T00_labledOutput");*/
+  std::string inputCells("E:/GIT/msml/MSML_/LungsHighResResults/case1_T00_labled_combo.vtk");
+  std::string inputPoints("E:/GIT/msml/MSML_/LungsHighResResults/dispOutput");
+  std::string outputMesh("E:/GIT/msml/MSML_/LungsHighResResults/case1_T00_labledOutput");*/
   
   std::string inputCells("E:/SOFA_trunk/build/applications/projects/runSofa/cycytube_labled_combo.vtk-volume1.vtk");
   std::string inputPoints("E:/SOFA_trunk/build/applications/projects/runSofa/dispOutputOne");
@@ -90,9 +90,9 @@ void TestMergeMeshes()
 void TestGenerateDVF()
 {
   /*
-  std::string inputCells("E:/GIT/msml/MSML_Python/LungsHighResResults/case1_T00_labled_combo.vtk");
-  std::string inputPoints("E:/GIT/msml/MSML_Python/LungsHighResResults/dispOutput");
-  std::string outputMesh("E:/GIT/msml/MSML_Python/LungsHighResResults/case1_T00_labledOutput");*/
+  std::string inputCells("E:/GIT/msml/MSML_/LungsHighResResults/case1_T00_labled_combo.vtk");
+  std::string inputPoints("E:/GIT/msml/MSML_/LungsHighResResults/dispOutput");
+  std::string outputMesh("E:/GIT/msml/MSML_/LungsHighResResults/case1_T00_labledOutput");*/
 
 
   std::string ref("C:\\Projekte\\msml_github\\examples\\CGALPelvis_DKFZ_internal_fuer_MB\\output_pelvisCase_new_12.09.2014\\tetmesh.vtk");
@@ -133,21 +133,21 @@ namespace TestMiscMeshoperators
 
   void TestConvertSTLToVTK()
   {
-    MiscMeshOperators::ConvertSTLToVTKPython((string(TESTDATA_PATH)+"/bunny_xl.stl").c_str(), (string(TESTDATA_PATH)+ "/TestConvertSTLToVTKPython.vtk").c_str());
+    MiscMeshOperators::ConvertSTLToVTK((string(TESTDATA_PATH)+"/bunny_xl.stl").c_str(), (string(TESTDATA_PATH)+ "/TestConvertSTLToVTK.vtk").c_str());
   }
 
-  void TestConvertVTKMeshToAbaqusMeshStringPython()
+  void TestConvertVTKMeshToAbaqusMeshString()
   {
     std::ofstream aFile;
-    aFile.open((string(TESTDATA_PATH)+ "/TestConvertVTKMeshToAbaqusMeshStringPython.abq").c_str());
-    string aReturn = MiscMeshOperators::ConvertVTKMeshToAbaqusMeshStringPython((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), "aPart", "aMaterial");
+    aFile.open((string(TESTDATA_PATH)+ "/TestConvertVTKMeshToAbaqusMeshString.abq").c_str());
+    string aReturn = MiscMeshOperators::ConvertVTKMeshToAbaqusMeshString((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), "aPart", "aMaterial");
     aFile << aReturn << "\n";
     aFile.close();
   }
 
-  void TestConvertVTKPolydataToUnstructuredGridPython()
+  void TestConvertVTKPolydataToUnstructuredGrid()
   {
-    MiscMeshOperators::ConvertVTKPolydataToUnstructuredGridPython((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(),(string(TESTDATA_PATH)+ "/TestConvertVTKPolydataToUnstructuredGridPython.vtu").c_str());
+    MiscMeshOperators::ConvertVTKPolydataToUnstructuredGrid((string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str(),(string(TESTDATA_PATH)+ "/TestConvertVTKPolydataToUnstructuredGrid.vtu").c_str());
   }
 
   void TestConvertVTKToOFF()
@@ -180,19 +180,19 @@ namespace TestMiscMeshoperators
     indices.push_back(0);indices.push_back(1);indices.push_back(2);
     MiscMeshOperators::ExtractVectorField((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), "nonExistinFieldTestdataNeeded", indices);
   }
-  void TestExtractSurfaceMeshPython()
+  void TestExtractSurfaceMesh()
   {
-    MiscMeshOperators::ExtractSurfaceMesh((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestExtractSurfaceMeshPython_AKA_ugrid_to_polydata.vtk").c_str());
+    MiscMeshOperators::ExtractSurfaceMesh((string(TESTDATA_PATH)+"/bunny_tets.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestExtractSurfaceMesh_AKA_ugrid_to_polydata.vtk").c_str());
   }
 
-  void TestProjectSurfaceMeshPython()
+  void TestProjectSurfaceMesh()
   {
-    MiscMeshOperators::ProjectSurfaceMeshPython((string(TESTDATA_PATH)+"/bunny_polydata_highres.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestProjectSurfaceMeshPython.vtk").c_str(), (string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str());
+    MiscMeshOperators::ProjectSurfaceMesh((string(TESTDATA_PATH)+"/bunny_polydata_highres.vtk").c_str(), (string(TESTDATA_PATH)+ "/TestProjectSurfaceMesh.vtk").c_str(), (string(TESTDATA_PATH)+"/bunny_polydata.vtk").c_str());
   }
 
-  void TestVoxelizeSurfaceMeshPython()
+  void TestVoxelizeSurfaceMesh()
   {
-    MiscMeshOperators::VoxelizeSurfaceMesh((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMeshPython.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
+    MiscMeshOperators::VoxelizeSurfaceMesh((string(TESTDATA_PATH) + "/bunny_polydata.vtk").c_str(), (string(TESTDATA_PATH) + "/TestVoxelizeSurfaceMesh.vtk").c_str(), 100, 0, string("").c_str(), false, 0);
   }
 }
 
@@ -200,14 +200,14 @@ void TestPostProcessingOperators()
 {
     PostProcessingOperators::ApplyDVF((string(TESTDATA_PATH)+"/ircad_ct_image.vti").c_str(), (string(TESTDATA_PATH)+"/ircad_dvf.vti").c_str(), (string(TESTDATA_PATH)+"/TestApplyDVF.vtk").c_str(), true, 2.0);
 
-    PostProcessingOperators::ColorMeshFromComparisonPython((string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),(string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/ColorMeshFromComparisonPython.vtk").c_str());
+    PostProcessingOperators::ColorMeshFromComparison((string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),(string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/ColorMeshFromComparison.vtk").c_str());
     
     double error_max=-1; double error_rms=-1;
     PostProcessingOperators::CompareMeshes(error_rms, error_max, (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(), true);
     if (error_max<1)
       throw;
 
-    PostProcessingOperators::TransformMeshBarycentric((string(TESTDATA_PATH)+"/ircad_tris_labled.vtk").c_str(), (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/TestTransformMeshBarycentricPython.vtu").c_str(), false);
+    PostProcessingOperators::TransformMeshBarycentric((string(TESTDATA_PATH)+"/ircad_tris_labled.vtk").c_str(), (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),(string(TESTDATA_PATH)+"/TestTransformMeshBarycentric.vtu").c_str(), false);
       
     PostProcessingOperators::GenerateDVF((string(TESTDATA_PATH)+"/ircad_disp50.vtu").c_str(),  (string(TESTDATA_PATH)+"/ircad_disp0.vtu").c_str(),
       (string(TESTDATA_PATH)+"/TestGenerateDVF.vti").c_str(), 10, "", 10);
@@ -242,16 +242,16 @@ int main( int argc, char * argv[])
   
   TestMiscMeshoperators::TestConvertLinearToQuadraticTetrahedralMesh();
   TestMiscMeshoperators::TestConvertSTLToVTK();
-  TestMiscMeshoperators::TestConvertVTKMeshToAbaqusMeshStringPython();
-  TestMiscMeshoperators::TestConvertVTKPolydataToUnstructuredGridPython();
+  TestMiscMeshoperators::TestConvertVTKMeshToAbaqusMeshString();
+  TestMiscMeshoperators::TestConvertVTKPolydataToUnstructuredGrid();
   TestMiscMeshoperators::TestConvertVTKToOFF();
   TestMiscMeshoperators::TestExtractAllSurfacesByMaterial();
   TestMiscMeshoperators::TestExtractNodeSet();
   TestMiscMeshoperators::TestExtractPointPositions();
   TestMiscMeshoperators::TestExtractVectorField();
-  TestMiscMeshoperators::TestExtractSurfaceMeshPython();
-  TestMiscMeshoperators::TestProjectSurfaceMeshPython();
-  TestMiscMeshoperators::TestVoxelizeSurfaceMeshPython();
+  TestMiscMeshoperators::TestExtractSurfaceMesh();
+  TestMiscMeshoperators::TestProjectSurfaceMesh();
+  TestMiscMeshoperators::TestVoxelizeSurfaceMesh();
 
 
 
