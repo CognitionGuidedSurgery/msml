@@ -46,7 +46,7 @@ namespace MSML {
     namespace Tetgen {
 
     LIBRARY_API bool TetgenCreateVolumeMesh(const char* infile, const char* outfile, TetgenSettings settings, bool isQuadratic );
-    LIBRARY_API std::string TetgenCreateVolumeMeshPython(std::string infile, std::string outfile,
+    LIBRARY_API std::string TetgenCreateVolumeMesh(std::string infile, std::string outfile,
         bool preserveBoundary,
         double maxEdgeRadiusRatio,
         int minDihedralAngleDegrees,
