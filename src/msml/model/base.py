@@ -735,17 +735,25 @@ class Task(object):
 
         for name, slot in self.operator.input.items():
             if name not in self.attributes:
-                log.error("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name))
+                if (slot.default is not None):
+                    log.info("task %s for operator %s misses input attribute %s using default value: %s" % (
+                        self.id, self.operator.name, name, slot.default))
+                else:
+                    log.error("task %s for operator %s misses input attribute %s using and no default is defined." % (
+                        self.id, self.operator.name, name))
 
         for name, slot in self.operator.parameters.items():
             if name not in self.attributes:
-                log.error("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name))
+                if (slot.default is not None):
+                    log.info("task %s for operator %s misses input attribute %s using default value: %s" % (
+                        self.id, self.operator.name, name, slot.default))
+                else:
+                    log.error("task %s for operator %s misses input attribute %s using and no default is defined." % (
+                        self.id, self.operator.name, name))
 
         for k in self.attributes:
             if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
-                log.info("attrib %s is unknown for operator %s in task %s" % (
+                log.warning("attrib %s is unknown for operator %s in task %s" % (
                     k, self.operator.name, self.id))
 
     def get_default(self):
