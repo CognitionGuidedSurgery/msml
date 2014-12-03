@@ -6,7 +6,7 @@
     </variables>
 
     <workflow>
-        <colormesh id="clrmesh" coloredMesh="liverTet4ColoredIni.vtk" mesh="ToColor/LiverXSTet4.vtk"/>
+        <ColorMesh id="clrmesh" targetMesh="liverTet4ColoredIni.vtk" mesh="ToColor/LiverXSTet4.vtk"/>
         <paraview id="pv" data="${clrmesh}"/>
         <!-- <triangularMesh id="trimesh" filename="${clrmesh}"/> -->
     </workflow>

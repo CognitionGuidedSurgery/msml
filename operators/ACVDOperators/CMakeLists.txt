@@ -57,6 +57,8 @@ ExternalProject_Add(ACVD    # Name for custom target
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
              -DVTK_DIR=${VTK_DIR} # pass VTK_DIR 
              -DCMAKE_SKIP_RPATH:BOOL=1 # not needed if make install
+			 -DBUILD_SHARED_LIBS:bool=FALSE
+			 -DCMAKE_CXX_FLAGS:STRING=-fPIC
   #[CMAKE_CACHE_ARGS args...]  # Initial cache arguments, of the form -Dvar:string=on
  #--Build step-----------------
   #[BINARY_DIR dir]            # Specify build dir location
@@ -94,38 +96,49 @@ SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH} ${install_dir}/lib/CMake/acvd/" )
 
 
 SET(ACVDOperators_SRCS
-  ACVDOperators.cpp
+	ACVDOperators.cpp
   )
 
-SET(ACVDOperators_LIBS
-  ${VTK_LIBRARIES}
-  ${install_dir}/lib/libvtkVolumeProcessing.so
-  ${install_dir}/lib/libvtkSurface.so
-  ${install_dir}/lib/libvtkDiscreteRemeshing.so    
-  MiscMeshOperators
-  )
+IF(WIN32 AND NOT CYGWIN)
+	SET(ACVDOperators_LIBS
+		${VTK_LIBRARIES}
+		${install_dir}/lib/vtkVolumeProcessing.lib
+		${install_dir}/lib/vtkSurface.lib
+		${install_dir}/lib/vtkDiscreteRemeshing.lib
+		MiscMeshOperators
+		)
+ELSE()
+	SET(ACVDOperators_LIBS
+		${VTK_LIBRARIES}
+		${install_dir}/lib/libvtkVolumeProcessing.a
+		${install_dir}/lib/libvtkSurface.a
+		${install_dir}/lib/libvtkDiscreteRemeshing.a
+		MiscMeshOperators
+		)
+ENDIF()
+
 
 INCLUDE_DIRECTORIES(
-  ${ACVDOperators_SOURCE_DIR}
-  ${ACVDOperators_BINARY_DIR}
-  ${PYTHON_INCLUDE_DIRS}
-  #for iohelper:
-  ${CMAKE_SOURCE_DIR}/MiscMeshOperators
-  # external project ACVD
-  ${install_dir}/include/vtkVolumeProcessing/ 
-  ${install_dir}/include/vtkDiscreteRemeshing/
-  ${install_dir}/include/vtkSurface/
-  # external project ACVD / vtk6 branch
-  "${install_dir}/include/ACVD/Common/"
-  "${install_dir}/include/ACVD/DiscreteRemeshing/"
-  "${install_dir}/include/ACVD/VolumeProcessing/"
-  )
+	${ACVDOperators_SOURCE_DIR}
+	${ACVDOperators_BINARY_DIR}
+	${PYTHON_INCLUDE_DIRS}
+	#for iohelper:
+	${CMAKE_SOURCE_DIR}/MiscMeshOperators
+	# external project ACVD
+	${install_dir}/include/vtkVolumeProcessing/ 
+	${install_dir}/include/vtkDiscreteRemeshing/
+	${install_dir}/include/vtkSurface/
+	# external project ACVD / vtk6 branch
+	"${install_dir}/include/ACVD/Common/"
+	"${install_dir}/include/ACVD/DiscreteRemeshing/"
+	"${install_dir}/include/ACVD/VolumeProcessing/"
+	)
 
 MSML_LIBRARY(
-  NAME      ACVDOperators
-  SWIG_FILE acvd.i
-  SOURCES   ${ACVDOperators_SRCS}
-  LIBRARIES ${ACVDOperators_LIBS})
+	NAME      ACVDOperators
+	SWIG_FILE acvd.i
+	SOURCES   ${ACVDOperators_SRCS}
+	LIBRARIES ${ACVDOperators_LIBS})
 
 
 ADD_DEPENDENCIES(ACVDOperators ACVD)

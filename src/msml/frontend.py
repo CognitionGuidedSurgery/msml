@@ -6,7 +6,7 @@
 # If you use this software in academic work, please cite the paper:
 # S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
-#   Medicine Meets Virtual Reality (MMVR) 2014
+# Medicine Meets Virtual Reality (MMVR) 2014
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
@@ -40,7 +40,7 @@ entry point, where you can access to various subsystem.
 from __future__ import print_function
 
 from .env import *
-
+import sys
 # need first step caused of sys.path
 # this is terrible to execute on module load
 # but else we do not have chance for changing
@@ -70,7 +70,6 @@ __all__ = ["App", "main"]
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
-
 prolog = """
                              _
                             | | Medical
@@ -80,6 +79,7 @@ prolog = """
  |_| |_| |_||___/|_| |_| |_||_|
 """
 
+
 def create_argument_parser():
     class KeyValueAction(argparse.Action):
         def __init__(self, option_strings, dest, nargs=None, **kwargs):
@@ -88,7 +88,7 @@ def create_argument_parser():
 
             super(KeyValueAction, self).__init__(option_strings, dest, nargs, **kwargs)
 
-        def __call__(self, parser, namespace, values, option_string = None):
+        def __call__(self, parser, namespace, values, option_string=None):
             if hasattr(namespace, self.dest):
                 d = getattr(namespace, self.dest)
             else:
@@ -96,7 +96,7 @@ def create_argument_parser():
 
             for val in values:
                 try:
-                    k,v = val.split(":")
+                    k, v = val.split(":")
                     d[k] = v
                 except:
                     raise ValueError("Can not split up %s. Expected 'key:value'" % val)
@@ -104,12 +104,10 @@ def create_argument_parser():
             setattr(namespace, self.dest, d)
 
 
-
     parser = argparse.ArgumentParser("msml.py",
                                      usage=None,
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=prolog)
-
 
     parser.add_argument("-v", '--verbose', dest="verbosity", action="count",
                         help="select the verbosity of this program")
@@ -137,14 +135,17 @@ def create_argument_parser():
                              help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
 
     exec_parser.add_argument('-r', '--runner', dest='executor', metavar='EXECUTER', action='store',
-                             default = 'sequential',
+                             default='sequential',
                              help='select the wanted executer', choices=set(msml.run.get_known_executors()))
-
 
     exec_parser.add_argument("-E", "--exopt", nargs="+", default=dict(), dest="exporter_options",
                              metavar='key:val', action=KeyValueAction)
     exec_parser.add_argument("-R", "--runopt", nargs="+", default=dict(), dest="executor_options",
                              metavar='key:val', action=KeyValueAction)
+
+    exec_parser.add_argument("--repository", nargs="+", default=list(), dest="repositories",
+                             metavar="FOLDER", action="store",
+                             help="specifies msml user repositories with alphabet definition")
 
     exec_parser.add_argument('-m', '--variables', metavar="FILE", dest="memoryfile", action="store",
                              help="predefined memory content")
@@ -220,9 +221,10 @@ class App(object):
     """
 
     def __init__(self, novalidate=False, files=None, exporter="sofa", add_search_path=None,
-                 add_operator_path=None, memory_init_file=None, output_dir=None, executor = None,
+                 add_operator_path=None, memory_init_file=None, output_dir=None, executor=None,
                  execution_options=None, exporter_options=None,
-                 seq_parallel=True, options=None, **kwargs):
+                 seq_parallel=True, repositories=None,
+                 options=None, **kwargs):
 
         options = dict(options if options else {})  # create copy
         options.update(kwargs)
@@ -247,6 +249,12 @@ class App(object):
 
         self._output_dir = output_dir or options.get('output_folder', None)
 
+
+        repositories = repositories or options.get('repositories', [])
+        if repositories:
+            for repo in repositories:
+                self._install_repository(repo)
+
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
         self.init_msml_system()
@@ -265,6 +273,27 @@ class App(object):
 
         if not self._novalidate:
             self.alphabet.validate()
+
+    def _install_repository(self, repo):
+        root = path(repo).abspath()
+
+        a = root / "alphabet"
+        log.debug("Register alphabet dir: %s", a)
+
+        p = root / "py"
+        log.debug("Add to Python path: %s", p)
+        if p not in sys.path:
+            sys.path.append(p)
+
+        self.additional_alphabet_dir.append(a)
+
+
+        rcfile = root / "sorts.py"
+        log.debug("Execute rcfile: %s", rcfile)
+
+        if rcfile:
+            execfile(rcfile, {'app': self})
+
 
     @property
     def output_dir(self):
@@ -359,7 +388,7 @@ class App(object):
         mfile.bind()
         exporter = self.exporter(mfile)
         mfile.exporter = exporter
-        #validate is needed for simulation execution, removed if condition "if not self._novalidate:"
+        # validate is needed for simulation execution, removed if condition "if not self._novalidate:"
         mfile.validate(msml.env.CURRENT_ALPHABET)
 
         exporter._match_features()
@@ -457,7 +486,7 @@ class App(object):
         """
         for r in check_element_completeness(self.alphabet, ELEMENT_DEFAULT_VALIDATORS):
             print(r)
-            #print(export_alphabet_overview_rst(self.alphabet))
+            # print(export_alphabet_overview_rst(self.alphabet))
 
 
     def _exec(self):

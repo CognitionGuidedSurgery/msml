@@ -141,6 +141,11 @@ class LinearSequenceExecutor(AbstractExecutor):
         # wd is msml file dirname
         initialize_file_literals(buckets[0])
 
+
+        #if there is no working dir, infer one
+        if self.working_dir is None:
+            self.working_dir = "out_" + self._msmlfile.filename.namebase
+
         # change to output_dir
         if self.working_dir:
             wd = path(self.working_dir)
