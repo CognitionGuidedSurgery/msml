@@ -38,16 +38,16 @@
 
             <constraints>
                 <constraint name="bodyConstraint" forStep="${initial_def_1}">
-                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacement="0.0 0.02 0.0"/>
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint indices="${earsToIndexGroup}" displacement="0.0 0.02 0.0"/>
                 </constraint>
                 <constraint name="bodyConstraint" forStep="${subsequent_def_2}">
-                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacement="0.01 0.0 -0.03"/>
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint indices="${earsToIndexGroup}" displacement="0.01 0.0 -0.03"/>
                 </constraint>
                 <constraint name="bodyConstraint" forStep="${subsequent_pressure_3}">
-                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <pressureConstraint time="0" indices="${earsToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <surfacePressure indices="${earsToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
                 </constraint>
             </constraints>
 

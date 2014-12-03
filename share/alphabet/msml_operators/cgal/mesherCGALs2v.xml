@@ -19,7 +19,7 @@
                 Optional input filename for the output.
             </meta>
         </arg>
-        <arg name="preserveFeatures" physical="bool" optional="true" default="false" />
+        <arg name="preserveFeatures" physical="bool" optional="true" default="false"/>
         <arg name="facetAngle" physical="float"/>
         <arg name="facetSize" physical="float"/>
         <arg name="facetDistance" physical="float"/>
