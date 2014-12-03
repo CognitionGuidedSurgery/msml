@@ -32,6 +32,7 @@
 
 // io
 #include <wrap/io_trimesh/import.h>
+#include <wrap/ply/plylib.cpp> //windows fix?
 #include <wrap/io_trimesh/export.h>
 
 
