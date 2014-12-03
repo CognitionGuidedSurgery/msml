@@ -15,8 +15,9 @@
          Date: 2014-02-20
    
 
-[![Build Status](https://travis-ci.org/CognitionGuidedSurgery/msml.svg?branch=master)](https://travis-ci.org/CognitionGuidedSurgery/msml)
-[![Build Status](https://drone.io/github.com/CognitionGuidedSurgery/msml/status.png)](https://drone.io/github.com/CognitionGuidedSurgery/msml/latest)
+Master: [![Circle CI](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/master.svg?style=svg)](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/master) 
+Experimental:
+[![Circle CI](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/experimental.svg?style=svg)](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/experimental) 
 [![Coverage Status](https://coveralls.io/repos/CognitionGuidedSurgery/msml/badge.png)](https://coveralls.io/r/CognitionGuidedSurgery/msml)
 
 # About
