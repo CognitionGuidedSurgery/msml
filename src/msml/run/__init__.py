@@ -184,7 +184,7 @@ class LinearSequenceExecutor(AbstractExecutor):
 
     def _execute_operator_task(self, task):
         # new = ExecutorsHelper.execute_operator_task(self._memory, task)
-        new = ExecutorsHelper.execute_operator_task_if_needed(self.rerun_check, self._memory, task)
+        new = ExecutorsHelper.execute_operator_task(self.rerun_check, self._memory, task)
         self._memory.update(new)
 
 
