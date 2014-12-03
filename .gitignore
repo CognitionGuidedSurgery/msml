@@ -18,6 +18,8 @@ Config.xml
 envconfg.py
 examples
 
+share/testdata/tmp/
+
 operators/bin/
 operators/bin_2010/
 operators/CMade/

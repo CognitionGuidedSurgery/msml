@@ -219,7 +219,7 @@ return out.str();
 
 
 
-std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh, std::string partName)
+std::string ConvertVTKMeshToFeBioMeshString(std::string inputMesh, std::string partName)
 {
 	//load the vtk mesh
 	log_debug() << "Converting " << inputMesh << " part " << partName << std::endl;
@@ -229,7 +229,7 @@ std::string ConvertVTKMeshToFeBioMeshStringPython(std::string inputMesh, std::st
 
 }
 
-std::string createFeBioPressureOutputPython(std::string inputMesh, std::vector <double> indices, std::string id, std::string pressure)
+std::string createFeBioPressureOutput(std::string inputMesh, std::vector <double> indices, std::string id, std::string pressure)
 {
 	vtkSmartPointer<vtkUnstructuredGrid> grid = MSML::IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str());
 	std::string output = createFeBioPressureOutput(grid, indices, id, pressure);

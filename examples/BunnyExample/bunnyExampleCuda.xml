@@ -53,7 +53,7 @@
 
     <workflow>
 
-        <mesherTetgen id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}"
+        <TetgenCreateVolumeMesh id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}"
                       surfaceMesh="${input_surf_mesh}" preserveBoundary="0"/>
 
         <ComputeIndicesFromBoxROI id="bodyToIndexGroup"

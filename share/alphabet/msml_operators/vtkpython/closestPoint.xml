@@ -12,8 +12,8 @@
 
     <output>
         <arg name="index" logical="Index" physical="int"/>
-        <arg name="point" logical="Point3D" physical="vector.float"/>
-        <arg name="dist" logical="Distance" physical="float"/>
+        <arg name="point" logical="Position" physical="vector.float"/>
+        <arg name="dist" logical="Scalar" physical="float"/>
     </output>
 
     <parameters>

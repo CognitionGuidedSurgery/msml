@@ -3,18 +3,18 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
   <variables>
-    <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="segmentationImage"
+    <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="SegmentationImage3D"
              physical="file.vtk"/>
-    <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk" logical="str"/>
-    <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk" logical="str"/>
-    <var name="pressure_value" value="35.00" logical="str" />
+    <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk" />
+    <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk" />
+    <var name="pressure_value" value="35.00"  />
 
     <var name="aYoungs" value="100" logical="float" />
     <var name="aPoissons" value="0.4" logical="float" />
     <var name="aDens" value="0.001" logical="float" />
     <var name="aMatId" value="100"  logical="int" />
     <var name="meshCellSize" value="18" logical="float" />
-    <var name="box_def" value="-10 190 -10 1000 1000 1000" logical="str" />
+    <var name="box_def" value="-10 190 -10 1000 1000 1000"  />
   </variables>
 
   <scene>

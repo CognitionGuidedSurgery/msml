@@ -3,9 +3,9 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" logical="linearMesh"
+        <var name="input_vol_mesh" value="bunnyVolumeMesh.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
-        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="linearMesh"
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     </variables>
 
@@ -49,7 +49,7 @@
 
     <workflow>
 
-        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" image="${VoxelizeSurfaceMeshr}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
+        <CGALMeshVolumeFromSurface id="bunnyVolumeMesher" image="${VoxelizeSurfaceMeshr}" meshFilename="bunnyVolumeFromVoxelImage.vtk"
                        facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
                        cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
 

@@ -71,15 +71,6 @@ MSML_LIBRARY(
   SOURCES   ${MiscMeshOperators_SRCS}
   LIBRARIES ${MiscMeshOperators_LIBS})
 
-
-SET(MiscMeshOperatorsExample_SRCS Example.cpp)
-  
-ADD_EXECUTABLE (MiscMeshOperatorsExample ${MiscMeshOperatorsExample_SRCS} )
-TARGET_LINK_LIBRARIES(MiscMeshOperatorsExample 
-  MiscMeshOperators 
-  ${MiscMeshOperators_LIBS}
-)
-
 ############################################################################
 ## Testing
 
@@ -94,18 +85,25 @@ TARGET_LINK_LIBRARIES(FirstTest
 	${MiscMeshOperators_LIBS}	
 	${Boost_UNIT_TEST_FRAMEWORK_LIBS}
 )
+ADD_TEST(FirstTest ${CMAKE_OPERATOR_DIRECTORY}/FirstTest)
 
-
-ADD_TEST(FirstTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/FirstTest)
 ADD_EXECUTABLE(MiscMeshOperatorsTest test/Example.cpp)
 TARGET_LINK_LIBRARIES(MiscMeshOperatorsTest
 	MiscMeshOperators
 	${MiscMeshOperators_LIBS}	
 	${Boost_UNIT_TEST_FRAMEWORK_LIBS}
 )
-ADD_TEST(MiscMeshOperatorsTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/MiscMeshOperatorsTest)
+ADD_TEST(MiscMeshOperatorsTest ${CMAKE_OPERATOR_DIRECTORY}/MiscMeshOperatorsTest)
 
 	
+
+
+
+
+
+
+
+
 
 
 

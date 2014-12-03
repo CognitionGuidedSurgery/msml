@@ -705,6 +705,8 @@ class Task(object):
         """
         self.operator = alphabet.get(self.name)
         if (self.operator is None):
+            log.fatal("Could not find the operator: %s", self.name)
+            log.fatal("Known Operators: %s", ', '.join(alphabet.operators.keys()))
             raise BindError("unknown operator:{name}".format(name=self.name))
 
         # if this tasks has sub tasks.
@@ -735,17 +737,25 @@ class Task(object):
 
         for name, slot in self.operator.input.items():
             if name not in self.attributes:
-                log.error("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name))
+                if (slot.default is not None):
+                    log.info("task %s for operator %s misses input attribute %s using default value: %s" % (
+                        self.id, self.operator.name, name, slot.default))
+                else:
+                    log.error("task %s for operator %s misses input attribute %s using and no default is defined." % (
+                        self.id, self.operator.name, name))
 
         for name, slot in self.operator.parameters.items():
             if name not in self.attributes:
-                log.error("task %s for operator %s misses input attribute %s " % (
-                    self.id, self.operator.name, name))
+                if (slot.default is not None):
+                    log.info("task %s for operator %s misses input attribute %s using default value: %s" % (
+                        self.id, self.operator.name, name, slot.default))
+                else:
+                    log.error("task %s for operator %s misses input attribute %s using and no default is defined." % (
+                        self.id, self.operator.name, name))
 
         for k in self.attributes:
             if k not in self.operator.acceptable_names() and k != Task.ID_ATTRIB:
-                log.info("attrib %s is unknown for operator %s in task %s" % (
+                log.warning("attrib %s is unknown for operator %s in task %s" % (
                     k, self.operator.name, self.id))
 
     def get_default(self):

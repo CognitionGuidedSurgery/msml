@@ -32,7 +32,7 @@ __version__ = ""
 
 import shelve
 import os
-import json
+import pickle
 import atexit
 import gzip
 
@@ -56,7 +56,7 @@ class ReRunCheck(object):
         try:
 
             with self._fopen(self._timestamp_file) as fp:
-                self._timestamps = json.load(fp)
+                self._timestamps = pickle.load(fp)
         except IOError:
             pass
 
@@ -67,7 +67,7 @@ class ReRunCheck(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         with self._fopen(self._timestamp_file, 'w') as fp:
-            json.dump(self._timestamps, fp)
+            pickle.dump(self._timestamps, fp)
 
     def check(self, task_id, input_files, arguments, output_file):
         """Determines if you need to rerun the operator, based on modify time.

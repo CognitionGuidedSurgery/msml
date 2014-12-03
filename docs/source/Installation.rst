@@ -1,13 +1,12 @@
 Installation
 ------------
 
-MSML uses a lot of other libraries for his native operators and requires some Python packages for itself.
+MSML uses a lot of other libraries for its native operators and requires some Python packages for itself.
 Following libraries are required:
 
 * `Visualization Toolit <http://vtk.org>`_ (required)
 * `Tetgen <http://wias-berlin.de/software/tetgen/>`_ (optional)
 * `Computational Geometry Algorithms Library (CGAL) <https://www.cgal.org/>`_ (optional)
-* `VCG Library <http://vcg.isti.cnr.it/~cignoni/newvcglib/html/>`_ (optional)
 
 You should start with cloning the repository in your directory of choice (e.g. `$HOME/workspace`)::
 
@@ -19,7 +18,7 @@ Installation Linux
 
 This manual should work on common Linux systems. There is a `build script <https://github.com/CognitionGuidedSurgery/msml/blob/master/share/install_ubuntu12.04.sh>`_ for Ubuntu 12.04.
 
-You can simple execute following commands. ::
+You can simply execute following commands. ::
 
     $ cd msml                              # change directory to msml root
     $ sudo pip install -r requirements.txt # install python requirements
@@ -42,18 +41,14 @@ However, more operators can be unlocked by installing the appropriate 3rd-party 
 
 1. You can install the VTK from your distribution ::
 
-     $  sudo apt-get install libvtk5.8 libvtk5-dev # UBUNTU
+     $  sudo apt-get install libvtk6 libvtk6-dev # for UBUNTU 14.0x (in case your distribution is < 14, link vtk 6.x path in Cmake, see below.)
 
 2. Tetgen  (optional) ::
 
-     $ apt-get install tetgen libtet1.4-dev libtet1.4 #UBUNTU/DEBIAN
+     $ sudo apt-get install tetgen libtet1.5-dev libtet1.5 # for UBUNTU/DEBIAN 14.0x (in case your distribution is < 14, link vtk 6.x path in Cmake, see below.)
 
 We recommend installing the newest `version 1.5 <http://wias-berlin.de/software/tetgen/#Download>`_.
 Tetgen is in the *non-free* repository under Debian and Debian *Sid* provides tetgen1.5.
-
-3. VCG lib (optional) ::
-
-     $ apt-get install meshlab vcglib # UBUNTU/DEBIAN -> library ist header-only
 
 4. CGAL (optional) ::
 
@@ -65,13 +60,16 @@ Compiling the C++ operators
 Create a folder for the build processing and execute `cmake`::
 
     $ mkdir cbuild && cd cbuild
-    $ cmake ../operators && make -j
+    $ cmake ../operators
+      # link vtk/tetgen with switch vtk_DIR (i.e. folder where vtkconfig.cmake is located) or tetgen_DIR.
+      # link svn if necessary (can be installed by sudo apt-get install subversion)
+    $ make -j
 
 
 Installation of Simulation Environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+See separate notes on SOFA, HiFlow3, Abaqus and FeBIO.
 
 
 Installation Windows

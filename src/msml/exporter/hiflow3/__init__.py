@@ -195,9 +195,17 @@ class HiFlow3Exporter(Exporter):
         """Execute `runHiFlow3`
 
         """
-        cmd = "runHiFlow3 %s" % ' '.join(self.scenes)
-        log.info("Executing HiFlow3: %s" % cmd)
-        os.system(cmd)
+	import msml.envconfig
+	import os
+
+	try:
+		os.makedirs("SimResults")
+	except: pass
+
+	for scenefile in self.scenes:
+	        cmd = "%s %s" % (msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
+        	log.info("Executing HiFlow3: %s" % cmd)
+	        os.system(cmd)
 
 
     def create_scenes(self):
@@ -328,7 +336,7 @@ class HiFlow3Exporter(Exporter):
 
         for constraint in cs.constraints:
             indices = self.get_value_from_memory(constraint, "indices")
-            points = msml.ext.misc.positionFromIndices(mesh_name, indices, 'points')
+            points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
             count = len(points) / 3
             points_str = list_to_hf3(points)
 

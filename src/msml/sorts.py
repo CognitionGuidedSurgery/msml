@@ -147,6 +147,7 @@ class SortsDefinition(object):
 DEFAULTS_SORTS = {
     'logical': [
         (MSMLLTop, "top", "object", "*"),
+        Index,
         IndexSet,
         NodeSet,
         FaceSet,
@@ -360,7 +361,7 @@ register_conversion(float, int, int, 100)
 
 
 try:
-    from msml.ext.misc import ConvertVTKToVTUPython
+    from msml.ext.misc import ConvertVTKToVTU
     import os.path
     def convert_vtk_to_vtu(vtk):
         """Convert VTK to VTU file format.
@@ -371,7 +372,7 @@ try:
         """
 
         name = "%s_auto_converted.vtu" % vtk
-        ConvertVTKToVTUPython(vtk, name)
+        ConvertVTKToVTU(vtk, name)
 
         return VTU(name)
 

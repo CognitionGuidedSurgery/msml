@@ -193,6 +193,9 @@ class Exporter(object):
             for cs in scene_obj.constraints:
                 for const in cs.constraints:
                     assert isinstance(const, ObjectElement)
+                    if const.meta is None:
+                        log.error("Element 'const.tag' does not have meta information set. This happens, if this element is not define in the alphabet")
+                        continue
                     for para in const.meta.parameters.values():
                         assert isinstance(para, Slot)
 

@@ -44,7 +44,7 @@ input_surf_mesh = simulation.Variable(value="Bunny6000Surface.vtk", logical="Mes
                            physical="file.vtk")
 
 wf = WorkflowBuilder()
-bunnyVolumeMesher = wf.mesherTetgen(
+bunnyVolumeMesher = wf.TetgenCreateVolumeMesh(
     meshFilename=input_vol_mesh,
     surfaceMesh=input_surf_mesh,
     preserveBoundary=False)

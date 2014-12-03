@@ -26,7 +26,11 @@ MESSAGE("TetgenOperators: ENABLED and ACTIVE")
 INCLUDE_DIRECTORIES(${TETGEN_INCLUDE_DIRS})
 add_definitions(-DTETLIBRARY)
 
-SET(TetgenOperators_SRCS TetgenOperators.cpp)
+SET(TetgenOperators_SRCS 
+	TetgenOperators.cpp 
+	TetgenOperators.h
+	TetgenSettings.h
+	)
 
 INCLUDE_DIRECTORIES(
   ${TetgenOperators_SOURCE_DIR}

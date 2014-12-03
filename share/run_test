@@ -1,6 +1,0 @@
-#!/bin/bash -x
-pwd 
-source venv/bin/activate
-export PYTHONPATH=$(pwd)/cbuild/bin
-cd src
-nosetest msmltest

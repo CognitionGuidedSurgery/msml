@@ -6,7 +6,7 @@
 		<python module="msml.ext.misc" function="vtkSmoothMesh" />
 	</runtime>
 	<input>
-		<arg name="mesh" logical="volumeMesh" physical="file.vtk" />
+		<arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
 	</input>
 	<parameters>
 		<arg name="targetSurfaceMeshFilename" physical="str" optional="true" target="true" />	
@@ -19,7 +19,7 @@
 		<arg name="normalizedCoordinates" physical="bool" />
 	</parameters>
 	<output>
-		<arg name="surfaceOut" logical="surface" physical="file.vtk"/>
+		<arg name="surfaceOut" logical="SurfaceMesh" physical="file.vtk"/>
 	</output>
 </msml:operator>
 

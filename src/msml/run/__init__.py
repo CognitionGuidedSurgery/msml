@@ -183,8 +183,8 @@ class LinearSequenceExecutor(AbstractExecutor):
             ExecutorsHelper.execute_variable(self._memory, node))
 
     def _execute_operator_task(self, task):
-        # new = ExecutorsHelper.execute_operator_task(self._memory, task)
-        new = ExecutorsHelper.execute_operator_task_if_needed(self.rerun_check, self._memory, task)
+        new = ExecutorsHelper.execute_operator_task(self._memory, task)
+        #new = ExecutorsHelper.execute_operator_task(self.rerun_check, self._memory, task)
         self._memory.update(new)
 
 
@@ -274,6 +274,13 @@ class PhaseExecutor(LinearSequenceExecutor):
     def _execute_operator_task(self, task):
         new = ExecutorsHelper.execute_operator_task(self._memory, task)
         self._memory.update(new)
+
+    def _execute_exporter(self, node):
+        ExecutorsHelper.render_exporter(self, self._exporter)
+        if not bool(self.options.get('PE.disable.simexec', False)):
+             update = ExecutorsHelper.execute_exporter(self._exporter)
+             self._memory.update(update)
+
 
 
 class ParallelExecutor(AbstractExecutor):

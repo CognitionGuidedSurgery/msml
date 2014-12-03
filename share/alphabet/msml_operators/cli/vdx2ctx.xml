@@ -7,7 +7,7 @@
     </runtime>
 
     <input>
-        <arg name="vdx" logical="TriangularSurfaceMesh" physical="vdx"/>
+        <arg name="vdx" logical="TriangularSurface" physical="vdx"/>
     </input>
 
     <output>

@@ -5,7 +5,7 @@
     <variables>
         <var name="input_vol_mesh" value="bunnyVolumeMeshCGAL.vtk" logical="Mesh"
              physical="file.vtk"/>
-        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="linearMesh"
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     </variables>
 
@@ -38,16 +38,16 @@
 
             <constraints>
                 <constraint name="bodyConstraint" forStep="${initial_def_1}">
-                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacement="0.0 0.02 0.0"/>
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint indices="${earsToIndexGroup}" displacement="0.0 0.02 0.0"/>
                 </constraint>
                 <constraint name="bodyConstraint" forStep="${subsequent_def_2}">
-                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <displacementConstraint time="0" indices="${earsToIndexGroup}" displacement="0.01 0.0 -0.03"/>
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <displacementConstraint indices="${earsToIndexGroup}" displacement="0.01 0.0 -0.03"/>
                 </constraint>
                 <constraint name="bodyConstraint" forStep="${subsequent_pressure_3}">
-                    <fixedConstraint time="0" indices="${bottomToIndexGroup}"/>
-                    <pressureConstraint time="0" indices="${earsToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
+                    <fixedConstraint indices="${bottomToIndexGroup}"/>
+                    <surfacePressure indices="${earsToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
                 </constraint>
             </constraints>
 
@@ -59,7 +59,7 @@
 
     <workflow>
 
-        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+        <CGALMeshVolumeFromSurface id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
                        preserveFeatures="false" facetAngle="20" facetSize="0.006" facetDistance="0.004"
                        cellRadiusEdgeRatio="3" cellSize="0.02" odt="false" lloyd="false" pertube="false"
                        exude="false"/>

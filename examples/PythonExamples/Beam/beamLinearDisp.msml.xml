@@ -2,7 +2,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="linearMesh"
+        <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     <var name="dispVar" value="0 0 0.1" logical="Displacement"
              physical="vector.float"/>

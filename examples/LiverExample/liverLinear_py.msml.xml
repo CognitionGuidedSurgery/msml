@@ -2,7 +2,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="LiverXSTet4.vtk" logical="linearMesh" physical="file.vtk"/>
+        <var name="vol_mesh" value="LiverXSTet4.vtk" logical="TriangularSurface" physical="file.vtk"/>
 
         <var name="force_vector"   logical="Force" physical="vector.float"/>
         <var name="force_indices"  logical="Indices" physical="vector.int"/>

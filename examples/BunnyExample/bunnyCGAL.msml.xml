@@ -3,8 +3,8 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="bunnyVolumeMeshCGAL.vtk" logical="str"/>
-        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="linearMesh"
+        <var name="input_vol_mesh" value="bunnyVolumeMeshCGAL.vtk" />
+        <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     </variables>
 
@@ -47,9 +47,9 @@
 
     <workflow>
 
-        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
-                       facetAngle="20" facetSize="0.008" facetDistance="0.005"
-                       cellRadiusEdgeRatio="3" cellSize="0.02" odt="false" lloyd="false" pertube="false"
+        <CGALMeshVolumeFromSurface id="bunnyVolumeMesher" meshFilename="${input_vol_mesh}" surfaceMesh="${input_surf_mesh}"
+                       facetAngle="20" facetSize="0.008" facetDistance="0.005" 
+                       cellRadiusEdgeRatio="3" cellSize="0.02" lloyd="false" pertube="false"
                        exude="false"/>
 
         <ComputeIndicesFromBoxROI id="bodyToIndexGroup"
