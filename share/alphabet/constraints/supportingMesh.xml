@@ -9,7 +9,7 @@
   <parameters>
     <arg name="youngModulus" physical="float" logical="Scalar"/>
     <arg name="poissonRatio" physical="float" logical="Scalar"/>
-    <arg name="filename" physical="VTK" logical="Tetrahedral"/>
+    <arg name="filename" physical="VTK" logical="TetrahedralVolume"/>
     <arg name="massDensity" physical="float" logical="Scalar"/>
   </parameters>
 </msml:element>

@@ -9,7 +9,7 @@
 
   <input>
      <arg name="indices"
-             logical="indexgroup"
+             logical="IndexSet"
              physical="vector.int"/>
     <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
 

@@ -9,9 +9,9 @@
 
   <input>
 
-    <arg name="initialMesh" logical="volumeMesh" physical="file.vtk" />
-    <arg name="referenceMesh" logical="volumeMesh" physical="file.vtk" />
-    <arg name="testMesh" logical="volumeMesh" physical="file.vtk" />
+    <arg name="initialMesh" logical="VolumeMesh" physical="file.vtk" />
+    <arg name="referenceMesh" logical="VolumeMesh" physical="file.vtk" />
+    <arg name="testMesh" logical="VolumeMesh" physical="file.vtk" />
 
 
 
