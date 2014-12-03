@@ -6,7 +6,7 @@ set
 
 #source /home/ubuntu/virtualenvs/venv-2.7.5/bin
 
-export PYTHONPATH=/home/ubuntu/msml/cbuild/bin
+export PYTHONPATH=./cbuild/bin/
 
 cd /home/ubuntu/msml/
 
