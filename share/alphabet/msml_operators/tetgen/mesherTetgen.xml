@@ -16,7 +16,7 @@
     </output>
 
     <parameters>
-        <arg name="meshFilename" physical="str" optional="true" target="true">
+        <arg name="targetMeshFilename" physical="str" optional="true" target="true">
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
