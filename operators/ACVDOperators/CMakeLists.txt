@@ -99,6 +99,9 @@ SET(ACVD_INCLUDE_DIRS
 ${install_dir}/include/vtkDiscreteRemeshing/
 ${install_dir}/include/vtkSurface/
 ${install_dir}/include/vtkVolumeProcessing/
+${install_dir}/include/ACVD/Common/
+${install_dir}/include/ACVD/DiscreteRemeshing/
+${install_dir}/include/ACVD/VolumeProcessing/
 )
 
 IF(WIN32 AND NOT CYGWIN)
@@ -150,7 +153,7 @@ INCLUDE_DIRECTORIES(
 	${ACVD_INCLUDE_DIRS}
 	)
 
-#Message("ACVD include are ${ACVD_INCLUDE_DIRS}")
+Message("ACVD include are ${ACVD_INCLUDE_DIRS}")
 
 MSML_LIBRARY(
 	NAME      ACVDOperators
