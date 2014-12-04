@@ -43,12 +43,12 @@ import random
 from path import path
 import lxml.etree as etree
 
-from .. import log
-from ..model import *
-from .base import XMLExporter
+from ..base import XMLExporter, Exporter
 from msml.exceptions import *
-from ..sortdef import VTK
-from ..log import warn, info
+import msml.env
+from msml.model import *
+from ...log import error, warn, info, fatal, critical, debug
+from ...sortdef import VTK
 import jinja2
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
@@ -625,21 +625,21 @@ class SofaExporter(XMLExporter):
             #callCom = os.path.join(os.getcwd(),self.export_file) + ' ' + str(timeSteps) + ' ' + '/tmp/simoutput.simu -l SofaCUDA -l MediAssist'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
 
-        log.info("Executing %s" % cmd)
-        log.info("Working directory: %s" % os.getcwd())
+        info("Executing %s" % cmd)
+        info("Working directory: %s" % os.getcwd())
 
         import subprocess
 
         try:
-            log.info("Start Sofa with: '%s'" % cmd)
+            info("Start Sofa with: '%s'" % cmd)
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             for line in output.split("\n"):
                 log.info("SOFA %s", line)
-            log.info("Sofa ended normally.")
+            info("Sofa ended normally.")
         except subprocess.CalledProcessError as e:
             for line in e.output.split("\n"):
-                log.info("SOFA %s", line)
-            log.fatal("SOFA exited with return code > 0 (%s) " % e.returncode)
+                info("SOFA %s", line)
+            fatal("SOFA exited with return code > 0 (%s) " % e.returncode)
 
         #os.system(cmd)
         return self._memory_update

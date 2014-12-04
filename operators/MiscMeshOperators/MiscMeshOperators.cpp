@@ -520,6 +520,90 @@ bool DebugPrint(vector<int> to_print)
 	return true;
 }
 
+
+
+string splitMesh(const char* infile, const char* outfile, std::vector<int> group)
+{
+	vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);
+	//get alle volumes
+    vtkIntArray* cellMaterialArray = (vtkIntArray*) inputGrid->GetCellData()->GetArray("Materials");
+    map<int,int>* cellDataHist = createHist(cellMaterialArray);    
+	std::map<int,vtkSmartPointer<vtkUnstructuredGrid> > volumes;
+	log_error()<<"splitting started..."<<std::endl;
+    for (map<int,int>::iterator it=cellDataHist->begin(); it!=cellDataHist->end(); it++) //filter for each material
+    {
+        log_debug() << it->second << " cells of MaterialId=" << it->first << " found." << std::endl;
+        vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+        __SetInput(threshold, inputGrid);
+        threshold->ThresholdBetween(it->first, it->first);
+        threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Materials");
+        threshold->Update();       
+        log_debug() << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  it->first << std::endl;     
+		//extract volume
+        vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        string error_message;	
+		mesh->DeepCopy(threshold->GetOutput());
+        volumes[it->first] = mesh;
+    }
+	log_error()<<"merging..."<<std::endl;
+	//merge back into unstructured grid, check grouping vector	
+	vtkSmartPointer<vtkUnstructuredGrid> unionMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();	
+	int numberOfMeshes = group.size();
+	//sum up number of points and cells		
+	int numberOfPoints=0;
+	int numberOfCells=0;
+	for(int groupIndex=0;groupIndex<group.size();++groupIndex)
+	{			
+		int matId = group[groupIndex];
+		//test if surface exists
+		if(volumes.find(matId)!=volumes.end())
+		{
+			//retrieve volume
+			vtkSmartPointer<vtkUnstructuredGrid> surf = volumes[matId];
+			//sum up
+			numberOfPoints+=surf->GetNumberOfPoints();			
+			numberOfCells+=surf->GetNumberOfCells();
+		}
+	}
+
+	//set up the merger
+	vtkSmartPointer<vtkMergeCells> merger = vtkSmartPointer<vtkMergeCells>::New();
+	merger->SetUnstructuredGrid(unionMesh);
+	merger->SetTotalNumberOfCells(numberOfCells);
+	merger->SetTotalNumberOfPoints(numberOfPoints);
+	merger->MergeDuplicatePointsOn();
+	merger->SetPointMergeTolerance(0.00001);
+	merger->SetTotalNumberOfDataSets(numberOfMeshes);	
+	//merge this group
+	for (int i=0; i<group.size(); i++)
+	{
+		int matId=group[i];
+		int error = merger->MergeDataSet(volumes[matId]);
+		if (error)
+		{
+			log_error()<< "vtkMergeCells error during MergeDataSet with surfaces " << i<<std::endl;;
+			cerr << "vtkMergeCells error during MergeDataSet with surfaces " << i;
+			exit(2);
+		}		
+	}		
+	merger->Finish();	
+
+	//save the merged data
+	log_error()<<"saving..."<<std::endl;
+	IOHelper::VTKWriteUnstructuredGrid(outfile, unionMesh);
+	log_error()<<"splitting finished"<<std::endl;	
+    return outfile;
+}
+
+string splitMeshPython(const char* infile, const char* outfile, std::vector<int> group)
+{
+	std::vector<std::vector<int>> groups;
+	groups.push_back(group);
+	//splitMesh(infile,outfile,groups);
+	return outfile;
+}
+
+
 /*
   Morph given image cube file using this vtk filter:
   http://www.vtk.org/doc/nightly/html/classvtkImageDilateErode3D.html#details
