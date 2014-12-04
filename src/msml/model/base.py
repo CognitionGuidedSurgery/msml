@@ -11,7 +11,7 @@
 #
 # Copyright (C) 2013-2014 see Authors.txt
 #
-# If you have any questions please feel free to contact us at suwelack@kit.edu
+# If you have any questions please feel f    ree to contact us at suwelack@kit.edu
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ __all__ = ['Constant',
            'MSMLVariable',
            'MaterialRegion',
            'Mesh',
+           'ContactSurface',
            'ObjectConstraints',
            'ObjectElement',
            'Reference',
@@ -819,6 +820,8 @@ class SceneObject(object):
         self._constraints = constraints if constraints else list()
         self._sets = sets
         self._output = list()
+        self._contactSurface = ContactSurface()
+      
 
     def bind(self, alphabet):
         """
@@ -874,6 +877,18 @@ class SceneObject(object):
     def mesh(self, value):
         assert isinstance(value, Mesh)
         self._mesh = value
+        
+    @property
+    def contactSurface(self):
+        """
+        :type: ContactSurface
+        :return:
+        """
+        return self._contactSurface
+    
+    @contactSurface.setter
+    def contactSurface(self, value):
+        self._contactSurface = value
 
     @property
     def material(self):
@@ -1144,6 +1159,62 @@ class Mesh(object):
 
     @property
     def mesh(self):
+        """
+        legacy support
+        .. deprecated::
+            use ``self.value``
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+    
+        
+class ContactSurface(object):
+    """Represent the given contact surface within the <object> node:
+
+    .. code-block:: xml
+
+        <contactsurface id="" surface=""/>
+
+
+    """
+
+    def __init__(self, type="linear", id=None, value=None):
+        """
+        :param str type: type of the mesh (one of ``linear``, ``quadratic``)
+        :param str id: id of the mesh
+        :param str value: value of the mesh (a reference or a reference string)
+        """
+        self.type = type
+        self.id = id
+        self.value = value
+
+    @property
+    def surface(self):
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
         """
         legacy support
 

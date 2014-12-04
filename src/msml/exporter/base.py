@@ -212,11 +212,16 @@ class Exporter(object):
 
         for scene_obj in self._msml_file.scene:
             assert isinstance(scene_obj, SceneObject)
-
-            self._input['mesh'] = Slot('mesh', self.mesh_sort[0], self.mesh_sort[1],
+            
+            #daniel: for contact modelling
+            #cat object id and 'mesh-string to get a unique id in exporter (object id is unique??)
+            mesh_exporter_id = (scene_obj.id + '_mesh')            
+            self._input[mesh_exporter_id] = Slot(mesh_exporter_id, self.mesh_sort[0], self.mesh_sort[1],
                                        required=True, parent=self)
-
-            self._attributes['mesh'] = parse_attribute_value(scene_obj.mesh.mesh)
+            self._attributes[mesh_exporter_id] = parse_attribute_value(scene_obj.mesh.mesh)           
+            contact_surface_id = (scene_obj.id + '_surface')
+            self._input[contact_surface_id] = Slot(contact_surface_id,"vtk")
+            self._attributes[contact_surface_id] = parse_attribute_value(scene_obj.contactSurface.value)
 
             register_object_sets()
             register_material()
@@ -245,7 +250,7 @@ class Exporter(object):
         :return:
         :rtype   str
         """
-        return "mesh"
+        return mesh.id
 
     def get_input_set_name(self, setelement):
         """the input slot name for the given setelement
