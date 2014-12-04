@@ -5,11 +5,11 @@
 
 namespace MSML
 {
-  namespace Surface2VoxelsOperator 
+  namespace SurfaceToVoxelDataOperator 
   {
-      LIBRARY_API std::string Surface2VoxelDataOperator(const char* infile, const char* outfile, const double accuracy_level);
+      LIBRARY_API std::string SurfaceToVoxelDataOperator(const char* infile, const char* outfile, float accuracy_level);
       LIBRARY_API double computeAvLengthCount(vtkSmartPointer<vtkPolyData> pd);
-  };
+  }
 }
 
 

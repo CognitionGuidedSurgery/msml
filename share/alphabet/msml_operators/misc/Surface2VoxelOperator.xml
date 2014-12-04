@@ -1,8 +1,8 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://sfb125.de/msml" name="Surface2VoxelsOperator">
+	xsi:schemaLocation="http://sfb125.de/msml" name="SurfaceToVoxelDataOperator">
     <runtime>
-        <python module="msml.ext.misc" function="Surface2VoxelDataOperator" />
+        <python module="msml.ext.misc" function="SurfaceToVoxelDataOperator" />
     </runtime>
 
     <input>
