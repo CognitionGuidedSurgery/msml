@@ -34,7 +34,7 @@
 //      
 //
 
-#include <Surface2VoxelsOperator.h>
+#include <SurfaceToVoxelDataOperator.h>
 #include <MiscMeshOperators.h>
 #include <vtkMetaImageReader.h>
 #include <vtkImageData.h>
@@ -58,17 +58,17 @@
 
 namespace MSML
 {
-  namespace Surface2VoxelsOperator
+  namespace SurfaceToVoxelDataOperator
   {
 	  
-  std::string Surface2VoxelDataOperator(const char* infile, const char* outfile, const double accuracy_level)
+  std::string SurfaceToVoxelDataOperator(const char* infile, const char* outfile, float accuracy_level)
   {
     vtkSmartPointer<vtkPolyData> pd = IOHelper::VTKReadPolyData(infile);
     // Note: vtp (PolyData) as input required; if necessary use MSML STL2VTK-Converter.
     
     vtkSmartPointer<vtkImageData> image = MiscMeshOperators::ImageCreateWithMesh(pd, 100);
     
-    const double ref_fac = accuracy_level;
+    float ref_fac = accuracy_level;
     
     const unsigned int zero_val = 0;
     const unsigned int non_zero_val = 1000;

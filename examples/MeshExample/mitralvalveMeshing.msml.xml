@@ -7,7 +7,7 @@
 
     <workflow>
         <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/>
-        <Surface2VoxelsOperator id="Surface2VoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="7"/>
+        <SurfaceToVoxelDataOperator id="aSurface2VoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="7"/>
     </workflow>
 
 </msml:msml>
