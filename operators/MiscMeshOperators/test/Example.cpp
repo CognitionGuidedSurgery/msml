@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( TestExtractSurfaceMesh)
 {
     MiscMeshOperators::ExtractSurfaceMesh(
         INPUT("bunny_tets.vtk"),
-        INPUT("TestExtractSurfaceMesh_AKA_ugrid_to_polydata.vtk"));
+        OUTPUT("TestExtractSurfaceMesh_AKA_ugrid_to_polydata.vtk"));
 }
 
 BOOST_AUTO_TEST_CASE( TestProjectSurfaceMesh )
