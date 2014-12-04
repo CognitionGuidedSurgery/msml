@@ -1,0 +1,28 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="Surface2VoxelsOperator">
+    <runtime>
+        <python module="msml.ext.misc" function="Surface2VoxelDataOperator" />
+    </runtime>
+
+    <input>
+        <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk" />
+    </input>
+
+    <output>
+        <arg name="image" logical="VectorImage3D" physical="file.vtk" />
+    </output>
+    
+    <parameters>
+        <arg name="targetImageFilename" physical="string" optional="true" target="true">
+            <meta key="doc">
+                Optional filename for the output.
+            </meta>
+        </arg>
+        <arg name="accuracy_level" physical="float" optional="true" default="8">
+            <meta key="doc">
+                  the resolution of the image (affects computational costs). A reasonable range: 1 - 10 (e.g. 8).
+            </meta>
+        </arg>
+    </parameters>
+</msml:operator>
