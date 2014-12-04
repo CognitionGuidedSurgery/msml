@@ -174,8 +174,9 @@ class SofaExporter(XMLExporter):
     def createMeshTopology(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
+        mesh_id = (msmlObject.id + "_mesh")
+        meshFileName = self.working_dir / self.get_value_from_memory(mesh_id)
         mesh_type = msmlObject.mesh.type
-        meshFileName = self.working_dir / self.get_value_from_memory(msmlObject.mesh)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
 
