@@ -150,7 +150,7 @@ INCLUDE_DIRECTORIES(
 	${ACVD_INCLUDE_DIRS}
 	)
 
-#Message("ACVD include are ${ACVD_INCLUDE_DIRS}")
+Message("ACVD include are ${ACVD_INCLUDE_DIRS}")
 
 MSML_LIBRARY(
 	NAME      ACVDOperators
