@@ -1,0 +1,13 @@
+<Node dt="{{timestep}}" gravity="{{gravity}}">
+    <LayeredDepthImagesPipeline name="default0" pressure="5"  
+							    resolution="128"  resolutionPixel="80"
+								depthBB="6"  GPUCollisionVolume="1" />
+	<LDIDetection name="default1" />
+	<MinProximityIntersection name="Proximity"  alarmDistance="0.3"  contactDistance="0.2" />
+	<BruteForceDetection name="N2" />
+	<DefaultContactManager name="Response"  response="LDI" />
+	<DefaultCollisionGroupManager name="Group" />
+	<VisualStyle name="visualStyle1"  displayFlags="showCollision" />
+	
+	{{nodes}}
+</Node>

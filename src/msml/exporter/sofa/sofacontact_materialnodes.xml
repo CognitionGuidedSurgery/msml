@@ -1,0 +1,4 @@
+<TetrahedronFEMForceField listening="true" name="FEM" poissonRatio="{{poisonRatio}}" template="Vec3d" 
+						  youngModulus="{{youngModulus}}"/>
+<TetrahedronSetGeometryAlgorithms name="aTetrahedronSetGeometryAlgorithm" template="Vec3d"/>
+    

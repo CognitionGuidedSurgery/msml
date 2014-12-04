@@ -1,0 +1,11 @@
+<Node name="{{nodeName}}">
+	<MeshVTKLoader name="LOADER"  filename="{{surfaceFileName}}"  createSubelements="0" />
+	<MechanicalObject template="Vec3d" name="dofs"  position="@LOADER.position"  
+					  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1" />
+	<MeshTopology name="topo"  position="@LOADER.position"  edges="@LOADER.edges"  triangles="@LOADER.triangles"  
+					  quads="@LOADER.quads"  tetrahedra="@LOADER.tetras"  hexahedra="@LOADER.hexas" />
+	<BarycentricMapping template="Vec3d,Vec3d" name="barycentricMap1"  input="@../"  output="@./" />
+	<TriangleModelInRegularGrid template="Vec3d" name="tTriangleModel1" />
+	<TLineModel template="Vec3d" name="default14" />
+	<TPointModel template="Vec3d" name="default15" />
+</Node>
