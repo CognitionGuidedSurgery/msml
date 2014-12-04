@@ -3,8 +3,7 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="3Dircadb0101Labeled.vtk" logical="TriangularSurface"
-             physical="file.vtk"/>
+        <var name="input_vol_mesh" value="3Dircadb0101Labeled.vtk" logical="VolumeMesh" />
         <var name="input_image" value="3Dircadb0101Labeled.vti" logical="SegmentationImage3D"
              physical="file.vti"/>
     </variables>

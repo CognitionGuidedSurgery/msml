@@ -29,6 +29,14 @@ ENDIF()
 
 ################################################################################
 # External Dependencies: 
+
+FIND_PACKAGE(ACVD)
+
+
+IF("${ACVD_LIBRARY}" STREQUAL "ACVD_LIBRARY-NOTFOUND")
+  message("ACVD not on system, if location is not specified manually the superbuild is used")
+
+
 include(ExternalProject)
 
 
@@ -82,12 +90,38 @@ ExternalProject_Add(ACVD    # Name for custom target
 
 ################################################################################
 # MiscMeshOperators
-SET(ACVDOperators_ACTIVE "ON" PARENT_SCOPE)
-MESSAGE("ACVDOperators: ENABLED and ACTIVE")
+
 
 ExternalProject_Get_Property(ACVD install_dir)
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH} ${install_dir}/lib/CMake/acvd/" )
 
+SET(ACVD_INCLUDE_DIRS
+${install_dir}/include/vtkDiscreteRemeshing/
+${install_dir}/include/vtkSurface/
+${install_dir}/include/vtkVolumeProcessing/
+)
+
+IF(WIN32 AND NOT CYGWIN)
+	SET(ACVD_LIBRARIES
+		${install_dir}/lib/vtkVolumeProcessing.lib
+		${install_dir}/lib/vtkSurface.lib
+		${install_dir}/lib/vtkDiscreteRemeshing.lib
+		)
+ELSE()
+	SET(ACVD_LIBRARIES
+		${install_dir}/lib/libvtkVolumeProcessing.a
+		${install_dir}/lib/libvtkSurface.a
+		${install_dir}/lib/libvtkDiscreteRemeshing.a
+		)
+ENDIF()
+
+
+ELSE()
+  message("ACVD found on system, not using superbuild")
+ENDIF()
+
+SET(ACVDOperators_ACTIVE "ON" PARENT_SCOPE)
+MESSAGE("ACVDOperators: ENABLED and ACTIVE")
 
 # not possible, because only known after build time
 #FIND_PACKAGE(vtkDiscreteRemeshing)
@@ -99,25 +133,13 @@ SET(ACVDOperators_SRCS
 	ACVDOperators.cpp
   )
 
-IF(WIN32 AND NOT CYGWIN)
-	SET(ACVDOperators_LIBS
-		${VTK_LIBRARIES}
-		${install_dir}/lib/vtkVolumeProcessing.lib
-		${install_dir}/lib/vtkSurface.lib
-		${install_dir}/lib/vtkDiscreteRemeshing.lib
-		MiscMeshOperators
-		)
-ELSE()
-	SET(ACVDOperators_LIBS
-		${VTK_LIBRARIES}
-		${install_dir}/lib/libvtkVolumeProcessing.a
-		${install_dir}/lib/libvtkSurface.a
-		${install_dir}/lib/libvtkDiscreteRemeshing.a
-		MiscMeshOperators
-		)
-ENDIF()
 
-
+SET(ACVDOperators_LIBS
+	${VTK_LIBRARIES}
+	${ACVD_LIBRARIES}
+	MiscMeshOperators
+	)
+		
 INCLUDE_DIRECTORIES(
 	${ACVDOperators_SOURCE_DIR}
 	${ACVDOperators_BINARY_DIR}
@@ -125,14 +147,10 @@ INCLUDE_DIRECTORIES(
 	#for iohelper:
 	${CMAKE_SOURCE_DIR}/MiscMeshOperators
 	# external project ACVD
-	${install_dir}/include/vtkVolumeProcessing/ 
-	${install_dir}/include/vtkDiscreteRemeshing/
-	${install_dir}/include/vtkSurface/
-	# external project ACVD / vtk6 branch
-	"${install_dir}/include/ACVD/Common/"
-	"${install_dir}/include/ACVD/DiscreteRemeshing/"
-	"${install_dir}/include/ACVD/VolumeProcessing/"
+	${ACVD_INCLUDE_DIRS}
 	)
+
+#Message("ACVD include are ${ACVD_INCLUDE_DIRS}")
 
 MSML_LIBRARY(
 	NAME      ACVDOperators

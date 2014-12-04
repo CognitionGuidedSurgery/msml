@@ -5,18 +5,18 @@
     </runtime>
 
     <input>
-        <arg name="gridToDefrom" logical="TetrahedralVolume" physical="file.vtk"/>
-        <arg name="referenceGrid" logical="TetrahedralVolume" physical="file.vtk" />
-        <arg name="deformedGrid" logical="TetrahedralVolume" physical="file.vtk"/>
+        <arg name="volumeMeshToDeform" logical="TetrahedralVolume" physical="file.vtk"/>
+        <arg name="referenceVolumeMesh" logical="TetrahedralVolume" physical="file.vtk" />
+        <arg name="deformedVolumeMesh" logical="TetrahedralVolume" physical="file.vtk"/>
     </input>
 
     <output>
-        <arg name="outSurface" logical="TetrahedralVolume" physical="file.vtk" />
+        <arg name="outVolumeMesh" logical="TetrahedralVolume" physical="file.vtk" />
     </output>
 
 
     <parameters>
-        <arg name="targetSurfaceFilename" physical="str" optional="true" target="true" />
+        <arg name="targetVolumeMesh" physical="str" optional="true" target="true" />
         <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
     </parameters>
 
