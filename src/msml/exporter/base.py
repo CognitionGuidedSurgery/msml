@@ -219,9 +219,10 @@ class Exporter(object):
             self._input[mesh_exporter_id] = Slot(mesh_exporter_id, self.mesh_sort[0], self.mesh_sort[1],
                                        required=True, parent=self)
             self._attributes[mesh_exporter_id] = parse_attribute_value(scene_obj.mesh.mesh)           
-            contact_surface_id = (scene_obj.id + '_surface')
-            self._input[contact_surface_id] = Slot(contact_surface_id,"vtk")
-            self._attributes[contact_surface_id] = parse_attribute_value(scene_obj.contactSurface.value)
+            if(scene_obj.contactSurface.value is not None):
+                contact_surface_id = (scene_obj.id + '_surface')
+                self._input[contact_surface_id] = Slot(contact_surface_id,"vtk")
+                self._attributes[contact_surface_id] = parse_attribute_value(scene_obj.contactSurface.value)
 
             register_object_sets()
             register_material()
