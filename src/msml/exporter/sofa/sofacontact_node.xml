@@ -1,0 +1,5 @@
+<Node name="{{nodeName}}">
+	{{solvers}}
+	{{meshTopology}}
+	{{childNodes}}
+</Node>

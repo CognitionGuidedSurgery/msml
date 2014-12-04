@@ -1,0 +1,3 @@
+<MeshVTKLoader createSubelements="0" filename="{{meshFileName}}" name="LOADER"/>
+<MechanicalObject name="dofs" src="@LOADER" template="Vec3d"/>
+<MeshTopology name="topo" src="@LOADER"/>

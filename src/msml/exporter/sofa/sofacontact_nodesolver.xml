@@ -1,0 +1,4 @@
+<EulerImplicitSolver name="eulerImplicitSolver1"  rayleighStiffness="1"  rayleighMass="1" />
+<CGLinearSolver template="GraphScattered" name="cGLinearSolver1"  iterations="50"  threshold="1e-008" />
+<LMConstraintSolver name="lMConstraintSolver1"  listening="1" />
+		
