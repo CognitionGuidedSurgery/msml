@@ -595,15 +595,6 @@ string splitMesh(const char* infile, const char* outfile, std::vector<int> group
     return outfile;
 }
 
-string splitMeshPython(const char* infile, const char* outfile, std::vector<int> group)
-{
-	std::vector<std::vector<int>> groups;
-	groups.push_back(group);
-	//splitMesh(infile,outfile,groups);
-	return outfile;
-}
-
-
 /*
   Morph given image cube file using this vtk filter:
   http://www.vtk.org/doc/nightly/html/classvtkImageDilateErode3D.html#details
