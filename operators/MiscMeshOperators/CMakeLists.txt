@@ -40,6 +40,7 @@ SET(MiscMeshOperators_SRCS
   MeshInfoOperators.cpp
   FeatureExtractionOperators.cpp
   FeBioSupport.cpp
+  Surface2VoxelsOperator.cpp
 
   FeatureExtractionOperators.h
   FeBioSupport.h
@@ -51,6 +52,7 @@ SET(MiscMeshOperators_SRCS
   MiscMeshOperators.h
   PostProcessingOperators.h
   VTKMeshgen.h
+  Surface2VoxelsOperator.cpp
   )
 
 SET(MiscMeshOperators_LIBS
