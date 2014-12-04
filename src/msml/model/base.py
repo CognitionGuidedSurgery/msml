@@ -822,7 +822,8 @@ class SceneObject(object):
         self._material = list() if not material else material
         self._constraints = constraints if constraints else list()
         self._sets = sets
-        self._output = list()
+        self._output = list()        
+        self._contactSurface = ContactSurface()
 
     def bind(self, alphabet):
         """
@@ -878,7 +879,19 @@ class SceneObject(object):
     def mesh(self, value):
         assert isinstance(value, Mesh)
         self._mesh = value
-
+    
+    @property
+    def contactSurface(self):
+        """
+        :type: ContactSurface
+        :return:
+        """
+        return self._contactSurface
+    
+    @contactSurface.setter
+    def contactSurface(self, value):
+        self._contactSurface = value
+    
     @property
     def material(self):
         return self._material

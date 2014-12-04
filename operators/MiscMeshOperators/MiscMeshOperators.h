@@ -124,6 +124,8 @@ namespace MiscMeshOperators
 
   LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
   LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
+  
+  LIBRARY_API std::string splitMesh(const char* infile,const char* oufile, std::vector<int> group);
 
   LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
 			            double toErode, std::vector<double> morph_kernel);    } //end namespace MiscMeshOperators
