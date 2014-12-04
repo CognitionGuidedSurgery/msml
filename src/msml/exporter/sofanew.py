@@ -48,7 +48,6 @@ from ..log import warn, info
 
 class MSMLSOFAExporterWarning(MSMLWarning): pass
 
-
 SOFA_EXPORTER_FEATURES = frozenset(
     ['object_element_displacement_supported', 'output_supported', 'object_element_mass_supported',
      'scene_objects_supported', 'constraints_supported', 'env_processingunit_CPU_supported',
