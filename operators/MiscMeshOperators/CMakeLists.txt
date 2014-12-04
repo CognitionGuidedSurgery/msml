@@ -40,7 +40,7 @@ SET(MiscMeshOperators_SRCS
   MeshInfoOperators.cpp
   FeatureExtractionOperators.cpp
   FeBioSupport.cpp
-  Surface2VoxelsOperator.cpp
+  SurfaceToVoxelDataOperator.cpp
 
   FeatureExtractionOperators.h
   FeBioSupport.h
@@ -52,7 +52,7 @@ SET(MiscMeshOperators_SRCS
   MiscMeshOperators.h
   PostProcessingOperators.h
   VTKMeshgen.h
-  Surface2VoxelsOperator.cpp
+  SurfaceToVoxelDataOperator.h
   )
 
 SET(MiscMeshOperators_LIBS
@@ -72,6 +72,16 @@ MSML_LIBRARY(
   SWIG_FILE miscmesh.i
   SOURCES   ${MiscMeshOperators_SRCS}
   LIBRARIES ${MiscMeshOperators_LIBS})
+
+	
+SET(MiscMeshOperatorsExample_SRCS Example.cpp) 	
+ 	
+ADD_EXECUTABLE (MiscMeshOperatorsExample ${MiscMeshOperatorsExample_SRCS} ) 	
+TARGET_LINK_LIBRARIES(MiscMeshOperatorsExample 	
+ MiscMeshOperators 	
+ ${MiscMeshOperators_LIBS} 	
+) 	
+
 
 ############################################################################
 ## Testing

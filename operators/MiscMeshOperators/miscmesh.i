@@ -10,7 +10,7 @@
 #include "MeshInfoOperators.h"
 #include "FeatureExtractionOperators.h"
 #include "FeBioSupport.h"
-#include "Surface2VoxelsOperator.h"
+#include "SurfaceToVoxelDataOperator.h"
 %}
 
 %include "../std.i"
@@ -29,6 +29,6 @@ namespace std {
 %include "MeshInfoOperators.h"
 %include "FeatureExtractionOperators.h"
 %include "FeBioSupport.h"
-#include "Surface2VoxelsOperator.h"
+%include "SurfaceToVoxelDataOperator.h"
 
  

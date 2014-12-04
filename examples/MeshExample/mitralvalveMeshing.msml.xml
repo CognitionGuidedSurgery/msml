@@ -1,0 +1,13 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+
+
+
+    <workflow>
+        <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/>
+        <SurfaceToVoxelDataOperator id="aSurface2VoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="7"/>
+    </workflow>
+
+</msml:msml>
