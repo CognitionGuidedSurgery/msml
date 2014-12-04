@@ -51,6 +51,7 @@ __all__ = ['Constant',
            'MSMLVariable',
            'MaterialRegion',
            'Mesh',
+           'ContactSurface',
            'ObjectConstraints',
            'ObjectElement',
            'Reference',
@@ -1147,6 +1148,65 @@ class Mesh(object):
 
     @property
     def mesh(self):
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+
+class ContactSurface(object):
+    """Represent the given contact surface within the <object> node:
+
+    .. code-block:: xml
+
+        <contactsurface id="" surface=""/>
+
+
+    """
+
+    def __init__(self, type="linear", id=None, value=None):
+        """
+        :param str type: type of the mesh (one of ``linear``, ``quadratic``)
+        :param str id: id of the mesh
+        :param str value: value of the mesh (a reference or a reference string)
+        """
+        self.type = type
+        self.id = id
+        self.value = value
+
+    @property
+    def surface(self):
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
         """
         legacy support
 
