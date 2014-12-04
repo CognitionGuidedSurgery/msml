@@ -1,0 +1,24 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="GenerateSpheres">
+
+    <runtime>
+        <python module="msml.ext.misc" function="GenerateSpheres" />
+    </runtime>
+
+    <input>
+
+    </input>
+
+    <output>
+        <arg name="targetsurface" logical="TriangularSurface" physical="file.vtk" />
+    </output>
+
+
+    <parameters>
+        <arg name="centers" physical="vector.float" />
+        <arg name="radius" physical="float" optional="true" default="10"/>
+        <arg name="thetaResolution" physical="int" optional="true" default="8"/>
+        <arg name="phiResolution" physical="int" optional="true" default="8"/>
+        <arg name="outFilename" physical="str" optional="true" target="true" />
+    </parameters>
+
+</msml:operator>

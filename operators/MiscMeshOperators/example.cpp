@@ -9,14 +9,15 @@
 #include <VTKMeshgen.h>
 #include <vtkPolyData.h>
 #include <IOHelper.h>
-#include <SurfaceToVoxelDataOperator.h>
+#include <Sources.h>
 
 using namespace MSML;
 
 int main( int argc, char * argv[])
 {
-  vtkPolyData* aBunny = IOHelper::VTKReadPolyData("C:/dev/msml/share/testdata/references/bunny_polydata.vtk");
-  SurfaceToVoxelDataOperator::SurfaceToVoxelDataOperator("C:/dev/msml/share/testdata/references/bunny_polydata.vtk", "C:/dev/msml/share/testdata/tmp/bunny_image.vti", 8.0);
+  double cordsArray[] = { 0, 0, 9, 1, 2,3};
+  std::vector<double> coordinates(begin(cordsArray), end(cordsArray));
+  Sources::GenerateSpheres(coordinates, 10.0, 10, 10, "C:/dev/msml/share/testdata/tmp/sphere_polydata.vtk");
 
 	return EXIT_SUCCESS;
 }

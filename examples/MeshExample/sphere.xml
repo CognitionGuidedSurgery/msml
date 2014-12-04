@@ -1,0 +1,8 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+    <workflow>
+        <GenerateSpheres id="aSphere" centers="0 0 0 100 0 0 200 0 0 300 300 300" radius="10" outFilename="sphere.vtp"/>
+        <SurfaceToVoxelDataOperator id="aSurface2VoxelsOperator" surfaceMesh="${aSphere}" targetImageFilename="spheres.vti" accuracy_level="7"/>
+    </workflow>
+</msml:msml>

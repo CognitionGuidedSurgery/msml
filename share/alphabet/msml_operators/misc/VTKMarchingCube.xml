@@ -9,7 +9,7 @@
     </input>
 
     <output>
-        <arg name="targetsurface" logical="SurfaceMesh" physical="file.vtk" optional="true" target="true"/>
+        <arg name="targetsurface" logical="SurfaceMesh" physical="file.vtk" />
     </output>
 
 
