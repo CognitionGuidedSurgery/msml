@@ -65,7 +65,7 @@
 
         <CGALMeshVolumeFromVoxels id="VizVolumeMesher" meshFilename="${viz_vol_mesh}" image="${input_image}" facetAngle="20" facetSize="5" facetDistance="12" cellRadiusEdgeRatio="3" cellSize="30" odt="false" lloyd="false"  pertube="false" exude="false" />
         <ExtractAllSurfacesByMaterial id="VizSurfaceExtractor" meshIn="${VizVolumeMesher}" meshOutFilename="${viz_input_vol_surf_mesh}" cut="false"/>   
-        <TransformMeshBarycentric id="deformed_surface" referenceGrid="${VolumeMesher}" out_surface_filename="viz*.vtk" mesh="${VizSurfaceExtractor}" deformedGrid="${disp}" />
+        <TransformMeshBarycentric id="deformed_surface" referenceVolumeMesh="${VolumeMesher}" targetVolumeMesh="viz*.vtk" volumeMeshToDeform="${VizSurfaceExtractor}" deformedVolumeMesh="${disp}" />
     </workflow>
 
 
@@ -73,7 +73,7 @@
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="100"/>
+            <step name="initial" dt="0.05" iterations="200"/>
         </simulation>
     </environment>
 
