@@ -670,8 +670,8 @@ def initialize_file_literals(first_bucket):
 
     def abs_value(var):
         import os.path
-
-        var.value = os.path.abspath(var.value)
+        if var.value is not None:
+            var.value = os.path.abspath(var.value)
         return var
 
     return map(abs_value, filter(var_is_file, first_bucket))
