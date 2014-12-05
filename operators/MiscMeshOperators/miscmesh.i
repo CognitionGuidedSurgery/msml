@@ -11,6 +11,7 @@
 #include "FeatureExtractionOperators.h"
 #include "FeBioSupport.h"
 #include "SurfaceToVoxelDataOperator.h"
+#include "Sources.h"
 %}
 
 %include "../std.i"
@@ -30,5 +31,6 @@ namespace std {
 %include "FeatureExtractionOperators.h"
 %include "FeBioSupport.h"
 %include "SurfaceToVoxelDataOperator.h"
+%include "Sources.h"
 
  

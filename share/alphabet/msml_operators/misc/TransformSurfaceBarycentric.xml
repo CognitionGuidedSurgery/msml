@@ -5,9 +5,9 @@
     </runtime>
 
     <input>
-        <arg name="surfaceToDefrom" logical="SurfaceMesh" physical="file.vtk"/>
-        <arg name="referenceGrid" logical="TetrahedralVolume" physical="file.vtk" />
-        <arg name="deformedGrid" logical="TetrahedralVolume" physical="file.vtk"/>
+        <arg name="surfaceMeshToDeform" logical="SurfaceMesh" physical="file.vtk"/>
+        <arg name="referenceVolumeMesh" logical="TetrahedralVolume" physical="file.vtk" />
+        <arg name="deformedVolumeMesh" logical="TetrahedralVolume" physical="file.vtk"/>
     </input>
 
     <output>

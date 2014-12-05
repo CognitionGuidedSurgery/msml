@@ -2,7 +2,7 @@
 
     Program:   The Medical Simulation Markup Language
     Module:    Operators, MiscMeshOperators
-    Authors:   Markus Stoll, Stefan Suwelack, Nicolai Schoch
+    Authors:   Markus Stoll, Stefan Suwelack
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,28 +19,29 @@
 
     =========================================================================*/
 
-
-#ifndef __MiscExtOperators_h
-#define __MiscExtOperators_h
+#ifndef SOURCES_H_
+#define SOURCES_H_
 
 #include "../MSML_Operators.h"
-#include "vtkPolyData.h"
+#include <vector>
+#include <limits>
+#include <map>
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <exception>
 
-
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
 
 using namespace std;
 
-
 namespace MSML {
-    namespace ACVDOperators
-    {
-        LIBRARY_API  std::string ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput);
-        LIBRARY_API  bool ReduceSurfaceMesh(vtkPolyData* in, vtkPolyData* out, int verticesCount, bool forceManifold);
+  namespace Sources {
+  LIBRARY_API const char*  GenerateSpheres(vector<double> centers, double radius, int thetaResolution, int phiResolution, const char* targetFileName);
+  LIBRARY_API vtkSmartPointer<vtkPolyData> GenerateSpheres(vector<double> centers, double radius, int thetaResolution, int phiResolution);
+  }
+} // end MSML
 
-
-    } //end namespace MiscExtOperators
-} // end namespace MSML
-
-
-#endif /* __MiscExtOperators_h */
+#endif /* SOURCES_H_ */
