@@ -24,5 +24,10 @@
                   the resolution of the image (affects computational costs). A reasonable range: 1 - 10 (e.g. 8).
             </meta>
         </arg>
+        <arg name="smoothing" physical="float" optional="true" default="2">
+            <meta key="doc">
+                  the smoothing of the image data. A reasonable range: 1 - 10 (e.g. 2).
+            </meta>
+        </arg>
     </parameters>
 </msml:operator>

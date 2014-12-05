@@ -16,7 +16,7 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
   vtkPolyData* aBunny = IOHelper::VTKReadPolyData("C:/dev/msml/share/testdata/references/bunny_polydata.vtk");
-  SurfaceToVoxelDataOperator::SurfaceToVoxelDataOperator("C:/dev/msml/share/testdata/references/bunny_polydata.vtk", "C:/dev/msml/share/testdata/tmp/bunny_image.vti", 8.0);
+  SurfaceToVoxelDataOperator::SurfaceToVoxelDataOperator("C:/dev/msml/share/testdata/references/bunny_polydata.vtk", "C:/dev/msml/share/testdata/tmp/bunny_image.vti", 8.0, 2.0);
 
 	return EXIT_SUCCESS;
 }
