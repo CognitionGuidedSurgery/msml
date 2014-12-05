@@ -44,7 +44,7 @@ __updated__ = "2014-02-26"
 from .base import *
 from .abaqus import AbaqusExporter
 #from .sofanew import SofaExporter
-from .sofanew import SofaExporter
+from sofa import SofaExporter
 from .hiflow3 import HiFlow3Exporter
 from .semantic_tools import OntologyParser
 from .febio import FeBioExporter
