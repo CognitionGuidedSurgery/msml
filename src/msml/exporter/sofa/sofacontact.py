@@ -144,17 +144,21 @@ class SofaExporter(XMLExporter):
             mesh_type = msmlObject.mesh.type
             mesh_id = (msmlObject.id + "_mesh")
             meshFileName = self.working_dir / self.get_value_from_memory(mesh_id)
-            meshTopology = MESH_TOPOLOGY_TEMPLATE.render(meshFileName=meshFileName)
-            #create collision node, if necessary
-            surface_id = (msmlObject.id + "_surface")
-            surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
-            collisionNode = COLLISION_NODE_TEMPLATE.render(surfaceFileName=surfaceFileName)
+            meshTopology = MESH_TOPOLOGY_TEMPLATE.render(meshFileName=meshFileName)            
             #create material nodes
             materialNodes = MATERIAL_NODES_TEMPLATE.render()
             #create solvers
             solvers = NODE_SOLVERS_TEMPLATE.render()
+            #create collision node, if necessary
+            collisionNode = None
+            if(msmlObject.contactSurface.id is not None):
+                surface_id = (msmlObject.id + "_surface")
+                surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
+                collisionNode = COLLISION_NODE_TEMPLATE.render(surfaceFileName=surfaceFileName)
+            
             #create node and append to node list
-            nodes = nodes + (NODE_TEMPLATE.render(nodeName=msmlObject.id,solvers=solvers,meshTopology=meshTopology,childNodes=collisionNode))
+            nodes = nodes + (NODE_TEMPLATE.render(nodeName=msmlObject.id,solvers=solvers,meshTopology=meshTopology,childNodes=collisionNode if collisionNode else ''))
+            
 
             #add solver
         #render scene file
@@ -206,19 +210,9 @@ class SofaExporter(XMLExporter):
             #<TLineModel template="Vec3d" name="default14" />
             #<TPointModel template="Vec3d" name="default15" />
            
-            surface_id = (msmlObject.id + "_surface")
-            surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
-            collisionNode = self.sub("Node",objectNode,name="1")
-            self.sub("MeshVTKLoader", collisionNode,name="LOADER" ,filename=surfaceFileName, createSubelements="0")
-            self.sub("MechanicalObject",collisionNode,template="Vec3d", name="dofs",
-                                        position="@LOADER.position",velocity="0 0 0",
-                                        force="0 0 0",externalForce="0 0 0", derivX="0 0 0",  restScale="1" )
-            self.sub("MeshTopology",collisionNode,name="topo",position="@LOADER.position",edges="@LOADER.edges",
-                                    triangles="@LOADER.triangles",quads="@LOADER.quads", tetrahedra="@LOADER.tetras",  hexahedra="@LOADER.hexas")
-            self.sub("BarycentricMapping", collisionNode,template="Vec3d,Vec3d", name="barycentricMap1",  input="@../",  output="@./" )
-            self.sub("TriangleModelInRegularGrid",collisionNode,template="Vec3d", name="tTriangleModel1")
-            self.sub("TLineModel", collisionNode,template="Vec3d", name="default14" )
-            self.sub("TPointModel", collisionNode,template="Vec3d", name="default15" )
+            #test if surface exists -> no surface, no contact model (for now)
+            if(msmlObject.contactSurface.id is not None):
+                self.createContactNode(objectNode,msmlObject)
             
         elif mesh_type == "quadraticTet":
             loaderNode = self.sub("MeshExtendedVTKLoader", objectNode,
@@ -232,7 +226,21 @@ class SofaExporter(XMLExporter):
                  "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
             return None
         return loaderNode
-
+    
+    def createContactNode(self,objectNode,msmlObject):
+        surface_id = (msmlObject.id + "_surface")
+        surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
+        collisionNode = self.sub("Node",objectNode,name="1")
+        self.sub("MeshVTKLoader", collisionNode,name="LOADER" ,filename=surfaceFileName, createSubelements="0")
+        self.sub("MechanicalObject",collisionNode,template="Vec3d", name="dofs",
+                                            position="@LOADER.position",velocity="0 0 0",
+                                            force="0 0 0",externalForce="0 0 0", derivX="0 0 0",  restScale="1" )
+        self.sub("MeshTopology",collisionNode,name="topo",position="@LOADER.position",edges="@LOADER.edges",
+                                        triangles="@LOADER.triangles",quads="@LOADER.quads", tetrahedra="@LOADER.tetras",  hexahedra="@LOADER.hexas")
+        self.sub("BarycentricMapping", collisionNode,template="Vec3d,Vec3d", name="barycentricMap1",  input="@../",  output="@./" )
+        self.sub("TriangleModelInRegularGrid",collisionNode,template="Vec3d", name="tTriangleModel1")
+        self.sub("TLineModel", collisionNode,template="Vec3d", name="default14" )
+        self.sub("TPointModel", collisionNode,template="Vec3d", name="default15" )
 
     def createSolvers(self):
         #TODO: self.get_value_from_memory
