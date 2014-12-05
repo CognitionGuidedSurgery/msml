@@ -416,6 +416,7 @@ class ExecutorsHelper(object):
     @staticmethod
     def execute_operator_task(memory, task):
         kwargs = ExecutorsHelper.gather_arguments(memory, task)
+        ExecutorsHelper.inject_target_filename(task, kwargs)
         log.info('Executing operator of task %s with arguments %r', task, kwargs)
         result = task.operator(**kwargs)
         log.info('--Executing operator of task %s done', task.id)
