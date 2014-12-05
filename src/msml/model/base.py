@@ -738,20 +738,23 @@ class Task(object):
 
         for name, slot in self.operator.input.items():
             if name not in self.attributes:
-                if (slot.default is not None):
-                    log.info("task %s for operator %s misses input attribute %s using default value: %s" % (
-                        self.id, self.operator.name, name, slot.default))
+                if slot.target:
+                    log.debug("Task %s (Operator: %s) attribute %s is not set and will be automatically assign (target attribute",
+                              self.id, self.operator.name, name, slot.default)
+                elif slot.default is not None:
+                    log.info("Task %s (Operator: %s) misses input attribute %s using default value: %s",
+                             self.id, self.operator.name, name, slot.default)
                 else:
-                    log.error("task %s for operator %s misses input attribute %s using and no default is defined." % (
-                        self.id, self.operator.name, name))
+                    log.error("Task %s (Operator: %s) misses input attribute %s using and no default is defined.",
+                              self.id, self.operator.name, name)
 
         for name, slot in self.operator.parameters.items():
             if name not in self.attributes:
                 if (slot.default is not None):
-                    log.info("task %s for operator %s misses input attribute %s using default value: %s" % (
+                    log.info("Task %s for operator %s misses input attribute %s using default value: %s" % (
                         self.id, self.operator.name, name, slot.default))
                 else:
-                    log.error("task %s for operator %s misses input attribute %s using and no default is defined." % (
+                    log.error("Task %s for operator %s misses input attribute %s using and no default is defined." % (
                         self.id, self.operator.name, name))
 
         for k in self.attributes:
