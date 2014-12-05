@@ -35,7 +35,7 @@ using namespace std;
 namespace MSML {
 namespace ACVDOperators {
 
-std::string ReduceSurfaceMeshPython(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput)
+std::string ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput)
 {
 	vtkSmartPointer<vtkPolyData> inputPoly = IOHelper::VTKReadPolyData(infile.c_str());
 	vtkSmartPointer<vtkPolyData> outputPoly = vtkSmartPointer<vtkPolyData>::New();
