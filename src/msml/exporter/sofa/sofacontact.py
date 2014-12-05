@@ -642,7 +642,7 @@ class SofaExporter(XMLExporter):
             info("Start Sofa with: '%s'" % cmd)
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             for line in output.split("\n"):
-                log.info("SOFA %s", line)
+                info("SOFA %s", line)
             info("Sofa ended normally.")
         except subprocess.CalledProcessError as e:
             for line in e.output.split("\n"):
