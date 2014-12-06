@@ -97,8 +97,13 @@ class AbaqusExporter(XMLExporter):
 
 
         parser = OntologyParser(modulepath / 'MSMLOnto.rdf-xml.owl')
-        parser.parse_ontology_from_python_memory(
-            URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
+        modulesDirectory = modulepath / '..' / '..' / 'model' / 'generated'
+        parser.createPythonModule(modulesDirectory)
+
+        print('great')
+
+        #parser.parse_ontology_from_python_memory(
+        #    URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
 
         #g=rdflib.Graph()
         #g.load('/home/suwelack/git/MSMLExtended/msml/share/ontology/MSMLOnto.rdf-xml.owl')

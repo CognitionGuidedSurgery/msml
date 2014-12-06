@@ -7,6 +7,7 @@ from jinja2 import Template
 from .base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
+import rdflib.plugins.sparql as sparql
 from rdflib import Graph, Literal, BNode, Namespace, RDF, URIRef
 from rdflib.namespace import DC, FOAF, OWL, RDF, RDFS
 from collections import defaultdict
@@ -129,10 +130,22 @@ class OntologyParser(object):
         classList = self._ontoGraph.subjects(RDF.type, OWL.Class)
 
 
+        classList = self._ontoGraph.subjects(RDF.type, OWL.Class)
+        for currentClass in classList:
+            print currentClass
+
+        print('Now with sparql')
         #self._ontoGraph.bind("owl", OWL)
 
-        qres = self._ontoGraph.query(
-            """SELECT ?name  WHERE { ?name rdf:type owl:class }""")
+        typeURI = URIRef(RDF.type)
+        classURI = OWL.Class
+
+        queryString = "SELECT ?name  WHERE { ?name <"+RDF.type.lower()+"> <"+OWL.Class.lower()+">}"
+        print(queryString)
+
+        testStr = 'SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#class>}'
+        q=sparql.prepareQuery('SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?c}')
+        qres = self._ontoGraph.query(q)
 
         for row in qres:
             print(row)
