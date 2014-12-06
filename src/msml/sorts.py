@@ -334,6 +334,12 @@ def _list_integer(s):
 def _list_uinteger(s):
     return _list_of_type(s, lambda x: MSMLUInt(float(x)))
 
+def _single_float_list(f):
+    return list([f])
+
+def _single_int_list(i):
+    return list([i])
+
 
 register_conversion(str, get_sort("str"), MSMLString, 100)
 register_conversion(str, get_sort("int"), int, 100)
@@ -349,6 +355,7 @@ register_conversion(tuple, get_sort('vector.int'), _list_float, 100)
 register_conversion(tuple, get_sort('vector.float'), _list_float, 100)
 register_conversion(list, get_sort('vector.int'), _list_float, 100)
 register_conversion(list, get_sort('vector.float'), _list_float, 100)
+
 register_conversion(str, get_sort('VTI'), VTI, 100)
 register_conversion(get_sort('int'), get_sort('str'), str, 100)
 register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float,100)
