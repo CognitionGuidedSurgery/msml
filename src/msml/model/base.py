@@ -423,7 +423,7 @@ class MSMLEnvironment(object):
         """
 
         def __init__(self, linearSolver="iterativeCG", processingUnit="CPU", timeIntegration="dynamicImplicitEuler",
-                     preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2):
+                     preconditioner="SGAUSS_SEIDL", dampingRayleighRatioMass=0.0, dampingRayleighRatioStiffness=0.2, mass="lumped"):
             self.linearSolver = linearSolver
             """Linear Solver
             :type: str
@@ -438,6 +438,10 @@ class MSMLEnvironment(object):
             """
             self.preconditioner = preconditioner
             """hiflow specific, pre conditioner
+            :type: str
+            """
+            self.mass = mass
+            """lumping or no lumping
             :type: str
             """
 
