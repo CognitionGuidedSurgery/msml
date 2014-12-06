@@ -22,6 +22,7 @@
 #include "Sources.h"
 #include "../vtk6_compat.h"
 #include "IOHelper.h"
+#include "MiscMeshOperators.h"
 
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
@@ -31,6 +32,30 @@
 namespace MSML {
   namespace Sources 
   {
+    const char* GenerateEmptyImage3D(vector<int> dimVec, vector<double> spacingVec, vector<double> originVec, const char* targetImageName)
+    {
+      vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();
+
+      int dims[3] = {dimVec[0], dimVec[1], dimVec[2]};
+      double spacing[3] = {spacingVec[0], spacingVec[1], spacingVec[2]};
+      double origin[3] = {originVec[0], originVec[1], originVec[2]};
+
+
+      newVTKImage->SetDimensions(dims);
+      newVTKImage->SetOrigin(origin);
+      newVTKImage->SetSpacing(spacing);
+      newVTKImage->SetExtent(0, dims[0] - 1, 0, dims[1] - 1, 0, dims[2] - 1);
+
+      #if VTK_MAJOR_VERSION <= 5
+        newVTKImage->SetNumberOfScalarComponents(1);
+        newVTKImage->SetScalarTypeToDouble();
+      #else
+        newVTKImage->AllocateScalars(VTK_DOUBLE,1);
+      #endif
+      IOHelper::VTKWriteImage(targetImageName, newVTKImage);
+      return targetImageName;
+    }
+
     const char* GenerateSpheres(vector<double> centers, double radius, int thetaResolution, int phiResolution, const char* targetFileName)
     {
       vtkSmartPointer<vtkPolyData> aPoly = GenerateSpheres(centers, radius, thetaResolution, phiResolution);

@@ -493,7 +493,8 @@ class PythonOperator(Operator):
         log.debug("Parameter: %s" % self.acceptable_names() )
         log.debug("Args: %s" % args)
         
-        if sum('*' in str(arg) for arg in args):        
+        count = sum('*' in str(arg) for arg in args)
+        if (count == 2):        
             r = executeOperatorSequence(self, args, self.settings.get('seq_parallel', True))
         else:        
             r = self._function(*args)
@@ -549,7 +550,8 @@ class ShellOperator(Operator):
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
         
-        if sum('*' in str(arg) for arg in args):            
+        count = sum('*' in str(arg) for arg in args)
+        if (count == 2):                
             r = executeOperatorSequence(self, args ,self.settings.get('seq_parallel',True))
         else:
             self._function(args)
