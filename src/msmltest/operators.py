@@ -22,10 +22,11 @@ TMP_DIR = MSML_ROOT / "share/testdata/tmp"
 INP_DIR = MSML_ROOT / "share/testdata/input"
 
 import os
+import filecmp
 
 def fcmp(a,b):
-    print ("diff -b %s %s" %(a,b))
-    return os.system("diff -b %s %s" %(a,b)) == 0
+    return filecmp.cmp(a, b, shallow=False)
+
 
 # Just some Tetgen paramters
 preserveBoundary = True
