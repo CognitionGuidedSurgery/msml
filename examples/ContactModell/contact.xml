@@ -1,0 +1,108 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml ../../test.xsd">
+    <variables>
+        <var name="input_cube_file" value="cylinder_piston.ctx.gz" logical="Mesh"
+             physical="str"/>	
+		<var name="output_mesh_moving" value="moving_mesh.vtk" logical="Mesh"
+             physical="str"/>	
+		<var name="output_mesh_fixed" value="fixed_mesh.vtk" logical="Mesh"
+             physical="str"/>	
+		<var name="output_mesh_surface_moving" value="moving_surface_mesh.vtk" logical="Mesh"
+             physical="str"/>	
+		<var name="output_mesh_surface_fixed" value="fixed_surface_mesh.vtk" logical="Mesh"
+             physical="str"/>			 
+		<var name="output_morphed_file" value="cylinder_piston.vti" logical="Mesh"
+             physical="str"/>	
+		<var name="output_mesh_file" value="cylinder_piston.vtk" logical="Mesh"/>
+        <var name="ym" value="80000" physical="float" />
+        <var name="pr" value="0.3" physical="float" />
+    </variables>
+	<scene>	
+         <object id="fixed">
+            <mesh>
+				<linearTet id="fixedMesh" mesh="${FixedSplit}"/>			
+            </mesh>		
+			<contactsurface id="contactSurface" surface="${FixedSurface}"/>
+            <sets>	
+				 <surfaces>
+                    <indexgroup id="cylinderSurface" indices="${cylinderMatIds}"/>
+                </surfaces>
+			</sets>
+            <material>	
+				<region id="cylinderMat" indices="${cylinderMatIds}">
+                    <linearElasticMaterial youngModulus="4500" poissonRatio="${pr}"/>
+                    <mass massDensity="0.001"/>
+                </region>	
+            </material>		
+            <constraints>				
+                <constraint name="test" forStep="${initial}">                    
+					<fixedConstraint indices="${cylinderMatIds}"/>					
+                </constraint>				
+			</constraints>	
+			<output>
+                <displacement id="fixedMesh" timestep="1"/>
+            </output>
+        </object>
+		<object id="moving">
+		    <mesh>
+				<linearTet id="movingMesh" mesh="${MovingSplit}"/>
+            </mesh>
+          	<contactsurface id="contactSurface" surface="${MovingSurface}"/>
+			<sets>	
+				<surfaces>
+                   <indexgroup id="pistonASurface" indices="${pistonAMatIds}"/>
+                </surfaces>
+				<surfaces>
+                   <indexgroup id="pistonBSurface" indices="${pistonBMatIds}"/>
+                </surfaces>
+			</sets>
+            <material>	
+			 <region id="pistonAMaterial" indices="${pistonAMatIds}">
+                    <linearElasticMaterial youngModulus="4200" poissonRatio="${pr}"/>
+                    <mass massDensity="0.001"/>
+                </region>	
+				<region id="pistonBMaterial" indices="${pistonBMatIds}">
+                    <linearElasticMaterial youngModulus="4300" poissonRatio="${pr}"/>
+                    <mass massDensity="0.001"/>
+                </region>	
+            </material>
+            <constraints>		
+				<constraint name="test" forStep="${initial}">                    
+					<!--<fixedConstraint indices="${emptyIds}"/>	-->				
+                </constraint>									
+			</constraints>		
+			<output>
+                <displacement id="movingMesh" timestep="1"/>
+            </output>
+        </object>	
+    </scene>
+    <workflow>		
+		<CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${output_mesh_file}" image="${input_cube_file}"
+                       facetAngle="20" facetSize="5" facetDistance="3" cellSize="10"
+                       cellRadiusEdgeRatio="3"  odt="false" lloyd="false" pertube="false"
+                       exude="false"/>			
+		<splitMesh id="FixedSplit" splittedMesh="${output_mesh_fixed}" mesh="${VolumeMesher}" group="999"/>
+		<splitMesh id="MovingSplit" splittedMesh="${output_mesh_moving}" mesh="${VolumeMesher}" group="1000 1001"/>
+		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}" 
+							targetSurfaceMeshFilename="fixed_surface.vtk"/>		
+		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}"
+							targetSurfaceMeshFilename="moving_surface.vtk"/>
+		
+		<ExtractAllSurfacesByMaterial id="SurfaceExtractor" meshIn="${VolumeMesher}" 
+									   meshOutFilename="extracted_surfaces_t8.vtk" cut="false"/> 
+		<ComputeIndicesFromMaterialId id="emptyIds" num="42" mesh="${SurfaceExtractor}" type="faces" />	
+		
+		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="999" mesh="${FixedSplit}" type="elements" />
+		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="1000" mesh="${MovingSplit}" type="elements" />
+		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="1001" mesh="${MovingSplit}" type="elements" />
+		<!--<surfacePressure id="pressure" indices="${pistonBMatIds}" pressure="200"/>-->
+  </workflow>
+    <environment>		
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="200"/>
+        </simulation>	
+    </environment>
+</msml:msml>
