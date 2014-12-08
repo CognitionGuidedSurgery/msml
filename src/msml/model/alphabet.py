@@ -489,14 +489,17 @@ class PythonOperator(Operator):
         kwargsUpdated = defaults
         kwargsUpdated.update(kwargs)
                    
+        
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
+        
         log.debug("Parameter: %s" % self.acceptable_names() )
         log.debug("Args: %s" % args)
         
-        count = sum('*' in str(arg) for arg in args)
+        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
         if (count == 2):        
-            r = executeOperatorSequence(self, args, self.settings.get('seq_parallel', True))
-        else:        
+            r = executeOperatorSequence(self, orderedKwArgs, self.settings.get('seq_parallel', True))
+        else:
             r = self._function(*args)
 
         if len(self.output) == 0:
@@ -549,10 +552,11 @@ class ShellOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
         
-        count = sum('*' in str(arg) for arg in args)
+        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
         if (count == 2):                
-            r = executeOperatorSequence(self, args ,self.settings.get('seq_parallel',True))
+            r = executeOperatorSequence(self, orderedKwArgs ,self.settings.get('seq_parallel',True))
         else:
             self._function(args)
         
