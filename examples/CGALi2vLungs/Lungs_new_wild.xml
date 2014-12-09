@@ -38,9 +38,9 @@
 
       <constraints>
         <constraint forStep="${initial}" name="1">
-          <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
-                    <surfacePressure name="l1" indices="${lung1facesToIndexGroup}" pressure="${surface_pressure}"/>
-                    <surfacePressure name="l2" indices="${lung2facesToIndexGroup}" pressure="${surface_pressure}"/>
+          <fixedConstraint id="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+                    <surfacePressure id="l1" indices="${lung1facesToIndexGroup}" pressure="${surface_pressure}"/>
+                    <surfacePressure id="l2" indices="${lung2facesToIndexGroup}" pressure="${surface_pressure}"/>
         </constraint>
       </constraints>
 

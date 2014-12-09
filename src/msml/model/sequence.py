@@ -32,55 +32,59 @@ __date__ = "2014-09-30"
 
 import glob
 import multiprocessing, multiprocessing.pool
+from collections import OrderedDict
 
 
-def executeOperatorSequence(operator, args, parallel):
-    count = sum('*' in str(arg) for arg in args)
-    if count == 2:
-        outputPathPattern = ''
-        inputPathPattern = ''
-        for i, arg in enumerate(args):
-            arg = str(arg)
-            if '*' in arg:
+def executeOperatorSequence(operator, kwargsUpdated, parallel):   
+    outputPathPattern = ''
+    inputPathPattern = ''
+    for key, value in kwargsUpdated.iteritems():
+        arg = str(value)
+        if '*' in arg:
+
+            if operator.get_targets().count(key) == 1:
+                outputPathPattern = arg
+                outputKey = key
+            else: 
                 # get file of path in arg with Unix style pathname pattern expansion
                 fileList = glob.glob(arg)
-                if fileList:
-                    inputFileList = fileList
-                    inputPathPattern = arg
-                    inputI = i
-                else:
-                    outputPathPattern = arg
-                    outputI = i
+                if not fileList:
+                    log.error("%s: Could not find any files for input pattern %s in Slot %s" % operator.name, outputPathPattern, outputKey)
+                
+                inputFileList = fileList
+                inputPathPattern = arg
+                inputKey = key
 
-        # maybe output directory already contained output files matching output pattern?
-        assert outputPathPattern != '' and inputPathPattern != ''
-
-        
-        pre, post = inputPathPattern.split('*')
-        outputFileList = []
-        for fil in inputFileList:
-            tmp = str(fil).replace(pre, '')
-            tmp = str(tmp).replace(post, '')  
-            outputFileList.append(outputPathPattern.replace('*', tmp))
-        
-        args_list = []
-        for j in range(len(inputFileList)):
-            args_new = list(args)
-            args_new[inputI] = inputFileList[j]
-            args_new[outputI] = outputFileList[j]
-            args_new.append(operator)            
-            args_list.append(args_new)
+    if outputPathPattern == '' or inputPathPattern == '':
+        log.error("If two file patterns (paths with '*' are used, one must be an argument for a non-target parameter and one in target parameter")
             
-        if parallel:
-            # multiprocessing
-            num_of_workers = multiprocessing.cpu_count()
-            pool = multiprocessing.Pool(num_of_workers - 1)
-            # blocks until finished
-            pool.map(callWrapper, args_list)
-        else:
-            for args in args_list:
-                callWrapper(args)
-        return outputPathPattern
+    pre, post = inputPathPattern.split('*')
+    outputFileList = []
+    
+    for fil in inputFileList:
+        tmp = str(fil).replace(pre, '')
+        tmp = str(tmp).replace(post, '')  
+        outputFileList.append(outputPathPattern.replace('*', tmp))
+    
+    args_list = []
+    for j in range(len(inputFileList)):
+        kwargs_new = OrderedDict(kwargsUpdated)
+        kwargs_new[inputKey] = inputFileList[j]
+        kwargs_new[outputKey] = outputFileList[j]
+        args_new = list(kwargs_new.values())
+        args_new.append(operator)            
+        args_list.append(args_new)
+        
+    if parallel:
+        # multiprocessing
+        num_of_workers = multiprocessing.cpu_count()
+        pool = multiprocessing.Pool(num_of_workers - 1)
+        # blocks until finished
+        pool.map(callWrapper, args_list)
+    else:
+        for args in args_list:
+            callWrapper(args)
+    return outputPathPattern
 
 
 import msml.log, os
