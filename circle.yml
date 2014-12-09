@@ -6,8 +6,9 @@ dependencies:
   cache_directories:
     - cache 
   pre:
-    - sudo apt-get install cmake libxml2-dev swig libqt4-dev libqt4-opengl-dev qt4-dev-tools libpng12-dev libglew1.5-dev freeglut3-dev 
-    #- sudo apt-get install libboost1.54-dev
+    - sudo apt-get install cmake libxml2-dev swig libqt4-dev libqt4-opengl-dev qt4-dev-tools \
+                          libpng12-dev libglew1.5-dev freeglut3-dev libcgal8 libcgal-dev libboost-dev libboost1.54-dev 
+
     - pip install -r requirements.txt
     - pip install coverage coveralls
     - chmod 755 share/install_vtk.sh && share/install_vtk.sh
@@ -19,7 +20,5 @@ test:
   override:
     - chmod 755 share/run_test.sh && share/run_test.sh
     - cd cbuild/ && make test -j 2 || cat Testing/Temporary/LastTest.log
-
-
 
 
