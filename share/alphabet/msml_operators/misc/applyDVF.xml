@@ -25,7 +25,7 @@
             <meta key="doc">
                 Set reverseDirection=true if direction of provided vector field needs to be inverted. (Usually the case when dvf was created with MSMLs GenerateDVF)
             </meta>
-        </args>
+        </arg>
         <arg name="voxelSize" physical="float" optional="true" default="0.0"/>
     </parameters>
 </msml:operator>
