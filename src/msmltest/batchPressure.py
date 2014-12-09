@@ -22,7 +22,7 @@ from unittest import TestCase
 
 class Lungs(object):
     def __init__(self, msml_filename, p):
-        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p), executor='sequential')
+        self.app = App(exporter='nsofa', output_dir='batchedPressureNew' + str(p), executor='sequential', add_search_path=['../share/alphabet', 'share/alphabet'])
         self.mf = self.app._load_msml_file(msml_filename)
         self._surface_pressure = p
     

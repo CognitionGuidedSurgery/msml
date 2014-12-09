@@ -8,7 +8,7 @@ from .conversions import *
 #from .executing import *
 from .generators_test import *
 from .scenarios import *
-#from .batchPressure import *
+from .batchPressure import *
 
 if __name__ == "__main__":
     import nose
