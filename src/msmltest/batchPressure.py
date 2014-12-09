@@ -28,14 +28,14 @@ class Lungs(object):
     
     def __call__(self):
         self.app.memory_init_file = {
-            "surface_pressure":float(self._surface_pressure) 
+            "surface_pressure":float(self._surface_pressure)
         }
         mem = self.app.execute_msml(self.mf, ) 
         return mem._internal['volumeMeasure']['volume']
 
 class LungsTest(TestCase):
     def test_Lung(self):
-        msml_file = os.path.abspath('examples//CGALi2vLungs/Lungs_new.xml')
+        msml_file = os.path.abspath('../examples//CGALi2vLungs/Lungs_new.xml')
         for p in range (20, 80, 20):
             l = Lungs(msml_file, p)
         volume = l()
