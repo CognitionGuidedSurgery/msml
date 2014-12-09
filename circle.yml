@@ -7,6 +7,7 @@ dependencies:
     - cache 
   pre:
     - sudo apt-get install cmake libxml2-dev swig libqt4-dev libqt4-opengl-dev qt4-dev-tools libpng12-dev libglew1.5-dev freeglut3-dev libcgal8 libcgal-dev libboost-dev libboost1.54-dev 'libboost-*1.54-dev' libboost-filesystem1.54-dev libboost-filesystem1.54.0 libboost-test1.54-dev libboost-test1.54.0 libboost-regex1.54.0 libboost-regex1.54-dev libboost-thread1.54-dev libboost-thread1.54.0 libboost-iostreams1.54-dev libboost-iostreams1.54.0 
+    - sudo apt-get autoremove
     - pip install -r requirements.txt
     - pip install coverage coveralls
     - chmod 755 share/install_vtk.sh && share/install_vtk.sh
