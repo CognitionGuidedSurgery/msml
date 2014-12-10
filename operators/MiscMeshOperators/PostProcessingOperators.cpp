@@ -627,25 +627,7 @@ std::string GenerateDVF(const char* referenceGridFilename, const char* deformedG
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridFilename);
     vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridFilename);
 
-    vtkSmartPointer<vtkImageData> outputDVF;
-    if (strlen(referenceCoordinateGrid)>0)
-    {
-      outputDVF = MiscMeshOperators::ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
-      if (spacingParam>0)
-      {
-        MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
-      }
-    }
-
-    else
-    {
-      outputDVF = MiscMeshOperators::ImageCreateWithMesh(referenceGrid, 100);
-    }
-
-    if (spacingParam>0)
-    {
-      MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
-    }
+    vtkSmartPointer<vtkImageData> outputDVF = MiscMeshOperators::ImageCreateGeneric(referenceGrid, 0, spacingParam, referenceCoordinateGrid, 0); 
 
     GenerateDVFImp(referenceGrid, deformedGrid, outputDVF, interpolateOutsideDistance);
  

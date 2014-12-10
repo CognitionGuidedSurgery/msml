@@ -15,7 +15,9 @@
 #include "VTKMeshgen.h"
 #include "IOHelper.h"
 
-#define SMOKE_TEST_DIR_PREFIX smoke
+#define INPUT(x) (TESTDATA_PATH "/references/" x)
+#define OUTPUT(x) (TESTDATA_PATH "/tmp/" x)
+#define REFERENCE(x) (TESTDATA_PATH "/references/" x)
 
 using namespace MSML;
 

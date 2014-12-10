@@ -69,6 +69,7 @@
 #include <vtkUnstructuredGridGeometryFilter.h>
 #include "vtkDataSetSurfaceFilter.h"
 #include "vtkUnstructuredGridGeometryFilter.h"
+#include <vtkImplicitPolyDataDistance.h>
 
 #include <vtkImageData.h>
 #include <vtkPolyDataToImageStencil.h>
@@ -960,25 +961,7 @@ std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int res
 bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
     vtkSmartPointer<vtkImageData> whiteImage;
-    //Method A: Generate bounds, spacing and origine based on mesh:
-    if (resolution>0)
-    {
-      whiteImage = ImageCreateWithMesh(inputMesh, resolution);
-    }
-
-    else if(isotropicVoxelSize>0)
-    {
-      whiteImage = ImageCreateWithMesh(inputMesh, 100);
-      ImageChangeVoxelSize(whiteImage, isotropicVoxelSize);
-    }
-
-    //Method B: Get bounds, spacing and origin from given grid:
-    else 
-    {
-      whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
-    }
-    if (additionalIsotropicMargin!=0)
-      ImageEnlargeIsotropic(whiteImage, additionalIsotropicMargin);
+    ImageCreateGeneric(inputMesh, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
 
 #if VTK_MAJOR_VERSION <= 5
     whiteImage->SetScalarTypeToUnsignedChar();
@@ -1466,8 +1449,84 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 		log_debug() <<"Vector field with name "<<vectorFieldName<<" was not found" << std::endl;
 		return vectorField;
 	}
-
 }
+
+string GenerateDistanceMap(const char* inputPolyData, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
+{
+  vtkSmartPointer<vtkPolyData> polydata = IOHelper::VTKReadPolyData(inputPolyData);
+  vtkSmartPointer<vtkImageData> aDistMap = GenerateDistanceMap(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  IOHelper::VTKWriteImage(targetImage, aDistMap);
+  return targetImage;
+}
+
+vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkPolyData* polydata, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
+{
+  vtkSmartPointer<vtkImageData> image = ImageCreateWithMesh(polydata, resolution);
+  #if VTK_MAJOR_VERSION <= 5
+    image->SetScalarTypeToFloat();
+    image->SetNumberOfScalarComponents(1);
+    image->AllocateScalars();
+#else
+    image->AllocateScalars(VTK_FLOAT, 1); //1 component per voxel 
+#endif
+
+  vtkSmartPointer<vtkImplicitPolyDataDistance> implicitPolyDataDistance = vtkSmartPointer<vtkImplicitPolyDataDistance>::New();
+  implicitPolyDataDistance->SetInput(polydata);
+
+  int* dims = image->GetDimensions();
+  double* spacing = image->GetSpacing();
+  double* origin = image->GetOrigin();
+  for (int z = 0; z < dims[2]; z++)
+  {
+    for (int y = 0; y < dims[1]; y++)
+    {
+        for (int x = 0; x < dims[0]; x++)
+        {
+          double pInMM[3];
+          pInMM[0] = origin[0]+x*spacing[0];
+          pInMM[1] = origin[1]+y*spacing[1];
+          pInMM[2] = origin[2]+z*spacing[2];
+          float* point = static_cast<float*>(image->GetScalarPointer(x,y,z));
+          float signedDistance = implicitPolyDataDistance->EvaluateFunction(pInMM);
+          *point = signedDistance;
+        } //x
+    } //y
+  } //z
+  return image;
+}
+
+vtkSmartPointer<vtkImageData> ImageCreateGeneric(vtkPointSet* grid, double resolution, float isotropicVoxelSize, const char* referenceCoordinateGrid, float additionalIsotropicMargin)
+{
+  vtkSmartPointer<vtkImageData> whiteImage;
+  
+  //Method A: Generate bounds, spacing and origine based on mesh:
+  if (resolution>0)
+  {
+    whiteImage = ImageCreateWithMesh(grid, resolution);
+  }
+
+  else if(isotropicVoxelSize>0)
+  {
+    whiteImage = ImageCreateWithMesh(grid, 100);
+    ImageChangeVoxelSize(whiteImage, isotropicVoxelSize);
+  }
+
+  //Method B: Get bounds, spacing and origin from given grid:
+  else if (!string(referenceCoordinateGrid).empty())
+  {
+    whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
+  }
+  else
+  {
+    log_error() << "ImageCreateGeneric: Please specify resolution, isotropicVoxelSize or referenceCoordinateGrid" << endl;
+  }
+
+  if (additionalIsotropicMargin!=0)
+    ImageEnlargeIsotropic(whiteImage, additionalIsotropicMargin);
+
+  return whiteImage;
+}
+
 vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution)
 {
   vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();

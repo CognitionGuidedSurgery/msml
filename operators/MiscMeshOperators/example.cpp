@@ -10,9 +10,9 @@
 #include <vtkPolyData.h>
 #include <IOHelper.h>
 #include <Sources.h>
-
 #include <stdio.h>
-//#include <direct.h>
+
+#include "test/common.h"
 
 
 using namespace MSML;
@@ -20,12 +20,7 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-  //double cordsArray[] = { 0, 0, 9, 1, 2,3};
-  //std::vector<double> coordinates(cordsArray, cordsArray + sizeof(cordsArray) / sizeof(double));
-  //Sources::GenerateSpheres(coordinates, 10.0, 10, 10, "C:/dev/msml/share/testdata/tmp/sphere_polydata.vtk");
-  
-  //_chdir("C:\\dev\\msml\\examples\\ImageEample\\tmp");
-  //PostProcessingOperators::ImageSum("aSphere*.vti", false, "sum.vti");
+  MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_polydata.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
    
 	return EXIT_SUCCESS;
 }

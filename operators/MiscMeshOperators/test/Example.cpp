@@ -3,11 +3,6 @@
 #define BOOST_TEST_MODULE MiscMeshOperatorsTest
 #include <boost/test/unit_test.hpp>
 
-#define INPUT(x) (TESTDATA_PATH "/references/" x)
-#define OUTPUT(x) (TESTDATA_PATH "/tmp/" x)
-#define REFERENCE(x) (TESTDATA_PATH "/references/" x)
-
-
 //BOOST_AUTO_TEST_CASE( TestAssignRegionOperator )
 //{
 //    const char* inputMesh = INPUT("liverMVolume.vtk");
@@ -21,6 +16,13 @@
 //    string errorMessage;
 //    MiscMeshOperators::AssignSurfaceRegion(inputMesh, outputMesh, regionMeshes);
 //}
+
+BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap)
+{
+  vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
+    GenerateDistanceMap(IOHelper::VTKReadPolyData(INPUT("bunny_polydata.vtk")), 10, 0, "", 0);
+}
+
 
 BOOST_AUTO_TEST_CASE( TestTransformMeshBarycentric)
 {
