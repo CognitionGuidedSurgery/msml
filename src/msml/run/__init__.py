@@ -468,11 +468,16 @@ class ExecutorsHelper(object):
 
     @staticmethod
     def inject_target_filename(task, kwargs):
-        output_targets = task.operator.get_targets()
-        for ot in output_targets:
-            if ot not in kwargs:
-                kwargs[ot] = "{task_id}_{name}".format(task_id=task.id, name=ot)
-                log.info("Output target generated of %s" % kwargs[ot])
+        targets = task.operator.get_targets()
+        outputs = task.operator.output_names()
+
+        for t,o in zip(targets, outputs):
+            if t not in kwargs:    
+                physical = task.operator.output[o].sort.physical        
+                suffix = physical.__name__.lower()
+                kwargs[t] = "{task_id}_{name}.{sfx}".format(
+                    task_id=task.id, name=o, sfx=suffix)
+                log.info("Output target generated of %s" % kwargs[t])
 
     @staticmethod
     def gather_arguments(memory, task):
