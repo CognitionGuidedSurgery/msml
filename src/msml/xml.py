@@ -388,6 +388,7 @@ def msml_file_factory(msml_node):
         env.solver.timeIntegration = solver_node.get('timeIntegration')
         env.solver.dampingRayleighRatioMass = solver_node.get('dampingRayleighRatioMass')
         env.solver.dampingRayleighRatioStiffness = solver_node.get('dampingRayleighRatioStiffness')
+        env.solver.mass = solver_node.get('mass')
 
         simulation_node = env_node.find('simulation')
         for s in simulation_node.iterchildren():

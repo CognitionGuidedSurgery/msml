@@ -41,6 +41,7 @@ SET(MiscMeshOperators_SRCS
   FeatureExtractionOperators.cpp
   FeBioSupport.cpp
   SurfaceToVoxelDataOperator.cpp
+  Sources.cpp
 
   FeatureExtractionOperators.h
   FeBioSupport.h
@@ -53,6 +54,7 @@ SET(MiscMeshOperators_SRCS
   PostProcessingOperators.h
   VTKMeshgen.h
   SurfaceToVoxelDataOperator.h
+  Sources.h
   )
 
 SET(MiscMeshOperators_LIBS
@@ -99,7 +101,7 @@ TARGET_LINK_LIBRARIES(FirstTest
 )
 ADD_TEST(FirstTest ${CMAKE_OPERATOR_DIRECTORY}/FirstTest)
 
-ADD_EXECUTABLE(MiscMeshOperatorsTest test/Example.cpp)
+ADD_EXECUTABLE(MiscMeshOperatorsTest test/Example.cpp test/common.h)
 TARGET_LINK_LIBRARIES(MiscMeshOperatorsTest
 	MiscMeshOperators
 	${MiscMeshOperators_LIBS}	

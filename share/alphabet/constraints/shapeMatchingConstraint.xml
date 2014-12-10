@@ -8,7 +8,13 @@
   </description>
   
   <parameters>
-      <arg name="matchingReference" physical="VTK" logical="TriangularSurface"/>
+      <arg name="referenceMesh" physical="STL" logical="TriangularSurface"/>
+      <arg name="charge" physical="float" logical="Scalar" />
+      <arg name="adaptCharge" physical="int" />
+      <arg name="samplingDistance" physical="float" logical="Scalar"/>
+      <arg name="adaptSamplingDistance" physical="int" />
+      <arg name="adaptActiveTriangles" physical="int" />
+
   </parameters>
 
 </msml:element>

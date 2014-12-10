@@ -1,0 +1,74 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="xnatPut">
+
+    <annotation>
+        <entry key="doc">Upload files to xnat.</entry>
+    </annotation>
+
+    <runtime>
+        <python module="msml.ext.xnat" function="xnat_put"/>
+    </runtime>
+
+    <input>
+        <arg name="localname" physical="file">
+            <meta key="doc">
+            </meta>
+        </arg>
+    </input>
+
+    <output>
+    </output>
+
+    <parameters>
+        <arg name="filename" physical="str"/>
+        <arg name="resource" physical="str"/>
+        <arg name="project" physical="str"/>
+
+
+        <arg name="deleteBeforePut" physical="bool">
+            <meta key="doc">if set, the upload will replaced the old version in xnat by delete request for the put request.</meta>
+        </arg>
+
+        <arg name="_content" physical="str">
+            <meta key="doc">`content` field in xnat.
+            </meta>
+        </arg>
+        <arg name="_format" physical="str">
+            <meta key="doc">`format` field in xnat.
+            </meta>
+        </arg>
+
+
+        <arg name="_tags" physical="str">
+            <meta key="doc">
+                `tags` field in xnat.
+            </meta>
+        </arg>
+
+
+        <arg name="host" physical="str">
+            <meta key="doc">
+                The host of the xnat service. If not leaded with 'http', 'https://' will be assumed as prefix.
+                If empty `XNAT_HOST` will be taken from the environment.
+            </meta>
+        </arg>
+        <arg name=" subject" physical="str">
+            <meta key="doc">
+                If given, the resource will be looked up in the given subject. Else the requested resource is assumed
+                within the project
+            </meta>
+        </arg>
+        <arg name="username" physical="str">
+            <meta key="doc">
+                If empty, `XNAT_USER` will be taken from the environment.
+            </meta>
+        </arg>
+        <arg name="password" physical="str">
+            <meta key="doc">
+                If empty, `XNAT_PASS` will be taken from the environment.
+            </meta>
+        </arg>
+
+    </parameters>
+</msml:operator>

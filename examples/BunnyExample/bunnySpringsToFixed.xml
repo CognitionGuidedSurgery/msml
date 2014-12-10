@@ -51,13 +51,15 @@
             </constraints>
 
             <output>
-                <displacement id="liver" timestep="1"/>
+                <displacement id="disp" timestep="1" useAsterisk="true"/>
             </output>
         </object>
     </scene>
 
     <workflow>
-
+        <GenerateSpheres id="aSphereFixed" centers="-0.0459321756105168  0.183367919707498  0.0013370811828175" radius="0.01" outFilename="fixed.vtp"/>
+        <GenerateSpheres id="aSphereMoving" centers="-0.0459321756105168  0.16046260064755  0.00133708118281753" radius="0.01" outFilename="mov_init.vtp"/>
+        
         <TetgenCreateVolumeMesh id="bunnyVolumeMesher" targetMeshFilename="${input_vol_mesh}"
                       surfaceMesh="${input_surf_mesh}" preserveBoundary="0"/>
 
@@ -68,6 +70,9 @@
         <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-0.1 0.03 -0.07 0.07 0.035 0.06" mesh="${bunnyVolumeMesher}"
                                select="points"/>
+       
+       <TransformSurfaceBarycentric id="deformed_surface" referenceVolumeMesh="${bunnyVolumeMesher}" targetSurfaceFilename="moving*.vtp" surfaceMeshToDeform="${aSphereMoving}" deformedVolumeMesh="${disp}" />
+                               
 
 
     </workflow>

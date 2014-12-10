@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     =========================================================================*/
-//modified example from: http://www.vtk.org/Wiki/VTK/Examples/Cxx/Medical/GenerateModelsFromLabels
+//modified example from: http://www.vtk.org/Wiki/VTK/Examples/Cxx/Medical/GenerateModelsFromLabels TODO: update this with correct link!
 // Surface2VoxelsOperator
 // reads in a PolyData File and converts it to an image.
 //   Usage: Surface2VoxelsOperator InputSurfaceSegmentation OutputVTKImage AccuracyLevel
@@ -61,14 +61,16 @@ namespace MSML
   namespace SurfaceToVoxelDataOperator
   {
 	  
-  std::string SurfaceToVoxelDataOperator(const char* infile, const char* outfile, float accuracy_level)
+  std::string SurfaceToVoxelDataOperator(const char* infile, const char* outfile, float accuracy_level, float smoothing)
   {
     vtkSmartPointer<vtkPolyData> pd = IOHelper::VTKReadPolyData(infile);
     // Note: vtp (PolyData) as input required; if necessary use MSML STL2VTK-Converter.
     
     vtkSmartPointer<vtkImageData> image = MiscMeshOperators::ImageCreateWithMesh(pd, 100);
+    MiscMeshOperators::ImageEnlargeIsotropic(image, 1.0); // Note: this is properly tuned only for the mitral valve.
     
     float ref_fac = accuracy_level;
+    float smooth_size = smoothing;
     
     const unsigned int zero_val = 0;
     const unsigned int non_zero_val = 1000;
@@ -181,8 +183,20 @@ namespace MSML
 	std::cout << "Average number of points per cell mapped to image : " << av_int*(av_int+1.)/2. << std::endl;
     std::cout << std::endl;
 
-    
-    IOHelper::VTKWriteImage(outfile, image);
+	// ************************************************
+    // Smooth the image
+    // ************************************************
+	vtkSmartPointer<vtkImageGaussianSmooth> smoother = vtkSmartPointer<vtkImageGaussianSmooth>::New(); // NEW.
+#if VTK_MAJOR_VERSION <= 5
+	smoother->SetInput(image); // NEW.
+#else
+	smoother->SetInputData(image); // NEW.
+#endif
+	smoother->SetStandardDeviation(smooth_size); // NEW.
+	smoother->Update(); // NEW.
+
+    //IOHelper::VTKWriteImage(outfile, image);  // OLD.
+    IOHelper::VTKWriteImage(outfile, smoother->GetOutput()); // NEW.
 
     return outfile;
   }

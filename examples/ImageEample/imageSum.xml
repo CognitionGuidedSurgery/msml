@@ -1,0 +1,20 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+    <workflow>
+        <ImageSum id="aSum" image="aSphere*.vti" targetSumImage="sum.vti" />
+    
+        <GenerateSpheres id="aSphere1" centers="0 0 10" radius="10" outFilename="sphere1.vtp"/>
+        <GenerateSpheres id="aSphere2" centers="0 0 12" radius="10" outFilename="sphere2.vtp"/>
+        <GenerateSpheres id="aSphere3" centers="0 0 14" radius="10" outFilename="sphere3.vtp"/>
+        <GenerateSpheres id="aSphere4" centers="0 0 20" radius="10" outFilename="sphere4.vtp"/>
+
+        <GenerateEmptyImage3D id="aNewImage" targetImageFilename="emptyImage.vti" dim="120 120 120" origin="-40 -40 -40" />
+        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh" surfaceMesh="${aSphere1}"  referenceCoordinateGrid="${aNewImage}" targetImageFilename="aSphere1.vti" />
+        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh2" surfaceMesh="${aSphere2}" referenceCoordinateGrid="${aNewImage}" targetImageFilename="aSphere2.vti" />
+        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh3" surfaceMesh="${aSphere3}" referenceCoordinateGrid="${aNewImage}" targetImageFilename="aSphere3.vti" />
+        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh4" surfaceMesh="${aSphere4}" referenceCoordinateGrid="${aNewImage}" targetImageFilename="aSphere4.vti" />
+
+        
+    </workflow>
+</msml:msml>

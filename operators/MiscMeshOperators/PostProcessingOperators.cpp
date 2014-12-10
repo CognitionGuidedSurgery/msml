@@ -962,18 +962,18 @@ void ComputeOrganCrossSectionArea(const char* volumeFilename){
 }
 
 
-string ImageWeightedSum(const char* polydataFilePattern, bool normalize, const char* outfile)
+string ImageSum(const char* imagedataFilePattern, bool normalize, const char* outfile)
 {
-  std::vector<std::string> polydata = IOHelper::getAllFilesByMask(polydataFilePattern);
-
-  int numer_of_images = polydata.size();
+ 
+  std::vector<std::string> imagedata = IOHelper::getAllFilesByMask(imagedataFilePattern);
+  int numer_of_images = imagedata.size();
   std::vector<double> weights(numer_of_images);
   vtkSmartPointer<vtkImageWeightedSum> sumFilter = vtkSmartPointer<vtkImageWeightedSum>::New();
   vtkSmartPointer<vtkImageData> curentVoxelImage;
 
   for (int i=0; i<numer_of_images;i++)
   {
-    curentVoxelImage = IOHelper::VTKReadImage(polydata[i].c_str());
+    curentVoxelImage = IOHelper::VTKReadImage(imagedata[i].c_str());
     __AddInput(sumFilter,curentVoxelImage);
     weights[i] = 1.0;
   }

@@ -146,7 +146,13 @@ class SofaExporter(XMLExporter):
     def write_scn(self):
         processingUnit = self._msml_file.env.solver.processingUnit
         #TODO: processingUnit = self.get_value_from_memory(self._msml_file.env.solver.processingUnit)
-        self._processing_unit = "Vec3f" if processingUnit == "CPU" else "CudaVec3f"
+
+        if processingUnit == "CPU":
+            self._processing_unit = "Vec3f"
+        elif processingUnit == "CPUDouble":
+            self._processing_unit = "Vec3d"
+        else:
+            self._processing_unit = "CudaVec3f"
 
         self.node_root = self.createScene()
 
@@ -160,14 +166,16 @@ class SofaExporter(XMLExporter):
             self.createMeshTopology(objectNode, msmlObject)
             self.createMaterialRegions(objectNode, msmlObject)
 
+                     #add solver
+            self.createSolvers()
+
             #create simulation steps
             self.createConstraintRegions(objectNode, msmlObject)
 
             #creat post processing request
             self.createPostProcessingRequests(objectNode, msmlObject)
 
-            #add solver
-        self.createSolvers()
+
 
         return etree.ElementTree(self.node_root)
 
@@ -216,6 +224,11 @@ class SofaExporter(XMLExporter):
             self.sub("MyNewmarkImplicitSolver",
                      rayleighStiffness="0.2",
                      rayleighMass="0.02",
+                     name="odesolver")
+        elif self._msml_file.env.solver.timeIntegration == "NewmarkShapeMatching":
+            self.sub("ShapeMatchingNewmarkImplicitSolver",
+                     rayleighStiffness="0.6",
+                     rayleighMass="0.2",
                      name="odesolver")
 
         elif self._msml_file.env.solver.timeIntegration == "dynamicImplicitEuler":
@@ -290,8 +303,12 @@ class SofaExporter(XMLExporter):
             self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)
-            massNode = self.sub("DiagonalMass", objectNode, name="meshMass")
-            massNode.set("massDensity", density_str)
+            if self._msml_file.env.solver.mass == "full":
+                massNode = self.sub("LinearMeshMatrixMass", objectNode, name="meshMass")
+                massNode.set("massDensity", density_str)
+            else:
+                massNode = self.sub("DiagonalMass", objectNode, name="meshMass")
+                massNode.set("massDensity", density_str)
 
         elif objectNode.find("QuadraticMeshTopology") is not None:
             eelasticNode = self.sub("QuadraticTetrahedralCorotationalFEMForceField", objectNode,
@@ -419,13 +436,12 @@ class SofaExporter(XMLExporter):
                              src="@LOADER_supportmesh")
 
                     forcefield = self.sub("TetrahedronFEMForceField", constraintNode, listening="true",
-                                          name="FEM", template="Vec3f",
+                                          name="FEM",
                                           youngModulus=self.get_value_from_memory(constraint, 'youngModulus'),
                                           poissonRatio=self.get_value_from_memory(constraint, 'poissonRatio'))
 
                     self.sub("TetrahedronSetGeometryAlgorithms", constraintNode,
-                             name="aTetrahedronSetGeometryAlgorithm",
-                             template="Vec3f")
+                             name="aTetrahedronSetGeometryAlgorithm")
 
                     diagonalMass = self.sub("DiagonalMass", constraintNode,
                                             name="meshMass",
@@ -462,6 +478,37 @@ class SofaExporter(XMLExporter):
                     #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
                     #                      name=constraint.id or constraint_set.name,
                     #                      dispIndices=indices, displacements=constraint.displacement)
+
+                elif currentConstraintType == "shapeMatchingConstraint":
+                    referenceMesh = self.get_value_from_memory(constraint, 'referenceMesh')
+                    charge = self.get_value_from_memory(constraint, 'charge')
+                    adaptCharge= self.get_value_from_memory(constraint, 'adaptCharge')
+                    samplingDistance = self.get_value_from_memory(constraint, 'samplingDistance')
+                    adaptSamplingDistance = self.get_value_from_memory(constraint, 'adaptSamplingDistance')
+                    adaptActiveTriangles = self.get_value_from_memory(constraint, 'adaptActiveTriangles')
+
+                    constraintNode = self.sub('ShapeMatchingPoissonPotentialForcefield', objectNode,
+                                              name=constraint.id or constraint_set.name,
+                                              precomputedPotentialFieldFilename = referenceMesh, charge=charge, adaptCharge=adaptCharge,
+                                              samplingDistance=samplingDistance, adaptSamplingDistance=adaptSamplingDistance, adaptActiveTriangles =adaptActiveTriangles)
+                    for mo in self.node_root.iter('MechanicalObject'):
+                        mo.set("template", "Vec3d")
+
+                    for theObj in self.node_root.iter('Node'):
+                        #bad hack
+                        for ls in self.node_root.iter('SparseMKLSolver'):
+                            ls.getparent().remove(ls )
+                            theObj.insert(0,ls )
+
+
+                        for os in self.node_root.iter('ShapeMatchingNewmarkImplicitSolver'):
+                            os.getparent().remove(os )
+                            theObj.insert(0,os )
+
+                    #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
+                    #                      name=constraint.id or constraint_set.name,
+                    #                      dispIndices=indices, displacements=constraint.displacement)
+
                 else:
                     warn(MSMLSOFAExporterWarning, "Constraint Type not supported %s " % currentConstraintType)
 

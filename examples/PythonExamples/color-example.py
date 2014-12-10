@@ -32,11 +32,6 @@
 import os, sys
 from path import path
 
-sys.path.insert(0, "../../src/")
-
-import msml.exporter
-
-
 """
 Example of a MSML pipeline without XML.
 
@@ -49,6 +44,7 @@ __date__ = "2014-03-20"
 import msml.frontend
 import msml.env
 from msml.model import *
+import msml.exporter
 
 
 def construct_msml_file():
@@ -62,9 +58,9 @@ def construct_msml_file():
         else:
             return "${%s}" % task.id
 
-    clrmesh = _task("colormesh",
+    clrmesh = _task("ColorMesh",
                     id="clrmesh",
-                    coloredMesh="Colored/liverTet4ColoredIni.vtk",
+                    targetMesh="liverTet4Colored.vtp", 
                     mesh="ToColor/LiverXSTet4.vtk")
 
     pv = _task("paraview",
@@ -82,7 +78,7 @@ def construct_msml_file():
 def main():
 
     model = construct_msml_file()
-    app = msml.frontend.App(files = [model], exporter="base")
+    app = msml.frontend.App(files = [model], exporter="base", executor='sequential')
     app.execute_msml(model)
 
 

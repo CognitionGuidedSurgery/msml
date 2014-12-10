@@ -279,14 +279,16 @@ class App(object):
 
         a = root / "alphabet"
         log.debug("Register alphabet dir: %s", a)
+        self.additional_alphabet_dir.append(a)
 
         p = root / "py"
         log.debug("Add to Python path: %s", p)
         if p not in sys.path:
             sys.path.append(p)
 
-        self.additional_alphabet_dir.append(a)
-
+        msml.env.binary_search_path.add(
+            root / "bin"
+        )
 
         rcfile = root / "sorts.py"
         log.debug("Execute rcfile: %s", rcfile)
@@ -496,11 +498,10 @@ class App(object):
                                 'expy': self.expy,
                                 'writexsd': self.writexsd,
                                 'check': self.check_file})
-
-        try:
-            cmd = self._options["which"]
+        cmd = self._options["which"]
+        if cmd in COMMANDS:
             COMMANDS[cmd]()
-        except IndexError:
+        else:
             log.error("Could not find application: %s" % cmd)
 
 

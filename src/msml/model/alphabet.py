@@ -489,13 +489,17 @@ class PythonOperator(Operator):
         kwargsUpdated = defaults
         kwargsUpdated.update(kwargs)
                    
+        
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
+        
         log.debug("Parameter: %s" % self.acceptable_names() )
         log.debug("Args: %s" % args)
         
-        if sum('*' in str(arg) for arg in args):        
-            r = executeOperatorSequence(self, args, self.settings.get('seq_parallel', True))
-        else:        
+        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
+        if (count == 2):        
+            r = executeOperatorSequence(self, orderedKwArgs, self.settings.get('seq_parallel', True))
+        else:
             r = self._function(*args)
 
         if len(self.output) == 0:
@@ -533,7 +537,6 @@ class ShellOperator(Operator):
 
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
-
         self.command_tpl = runtime['template']
 
     def __call__(self, **kwargs):
@@ -548,9 +551,11 @@ class ShellOperator(Operator):
         kwargsUpdated.update(kwargs)
                    
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
+        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
         
-        if sum('*' in str(arg) for arg in args):            
-            r = executeOperatorSequence(self, args ,self.settings.get('seq_parallel',True))
+        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
+        if (count == 2):                
+            r = executeOperatorSequence(self, orderedKwArgs ,self.settings.get('seq_parallel',True))
         else:
             self._function(args)
         
@@ -563,9 +568,31 @@ class ShellOperator(Operator):
         if (len(args)==1):
             args = args[0]
         kwargs =  dict(zip(self.acceptable_names(), args))
-        command = self.command_tpl.format(**kwargs)
-        os.system(command)
+        command = self.command_tpl.format(**kwargs).strip().split(" ")
 
+        cmd, args = command[0], command[1:]
+        executable = msml.env.binary_search_path.find_executable(cmd)
+        if executable:
+            args.insert(0, executable)
+            log.debug("Execute: %s", args)
+            proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            proc.wait()
+            output = proc.stdout.read()
+
+            for line in output.splitlines():
+                log.debug("%s: %s", cmd, line)
+
+
+            if proc.returncode != 0:
+                log.error("%s return with nonzero", args)
+        else:
+            log.critical("Could not find executable: %s", cmd)
+
+
+
+
+import subprocess
+import msml.env
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""

@@ -469,13 +469,13 @@ std::vector< std::string > IOHelper::getAllFilesByMask(const char* filename)
 
   std::vector< std::string > all_matching_files;
 
-  // check if parent directory exists, should fix:
-  // https://github.com/CognitionGuidedSurgery/msml/issues/148
-  if( ! boost::filesystem::exists( aPath.parent_path() )) {
-      return all_matching_files;
+  if( ! boost::filesystem::exists(boost::filesystem::absolute( aPath.parent_path()))) {
+      log_error() <<  " IOHelper::getAllFilesByMask: parent_path of file pattern not found: "  
+         << boost::filesystem::absolute( aPath.parent_path()).string() << endl;
+      throw;
   }
 
-  std::string target_path( aPath.parent_path().string() );
+  std::string target_path( boost::filesystem::absolute( aPath.parent_path()).string() );
   std::string filter =  aPath.filename().string();
   boost::replace_all(filter, "*", ".*\\");
 
@@ -496,6 +496,11 @@ std::vector< std::string > IOHelper::getAllFilesByMask(const char* filename)
 
       // File matches, store it
       all_matching_files.push_back( i->path().string() );
+  }
+  if (all_matching_files.size() == 0)
+  {
+    log_error() << "IOHelper::getAllFilesByMask: no files found" << endl;
+    throw;
   }
   return all_matching_files;
 }
