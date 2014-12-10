@@ -17,4 +17,4 @@ if [ ! -f $libcgaldev ]; then
 	wget http://mirrors.kernel.org/ubuntu/pool/universe/c/cgal/libcgal-dev_4.2-5ubuntu1_amd64.deb
 fi
 
-dpkg -i $libcgal $libcgaldev
+sudo dpkg -i $libcgal $libcgaldev
