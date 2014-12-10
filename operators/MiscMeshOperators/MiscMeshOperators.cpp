@@ -1460,7 +1460,7 @@ string GenerateDistanceMap(const char* inputPolyData, const char*  targetImage, 
 
 vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkPolyData* polydata, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
 {
-  vtkSmartPointer<vtkImageData> image = ImageCreateWithMesh(polydata, resolution);
+  vtkSmartPointer<vtkImageData> image = ImageCreateGeneric(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
   #if VTK_MAJOR_VERSION <= 5
     image->SetScalarTypeToFloat();
     image->SetNumberOfScalarComponents(1);
