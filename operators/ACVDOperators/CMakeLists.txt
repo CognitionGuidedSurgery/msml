@@ -3,12 +3,15 @@
 PROJECT(ACVDOperators)
 
 
-option(MODULES_ACVDOperators "Should ACVDOperators be built?" "ON")
+option(MODULES_ACVDOperators "Should ACVDOperators be built?" ON)
 
 IF(NOT MODULES_ACVDOperators)
   MESSAGE(STATUS "MiscExtOperators disabled")
   RETURN()
 ENDIF()
+
+OPTION(OPTION_ACVD_EXTPROJECT
+  "Should ACVDOperators download ACVD and compile it?" ON)
 
 ################################################################################
 # Dependencies: 
@@ -28,100 +31,68 @@ IF(NOT MODULES_ACVDOperators)
 ENDIF()
 
 ################################################################################
-# External Dependencies: 
-
-FIND_PACKAGE(ACVD)
-
-
-IF("${ACVD_LIBRARY}" STREQUAL "ACVD_LIBRARY-NOTFOUND")
-  message("ACVD not on system, if location is not specified manually the superbuild is used")
-
-
-include(ExternalProject)
-
-
-message("VTK VERSION: ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
-
-IF( VTK_MAJOR_VERSION GREATER 5 )
-  SET(ACVD_BRANCH "vtk6")
-ELSE ()
-  SET(ACVD_BRANCH "master")
-ENDIF ()
-
-
-message("BRANCH: ${ACVD_BRANCH}")
-
-ExternalProject_Add(ACVD    # Name for custom target
-  #[DEPENDS projects...]       # Targets on which the project depends
-  PREFIX acvd                # Root dir for entire project   
-  GIT_REPOSITORY  http://github.com/CognitionGuidedSurgery/ACVD.git       # URL of git repo
-  GIT_TAG ${ACVD_BRANCH}       # Git branch name, commit id or tag   
-  #[SOURCE_DIR dir]            # Source dir to be used for build
-  #[CONFIGURE_COMMAND cmd...]  # Build tree configuration command
-  #[CMAKE_COMMAND /.../cmake]  # Specify alternative cmake executable
-  #[CMAKE_GENERATOR gen]       # Specify generator for native build
-  #[CMAKE_GENERATOR_TOOLSET t] # Generator-specific toolset name
-  #[CMAKE_ARGS args...]        # Arguments to CMake command line
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-             -DVTK_DIR=${VTK_DIR} # pass VTK_DIR 
-             -DCMAKE_SKIP_RPATH:BOOL=1 # not needed if make install
-			 -DBUILD_SHARED_LIBS:bool=FALSE
-			 -DCMAKE_CXX_FLAGS:STRING=-fPIC
-  #[CMAKE_CACHE_ARGS args...]  # Initial cache arguments, of the form -Dvar:string=on
- #--Build step-----------------
-  #[BINARY_DIR dir]            # Specify build dir location
-  #[BUILD_COMMAND cmd...]      # Command to drive the native build
-  #[BUILD_IN_SOURCE 1]         # Use source dir for build dir
- #--Install step---------------
- #INSTALL_DIR dir           # Installation prefix
-  #[INSTALL_COMMAND cmd...]    # Command to drive install after build
- #--Test step------------------
-  #[TEST_BEFORE_INSTALL 1]     # Add test step executed before install step
-  #[TEST_AFTER_INSTALL 1]      # Add test step executed after install step
-  #[TEST_COMMAND cmd...]       # Command to drive test
- #--Output logging-------------
-  LOG_DOWNLOAD 1            # Wrap download in script to log output
-  LOG_UPDATE 1              # Wrap update in script to log output
-  LOG_CONFIGURE 1           # Wrap configure in script to log output
-  LOG_BUILD 1               # Wrap build in script to log output
-  LOG_TEST 1                # Wrap test in script to log output
-  LOG_INSTALL 1             # Wrap install in script to log output 
-  )
-
-################################################################################
 # MiscMeshOperators
 
 
-ExternalProject_Get_Property(ACVD install_dir)
-SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH} ${install_dir}/lib/CMake/acvd/" )
+IF( OPTION_ACVD_EXTPROJECT )
+  message("ACVD as external project")
 
-SET(ACVD_INCLUDE_DIRS
-${install_dir}/include/vtkDiscreteRemeshing/
-${install_dir}/include/vtkSurface/
-${install_dir}/include/vtkVolumeProcessing/
-${install_dir}/include/ACVD/Common/
-${install_dir}/include/ACVD/DiscreteRemeshing/
-${install_dir}/include/ACVD/VolumeProcessing/
-)
+  include(ExternalProject)
 
-IF(WIN32 AND NOT CYGWIN)
-	SET(ACVD_LIBRARIES
-		${install_dir}/lib/vtkVolumeProcessing.lib
-		${install_dir}/lib/vtkSurface.lib
-		${install_dir}/lib/vtkDiscreteRemeshing.lib
-		)
-ELSE()
-	SET(ACVD_LIBRARIES
-		${install_dir}/lib/libvtkVolumeProcessing.a
-		${install_dir}/lib/libvtkSurface.a
-		${install_dir}/lib/libvtkDiscreteRemeshing.a
-		)
-ENDIF()
+  IF( VTK_MAJOR_VERSION GREATER 5 )
+    SET(ACVD_BRANCH "vtk6")
+  ELSE()
+    SET(ACVD_BRANCH "master")
+  ENDIF()
 
+  #message("BRANCH: ${ACVD_BRANCH}")
 
-ELSE()
-  message("ACVD found on system, not using superbuild")
-ENDIF()
+  ExternalProject_Add(ACVD    # Name for custom target
+    PREFIX acvd                # Root dir for entire project   
+    GIT_REPOSITORY  http://github.com/CognitionGuidedSurgery/ACVD.git       # URL of git repo
+    GIT_TAG ${ACVD_BRANCH}       # Git branch name, commit id or tag   
+    CMAKE_ARGS 
+      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      -DVTK_DIR=${VTK_DIR} # pass VTK_DIR 
+      -DCMAKE_SKIP_RPATH:BOOL=1 # not needed if make install
+      -DBUILD_SHARED_LIBS:bool=FALSE
+      -DCMAKE_CXX_FLAGS:STRING=-fPIC
+
+	#LOG_DOWNLOAD 1            # Wrap download in script to log output
+	#    LOG_UPDATE 1              # Wrap update in script to log output
+	#    LOG_CONFIGURE 1           # Wrap configure in script to log output
+	#    LOG_BUILD 1               # Wrap build in script to log output
+	#    LOG_TEST 1                # Wrap test in script to log output
+	#    LOG_INSTALL 1             # Wrap install in script to log output 
+	)
+
+  ExternalProject_Get_Property(ACVD install_dir)
+  ExternalProject_Get_Property(ACVD source_dir)
+  SET(ACVD_SOURCE_DIR ${source_dir} )
+  SET(ACVD_LIB_DIR ${install_dir}/lib)
+  SET(ACVD_LIB_SHARED OFF)
+ELSE( OPTION_ACVD_EXTPROJECT )
+
+	SET(ACVD_SOURCE_DIR "-notfound" 
+		CACHE PATH "root folder of ACVD sources for determining include paths of header")
+	
+	SET(ACVD_LIB_DIR "-notfound" 
+		CACHE PATH "folder of the compiled acvd libraries" )
+
+	SET(ACVD_LIB_SHARED ON
+		CACHE BOOLEAN "if ACVD is built as shared object, else -> static")
+
+	message("-- ACVD not using superbuild")
+
+	IF( NOT  ACVD_SOURCE_DIR )
+		message("Please provide: ACVD_SOURCE_DIR")
+	ENDIF()
+
+	IF( NOT  ACVD_LIB_DIR )
+		message("Please provide: ACVD_LIB__DIR")
+	ENDIF()
+
+ENDIF( OPTION_ACVD_EXTPROJECT )
 
 SET(ACVDOperators_ACTIVE "ON" PARENT_SCOPE)
 MESSAGE("ACVDOperators: ENABLED and ACTIVE")
@@ -133,19 +104,46 @@ MESSAGE("ACVDOperators: ENABLED and ACTIVE")
 
 
 SET(ACVDOperators_SRCS
-	ACVDOperators.cpp
-  )
+	ACVDOperators.cpp)
 
+SET(ACVD_INCLUDE_DIRS
+	${ACVD_SOURCE_DIR}/vtkDiscreteRemeshing/
+	${ACVD_SOURCE_DIR}/vtkSurface/
+	${ACVD_SOURCE_DIR}/vtkVolumeProcessing/
+	${ACVD_SOURCE_DIR}/DiscreteRemeshing/
+	${ACVD_SOURCE_DIR}/Common/
+	${ACVD_SOURCE_DIR}/VolumeProcessing/
+	)
+
+IF(WIN32 AND NOT CYGWIN)
+	SET(ACVD_LIB_PREFIX ${ACVD_LIB_DIR}/)
+	IF( ACVD_LIB_SHARED )
+		SET(ACVD_LIB_SUFFIX "dll")
+	ELSE()
+		SET(ACVD_LIB_SUFFIX "lib")
+	ENDIF()
+ELSE()
+	SET(ACVD_LIB_PREFIX ${ACVD_LIB_DIR}/lib)
+	IF( ACVD_LIB_SHARED )
+		SET(ACVD_LIB_SUFFIX "so")
+	ELSE()
+		SET(ACVD_LIB_SUFFIX "a")
+	ENDIF()
+ENDIF()
+
+SET(ACVD_LIBRARIES
+	${ACVD_LIB_PREFIX}vtkVolumeProcessing.${ACVD_LIB_SUFFIX}
+	${ACVD_LIB_PREFIX}vtkSurface.${ACVD_LIB_SUFFIX}
+	${ACVD_LIB_PREFIX}vtkDiscreteRemeshing.${ACVD_LIB_SUFFIX}
+	)
 
 SET(ACVDOperators_LIBS
 	${VTK_LIBRARIES}
 	${ACVD_LIBRARIES}
-	MiscMeshOperators
-	)
-		
+	MiscMeshOperators)
+
+
 INCLUDE_DIRECTORIES(
-	${ACVDOperators_SOURCE_DIR}
-	${ACVDOperators_BINARY_DIR}
 	${PYTHON_INCLUDE_DIRS}
 	#for iohelper:
 	${CMAKE_SOURCE_DIR}/MiscMeshOperators
@@ -153,7 +151,7 @@ INCLUDE_DIRECTORIES(
 	${ACVD_INCLUDE_DIRS}
 	)
 
-Message("ACVD include are ${ACVD_INCLUDE_DIRS}")
+message("ACVD include are ${ACVD_INCLUDE_DIRS}")
 
 MSML_LIBRARY(
 	NAME      ACVDOperators
@@ -162,14 +160,8 @@ MSML_LIBRARY(
 	LIBRARIES ${ACVDOperators_LIBS})
 
 
-ADD_DEPENDENCIES(ACVDOperators ACVD)
-ADD_DEPENDENCIES(_ACVDOperatorsPython ACVD)
-
-
-
-
-
-
-
-
+IF( OPTION_ACVD_EXTPROJECT )
+	ADD_DEPENDENCIES(ACVDOperators ACVD)
+	ADD_DEPENDENCIES(_ACVDOperatorsPython ACVD)
+ENDIF()
 

@@ -537,7 +537,6 @@ class ShellOperator(Operator):
 
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
-
         self.command_tpl = runtime['template']
 
     def __call__(self, **kwargs):
@@ -569,9 +568,31 @@ class ShellOperator(Operator):
         if (len(args)==1):
             args = args[0]
         kwargs =  dict(zip(self.acceptable_names(), args))
-        command = self.command_tpl.format(**kwargs)
-        os.system(command)
+        command = self.command_tpl.format(**kwargs).strip().split(" ")
 
+        cmd, args = command[0], command[1:]
+        executable = msml.env.binary_search_path.find_executable(cmd)
+        if executable:
+            args.insert(0, executable)
+            log.debug("Execute: %s", args)
+            proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            proc.wait()
+            output = proc.stdout.read()
+
+            for line in output.splitlines():
+                log.debug("%s: %s", cmd, line)
+
+
+            if proc.returncode != 0:
+                log.error("%s return with nonzero", args)
+        else:
+            log.critical("Could not find executable: %s", cmd)
+
+
+
+
+import subprocess
+import msml.env
 
 class SharedObjectOperator(PythonOperator):
     """Shared Object Call via ctype"""
