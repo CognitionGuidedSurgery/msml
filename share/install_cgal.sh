@@ -17,4 +17,5 @@ if [ ! -f $libcgaldev ]; then
 	wget http://mirrors.kernel.org/ubuntu/pool/universe/c/cgal/libcgal-dev_4.2-5ubuntu1_amd64.deb
 fi
 
+sudo apt-get install libboost-thread-dev libboost-system-dev libboost-program-options-dev libmpfr-dev  libmpfr4 libboost-program-options1.54-dev   libboost-program-options1.54.0
 sudo dpkg -i $libcgal $libcgaldev
