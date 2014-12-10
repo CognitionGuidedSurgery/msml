@@ -158,6 +158,14 @@ MSML_LIBRARY(
 	SWIG_FILE acvd.i
 	SOURCES   ${ACVDOperators_SRCS}
 	LIBRARIES ${ACVDOperators_LIBS})
+	
+SET(ACVDOperatorsExample_SRCS example.cpp) 	
+ 	
+ADD_EXECUTABLE (ACVDOperatorsExample ${ACVDOperatorsExample_SRCS} ) 	
+TARGET_LINK_LIBRARIES(ACVDOperatorsExample 	
+ ACVDOperators 	
+ ${ACVDOperators_LIBS} 	
+) 		
 
 
 IF( OPTION_ACVD_EXTPROJECT )
