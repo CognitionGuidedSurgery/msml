@@ -37,7 +37,7 @@ class LungsTest(TestCase):
     def test_Lung(self):
         msml_file = os.path.abspath('../examples//CGALi2vLungs/Lungs_new.xml')
         #for p in range (20, 80, 20):
-            l = Lungs(msml_file, 20)
+        l = Lungs(msml_file, 20)
         volume = l()
         self.assertTrue( volume < 8400000)
         self.assertTrue( volume > 8000000)
