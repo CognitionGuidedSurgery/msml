@@ -137,23 +137,23 @@ class OntologyParser(object):
         print('Now with sparql')
         #self._ontoGraph.bind("owl", OWL)
 
-        typeURI = URIRef(RDF.type)
-        classURI = OWL.Class
-
-        queryString = "SELECT ?name  WHERE { ?name <"+RDF.type.lower()+"> <"+OWL.Class.lower()+">}"
-        print(queryString)
-
-        testStr = 'SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#class>}'
-        q=sparql.prepareQuery('SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?c}')
-        qres = self._ontoGraph.query(q)
-
-        for row in qres:
-            print(row)
-
-
-        print('complete')
-
-        msml.sorts.conversion(typea, typeb,)
+        # typeURI = URIRef(RDF.type)
+        # classURI = OWL.Class
+        #
+        # queryString = "SELECT ?name  WHERE { ?name <"+RDF.type.lower()+"> <"+OWL.Class.lower()+">}"
+        # print(queryString)
+        #
+        # testStr = 'SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#class>}'
+        # q=sparql.prepareQuery('SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?c}')
+        # qres = self._ontoGraph.query(q)
+        #
+        # for row in qres:
+        #     print(row)
+        #
+        #
+        # print('complete')
+        #
+        # msml.sorts.conversion(typea, typeb,)
 
     def addClassToString(self, className, establishedClasses):
 
