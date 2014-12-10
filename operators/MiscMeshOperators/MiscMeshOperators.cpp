@@ -960,8 +960,7 @@ std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int res
 
 bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
-    vtkSmartPointer<vtkImageData> whiteImage;
-    ImageCreateGeneric(inputMesh, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+    vtkSmartPointer<vtkImageData> whiteImage = ImageCreateGeneric(inputMesh, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
 
 #if VTK_MAJOR_VERSION <= 5
     whiteImage->SetScalarTypeToUnsignedChar();
