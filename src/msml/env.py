@@ -107,7 +107,7 @@ def gather_alphabet_files():
         if loc.isfile():
             files.append(loc)
         else:
-            files += loc.walkfiles("*.xml", errors='warn')
+            files += loc.walkfiles("*.xml", errors='ignore')
     return files
 
 
