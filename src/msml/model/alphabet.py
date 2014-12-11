@@ -189,6 +189,9 @@ class ObjectAttribute(object):
 
         """
 
+    def __repr__(self):
+        return "%s(name=%r, quantity=%r,description=%r,parameters=%r, inputs=%r)" % (self.__class__.__name__, self.name, self.quantity, self.description, self.parameters, self.inputs)
+
     @staticmethod
     def find_class(category):
         """Finds the correct class for an given category.

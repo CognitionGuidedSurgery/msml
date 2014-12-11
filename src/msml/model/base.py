@@ -807,7 +807,7 @@ class SceneObjectSets(object):
         self.surfaces = surfaces or list()
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return "%s(elements=%r, nodes=%r, surfaces=%r)" % (self.__class__.__name__, self.elements, self.nodes, self.surfaces)
 
 
 def call_method_list(seq, method, *args):
@@ -916,7 +916,8 @@ class SceneObject(object):
 
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return "%s(%r, mesh=%r, sets=%r, material=%r, constraints=%r)" % (
+            self.__class__.__name__, self.id, self.mesh, self.sets, self.material, self.constraints)
 
 class ObjectElement(object):
     """This class describe an instance of an :py:class:`ObjectAttribute`
@@ -1019,17 +1020,17 @@ class ObjectElement(object):
             return default
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return "%s(attrib=%r, meta=%r)" % (self.__class__.__name__, self.attributes, self.meta)
 
 
 class ObjectConstraints(object):
     """Constraints for a timestep (``for_step``)
     """
 
-    def __init__(self, name, forStep="initial"):
+    def __init__(self, name, forStep="initial", constraints = None):
         self._name = name
         self._forStep = forStep
-        self._constraints = []
+        self._constraints = constraints or []
 
     def __iter__(self): return iter(self._constraints)
     def __getitem__(self, item): return self._constraints[item]
@@ -1104,7 +1105,7 @@ class ObjectConstraints(object):
 
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return "%s(%r,%r,%r)" % (self.__class__.__name__, self.name, self.for_step, self._constraints)
 
 
 SceneSets = SceneObjectSets
@@ -1124,7 +1125,7 @@ class IndexGroup(object):
         self.indices = indices
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return "%s(%r, %r)" % (self.__class__.__name__, self.id, self.indices)
 
 
 class Mesh(object):
@@ -1168,7 +1169,7 @@ class Mesh(object):
         return True
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        return "%s(%r, %r, %r)" % (self.__class__.__name__, self.type, self.id, self.value)
 
 class MaterialRegion(IndexGroup, list):
     """Represents an material region from an MSMLFile within an SceneObject
@@ -1215,4 +1216,5 @@ class MaterialRegion(IndexGroup, list):
         return a and b and all(map(lambda x: x.validate(), self))
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__, self.__dict__)
+        lrepr = super(MaterialRegion, self).__repr__()
+        return "%s(id=%r, indices=%r, elements=%s)" % (self.__class__.__name__, self.id, self.indices, lrepr)
