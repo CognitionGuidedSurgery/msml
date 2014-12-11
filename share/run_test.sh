@@ -15,9 +15,16 @@ nosetests -vv --with-coverage  \
 	-w src                     \
 	msmltest
 
-error=$? #save errorlevel 
+error1=$? #save errorlevel 
 
 echo "Submit Result:"
 coveralls
 
-exit $error
+
+cd cbuild/ 
+make test -j 2 
+error2=$?
+cp -R Testing/Temporary/ $CIRCLE_ARTIFACTS
+
+exit $(( $error1 + $error2 ))
+
