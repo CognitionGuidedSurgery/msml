@@ -316,7 +316,7 @@ std::string ColorMesh(std::string modelFilename, std::string coloredModelFilenam
     return coloredModelFilename;
 }
 
-
+//should use polydata 
 void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
 {
     //load the vtk quadratic mesh
@@ -951,12 +951,15 @@ string ImageSum(const char* imagedataFilePattern, bool normalize, const char* ou
   int numer_of_images = imagedata.size();
   std::vector<double> weights(numer_of_images);
   vtkSmartPointer<vtkImageWeightedSum> sumFilter = vtkSmartPointer<vtkImageWeightedSum>::New();
+  if (!normalize) 
+    sumFilter->NormalizeByWeightOff();
   vtkSmartPointer<vtkImageData> curentVoxelImage;
 
   for (int i=0; i<numer_of_images;i++)
   {
     curentVoxelImage = IOHelper::VTKReadImage(imagedata[i].c_str());
     __AddInput(sumFilter,curentVoxelImage);
+
     weights[i] = 1.0;
   }
   
