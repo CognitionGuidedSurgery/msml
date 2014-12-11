@@ -14,6 +14,9 @@
     </output>
 
     <parameters>
+        <meta key="doc">
+            See http://doc.cgal.org/latest/Mesh_3/index.html#Mesh_3TheMeshingCriteria for parameter descriptions
+        </meta>
         <arg name="meshFilename" physical="str" optional="true" target="true" />
         <arg name="facetAngle" physical="float" />
         <arg name="facetSize" physical="float" />
