@@ -1,5 +1,7 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="TransformSurfaceBarycentric">
-Transform a given surfaceMesh by displacements given by a reference and deformed volume mesh.
+    <meta key="doc">
+        Transform a given surfaceMesh by displacements given by a reference and deformed volume mesh.
+    </meta>
     <runtime>
         <python module="msml.ext.misc" function="TransformSurfaceBarycentric" />
     </runtime>

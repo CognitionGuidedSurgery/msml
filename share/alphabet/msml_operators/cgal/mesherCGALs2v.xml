@@ -14,16 +14,18 @@
     </output>
 
     <parameters>
-        <meta key="doc">
-            See http://doc.cgal.org/latest/Mesh_3/index.html#Mesh_3TheMeshingCriteria for parameter descriptions
-        </meta>
+
         <arg name="meshFilename" physical="str" optional="true" target="true" >
             <meta key="doc">
                 Optional input filename for the output.
             </meta>
         </arg>
         <arg name="preserveFeatures" physical="bool" optional="true" default="false"/>
-        <arg name="facetAngle" physical="float"/>
+        <arg name="facetAngle" physical="float"> 
+            <meta key="doc">
+                See http://doc.cgal.org/latest/Mesh_3/index.html#Mesh_3TheMeshingCriteria for parameter descriptions
+            </meta>
+        </arg>
         <arg name="facetSize" physical="float"/>
         <arg name="facetDistance" physical="float"/>
         <arg name="cellRadiusEdgeRatio" physical="float"/>
