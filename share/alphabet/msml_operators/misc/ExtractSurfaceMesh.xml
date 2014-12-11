@@ -2,20 +2,22 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="ExtractSurfaceMesh">
+    <meta key="doc">
+        Generate outer surface of a volume mesh
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="ExtractSurfaceMesh" />
+    </runtime>
 
-  <runtime>
-    <python module="msml.ext.misc" function="ExtractSurfaceMesh" />
-  </runtime>
-
-  <input>
-    <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
-  </input>
-  <parameters>
-    <arg name="targetSurfaceMeshFilename" physical="str" optional="true" target="true" />
-  </parameters>
-  <output>
-    <arg name="surfaceOut" logical="SurfaceMesh" physical="file.vtk"/>
-  </output>
+    <input>
+        <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
+    </input>
+    <parameters>
+        <arg name="targetSurfaceMeshFilename" physical="str" optional="true" target="true" />
+    </parameters>
+    <output>
+        <arg name="surfaceOut" logical="SurfaceMesh" physical="file.vtk"/>
+    </output>
 
 </msml:operator>
 
