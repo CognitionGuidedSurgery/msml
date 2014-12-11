@@ -25,8 +25,8 @@ using namespace MSML;
 
 int main( int argc, char * argv[])
 {                                            
-	ACVDOperators::ReduceSurfaceMesh((std::string(TESTDATA_PATH) + "/TestACVD_cylinder_rough.vtk").c_str(), 
-										   (std::string(TESTDATA_PATH) + "/TestACVD_cylinder_remeshed.vtk").c_str(), 	
+	ACVDOperators::ReduceSurfaceMesh((std::string(TESTDATA_PATH) + "/references/TestACVD_cylinder_rough.vtk").c_str(), 
+										   (std::string(TESTDATA_PATH) + "/references/TestACVD_cylinder_remeshed.vtk").c_str(), 	
 											2000,true,true);
        
 }

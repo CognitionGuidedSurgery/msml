@@ -173,3 +173,19 @@ IF( OPTION_ACVD_EXTPROJECT )
 	ADD_DEPENDENCIES(_ACVDOperatorsPython ACVD)
 ENDIF()
 
+############################################################################
+## Testing
+
+#FILE( GLOB_RECURSE  TEST_FILES test/*)
+
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
+
+ADD_EXECUTABLE(ACVDOperatorsTest test/ACVDOperatorsTest.cpp test/common.h)
+TARGET_LINK_LIBRARIES(ACVDOperatorsTest
+	ACVDOperators
+	${ACVD_LIBS}	
+	${Boost_UNIT_TEST_FRAMEWORK_LIBS}
+)
+ADD_TEST(ACVDOperatorsTest ${CMAKE_OPERATOR_DIRECTORY}/ACVDOperatorsTest)
+
+
