@@ -157,7 +157,8 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
   vtkSmartPointer<vtkImageData> aReturn;
   if (!boost::filesystem::exists(filePath))
   {
-    log_error() << filePath << " was not found." << endl;
+    log_error() << filePath << " was not found in " << boost::filesystem::current_path() << endl;
+    return 0;
   }
 
   else if (filePath.extension().string() == ".vtk") //legacy datat format
@@ -203,7 +204,10 @@ vtkSmartPointer<vtkUnstructuredGrid> IOHelper::VTKReadUnstructuredGrid(const cha
   vtkSmartPointer<vtkUnstructuredGrid> aReturn;
 
   if (!boost::filesystem::exists(filePath))
-    log_error() << filePath << " was not found." << endl;
+  {
+    log_error() << filePath << " was not found in " << boost::filesystem::current_path() << endl;
+    return 0;
+  }
   if (filePath.extension().string() == ".vtk") //legacy datat format
   {
     vtkSmartPointer<vtkGenericDataObjectReader > reader = vtkSmartPointer<vtkGenericDataObjectReader >::New();
@@ -231,7 +235,8 @@ vtkSmartPointer<vtkPolyData> IOHelper::VTKReadPolyData(const char* filename)
   vtkSmartPointer<vtkPolyData> aReturn;
   if (!boost::filesystem::exists(filePath))
   {
-    log_error() << filePath << " was not found." << endl;
+    log_error() << filePath << " was not found in " << boost::filesystem::current_path() << endl;
+    return 0;
   }
   else if (filePath.extension().string() == ".vtk") //legacy datat format
   {
