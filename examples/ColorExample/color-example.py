@@ -60,8 +60,8 @@ def construct_msml_file():
 
     clrmesh = _task("ColorMesh",
                     id="clrmesh",
-                    targetMesh="liverTet4Colored.vtp", 
-                    mesh="ToColor/LiverXSTet4.vtk")
+                    targetMesh="liverTet4Colored.vtp",
+                    mesh="LiverXSTet4.vtk")
 
     pv = _task("paraview",
                id="pv",
@@ -70,15 +70,15 @@ def construct_msml_file():
     wf = Workflow([clrmesh, pv])
     m = MSMLFile(workflow=wf, env=MSMLEnvironment())
 
-    m.env.simulation.add_step() # add one pseudo step
+    m.env.simulation.add_step()  # add one pseudo step
 
-    m.filename = path(__file__) # needed for generating export file name
+    m.filename = path(__file__)  # needed for generating export file name
     return m
 
 def main():
 
     model = construct_msml_file()
-    app = msml.frontend.App(files = [model], exporter="base", executor='sequential')
+    app = msml.frontend.App(files=[model], exporter="base", executor='sequential')
     app.execute_msml(model)
 
 

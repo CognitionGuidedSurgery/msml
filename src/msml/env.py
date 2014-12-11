@@ -37,6 +37,7 @@ __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
 import os
+import sys
 
 from path import path
 
@@ -141,7 +142,7 @@ class _BinarySearchPath(list):
         """append all paths given as a string
         Seperator is ":" on linux, windows ";"
         """
-        sep = ';' if os.name == 'windows' else ':'
+        sep = ';' if sys.platform == 'win32' else ':'
         for p in string.split(sep):
             self.append(path(p))
 
@@ -161,7 +162,8 @@ class _BinarySearchPath(list):
 
         for p in self:
             test = p/name
-            if test.exists():
+            test_win = p/name + '.exe'
+            if test.exists() or test_win.exists():
                 return test.abspath()
         return None
 
