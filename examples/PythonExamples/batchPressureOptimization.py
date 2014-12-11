@@ -47,8 +47,8 @@ def f_to_minimize(p_array):
     return abs(volume- 8400000)
 
 
-msml_file = os.path.abspath('../CGALi2vLungs/Lungs_new.xml')
+msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
 p0 = x0 = np.asarray((20))
-pn = optimize.fmin_cg(f_to_minimize, x0, epsilon=0.1)
+pn = optimize.fmin_cg(f_to_minimize, x0, epsilon=1)
 print pn
     

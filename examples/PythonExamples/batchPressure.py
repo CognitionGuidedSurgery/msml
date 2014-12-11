@@ -32,7 +32,11 @@ class Lungs(object):
         return mem._internal['volumeMeasure']['volume']
 
 
-msml_file = os.path.abspath('../CGALi2vLungs/Lungs_new.xml')
-for p in range (5, 80, 5):
+msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
+volume = list([0]*100)
+for p in  list({0, 10, 80}):
     l = Lungs(msml_file, p)
-    volume = l()
+    volume[p] = l()
+    print 'Volume: %f ' % volume[p]
+
+print volume

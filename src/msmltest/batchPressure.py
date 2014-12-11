@@ -35,10 +35,13 @@ class Lungs(object):
 
 class LungsTest(TestCase):
     def test_Lung(self):
-        msml_file = os.path.abspath('../examples//CGALi2vLungs/Lungs_new.xml')
-        #for p in range (20, 80, 20):
-        l = Lungs(msml_file, 20)
-        volume = l()
-        self.assertTrue( volume < 8400000)
-        self.assertTrue( volume > 8000000)
+        #run 2 lung expanded by pressure simulations with difference pressure values p0=1 and p1=100.
+        #assert that end volume of simulation with p0 is lower than in simulation with p1.
+        msml_file = os.path.abspath('../examples//CGALi2vLungs/Lungs_simple.xml')
+        l1 = Lungs(msml_file, 1)
+        l2 = Lungs(msml_file, 100) #large pressure difference needed as CGAl meshes non-deterministic
+        volume1 = l1()
+        volume2 = l2()
+        self.assertTrue( volume1 < volume2)
+        
         
