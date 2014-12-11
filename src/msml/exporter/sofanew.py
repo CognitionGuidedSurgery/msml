@@ -105,24 +105,15 @@ class SofaExporter(XMLExporter):
         "should execute the external tool and set the memory"
         import msml.envconfig
 
-        filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
-
-        with open(filenameSofaBatch, 'w') as f:
-            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
-                timeSteps) + ' ' + self.export_file + '.simu \n')
-        #uncomment to use multiple gpus
+        #uncomment to use four gpus
         #os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
-
-        cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
 
         if (msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -g batch -n ' + str(
+            callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -l SOFACuda -g batch -n ' + str(
                 timeSteps) + ' ' + os.path.join(os.getcwd(),
                                                 self.export_file) + '\n'
-            #callCom = os.path.join(os.getcwd(),self.export_file) + ' ' + str(timeSteps) + ' ' + '/tmp/simoutput.simu -l SofaCUDA -l MediAssist'
-            cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
+            cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom)
 
         log.info("Executing %s" % cmd)
         log.info("Working directory: %s" % os.getcwd())
