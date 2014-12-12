@@ -1,4 +1,4 @@
-﻿PROJECT(CGALOperators)
+PROJECT(CGALOperators)
 
 option(MODULES_CGALOperators "Should CGALOperators build?" "ON")
 
