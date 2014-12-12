@@ -1,0 +1,29 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="SelectVolumesByMaterialID">
+	 <meta key="doc">
+		Select a group of volumes by their material id and merge these volumes into output mesh.
+		Input: VolumeMesh, containing volumes with IDs 1,2,3,4
+		group-Argument: (1,2)
+		Output: VolumeMesh, containing volumes with IDs 1,2 (3,4 are dropped)
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="SelectVolumesByMaterialID" />
+    </runtime>
+
+    <input>
+        <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
+    </input>  
+	
+    <parameters>	
+		<arg name="selectedVolumesFilename" physical="str" logical="VolumeMesh"/>
+		<arg name="group" physical="vector.int" >
+            <meta key="doc">
+				Vector of material ids to select for output in volume mesh.
+            </meta>
+        </arg>
+       </parameters>
+	<output>
+        <arg name="selectedVolumes" logical="VolumeMesh" physical="file.vtk" />
+    </output>
+</msml:operator>

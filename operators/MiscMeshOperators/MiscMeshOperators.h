@@ -132,7 +132,7 @@ namespace MiscMeshOperators
   LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
 			            double toErode, std::vector<double> morph_kernel);    
   
-  LIBRARY_API std::string splitMesh(const char* infile,const char* oufile, std::vector<int> group);
+  LIBRARY_API std::string SelectVolumesByMaterialID(const char* infile,const char* oufile, std::vector<int> group);
 } //end namespace MiscMeshOperators
 } // end namespace MSML
 
