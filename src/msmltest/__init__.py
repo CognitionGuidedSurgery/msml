@@ -9,6 +9,7 @@ from .conversions import *
 from .generators_test import *
 from .scenarios import *
 from .batchPressure import *
+from .slidingContact import *
 
 if __name__ == "__main__":
     import nose
