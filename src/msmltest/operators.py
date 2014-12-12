@@ -2,6 +2,7 @@ __author__ = 'weigl'
 
 
 from msml.env import load_user_file
+import test_common
 
 load_user_file()
 
@@ -13,13 +14,6 @@ from msml.sorts import MSMLString
 
 import TetgenOperatorsPython as P
 import MiscMeshOperatorsPython as M
-
-
-MSML_ROOT = (path(__file__).dirname() / '..' / '..').abspath()
-
-REF_DIR = MSML_ROOT / "share/testdata/references"
-TMP_DIR = MSML_ROOT / "share/testdata/tmp"
-INP_DIR = MSML_ROOT / "share/testdata/input"
 
 import os
 import filecmp
@@ -41,9 +35,9 @@ optimizationUseVertexInsAndDel = False
 class OperatorTest(TestCase):
     def test_tetgen(self):
         #input_file = INP_DIR / 'Bunny6000Surface.vtk'
-        input_file = MSML_ROOT/ 'examples/BunnyExample/Bunny6000Surface.vtk'
-        ref_file = REF_DIR / 'test_tetgen_1.vtk'
-        output_file = TMP_DIR / 'test_tetgen_2.vtk'
+        input_file = test_common.MSML_ROOT  / 'examples/BunnyExample/Bunny6000Surface.vtk'
+        ref_file = test_common.REF_DIR / 'test_tetgen_1.vtk'
+        output_file = test_common.TMP_DIR / 'test_tetgen_2.vtk'
 
         P.TetgenCreateVolumeMesh(str(input_file),
                                  str(output_file),
@@ -61,9 +55,9 @@ class OperatorTest(TestCase):
 
     def test_tetgen_sorts(self):
         #input_file = INP_DIR / 'Bunny6000Surface.vtk'
-        input_file = MSML_ROOT/ 'examples/BunnyExample/Bunny6000Surface.vtk'
-        ref_file = REF_DIR / 'test_tetgen_1.vtk'
-        output_file = TMP_DIR / 'test_tetgen_1.vtk'
+        input_file = test_common.MSML_ROOT/ 'examples/BunnyExample/Bunny6000Surface.vtk'
+        ref_file = test_common.REF_DIR / 'test_tetgen_1.vtk'
+        output_file = test_common.TMP_DIR / 'test_tetgen_1.vtk'
 
         P.TetgenCreateVolumeMesh(MSMLString(input_file),
                                  MSMLString(output_file),
@@ -80,7 +74,7 @@ class OperatorTest(TestCase):
                         "%s has not the same contents as %s" % (output_file, ref_file))
 
     def test_boxROIToIndexOperators(self):
-        input_file = str(REF_DIR / 'test_tetgen_1.vtk')
+        input_file = str(test_common.REF_DIR / 'test_tetgen_1.vtk')
         a = M.ComputeIndicesFromBoxROI(input_file,
                                        [-0.1, -0.03, -0.07, 0.06, 0.19, 0.06], 'elements')
 
@@ -88,9 +82,9 @@ class OperatorTest(TestCase):
 
 
     def test_convertVTKtoVTU(self):
-        input_file= REF_DIR / 'test_tetgen_1.vtk'
-        output_file = TMP_DIR / "vtu_test1.vtu"
-        reference_file = REF_DIR / "vtu_test1.vtu"
+        input_file= test_common.REF_DIR / 'test_tetgen_1.vtk'
+        output_file = test_common.TMP_DIR / "vtu_test1.vtu"
+        reference_file = test_common.REF_DIR / "vtu_test1.vtu"
 
         M.ConvertVTKToVTU(str(input_file), str(output_file))
 
