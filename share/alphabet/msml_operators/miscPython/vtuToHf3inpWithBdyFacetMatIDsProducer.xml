@@ -1,0 +1,24 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="vtuToHf3inpWithBdyFacetMatIDsProducer">
+
+    <runtime>
+        <python module="msml.ext.vtuToHf3inpWithBdyFacetMatIDsProducer" function="vtu_To_Hf3inpWithBdyFacetMatID_Producer"/>
+    </runtime>
+
+    <input>
+        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+		<arg name="hf3inpFile" logical="object" physical="file" />
+    </output>
+
+    <parameters>
+        <arg name="outputfilename" logical="object" physical="string">
+	    </arg>
+        <arg name="integer" logical="Scalar" physical="int" optional="true" default="0">
+        </arg>
+    </parameters>
+
+</msml:operator>
