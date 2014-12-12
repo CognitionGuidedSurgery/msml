@@ -558,7 +558,7 @@ string SelectVolumesByMaterialID(const char* infile, const char* outfile, std::v
 	int totalNumberCells = 0;
 	int totalNumberPoints = 0;
 	//collect selected volumes here
-	std::vector<vtkSmartPointer<vtkUnstructuredGrid>> volumes;
+	std::vector<vtkSmartPointer<vtkUnstructuredGrid> > volumes;
 
 	//get volumes, sum up their total number of cells/points --> needed by the merger
 	//total number of cells, points must be known in advance, before merging is started
@@ -590,7 +590,7 @@ string SelectVolumesByMaterialID(const char* infile, const char* outfile, std::v
 	merger->SetTotalNumberOfCells(totalNumberCells);
 	merger->SetTotalNumberOfPoints(totalNumberPoints);
 	merger->SetTotalNumberOfDataSets(totalNumberVolumes);
-	for(std::vector<vtkSmartPointer<vtkUnstructuredGrid>>::iterator it = volumes.begin(); it!=volumes.end(); ++it)
+	for(std::vector<vtkSmartPointer<vtkUnstructuredGrid> >::iterator it = volumes.begin(); it!=volumes.end(); ++it)
 	{
 		merger->MergeDataSet(*it);
 	}
