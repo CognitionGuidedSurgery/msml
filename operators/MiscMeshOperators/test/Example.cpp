@@ -205,3 +205,16 @@ BOOST_AUTO_TEST_CASE( TestCompareMeshesSame)
       );
     BOOST_REQUIRE(error_max < 0.001);
 }
+
+BOOST_AUTO_TEST_CASE( TestSplitMesh)
+{
+	std::vector<int> group;
+	//extract the cylinder mesh (which has a material id of 999)
+	group.push_back(999);
+    std::string resultMeshFile = MiscMeshOperators::splitMesh(INPUT("cylinder_piston.vtk"),
+								 OUTPUT("cylinder.vtk"), group);	
+	vtkSmartPointer<vtkUnstructuredGrid> resultMesh = IOHelper::VTKReadUnstructuredGrid(resultMeshFile.c_str());
+	BOOST_CHECK(resultMesh&&(resultMesh->GetNumberOfCells()>0));
+
+
+}
