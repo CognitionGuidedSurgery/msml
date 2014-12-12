@@ -133,6 +133,8 @@ namespace MiscMeshOperators
 			            double toErode, std::vector<double> morph_kernel);    
   
   LIBRARY_API std::string SelectVolumesByMaterialID(const char* infile,const char* oufile, std::vector<int> group);
+  LIBRARY_API std::string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<int> toReplace, int replaceBy);
+
 } //end namespace MiscMeshOperators
 } // end namespace MSML
 

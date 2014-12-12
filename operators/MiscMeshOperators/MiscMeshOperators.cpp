@@ -521,6 +521,31 @@ bool DebugPrint(vector<int> to_print)
 	return true;
 }
 /*
+	For given image: replace occurence of every value in toReplace-vector  by replaceBy
+	Input: Image with values 1,2,3
+	toReplace-Argument: 1,2
+	replaceBy-Argument: 42
+	Output: Image with values 3,42
+*/
+string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<int> toReplace, int replaceBy)
+{
+	vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(infile); 
+    vtkDataArray* pd = image->GetPointData()->GetScalars();
+	double replaceValue = replaceBy;
+    for (int i=0; i<pd->GetNumberOfTuples();i++)
+    {		
+		double* value = pd->GetTuple(i);
+		//if value is contained in toReplace vector, replace by replaceBy value
+		if(std::find(toReplace.begin(), toReplace.end(), *value)!=toReplace.end())
+		{	
+			pd->SetTuple(i,  &replaceValue);
+		}        
+    }
+	IOHelper::VTKWriteImage(outfile,image);
+	return outfile;
+}
+
+/*
 	Select volumes by their material id. All volumes with id given in group vector will be selected, 
 	merged, and saved.
 */

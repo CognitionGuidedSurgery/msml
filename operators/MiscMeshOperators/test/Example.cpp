@@ -215,6 +215,19 @@ BOOST_AUTO_TEST_CASE( TestSelectVolumesByMaterialID)
 								 OUTPUT("cylinder.vtk"), group);	
 	vtkSmartPointer<vtkUnstructuredGrid> resultMesh = IOHelper::VTKReadUnstructuredGrid(resultMeshFile.c_str());
 	BOOST_CHECK(resultMesh&&(resultMesh->GetNumberOfCells()>0));
+}
 
-
+BOOST_AUTO_TEST_CASE( TestReplaceMaterialID)
+{
+	std::vector<int> toReplace;
+	toReplace.push_back(1000);
+	toReplace.push_back(1001);
+	int replaceBy = 42;
+	const char* inputImage  =INPUT("cylinder_piston.ctx.gz");
+	const char* outputImage  = OUTPUT("cylinder_piston_repl.vti");
+	//replace all occurences of 1000 and 1001 by 42
+	std::string resultImageFile = MiscMeshOperators::ReplaceMaterialID(inputImage, 
+																	   outputImage,toReplace,replaceBy);
+	BOOST_CHECK(outputImage==resultImageFile);
+ 
 }

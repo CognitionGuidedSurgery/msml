@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<DKFZ_ImageSeries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="C:\msmldev\virtuos-experimental-VS13\source\sys_data\XML\DKFZ_ImageSeries.xsd">
+
+  <Version>3.0</Version>
+
+  <SeriesID>cylinder_piston</SeriesID>
+
+  <SeriesName>cylinder_piston.ctx</SeriesName>
+
+  <SeriesCheckSum>5150</SeriesCheckSum>
+
+  <Patient>
+    <ID>0001234567</ID>
+    <Last_Name>xxx</Last_Name>
+    <First_Name>xxx</First_Name>
+    <Birth_Date>19370101</Birth_Date>
+    <Sex>F</Sex>
+  </Patient>
+
+  <Study>
+    <ID>5314114</ID>
+    <Accession_Number>5314114</Accession_Number>
+  </Study>
+
+  <Creation_Info>
+    <Created_By>VIRTUOS VOX-4.7.14</Created_By>
+    <Created_On>Fri Nov 28 16:12:20 2014</Created_On>
+    <Based_On>hit_sk_-BPL-nativ--3_0--B40s.ctx</Based_On>
+    <Modification_Type>FILL</Modification_Type>
+    <Comment>VOI dummy_pistonB filled inside with 1001.00</Comment>
+  </Creation_Info>
+
+  <Data_Format>
+    <Byte_Order>MSB</Byte_Order>
+    <Data_Type>INTEGER</Data_Type>
+    <Bytes_Per_Pixel>2</Bytes_Per_Pixel>
+  </Data_Format>
+
+  <Imaging_Device>
+    <Device/>
+    <Modality Type="CT">
+      <CT>
+        <Convolution_Kernel/>
+        <KVP>0.000000</KVP>
+        <Data_Collection_Diameter>0.000000</Data_Collection_Diameter>
+        <Reconstruction_Diameter>0.000000</Reconstruction_Diameter>
+        <Exposure>0</Exposure>
+      </CT>
+    </Modality>
+  </Imaging_Device>
+
+  <Series_Common_Attributes>
+    <DICOM_ID>1.3.12.2.1107.5.7.8.10012.30000013041808310608500000094</DICOM_ID>
+    <Series_Number>12</Series_Number>
+    <Date>20130417</Date>
+    <Time>134517.645073</Time>
+    <Frame_Of_Reference_UID>1.3.12.2.1107.5.1.4.49206.30000013041704392262500002710</Frame_Of_Reference_UID>
+    <Body_Part>ABDOMEN</Body_Part>
+    <Patient_Position>HFS</Patient_Position>
+    <Comment>BPL-nativ--3_0--B40s</Comment>
+    <Preferred_Gray_Windows>
+      <Win1>
+        <Center1>40</Center1>
+        <Width1>400</Width1>
+      </Win1>
+    </Preferred_Gray_Windows>
+    <IsRTPAllowed>USER_CONFIRM</IsRTPAllowed>
+  </Series_Common_Attributes>
+
+  <Geometry>
+    <Base_Image_Matrix_Size>512</Base_Image_Matrix_Size>
+    <DimX>512</DimX>
+    <DimY>512</DimY>
+    <Xoffset>0</Xoffset>
+    <Yoffset>0</Yoffset>
+    <Pixelsize_X>0.976563</Pixelsize_X>
+    <Pixelsize_Y>0.976563</Pixelsize_Y>
+    <Zoffset>0</Zoffset>
+    <Number_Of_Images>94</Number_Of_Images>
+    <Common_Attributes>
+      <Stored_In>cylinder_piston.ctx</Stored_In>
+      <OrientationX>      +1.000000      +0.000000      +0.000000</OrientationX>
+      <OrientationY>      +0.000000      +1.000000      +0.000000</OrientationY>
+      <Slice_Thickness>3.000000</Slice_Thickness>
+    </Common_Attributes>
+    <Individual_Attributes>
+      <Individual_Attributes_Index no="1">
+        <Position>    -249.511719    -474.511719      +1.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="2">
+        <Position>    -249.511719    -474.511719      +4.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="3">
+        <Position>    -249.511719    -474.511719      +7.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="4">
+        <Position>    -249.511719    -474.511719     +10.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="5">
+        <Position>    -249.511719    -474.511719     +13.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="6">
+        <Position>    -249.511719    -474.511719     +16.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="7">
+        <Position>    -249.511719    -474.511719     +19.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="8">
+        <Position>    -249.511719    -474.511719     +22.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="9">
+        <Position>    -249.511719    -474.511719     +25.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="10">
+        <Position>    -249.511719    -474.511719     +28.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="11">
+        <Position>    -249.511719    -474.511719     +31.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="12">
+        <Position>    -249.511719    -474.511719     +34.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="13">
+        <Position>    -249.511719    -474.511719     +37.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="14">
+        <Position>    -249.511719    -474.511719     +40.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="15">
+        <Position>    -249.511719    -474.511719     +43.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="16">
+        <Position>    -249.511719    -474.511719     +46.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="17">
+        <Position>    -249.511719    -474.511719     +49.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="18">
+        <Position>    -249.511719    -474.511719     +52.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="19">
+        <Position>    -249.511719    -474.511719     +55.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="20">
+        <Position>    -249.511719    -474.511719     +58.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="21">
+        <Position>    -249.511719    -474.511719     +61.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="22">
+        <Position>    -249.511719    -474.511719     +64.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="23">
+        <Position>    -249.511719    -474.511719     +67.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="24">
+        <Position>    -249.511719    -474.511719     +70.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="25">
+        <Position>    -249.511719    -474.511719     +73.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="26">
+        <Position>    -249.511719    -474.511719     +76.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="27">
+        <Position>    -249.511719    -474.511719     +79.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="28">
+        <Position>    -249.511719    -474.511719     +82.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="29">
+        <Position>    -249.511719    -474.511719     +85.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="30">
+        <Position>    -249.511719    -474.511719     +88.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="31">
+        <Position>    -249.511719    -474.511719     +91.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="32">
+        <Position>    -249.511719    -474.511719     +94.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="33">
+        <Position>    -249.511719    -474.511719     +97.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="34">
+        <Position>    -249.511719    -474.511719    +100.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="35">
+        <Position>    -249.511719    -474.511719    +103.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="36">
+        <Position>    -249.511719    -474.511719    +106.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="37">
+        <Position>    -249.511719    -474.511719    +109.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="38">
+        <Position>    -249.511719    -474.511719    +112.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="39">
+        <Position>    -249.511719    -474.511719    +115.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="40">
+        <Position>    -249.511719    -474.511719    +118.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="41">
+        <Position>    -249.511719    -474.511719    +121.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="42">
+        <Position>    -249.511719    -474.511719    +124.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="43">
+        <Position>    -249.511719    -474.511719    +127.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="44">
+        <Position>    -249.511719    -474.511719    +130.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="45">
+        <Position>    -249.511719    -474.511719    +133.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="46">
+        <Position>    -249.511719    -474.511719    +136.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="47">
+        <Position>    -249.511719    -474.511719    +139.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="48">
+        <Position>    -249.511719    -474.511719    +142.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="49">
+        <Position>    -249.511719    -474.511719    +145.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="50">
+        <Position>    -249.511719    -474.511719    +148.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="51">
+        <Position>    -249.511719    -474.511719    +151.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="52">
+        <Position>    -249.511719    -474.511719    +154.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="53">
+        <Position>    -249.511719    -474.511719    +157.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="54">
+        <Position>    -249.511719    -474.511719    +160.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="55">
+        <Position>    -249.511719    -474.511719    +163.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="56">
+        <Position>    -249.511719    -474.511719    +166.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="57">
+        <Position>    -249.511719    -474.511719    +169.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="58">
+        <Position>    -249.511719    -474.511719    +172.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="59">
+        <Position>    -249.511719    -474.511719    +175.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="60">
+        <Position>    -249.511719    -474.511719    +178.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="61">
+        <Position>    -249.511719    -474.511719    +181.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="62">
+        <Position>    -249.511719    -474.511719    +184.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="63">
+        <Position>    -249.511719    -474.511719    +187.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="64">
+        <Position>    -249.511719    -474.511719    +190.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="65">
+        <Position>    -249.511719    -474.511719    +193.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="66">
+        <Position>    -249.511719    -474.511719    +196.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="67">
+        <Position>    -249.511719    -474.511719    +199.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="68">
+        <Position>    -249.511719    -474.511719    +202.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="69">
+        <Position>    -249.511719    -474.511719    +205.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="70">
+        <Position>    -249.511719    -474.511719    +208.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="71">
+        <Position>    -249.511719    -474.511719    +211.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="72">
+        <Position>    -249.511719    -474.511719    +214.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="73">
+        <Position>    -249.511719    -474.511719    +217.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="74">
+        <Position>    -249.511719    -474.511719    +220.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="75">
+        <Position>    -249.511719    -474.511719    +223.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="76">
+        <Position>    -249.511719    -474.511719    +226.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="77">
+        <Position>    -249.511719    -474.511719    +229.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="78">
+        <Position>    -249.511719    -474.511719    +232.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="79">
+        <Position>    -249.511719    -474.511719    +235.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="80">
+        <Position>    -249.511719    -474.511719    +238.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="81">
+        <Position>    -249.511719    -474.511719    +241.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="82">
+        <Position>    -249.511719    -474.511719    +244.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="83">
+        <Position>    -249.511719    -474.511719    +247.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="84">
+        <Position>    -249.511719    -474.511719    +250.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="85">
+        <Position>    -249.511719    -474.511719    +253.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="86">
+        <Position>    -249.511719    -474.511719    +256.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="87">
+        <Position>    -249.511719    -474.511719    +259.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="88">
+        <Position>    -249.511719    -474.511719    +262.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="89">
+        <Position>    -249.511719    -474.511719    +265.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="90">
+        <Position>    -249.511719    -474.511719    +268.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="91">
+        <Position>    -249.511719    -474.511719    +271.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="92">
+        <Position>    -249.511719    -474.511719    +274.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="93">
+        <Position>    -249.511719    -474.511719    +277.500000</Position>
+      </Individual_Attributes_Index>
+      <Individual_Attributes_Index no="94">
+        <Position>    -249.511719    -474.511719    +280.500000</Position>
+      </Individual_Attributes_Index>
+    </Individual_Attributes>
+  </Geometry>
+
+</DKFZ_ImageSeries>
+
+<!--CRC=000000000004812-->
