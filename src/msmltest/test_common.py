@@ -42,6 +42,8 @@ import sys
 from path import path
 
 MSML_ROOT = (path(__file__).dirname() / '..' / '..').abspath()
+MSML_ALPHABET_DIR = MSML_ROOT / "share/alphabet"
+MSML_EXAMPLE_DIR = MSML_ROOT / "examples"
 
 REF_DIR = MSML_ROOT / "share/testdata/references"
 TMP_DIR = MSML_ROOT / "share/testdata/tmp"
