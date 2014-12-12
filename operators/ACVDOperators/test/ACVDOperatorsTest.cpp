@@ -1,4 +1,5 @@
-#include "common.h"
+#include "ACVDOperators.h"
+#include "../common/test_common.h"
 
 #define BOOST_TEST_MODULE ACVDOperatorsTest
 #include <boost/test/unit_test.hpp>

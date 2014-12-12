@@ -1,4 +1,4 @@
-PROJECT(CGALOperators)
+﻿PROJECT(CGALOperators)
 
 option(MODULES_CGALOperators "Should CGALOperators build?" "ON")
 
@@ -83,3 +83,16 @@ if(MSVC)
   SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj" )
   SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /bigobj" )
 endif()
+
+
+############################################################################
+## Testing
+
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
+
+ADD_EXECUTABLE(CGALOperatorsTest test/CGALOperatorsTest.cpp)
+TARGET_LINK_LIBRARIES(CGALOperatorsTest
+	CGALOperators
+	${Boost_UNIT_TEST_FRAMEWORK_LIBS}
+)
+ADD_TEST(CGALOperatorsTest ${CMAKE_OPERATOR_DIRECTORY}/CGALOperatorsTest)

@@ -12,7 +12,7 @@
 #include <Sources.h>
 #include <stdio.h>
 
-#include "test/common.h"
+#include "../common/test_common.h"
 
 
 using namespace MSML;

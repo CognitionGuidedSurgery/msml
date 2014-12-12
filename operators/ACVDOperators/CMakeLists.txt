@@ -180,7 +180,7 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 
-ADD_EXECUTABLE(ACVDOperatorsTest test/ACVDOperatorsTest.cpp test/common.h)
+ADD_EXECUTABLE(ACVDOperatorsTest test/ACVDOperatorsTest.cpp)
 TARGET_LINK_LIBRARIES(ACVDOperatorsTest
 	ACVDOperators
 	${ACVD_LIBS}	

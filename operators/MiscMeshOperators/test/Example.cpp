@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common/test_common.h"
 
 #define BOOST_TEST_MODULE MiscMeshOperatorsTest
 #include <boost/test/unit_test.hpp>

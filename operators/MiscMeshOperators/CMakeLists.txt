@@ -101,7 +101,7 @@ TARGET_LINK_LIBRARIES(FirstTest
 )
 ADD_TEST(FirstTest ${CMAKE_OPERATOR_DIRECTORY}/FirstTest)
 
-ADD_EXECUTABLE(MiscMeshOperatorsTest test/Example.cpp test/common.h)
+ADD_EXECUTABLE(MiscMeshOperatorsTest test/Example.cpp)
 TARGET_LINK_LIBRARIES(MiscMeshOperatorsTest
 	MiscMeshOperators
 	${MiscMeshOperators_LIBS}	
