@@ -2,6 +2,7 @@
 
 #define BOOST_TEST_MODULE MiscMeshOperatorsTest
 #include <boost/test/unit_test.hpp>
+#include "FeatureExtractionOperators.h"
 
 //BOOST_AUTO_TEST_CASE( TestAssignRegionOperator )
 //{
@@ -229,5 +230,15 @@ BOOST_AUTO_TEST_CASE( TestReplaceMaterialID)
 	std::string resultImageFile = MiscMeshOperators::ReplaceMaterialID(inputImage, 
 																	   outputImage,toReplace,replaceBy);
 	BOOST_CHECK(outputImage==resultImageFile);
+ 
+}
+
+BOOST_AUTO_TEST_CASE(TestExtractFeatures)
+{	
+	const char* inputMeshFile  = INPUT("bunny_polydata.ctx.gz");
+	MSML::FeatureExtractionOperators::Features features = FeatureExtractionOperators::ExtractFeatures(inputMeshFile);
+	//bunny has a surface area and volume creater zero, this is known!
+	BOOST_CHECK(features.surfaceArea>0);
+	BOOST_CHECK(features.volume>0);
  
 }
