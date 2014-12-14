@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE( TestReplaceMaterialID)
 
 BOOST_AUTO_TEST_CASE(TestExtractFeatures)
 {	
-	const char* inputMeshFile  = INPUT("bunny_polydata.ctx.gz");
+	const char* inputMeshFile  = INPUT("bunny_polydata.vtk");
 	MSML::FeatureExtractionOperators::Features features = FeatureExtractionOperators::ExtractFeatures(inputMeshFile);
 	//bunny has a surface area and volume creater zero, this is known!
 	BOOST_CHECK(features.surfaceArea>0);
