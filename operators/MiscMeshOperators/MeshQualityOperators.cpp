@@ -32,7 +32,7 @@ MeshQualityStats::MeshQualityStats():
 }
 
 // NOT using an std::set since querying a non-existent name will insert it with value 0!
-static vector<pair<string, int> > FillTetQualityMeasureVtkIdsForTypeName() {
+vector<pair<string, int> > FillTetQualityMeasureVtkIdsForTypeName() {
     vector<pair<string, int> > m;
     m.push_back(pair<string, int>("AspectRatio", VTK_QUALITY_ASPECT_RATIO));
     m.push_back(pair<string, int>("AspectFrobenius", VTK_QUALITY_ASPECT_FROBENIUS));
@@ -55,9 +55,9 @@ static vector<pair<string, int> > FillTetQualityMeasureVtkIdsForTypeName() {
 
     return m;
 }
-static vector<pair<string, int> > TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
+vector<pair<string, int> > TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME = FillTetQualityMeasureVtkIdsForTypeName();
 
-static int tetQualityMeasureVtkIdForName(string name) {
+int tetQualityMeasureVtkIdForName(string name) {
     for (vector<pair<string, int> >::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin();
             it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
         if (it->first == name) {
@@ -67,7 +67,7 @@ static int tetQualityMeasureVtkIdForName(string name) {
     return -1;
 }
 
-static vector<string> FillTetQualityMeasureTypeNames() {
+vector<string> FillTetQualityMeasureTypeNames() {
     vector<string> names;
     for (vector<pair<string, int> >::iterator it = TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.begin();
             it != TET_QUALITY_MEASURE_VTK_IDS_FOR_TYPE_NAME.end(); ++it) {
