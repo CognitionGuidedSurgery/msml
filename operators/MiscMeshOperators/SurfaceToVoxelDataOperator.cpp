@@ -67,7 +67,7 @@ namespace MSML
     // Note: vtp (PolyData) as input required; if necessary use MSML STL2VTK-Converter.
     
     vtkSmartPointer<vtkImageData> image = MiscMeshOperators::ImageCreateWithMesh(pd, 100);
-    MiscMeshOperators::ImageEnlargeIsotropic(image, 1.0); // Note: this is properly tuned only for the mitral valve.
+    MiscMeshOperators::ImageEnlargeIsotropic(image, 20.0); // Note: this is properly tuned only for the mitral valve.
     
     float ref_fac = accuracy_level;
     float smooth_size = smoothing;
