@@ -319,7 +319,9 @@ class SofaExporter(XMLExporter):
             return ' '.join(map(str, mapping))
 
         assert isinstance(msmlObject, SceneObject)
-
+        #do nothing on empty constraint set
+        if(not any(msmlObject.constraints)):
+            return
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
             assert isinstance(constraint_set, ObjectConstraints)
 

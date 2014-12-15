@@ -337,8 +337,10 @@ def msml_file_factory(msml_node):
             sets.surfaces = _parse_indexgroup_list(surfaces_sets)
             sets.elements = _parse_indexgroup_list(element_sets)
 
+        constraints = ObjectConstraints(name="empty")      
         constraints_node = object_node.find('constraints')
-        constraints = _parse_constraints(constraints_node)
+        if(constraints_node is not None):
+            constraints = _parse_constraints(constraints_node)
 
         material_node = object_node.find('material')
         material = _parse_material(material_node)
