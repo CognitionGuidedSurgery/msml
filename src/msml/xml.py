@@ -282,6 +282,13 @@ def msml_file_factory(msml_node):
             m = mesh_node.attrib['mesh']
             i = mesh_node.attrib['id']
             return Mesh(t, i, m)
+        
+        def _parse_contactGeometry(contactGeometry_node):
+            'example:     <contactsurface id="contactSurface" surface="${MovingSurface}"/>'
+            t = _tag_name(contactGeometry_node.tag)
+            m = contactGeometry_node.attrib['surface']
+            i = contactGeometry_node.attrib['id']
+            return ContactGeometry(t, i, m)
 
         def _parse_constraints(constraints_node):
             '''example:
@@ -353,6 +360,12 @@ def msml_file_factory(msml_node):
         scene_object.sets = sets
         scene_object.material = material
         scene_object.constraints = constraints
+        
+        #collision detection stuff
+        #get contact surface
+        contactGeometryNode = object_node.find("contactsurface")
+        if(contactGeometryNode is not None):
+            scene_object.contactGeometry = _parse_contactGeometry(contactGeometryNode)       
 
         return scene_object
 

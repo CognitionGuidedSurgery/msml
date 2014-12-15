@@ -16,7 +16,55 @@
 		<var name="output_fixed_surface" value="fixed_surface.vtk" logical="Mesh"
              physical="str"/>	 
     </variables>
-	
+	<scene>
+		<object id="moving">
+		    <mesh>
+				<linearTet id="movingMesh" mesh="${MovingSplit}"/>
+            </mesh>
+          	<contactsurface id="contactSurface" surface="${MovingSurface}"/>			
+			
+			<sets>	
+				<surfaces>
+                   <indexgroup id="pistonASurface" indices="${pistonAMatIds}"/>
+                </surfaces>				
+			</sets>		
+			<material>	
+			 <region id="pistonAMaterial" indices="${pistonAMatIds}">
+                    <linearElasticMaterial youngModulus="3200" poissonRatio="0.45"/>
+                    <mass massDensity="0.001"/>
+                </region>			
+            </material>							
+			<output>
+                <displacement id="movingMesh" timestep="1"/>
+            </output>		
+        </object>
+		<object id="fixed">
+		    <mesh>
+				<linearTet id="fixedMesh" mesh="${FixedSplit}"/>
+            </mesh>
+          	<contactsurface id="contactSurface" surface="${FixedSurface}"/>			
+			
+			<sets>	
+				<surfaces>
+                   <indexgroup id="cylinderSurface" indices="${cylinderMatIds}"/>
+                </surfaces>				
+			</sets>		
+			<material>	
+			 <region id="cylinderMaterial" indices="${cylinderMatIds}">
+                    <linearElasticMaterial youngModulus="4200" poissonRatio="0.45"/>
+                    <mass massDensity="0.001"/>
+                </region>			
+            </material>		
+			<constraints>		
+				<constraint name="test" forStep="${initial}">                    
+					<fixedConstraint indices="${cylinderMatIds}"/>				
+                </constraint>									
+			</constraints>	
+			<output>
+                <displacement id="fixedMesh" timestep="1"/>
+            </output>		
+        </object>		
+	</scene>
     <workflow>		
 		<!-- 0 is outside, 1 is cylinder body, 2 is smaller piston, 3 is larger piston
 			 piston material ids get replaced by same material id: (2,3)->42
@@ -37,7 +85,12 @@
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}"	targetSurfaceMeshFilename="${output_fixed_surface}"/>	
 		<!-- extract surfaces for fixed and moving part -->
-		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>	
+		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
+	
+		
+		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="1" mesh="${FixedSplit}" type="elements" />
+		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="42" mesh="${MovingSplit}" type="elements" />
+		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="1001" mesh="${MovingSplit}" type="elements" />		
 		
   </workflow>
     <environment>		

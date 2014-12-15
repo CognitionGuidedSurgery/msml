@@ -51,6 +51,7 @@ __all__ = ['Constant',
            'MSMLVariable',
            'MaterialRegion',
            'Mesh',
+           'ContactGeometry',
            'ObjectConstraints',
            'ObjectElement',
            'Reference',
@@ -825,7 +826,8 @@ class SceneObject(object):
         self._material = list() if not material else material
         self._constraints = constraints if constraints else list()
         self._sets = sets
-        self._output = list()
+        self._output = list()        
+        self._contactGeometry = ContactGeometry()
 
     def bind(self, alphabet):
         """
@@ -906,14 +908,25 @@ class SceneObject(object):
     def constraints(self, c):
         self._constraints = c
 
-    @property
-    def material(self):
-        return self._material
-
     @material.setter
     def material(self, mat):
         self._material = mat
-
+        
+    @property
+    def contactGeometry(self):
+        """
+        :type: ContactGeometry
+        :return:
+        """
+        return self._contactGeometry
+    
+    @contactGeometry.setter
+    def contactGeometry(self, value):
+        self._contactGeometry = value
+       
+    @property 
+    def hasContactGeometry(self):
+        return self._contactGeometry.id is not None
 
     def __repr__(self):
         return "%s(%r, mesh=%r, sets=%r, material=%r, constraints=%r)" % (
@@ -1170,6 +1183,56 @@ class Mesh(object):
 
     def __repr__(self):
         return "%s(%r, %r, %r)" % (self.__class__.__name__, self.type, self.id, self.value)
+    
+class ContactGeometry(object):
+    """Represent the given contact surface within the <object> node:
+
+    .. code-block:: xml
+
+        <contactsurface id="" surface=""/>
+
+
+    """
+
+    def __init__(self, type="linear", id=None, value=None):
+        """
+        :param str type: type of the contact surface (one of ``linear``, ``quadratic``)
+        :param str id: id of the contact surface 
+        :param str value: value of the contact surface (a reference or a reference string)
+        """
+        self.type = type
+        self.id = id
+        self.value = value
+
+    @property
+    def surface(self):
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value
+
+    def validate(self):
+        """
+        :return: always valid
+        """
+        return True
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__, self.__dict__)
+        """
+        legacy support
+
+        .. deprecated::
+
+            use ``self.value``
+
+        """
+        return self.value   
 
 class MaterialRegion(IndexGroup, list):
     """Represents an material region from an MSMLFile within an SceneObject

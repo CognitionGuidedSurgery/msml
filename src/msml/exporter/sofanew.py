@@ -174,8 +174,10 @@ class SofaExporter(XMLExporter):
     def createMeshTopology(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
+        #daniel: for multi mesh support
         mesh_type = msmlObject.mesh.type
-        meshFileName = self.working_dir / self.get_value_from_memory(msmlObject.mesh)
+        mesh_id = (msmlObject.id + "_mesh")
+        meshFileName = self.working_dir / self.get_value_from_memory(mesh_id)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
 
@@ -195,6 +197,8 @@ class SofaExporter(XMLExporter):
                      name="dofs", template=self._processing_unit, src="@LOADER")
             self.sub("MeshTopology", objectNode,
                      name="topo", src="@LOADER")
+            if(msmlObject.hasContactGeometry):
+                self.createContactNode(objectNode,msmlObject)
         elif mesh_type == "quadraticTet":
             loaderNode = self.sub("MeshExtendedVTKLoader", objectNode,
                                   name="LOADER", filename=meshFileName)
@@ -207,7 +211,21 @@ class SofaExporter(XMLExporter):
                  "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
             return None
         return loaderNode
-
+    
+    def createContactNode(self,objectNode,msmlObject):
+        surface_id = (msmlObject.id + "_surface")
+        surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
+        collisionNode = self.sub("Node",objectNode,name="1")
+        self.sub("MeshVTKLoader", collisionNode,name="LOADER" ,filename=surfaceFileName, createSubelements="0")
+        self.sub("MechanicalObject",collisionNode,template="Vec3d", name="dofs",
+                                            position="@LOADER.position",velocity="0 0 0",
+                                            force="0 0 0",externalForce="0 0 0", derivX="0 0 0",  restScale="1" )
+        self.sub("MeshTopology",collisionNode,name="topo",position="@LOADER.position",edges="@LOADER.edges",
+                                        triangles="@LOADER.triangles",quads="@LOADER.quads", tetrahedra="@LOADER.tetras",  hexahedra="@LOADER.hexas")
+        self.sub("BarycentricMapping", collisionNode,template="Vec3d,Vec3d", name="barycentricMap1",  input="@../",  output="@./" )
+        self.sub("TriangleModelInRegularGrid",collisionNode,template="Vec3d", name="tTriangleModel1")
+        self.sub("TLineModel", collisionNode,template="Vec3d")
+        self.sub("TPointModel", collisionNode,template="Vec3d")
 
     def createSolvers(self):
         #TODO: self.get_value_from_memory
@@ -521,10 +539,26 @@ class SofaExporter(XMLExporter):
         if theGravity is None:
             theGravity = '0 -9.81 0'
         root.set("gravity", theGravity)
+        #test if any SceneObject has contact geometry        
+        sceneHasContactGeom = any(map(lambda obj : (isinstance(obj,SceneObject) and obj.hasContactGeometry),        
+                                     self._msml_file._scene))
+        if(sceneHasContactGeom): 
+            self.createSceneContactNodes(root)
         return root
 
         #sofa_exporter handles displacementOutputRequest only. Other postProcessing operators need to be adressed in... ?
-
+    
+    #create collision detection scene stuff
+    def createSceneContactNodes(self, root):      
+        etree.SubElement(root,"LayeredDepthImagesPipeline",name="default0",pressure="5",
+                                                                 resolution="128",resolutionPixel="80",
+                                                                 depthBB="6",  GPUCollisionVolume="1")
+        etree.SubElement(root,"LDIDetection", name="default1" )
+        etree.SubElement(root,"MinProximityIntersection", name="Proximity",alarmDistance="0.3",contactDistance="0.2")
+        etree.SubElement(root,"BruteForceDetection", name="N2")
+        etree.SubElement(root,"DefaultContactManager", name="Response",  response="LDI")
+        etree.SubElement(root,"DefaultCollisionGroupManager", name="Group")
+      
 
     def createPostProcessingRequests(self, objectNode, msmlObject):
         for request in msmlObject.output:
