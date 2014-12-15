@@ -86,11 +86,12 @@
 		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}"	targetSurfaceMeshFilename="${output_fixed_surface}"/>	
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
-	
-		<ComputeIndicesFromMaterialId id="cylinderPointIds" num="1" mesh="${FixedSplit}" type="points" />
+		
+		<ExtractAllSurfacesByMaterial id="SurfaceExtractor" meshIn="${VolumeMesher}" meshOutFilename="fixed_surface_extract.vtk" cut="false"/>  
+		
+		<ComputeIndicesFromMaterialId id="cylinderPointIds" num="1" mesh="${FixedSplit}" type="faces" />
 		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="1" mesh="${FixedSplit}" type="elements" />
-		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="42" mesh="${MovingSplit}" type="elements" />
-		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="1001" mesh="${MovingSplit}" type="elements" />		
+		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="42" mesh="${MovingSplit}" type="elements" />	
 		
   </workflow>
     <environment>		
