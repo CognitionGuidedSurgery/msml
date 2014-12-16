@@ -157,17 +157,18 @@ class SofaExporter(XMLExporter):
             #physicsElementNode = msmlObject.find("material")
             self.createMeshTopology(objectNode, msmlObject)
             self.createMaterialRegions(objectNode, msmlObject)
-
-                     #add solver
-            self.createSolvers()
-
+           
             #create simulation steps
             self.createConstraintRegions(objectNode, msmlObject)
 
             #creat post processing request
             self.createPostProcessingRequests(objectNode, msmlObject)
 
-
+        #daniel: moved this, each node could have its own solvers, right?
+        #but for now, this method generates solvers below root-node NOT below individual object-node
+        #add solver
+        self.createSolvers()
+    
 
         return etree.ElementTree(self.node_root)
 
@@ -537,7 +538,7 @@ class SofaExporter(XMLExporter):
         theGravity = ' '.join('%.3f' % val for val in theGravityVec)
         #timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
         if theGravity is None:
-            theGravity = '0 -9.81 0'
+            theGravity = '0 -9.81 0'            
         root.set("gravity", theGravity)
         #test if any SceneObject has contact geometry        
         sceneHasContactGeom = any(map(lambda obj : (isinstance(obj,SceneObject) and obj.hasContactGeometry),        

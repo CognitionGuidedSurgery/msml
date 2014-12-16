@@ -394,10 +394,15 @@ def msml_file_factory(msml_node):
 
         simulation_node = env_node.find('simulation')
         for s in simulation_node.iterchildren():
+            #parse gravity attribute, if given            
+            gravityAttrib = s.get('gravity')         
+            gravity = None  
+            if(gravityAttrib is not None):
+                gravity = map(float, gravityAttrib.split())
             env.simulation.add_step(name=s.get('name'),
                                     dt=s.get('dt'),
                                     iterations=s.get('iterations'),
-                                    gravity=s.get('gravity'))
+                                    gravity=gravity)
 
         return env
 

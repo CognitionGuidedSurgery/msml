@@ -6,10 +6,15 @@
              physical="str"/>	
 		<var name="replaced_mat_cube_file" value="replaced_mat_image.vti" logical="Image"
              physical="str"/>				 
-		<var name="output_mesh_file" value="meshed_volume.vtk" logical="Mesh"/>     
+		<var name="output_mesh_file" value="meshed_volume.vtk" logical="Mesh"/>   
+		<var name="output_forces_mesh_file" value="meshed_forces_volume.vtk" logical="Mesh"/>    		
 		<var name="output_moving_volume" value="moving_volume.vtk" logical="Mesh"
              physical="str"/>	
 		<var name="output_fixed_volume" value="fixed_volume.vtk" logical="Mesh"
+             physical="str"/>	
+		<var name="output_fixed_forces_volume" value="fixed_forces_volume.vtk" logical="Mesh"
+             physical="str"/>	
+		<var name="output_moving_forces_volume" value="moving_forces_volume.vtk" logical="Mesh"
              physical="str"/>	
 		<var name="output_moving_surface" value="moving_surface.vtk" logical="Mesh"
              physical="str"/>	
@@ -19,7 +24,7 @@
 	<scene>
 		<object id="moving">
 		    <mesh>
-				<linearTet id="movingMesh" mesh="${MovingSplit}"/>
+				<linearTet id="movingMesh" mesh="${MovingForcesSplit}"/>
             </mesh>
           	<contactsurface id="contactSurface" surface="${MovingSurface}"/>			
 			
@@ -29,10 +34,14 @@
                 </surfaces>				
 			</sets>		
 			<material>	
-			 <region id="pistonAMaterial" indices="${pistonAMatIds}">
+				<region id="pistonAMaterial" indices="${pistonAMatIds}">
                     <linearElasticMaterial youngModulus="3200" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
-                </region>			
+                </region>		
+				 <region id="pistonBMaterial" indices="${pistonBMatIds}">
+                    <linearElasticMaterial youngModulus="3000" poissonRatio="0.45"/>
+                    <mass massDensity="0.001"/>
+                </region>		
             </material>							
 			<output>
                 <displacement id="movingMesh" timestep="1"/>
@@ -40,7 +49,7 @@
         </object>
 		<object id="fixed">
 		    <mesh>
-				<linearTet id="fixedMesh" mesh="${FixedSplit}"/>
+				<linearTet id="fixedMesh" mesh="${FixedForcesSplit}"/>
             </mesh>
           	<contactsurface id="contactSurface" surface="${FixedSurface}"/>			
 			
@@ -57,7 +66,7 @@
             </material>		
 			<constraints>		
 				<constraint name="test" forStep="${initial}">                    
-					<fixedConstraint indices="${cylinderPointIds}"/>				
+					<fixedConstraint indices="${bottomToIndexGroup}"/>				
                 </constraint>									
 			</constraints>	
 			<output>
@@ -66,6 +75,27 @@
         </object>		
 	</scene>
     <workflow>		
+		<!-- forces geometry--> 
+		<CGALMeshVolumeFromVoxels id="VolumeForcesMesher" meshFilename="${output_forces_mesh_file}" image="cycytubeImage.vtk"
+                       facetAngle="15" facetSize="3" facetDistance="2" cellSize="8"
+                       cellRadiusEdgeRatio="3"  odt="false" lloyd="false" pertube="false"
+                       exude="false"/>	
+		<!-- select fixed part, outside and cylinder -->			   
+		<SelectVolumesByMaterialID id="FixedForcesSplit" selectedVolumesFilename="${output_fixed_forces_volume}" 
+													mesh="${VolumeForcesMesher}" group="0 1"/>
+		<!-- select moving part, pistons -->
+		<SelectVolumesByMaterialID id="MovingForcesSplit" selectedVolumesFilename="${output_moving_forces_volume}" 
+										mesh="${VolumeForcesMesher}" group="2 3"/>			
+		
+		<ComputeIndicesFromBoxROI id="bottomToIndexGroup"
+								   box="25 9.4 8.4 72.4 16.4 88.5" mesh="${FixedForcesSplit}"
+								   select="points"/>		
+		<!--<ComputeIndicesFromMaterialId id="cylinderPointIds" num="1" mesh="${FixedForcesSplit}" type="faces" />-->
+		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="1" mesh="${FixedForcesSplit}" type="elements" />
+		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="2" mesh="${MovingForcesSplit}" type="elements" />	
+		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="3" mesh="${MovingForcesSplit}" type="elements" />	
+					   
+		<!-- contact geometry-->
 		<!-- 0 is outside, 1 is cylinder body, 2 is smaller piston, 3 is larger piston
 			 piston material ids get replaced by same material id: (2,3)->42
 		-->
@@ -87,18 +117,21 @@
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
 		
-		<ExtractAllSurfacesByMaterial id="SurfaceExtractor" meshIn="${VolumeMesher}" meshOutFilename="fixed_surface_extract.vtk" cut="false"/>  
-		
+		<!-- calculate indices by material ids
 		<ComputeIndicesFromMaterialId id="cylinderPointIds" num="1" mesh="${FixedSplit}" type="faces" />
 		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="1" mesh="${FixedSplit}" type="elements" />
 		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="42" mesh="${MovingSplit}" type="elements" />	
+		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="42" mesh="${MovingSplit}" type="elements" />	
+		 -->
+		<BoundsFromMaterialID id="MovingBounds" mesh="${VolumeMesher}" materialID="42"/>
+		
 		
   </workflow>
     <environment>		
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="50"/>
+            <step name="initial" dt="0.05" iterations="1" gravity="0 -9.81 0"/>
         </simulation>	
     </environment>
 </msml:msml>
