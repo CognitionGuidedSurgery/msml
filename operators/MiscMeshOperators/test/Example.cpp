@@ -242,3 +242,19 @@ BOOST_AUTO_TEST_CASE(TestExtractFeatures)
 	BOOST_CHECK(features.volume>0);
  
 }
+
+BOOST_AUTO_TEST_CASE(TestBoundsFromMaterialID)
+{	
+	const char* inputMeshFile  = INPUT("meshed_volume.vtk");
+	//get bounds of image thresholded with material ID 42 (inner part)
+	std::vector<double> innerBounds = MiscMeshOperators::BoundsFromMaterialID(inputMeshFile,42);
+	//get bounds of image thresholded with material ID 1 (outer part)
+	std::vector<double> outerBounds = MiscMeshOperators::BoundsFromMaterialID(inputMeshFile,1);
+	//xmin_inner > xmin_outer and xmax_inner<xmax_outer
+	BOOST_CHECK(innerBounds[0]>outerBounds[0]&&innerBounds[1]<outerBounds[1]);
+	//ymin_inner > ymin_outer and ymax_inner<ymax_outer
+	BOOST_CHECK(innerBounds[2]>outerBounds[2]&&innerBounds[3]<outerBounds[3]);
+	//zmin_inner > zmin_outer and zmax_inner<zmax_outer
+	BOOST_CHECK(innerBounds[4]>outerBounds[4]&&innerBounds[5]<outerBounds[5]);
+ 
+}

@@ -545,6 +545,24 @@ string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<in
 	return outfile;
 }
 
+vector<double> BoundsFromMaterialID(const char* infile, int materialID)
+{
+	vtkSmartPointer<vtkUnstructuredGrid> dataGrid = IOHelper::VTKReadUnstructuredGrid(infile); 
+	vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+    __SetInput(threshold, dataGrid);
+    threshold->ThresholdBetween(materialID,materialID);
+    threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Materials");
+    threshold->Update();
+	
+	vtkSmartPointer<vtkUnstructuredGrid> mesh = threshold->GetOutput();	
+	double *bounds = mesh->GetBounds();
+	//not really nice
+	std::vector<double> vecBounds(bounds, bounds + 6);	
+	return vecBounds;
+}
+
+
+
 /*
 	Select volumes by their material id. All volumes with id given in group vector will be selected, 
 	merged, and saved.
@@ -574,8 +592,7 @@ string SelectVolumesByMaterialID(const char* infile, const char* outfile, std::v
 		log_debug() << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  matId << std::endl;     
 		//extract volume
 		vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
-		mesh->DeepCopy(threshold->GetOutput());
-
+		mesh->DeepCopy(threshold->GetOutput());	
 		volumes.push_back(mesh);
 		totalNumberVolumes++;
 		totalNumberPoints+=mesh->GetNumberOfPoints();
