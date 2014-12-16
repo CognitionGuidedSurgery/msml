@@ -113,7 +113,8 @@ def closest_point(mesh, vector, radius = None):
     if radius is None:
         index = locator.FindClosestPoint(vector)
     else:
-        index = locator.FindClosestPointWithinRadius(radius, vector)
+        a = vtk.mutable(0.0)
+        index = locator.FindClosestPointWithinRadius(radius, vector, a)
 
     point = ugrid.GetPoint(index)
     distance = math.sqrt(sum(starmap(lambda a, b: (b-a)**2, zip(vector, point))))
