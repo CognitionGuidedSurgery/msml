@@ -3,6 +3,9 @@
 
 namespace MSML {
     namespace Converters {
-      LIBRARY_API bool dummyFunction();
+      LIBRARY_API bool dummyFunction()
+      {
+        return true;
+      }
     }
 }

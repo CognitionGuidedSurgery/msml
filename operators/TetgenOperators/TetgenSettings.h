@@ -20,7 +20,7 @@ struct TetgenSettings {
     bool optimizationUseVertexSmoothing;
     bool optimizationUseVertexInsAndDel;
 
-    TetgenSettings();
+    LIBRARY_API TetgenSettings();
 };
 }
 }

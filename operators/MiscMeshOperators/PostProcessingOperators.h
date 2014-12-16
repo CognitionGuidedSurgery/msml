@@ -83,7 +83,7 @@ LIBRARY_API void TransformSurfaceBarycentric(vtkPolyData* mesh, vtkUnstructuredG
 
 LIBRARY_API std::string ImageSum(const char* imagedataFilePattern, bool normalize, const char* outfile);
 
-void CalcVecBarycentric(double* pInMM, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vecOut);
+LIBRARY_API void CalcVecBarycentric(double* pInMM, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vecOut);
 
 } //end namespace PostProcessingOperators
 } // end namespace MediAssist
