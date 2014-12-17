@@ -1,0 +1,104 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+  <variables>
+    <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="SegmentationImage3D"
+             physical="file.vtk"/>
+    <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk" />
+    <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk" />
+    <var name="surface_pressure" value="50" physical="float" />
+  </variables>
+
+  <scene>
+    <object id="lungPat">
+      <mesh>
+        <linearTet id="combo_mesh_in_simulation" mesh="${surfaceExtraction}"/>
+      </mesh>
+
+      <material>
+        <region id="patMaterial01" indices="${bodyToIndexGroup}">
+          <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
+          <mass massDensity="0.001"/>
+        </region>
+        <region id="patMaterial02" indices="${bonesToIndexGroup}">
+          <linearElasticMaterial youngModulus="19000" poissonRatio="0.4"/>
+          <mass massDensity="0.001"/>
+        </region>
+        <region id="patMaterial03" indices="${lung1ToIndexGroup}">
+          <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
+          <mass massDensity="0.001"/>
+        </region>
+        <region id="patMaterial04" indices="${lung2ToIndexGroup}">
+          <linearElasticMaterial youngModulus="100" poissonRatio="0.4"/>
+          <mass massDensity="0.001"/>
+        </region>
+      </material>
+
+
+      <constraints>
+        <constraint forStep="${initial}" name="1">
+          <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
+          <surfacePressure name="l1" indices="${lung1facesToIndexGroup}" pressure="${surface_pressure}"/>
+          <surfacePressure name="l2" indices="${lung2facesToIndexGroup}" pressure="${surface_pressure}"/>
+        </constraint>
+      </constraints>
+
+      <output>
+        <displacement id="disp" timestep="1"/>
+      </output>
+    </object>
+  </scene>
+
+  <workflow>
+    <ExtractAllSurfacesByMaterial id="surfaceExtraction" meshIn="${VolumeMesher}" meshOutFilename="${combo_mesh_filename}"
+                                      cut="false"/>
+
+    <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${tet_only_mesh_filename}" image="${segementation_voxel_image}"
+                       facetAngle="20" facetSize="12" facetDistance="3" cellRadiusEdgeRatio="3" cellSize="18" />
+
+    <ComputeIndicesFromMaterialId id="bodyToIndexGroup"
+                             num="100" mesh="${surfaceExtraction}"
+                             type="elements"/>
+
+    <ComputeIndicesFromMaterialId id="bonesToIndexGroup"
+                             num="25" mesh="${surfaceExtraction}"
+                             type="elements"/>
+
+    <ComputeIndicesFromMaterialId id="lung1ToIndexGroup"
+                             num="50" mesh="${surfaceExtraction}"
+                             type="elements"/>
+
+    <ComputeIndicesFromMaterialId id="lung2ToIndexGroup"
+                             num="75" mesh="${surfaceExtraction}"
+                             type="elements"/>
+
+    <ComputeIndicesFromMaterialId id="lung1facesToIndexGroup"
+                             num="50" mesh="${surfaceExtraction}"
+                             type="faces"/>
+
+    <ComputeIndicesFromMaterialId id="lung2facesToIndexGroup"
+                             num="75" mesh="${surfaceExtraction}"
+                             type="faces"/>
+
+    <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
+                               box="-10 190 -10 1000 1000 1000" mesh="${surfaceExtraction}"
+                               select="points"/>
+    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" targetSurfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
+    <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
+    <GenerateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf.vtk" spacing="10"/>
+    <ApplyDVF id="deformeImage" referenceImage="${segementation_voxel_image}" outputDefImageFilename="deformedSegmentationImage.vti" dvf="${dvf}" reverseDirection="true" voxelSize="5"/>
+
+  </workflow>
+
+
+
+  <environment>
+    <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+    <simulation>
+      <step name="initial" dt="0.05" iterations="100"/>
+    </simulation>
+  </environment>
+
+</msml:msml>
