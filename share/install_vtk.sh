@@ -20,10 +20,10 @@ if [ ! -d $DIRNAME ]; then
     tar xf $ARCHIV
 fi
 
-if [ ! -d $BUILD_DIR ]; then
-    mkdir $BUILD_DIR
+# if [ ! -d $BUILD_DIR ]; then
+    mkdir -p $BUILD_DIR
     cd $BUILD_DIR
-    cmake ../$DIRNAME
+    cmake ../$DIRNAME -DVTK_WRAP_PYTHON:BOOL=ON
     make -j 2
     cd ..
-fi
+# fi
