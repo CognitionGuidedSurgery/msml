@@ -2,7 +2,7 @@
 
 pwd 
 
-export PYTHONPATH=./cbuild/bin/
+export PYTHONPATH=./cbuild/bin/:/home/ubuntu/msml/cache/VTK-6.1.0-BUILD/Wrapping/Python/:/home/ubuntu/msml/cache/VTK-6.1.0-BUILD/lib/
 
 cd /home/ubuntu/msml/
 
