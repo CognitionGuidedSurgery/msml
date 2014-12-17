@@ -35,14 +35,19 @@
 			</sets>		
 			<material>	
 				<region id="pistonAMaterial" indices="${pistonAMatIds}">
-                    <linearElasticMaterial youngModulus="3200" poissonRatio="0.45"/>
+                    <linearElasticMaterial youngModulus="2200" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
                 </region>		
 				 <region id="pistonBMaterial" indices="${pistonBMatIds}">
-                    <linearElasticMaterial youngModulus="3000" poissonRatio="0.45"/>
+                    <linearElasticMaterial youngModulus="2000" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
                 </region>		
-            </material>							
+            </material>		
+			<constraints>		
+				<constraint name="test" forStep="${initial}">                    
+					<surfacePressureOnMesh mesh="${SurfacePressureExtractor}" indices="${pressureIndices}" pressure="3000"/>				
+                </constraint>									
+			</constraints>				
 			<output>
                 <displacement id="movingMesh" timestep="1"/>
             </output>		
@@ -60,7 +65,7 @@
 			</sets>		
 			<material>	
 			 <region id="cylinderMaterial" indices="${cylinderMatIds}">
-                    <linearElasticMaterial youngModulus="4200" poissonRatio="0.45"/>
+                    <linearElasticMaterial youngModulus="2200" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
                 </region>			
             </material>		
@@ -117,21 +122,28 @@
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
 		
-		<!-- calculate indices by material ids
-		<ComputeIndicesFromMaterialId id="cylinderPointIds" num="1" mesh="${FixedSplit}" type="faces" />
-		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="1" mesh="${FixedSplit}" type="elements" />
-		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="42" mesh="${MovingSplit}" type="elements" />	
-		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="42" mesh="${MovingSplit}" type="elements" />	
-		 -->
-		<BoundsFromMaterialID id="MovingBounds" mesh="${VolumeMesher}" materialID="42"/>
-		
-		
+		<ExtractAllSurfacesByMaterial id="SurfacePressureExtractor" meshIn="${MovingSplit}" 
+									   meshOutFilename="testmesh.vtk" cut="false"/> 
+									   
+		<ComputeIndicesFromMaterialId id="pressureIndices" num="1" 
+									  mesh="${SurfacePressureExtractor}" type="faces" />
+									  
+		<!-- Measure surface volume of cylinder befor simulation -->
+		<ExtractSurfaceMesh id="CylinderSurfacePreSim"  
+							mesh="${VolumeForcesMesher}"  targetSurfaceMeshFilename="cylinder_surface_presim.vtk"/>						   
+		<SurfaceMeshVolume id="CylinderPreSimVolume" mesh="${CylinderSurfacePreSim}"/>		
+									  
+		<!-- Measure surface volume of cylinder after simulation, should increase -->
+		<ExtractSurfaceMesh id="CylinderSurfacePostSim"  
+							mesh="${fixedMesh}"  targetSurfaceMeshFilename="cylinder_surface_postsim.vtk"/>						   
+		<SurfaceMeshVolume id="CylinderPostSimVolume" mesh="${CylinderSurfacePostSim}"/>	
+				
   </workflow>
     <environment>		
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="1" gravity="0 -9.81 0"/>
+            <step name="initial" dt="0.05" iterations="10" gravity="0 -9.81 0"/>
         </simulation>	
     </environment>
 </msml:msml>
