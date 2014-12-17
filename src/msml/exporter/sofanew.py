@@ -366,15 +366,27 @@ class SofaExporter(XMLExporter):
                     #check if mesh is in MSML folder
 
                     #if not -> copy
-                elif currentConstraintType == "surfacePressure":
+                elif currentConstraintType == "surfacePressure" or currentConstraintType == "surfacePressureOnMesh":
                     indices_vec = self.get_value_from_memory(constraint, 'indices')
-                    indices = '%s' % ', '.join(map(str, indices_vec))
+                    indices = '%s' % ', '.join(map(lambda s: str(int(s)), indices_vec))
+                    
                     constraintNode = self.sub("Node", objectNode, name="SurfaceLoad")
+                    vtkLoaderName = "LOADER"
+                    
+                    #see if it is surface pressure with a mesh given
+                    if(currentConstraintType == "surfacePressureOnMesh"):  
+                        #create a new vtkLoader for pressure mesh and adjust loader name                      
+                        pressureMesh = self.get_value_from_memory(constraint, 'mesh')
+                        vtkLoaderName = "PRESSUREMESHLOADER"
+                        loaderNode = self.sub("MeshVTKLoader", constraintNode,
+                                          name=vtkLoaderName,
+                                          createSubelements="0",
+                                          filename=pressureMesh)          
 
                     self.sub("MeshTopology", constraintNode,
                              name="SurfaceTopo",
-                             position="@LOADER.position",
-                             triangles="@LOADER.triangles", quads="@LOADER.quads")
+                             position="@%s.position" % vtkLoaderName,
+                             triangles="@%s.triangles" % vtkLoaderName, quads="@%s.quads" % vtkLoaderName)
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
@@ -397,7 +409,7 @@ class SofaExporter(XMLExporter):
                     self.sub("BarycentricMapping", constraintNode,
                              template=self._processing_unit + ",Vec3f",
                              name="barycentricMapSurfacePressure",
-                             input="@..", output="@.")
+                             input="@..", output="@.")            
 
                 elif currentConstraintType == "springMeshToFixed":
 
