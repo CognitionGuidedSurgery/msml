@@ -1,0 +1,43 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml ../../test.xsd">    
+    <workflow>		
+		<!-- Mesh original image, measure volume of piston mesh -->
+		<CGALMeshVolumeFromVoxels id="OriginalVolumeMesher" meshFilename="original_meshed.vtk" 
+					   image="cycytubeImage.vtk"
+                       facetAngle="14" facetSize="8" facetDistance="8" cellSize="12"
+                       cellRadiusEdgeRatio="3"  odt="false" lloyd="false" pertube="false"
+                       exude="false"/>	
+		<SelectVolumesByMaterialID id="OriginalPistonSplit" selectedVolumesFilename="original_piston.vtk" 
+										mesh="${OriginalVolumeMesher}" group="2"/>						   
+		<ExtractSurfaceMesh id="OriginalPistonSurface"  
+							mesh="${OriginalPistonSplit}" targetSurfaceMeshFilename="original_piston_surface.vtk"/>						   
+		<SurfaceMeshVolume id="OriginalPistonSurfaceVolume" mesh="${OriginalPistonSurface}"/>		
+					   
+	
+		<!-- Morph original image, erode piston, dilate surrounding, then mesh and measure volume of piston -->
+		<MorphCube id="Morpher" 
+					image="cycytubeImage.vtk" 
+					morphedImage="cycytubeImage_eroded.vti"							
+					toDilate="1" 
+					toErode="2" 
+					morph_kernel="10 10 10"/>	
+		<CGALMeshVolumeFromVoxels id="MorphedVolumeMesher" meshFilename="morph_meshed.vtk" 
+					   image="${Morpher}"
+                       facetAngle="14" facetSize="8" facetDistance="8" cellSize="12"
+                       cellRadiusEdgeRatio="3"  odt="false" lloyd="false" pertube="false"
+                       exude="false"/>	
+		<SelectVolumesByMaterialID id="MorphedPistonSplit" selectedVolumesFilename="morphed_piston.vtk" 
+									mesh="${MorphedVolumeMesher}" group="2"/>
+		<ExtractSurfaceMesh id="MorphedPistonSurface"  
+							mesh="${MorphedPistonSplit}" targetSurfaceMeshFilename="morphed_piston_surface.vtk"/>						   
+		<SurfaceMeshVolume id="MorphedPistonSurfaceVolume" mesh="${MorphedPistonSurface}"/>		
+	</workflow>   
+	 <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="1"/>
+        </simulation>
+    </environment>
+</msml:msml>

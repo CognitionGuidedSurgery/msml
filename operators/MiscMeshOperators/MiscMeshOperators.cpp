@@ -629,14 +629,14 @@ string SelectVolumesByMaterialID(const char* infile, const char* outfile, std::v
 
   output is a vti-image
 */
-bool MorphCube(const char *infile, const char *outfile, double toDilate, double toErode,
+string MorphCube(const char *infile, const char *outfile, double toDilate, double toErode,
 					std::vector<double> morph_kernel)
 {
 	//fail if morph_kernel does not contain exactly three values
 	if(morph_kernel.size()!=3)
 	{
 		log_error()<<"Exactly three values are needed for kernel size!"<<std::endl;
-		return false;
+		return infile;
 	}
 	//load image
 	vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(infile);	
@@ -653,7 +653,7 @@ bool MorphCube(const char *infile, const char *outfile, double toDilate, double 
 
 	//save image
 	IOHelper::VTKWriteImage(outfile,dilateErode->GetOutput());
-	return true;
+	return outfile;
 }
 
 /*
