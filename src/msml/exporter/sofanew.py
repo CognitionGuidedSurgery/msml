@@ -108,7 +108,7 @@ class SofaExporter(XMLExporter):
         #uncomment to use four gpus
         #os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
 
-        if (msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
+        if (msml.envconfig.SOFA_EXECUTABLE.lower().find('runsofa') > -1): #linux: runSofa, windows: RunSofa.exe
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
             callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -l SOFACuda -g batch -n ' + str(
                 timeSteps) + ' ' + os.path.join(os.getcwd(),
