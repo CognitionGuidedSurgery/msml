@@ -24,5 +24,4 @@ class Scenarios(TestCase):
 
         memory = self.app.execute_msml_file(msml_file)
         error = memory._internal['meanErrorOperator']['error']
-        #invalid test data, todo: exchange
-        #self.assertTrue( error < 3.14e-4) 
+        self.assertTrue( error < 3.14e-4) 
