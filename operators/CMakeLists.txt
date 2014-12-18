@@ -192,6 +192,17 @@ MACRO(MSML_LIBRARY)
   IF(WIN32 AND NOT CYGWIN)
     ADD_LIBRARY(${ML_NAME} SHARED ${ML_SOURCES} "${CMAKE_SOURCE_DIR}/common/log.cpp")
 	set_target_properties (_${ML_NAME}Python PROPERTIES COMPILE_DEFINITIONS "PYTHONLOGGING") #experimental
+
+	string(TOUPPER "${CMAKE_BUILD_TYPE}" CONFIG)
+	GET_TARGET_PROPERTY(MY_BINARY_LOCATION ${ML_NAME} LOCATION_${CONFIG} )
+	INCLUDE(GetPrerequisites)
+	message(${MY_BINARY_LOCATION} " looking for DEPENDENCIES... ")
+	GET_PREREQUISITES(${MY_BINARY_LOCATION} DEPENDENCIES 1 1 "" "")
+	foreach(DEPENDENCY_FILE ${DEPENDENCIES})
+	gp_resolve_item("${MY_BINARY_LOCATION}" "${DEPENDENCY_FILE}" "" "" resolved_file)
+	message("resolved_file='${resolved_file}'")
+    endforeach()
+
   ELSE()
     set_target_properties (_${ML_NAME}Python PROPERTIES COMPILE_DEFINITIONS "PYTHONLOGGING")
 	ADD_LIBRARY(${ML_NAME} SHARED ${ML_SOURCES} "${CMAKE_SOURCE_DIR}/common/log.cpp")
@@ -214,3 +225,4 @@ ADD_SUBDIRECTORY(CLI)
 ADD_SUBDIRECTORY(ACVDOperators) 
 
 
+INCLUDE(CPack)
