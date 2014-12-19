@@ -8,17 +8,24 @@
     <workflow>
         <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/>
         
-        <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="8" smoothing="2"/>
-        <!-- TODO: add marginExtension, cp. ImageCreator -->
+        <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="7" smoothing="1"/>
         
-        <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mitralvalveVolumeSurface.vtk" isoValue="9"/>
-        <!-- Voxel2ContourOperator; maybe rather MSMLalize/implement own operator for this task -->
+        <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mitralvalveVolumeSurface.vtk" isoValue="30"/>
+        <!-- Voxel2ContourOperator; maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
         
-        <!-- CGAL_Mesher -->
-        
+        <!-- <ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput) -->
         <!-- ACVD_Remeshing_Operator / MeshCellNumber_Reduction_Operator -->
         
-        <!-- vtk2HiFlow3inpWithMatIDsOperator -->
+        <CGALMeshVolumeFromSurface id="aVolumeMesher" meshFilename="mitralvalveVolumeMesh3D_CGAL.vtk" surfaceMesh="${aVoxelToContourOperator}"
+                       preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
+                       cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
+                       exude="false"/>
+        
+        <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolMesh.vtu"/>
+        <!-- convertVTKbinaryToVTU -->
+        
+        <vtuToHf3inpWithBdyFacetMatIDsProducer id="aVtuToHf3inpWithBdyFacetMatIDsProducer" inputfilename="${vtuConverter}" outputfilename="mvVolMesh_hf3inp.inp" integer="0"/>
+        <!-- MSMLalize vtu2HF3inpWithmatIDs-Python-Operator -->
         
         <!-- Simulation_Mgmt_Operator -->
         
