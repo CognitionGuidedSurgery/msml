@@ -16,15 +16,10 @@
 
     <parameters>
         <arg name="outputfilename" logical="object" physical="string">
-<<<<<<< .merge_file_a03328
 	    </arg>
+        
         <arg name="integer" logical="Scalar" physical="int" optional="true" default="0">
         </arg>
-=======
-	       </arg>
-        <arg name="integer" logical="Scalar" physical="int" optional="true" default="0">
-           </arg>
->>>>>>> .merge_file_a06808
     </parameters>
 
 </msml:operator>
