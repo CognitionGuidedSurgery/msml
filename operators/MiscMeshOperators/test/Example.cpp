@@ -261,8 +261,8 @@ BOOST_AUTO_TEST_CASE(TestBoundsFromMaterialID)
 
 BOOST_AUTO_TEST_CASE(TestSurfaceFromVolumeAndNormalDirection)
 {	
-	const char* inputMeshFile  = INPUT("bunny_polydata.vtk");
-	const char* outputMeshFile = OUTPUT("bunny_polydata_normal_filtered.vtk");
+	const char* inputMeshFile  = INPUT("bowl.vtk");
+	const char* outputMeshFile = OUTPUT("bowl_normals_selected.vtk");
 	//select all surface elements with normals facing in z-direction (0,0,1), using an angle margin of 30 deg
 	std::vector<double> desiredNormalDir;
 	desiredNormalDir.push_back(0);
