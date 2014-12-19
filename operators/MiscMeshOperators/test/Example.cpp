@@ -255,6 +255,27 @@ BOOST_AUTO_TEST_CASE(TestBoundsFromMaterialID)
 	//ymin_inner > ymin_outer and ymax_inner<ymax_outer
 	BOOST_CHECK(innerBounds[2]>outerBounds[2]&&innerBounds[3]<outerBounds[3]);
 	//zmin_inner > zmin_outer and zmax_inner<zmax_outer
-	BOOST_CHECK(innerBounds[4]>outerBounds[4]&&innerBounds[5]<outerBounds[5]);
- 
+	BOOST_CHECK(innerBounds[4]>outerBounds[4]&&innerBounds[5]<outerBounds[5]); 
+}
+
+
+BOOST_AUTO_TEST_CASE(TestSurfaceFromVolumeAndNormalDirection)
+{	
+	const char* inputMeshFile  = INPUT("bunny_polydata.vtk");
+	const char* outputMeshFile = OUTPUT("bunny_polydata_normal_filtered.vtk");
+	//select all surface elements with normals facing in z-direction (0,0,1), using an angle margin of 30 deg
+	std::vector<double> desiredNormalDir;
+	desiredNormalDir.push_back(0);
+	desiredNormalDir.push_back(0);
+	desiredNormalDir.push_back(1);
+	std::string resultFile = MiscMeshOperators::SurfaceFromVolumeAndNormalDirection(inputMeshFile,outputMeshFile,desiredNormalDir,30);
+	BOOST_CHECK(outputMeshFile==resultFile);
+	//check if resulting surface mesh has less elements than input mesh, but more than zero elements (stupid test)
+	vtkSmartPointer<vtkUnstructuredGrid> resultMesh = IOHelper::VTKReadUnstructuredGrid(outputMeshFile);
+	vtkSmartPointer<vtkPolyData> inputMesh = IOHelper::VTKReadPolyData(inputMeshFile);
+	
+	BOOST_CHECK(resultMesh->GetNumberOfCells()>0&&
+			   (resultMesh->GetNumberOfCells()<inputMesh->GetNumberOfCells()));
+		
+
 }

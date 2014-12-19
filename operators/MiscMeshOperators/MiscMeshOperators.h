@@ -136,6 +136,9 @@ namespace MiscMeshOperators
   LIBRARY_API std::string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<int> toReplace, int replaceBy);
   LIBRARY_API std::vector<double> BoundsFromMaterialID(const char* infile, int materialID);
 
+  LIBRARY_API std::string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfile, std::vector<double> desiredNormalDir, 
+															  double margin);
+
 } //end namespace MiscMeshOperators
 } // end namespace MSML
 

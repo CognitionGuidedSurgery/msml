@@ -103,7 +103,9 @@
 
 #include <vtkImageDilateErode3D.h>
 #include <vtkImageThreshold.h>
-
+#include <vtkPolyDataNormals.h>
+#include <vtkMath.h>
+#include <math.h>
 
 
 using namespace std;
@@ -520,6 +522,76 @@ bool DebugPrint(vector<int> to_print)
 	cerr<<std::endl;
 	return true;
 }
+/*
+Calculate angle between two vectors. Output angle as radians.
+Copied from here:
+http://review.source.kitware.com/#/t/3804/
+(This function should be included in recent versions of vtk)
+*/
+double AngleBetweenVectors(const double v1[3], const double v2[3])
+{
+	double cross[3];
+	vtkMath::Cross(v1, v2, cross);
+	return atan2(vtkMath::Norm(cross), vtkMath::Dot(v1, v2));
+}
+/*
+   Select surface elements from a mesh based on normal direction of surface elements.
+   All surface elements having a normal vector facing in same direction (including a margin) as desired input normal vector 
+   will be selected and saved to outfile.
+*/
+string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfile, std::vector<double> desiredNormalDir, double margin)
+{
+	vtkSmartPointer<vtkPolyData> mesh = IOHelper::VTKReadPolyData(infile);
+
+	vtkSmartPointer<vtkPolyDataNormals> normalGenerator = vtkSmartPointer<vtkPolyDataNormals>::New();
+	normalGenerator->SetInputData(mesh);
+	normalGenerator->ComputePointNormalsOn();
+	normalGenerator->ComputeCellNormalsOn();
+	normalGenerator->Update();
+
+	log_info()<<mesh->GetNumberOfCells()<<" cells before filtering with ("
+			  <<desiredNormalDir[0]<<","<<desiredNormalDir[1]<<","<<desiredNormalDir[2]<<") margin:"<<margin<<std::endl;
+
+	vtkSmartPointer<vtkPolyData> normalsMesh = normalGenerator->GetOutput();
+
+	vtkSmartPointer<vtkCellData> cellData = normalsMesh->GetCellData();
+    vtkSmartPointer<vtkDataArray> cellNormals = cellData->GetNormals();	
+	int num = cellData->GetNumberOfTuples();
+	vtkSmartPointer<vtkFloatArray> selNormals = vtkSmartPointer<vtkFloatArray>::New();
+	selNormals->SetName("selNormals");
+	selNormals->SetNumberOfTuples(num);
+	normalsMesh->GetCellData()->AddArray(selNormals);
+	
+	double* inpNormal = &desiredNormalDir[0];	
+	vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+	
+	for(int i=0;i<num;++i)
+	{
+		double *normal = cellNormals->GetTuple(i);
+		double normAngle = vtkMath::DegreesFromRadians(AngleBetweenVectors(normal,inpNormal));					
+		if(normAngle<margin)
+		{
+			selNormals->SetValue(i,normAngle);
+		}else
+		{
+			selNormals->SetValue(i,180);
+		}
+	}
+	__SetInput(threshold, normalsMesh);
+	
+    threshold->ThresholdBetween(0,margin);
+    threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "selNormals");
+    threshold->Update();
+	vtkSmartPointer<vtkUnstructuredGrid> extractedMesh = threshold->GetOutput();
+	log_info()<<extractedMesh->GetNumberOfCells()<<" cells after filtering"<<std::endl;
+
+	IOHelper::VTKWriteUnstructuredGrid(outfile,extractedMesh);
+	
+	return outfile;
+}
+
+
+
 /*
 	For given image: replace occurence of every value in toReplace-vector  by replaceBy
 	Input: Image with values 1,2,3
