@@ -27,7 +27,6 @@
 # ======================================================================
 
 __author__ = 'schoch'
-#from XYZ import ABC ???
 import sys
 import vtk
 
@@ -102,7 +101,6 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	# ComputeCellNormals to 'on'. Update the filter.
 	# ======================================================================
 	normals = vtk.vtkPolyDataNormals()
-	
 	
 	if version.GetVTKMajorVersion() >= 6:
 		normals.SetInputData(boundaryFaces)

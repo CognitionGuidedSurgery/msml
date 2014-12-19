@@ -21,18 +21,17 @@
 //modified example from: http://www.vtk.org/Wiki/VTK/Examples/Cxx/Medical/GenerateModelsFromLabels TODO: update this with correct link!
 // Surface2VoxelsOperator
 // reads in a PolyData File and converts it to an image.
-//   Usage: Surface2VoxelsOperator InputSurfaceSegmentation OutputVTKImage AccuracyLevel
+//   Usage: Surface2VoxelsOperator InputSurfaceSegmentation.vtk OutputVTKImage.vti AccuracyLevel Smoothing
 //          where
-//          InputSurfaceSegmentation is a vtkPolyData file.
-//          OutputVTKImage is the vtkImage (.vti) representing the segmentation;
+//          InputSurfaceSegmentation: is a vtkPolyData (.vtk) representing the segmentation.
+//          OutputVTKImage: is the vtkImage (.vti) representing the segmentation;
 //             it contains non-zero values at the points of the PolyData Surface.
-//          AccuracyLevel is the resolution of the image (affects computational costs).
-//             reasonable range: 1 - 10 (e.g. 8)
-//          Smooting is the Gaussian filter applied to broaden the non-zero values.
-//             reasonable range: 1 - 10 (e.g. 2)
+//          AccuracyLevel: a scalar value, represents the resolution of the image (affects computational costs);
+//             reasonable range: 1 - 10 (e.g. default: 8).
+//          Smoothing: a scalar value, represents the Gaussian filter applied to broaden the non-zero values;
+//             reasonable range: 1 - 10 (e.g. default: 2).
 //          NOTE: The PolyData File has to consist of surface triangles.
-//      
-//
+// 
 
 #include <SurfaceToVoxelDataOperator.h>
 #include <MiscMeshOperators.h>
@@ -66,8 +65,10 @@ namespace MSML
     vtkSmartPointer<vtkPolyData> pd = IOHelper::VTKReadPolyData(infile);
     // Note: vtp (PolyData) as input required; if necessary use MSML STL2VTK-Converter.
     
-    vtkSmartPointer<vtkImageData> image = MiscMeshOperators::ImageCreateWithMesh(pd, 100);
-    MiscMeshOperators::ImageEnlargeIsotropic(image, 20.0); // Note: this is properly tuned only for the mitral valve.
+    
+    vtkSmartPointer<vtkImageData> image = MiscMeshOperators::ImageCreateWithMesh(pd, 300);
+    MiscMeshOperators::ImageEnlargeIsotropic(image, 20.0); // adding marginExtension, cp. ImageCreator.
+    // Note: this is properly tuned only for the mitral valve.
     
     float ref_fac = accuracy_level;
     float smooth_size = smoothing;
