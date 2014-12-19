@@ -9,6 +9,7 @@
         <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/>
         
         <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="7" smoothing="1"/>
+        <!-- DistanceMapOperator -->
         
         <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mitralvalveVolumeSurface.vtk" isoValue="30"/>
         <!-- Voxel2ContourOperator; maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
@@ -24,7 +25,7 @@
         <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolMesh.vtu"/>
         <!-- convertVTKbinaryToVTU -->
         
-        <vtuToHf3inpWithBdyFacetMatIDsProducer id="aVtuToHf3inpWithBdyFacetMatIDsProducer" inputfilename="${vtuConverter}" outputfilename="mvVolMesh_hf3inp.inp" integer="0"/>
+        <!-- <vtuToHf3inpWithBdyFacetMatIDsProducer id="aVtuToHf3inpWithBdyFacetMatIDsProducer" inputfilename="${vtuConverter}" outputfilename="mvVolMesh_hf3inp.inp" integer="0"/> -->
         <!-- MSMLalize vtu2HF3inpWithmatIDs-Python-Operator -->
         
         <!-- Simulation_Mgmt_Operator -->
