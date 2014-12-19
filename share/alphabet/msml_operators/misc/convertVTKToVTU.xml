@@ -1,0 +1,24 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ConvertVTKToVTU">
+
+	<runtime>
+		<python module="msml.ext.misc" function="ConvertVTKToVTU" />
+	</runtime>
+
+	<input>
+		<arg name="VTKMesh" logical="VolumeMesh" physical="file.vtk" />
+	</input>
+
+	<output>
+		<arg name="VTKMeshAscii" logical="VolumeMesh" physical="file.vtk" />
+	</output>
+   
+   <parameters>
+      <arg name="targetFilename" physical="str" optional="true" target="true">
+            <meta key="doc">
+                Optional input filename for the output. File extension must be .vtu!
+            </meta>
+      </arg>
+	</parameters>
+</msml:operator>
