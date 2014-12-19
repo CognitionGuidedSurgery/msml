@@ -27,7 +27,10 @@
 # ======================================================================
 
 __author__ = 'schoch'
+<<<<<<< HEAD
 #from XYZ import ABC ???
+=======
+>>>>>>> msml-dev-nico-nb
 import sys
 import vtk
 
@@ -86,6 +89,7 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	# Update the filter and get its output, which is of type 'vtkPolyData'.
 	# ======================================================================
 	geometryFilter = vtk.vtkGeometryFilter()
+<<<<<<< HEAD
 	version = vtk.vtkVersion()
 	
 	if version.GetVTKMajorVersion() >= 6:
@@ -93,6 +97,9 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	else:
 		geometryFilter.SetInput(unstructuredGrid)
 	
+=======
+	geometryFilter.SetInput(unstructuredGrid)
+>>>>>>> msml-dev-nico-nb
 	geometryFilter.Update()
 	boundaryFaces = geometryFilter.GetOutput()
 	
@@ -102,6 +109,7 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	# ComputeCellNormals to 'on'. Update the filter.
 	# ======================================================================
 	normals = vtk.vtkPolyDataNormals()
+<<<<<<< HEAD
 	
 	
 	if version.GetVTKMajorVersion() >= 6:
@@ -109,6 +117,9 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	else:
 		normals.SetInput(boundaryFaces)
 		
+=======
+	normals.SetInput(boundaryFaces)
+>>>>>>> msml-dev-nico-nb
 	normals.ComputePointNormalsOff()
 	normals.ComputeCellNormalsOn()
 	normals.Update()
