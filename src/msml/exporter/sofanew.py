@@ -502,6 +502,30 @@ class SofaExporter(XMLExporter):
                     #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
                     #                      name=constraint.id or constraint_set.name,
                     #                      dispIndices=indices, displacements=constraint.displacement)
+                elif currentConstraintType == "forceConstraint":
+                    indices_vec = self.get_value_from_memory(constraint, 'indices')
+                    indices = '%s' % ', '.join(map(str, indices_vec))
+
+                    #TODO: How do we get the disp values from memory?
+                    force_vec = self.get_value_from_memory(constraint, 'force')
+                    finalForceVec = list();
+
+                    #if only one force is given, assign it to every node
+                    if(len(force_vec)==3):
+                        for index in indices_vec:
+                            finalForceVec.extend(force_vec)
+                    else:
+                         finalForceVec =  force_vec
+
+                    #disp_vec = {0,0,0.01}
+                    #if '$' not in constraint.displacement:
+                    #    disp_vec = [float(x) for x in constraint.displacement]
+
+                    tempForce = '%s' % ' '.join(map(str, finalForceVec))
+
+                    constraintNode = self.sub('ConstantForceField', objectNode,
+                                              name=constraint.id or constraint_set.name,
+                                              points=indices, forces=tempForce)
 
                 elif currentConstraintType == "shapeMatchingConstraint":
                     referenceMesh = self.get_value_from_memory(constraint, 'referenceMesh')

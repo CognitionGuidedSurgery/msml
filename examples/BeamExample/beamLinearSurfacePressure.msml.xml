@@ -2,7 +2,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="LiverXSTet4WithTriangles.vtk" logical="TriangularSurface"
+        <var name="vol_mesh" value="Beam_Tet4WithSurface_NElement=1810.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     </variables>
 
@@ -15,14 +15,11 @@
 
             <sets>
                 <nodes>
-                    <indexgroup id="constraintRegion" indices="${bottomToIndexGroup}"/>
+                    <indexgroup id="constraintRegion" indices="${rightFaceGroup}"/>
                 </nodes>
                 <elements>
                     <indexgroup id="bodyRegion" indices="${bodyToIndexGroup}"/>
                 </elements>
-                <surfaces>
-                    <indexgroup id="constraintRegionSurfaces" indices="${bottomToIndexGroup}"/>
-                </surfaces>
             </sets>
 
 
@@ -35,8 +32,8 @@
 
             <constraints>
                 <constraint>
-                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${bottomToIndexGroup}"/>
-                    <surfacePressure name="l1" indices="${surfacePressureTriangleIds}" pressure="50"/>
+                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${leftFaceGroup}"/>
+                    <surfacePressure name="l1" indices="${rightFaceGroup}" pressure="-5000"/>
                 </constraint>
             </constraints>
 
@@ -47,20 +44,23 @@
     </scene>
 
     <workflow>
-        <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="-76 76 -609 133 245 -417" mesh="${vol_mesh}"
-                               select="elements"/>
-        <ComputeIndicesFromBoxROI id="bottomToIndexGroup" box="27.1 81.5 -599 99 208.1 -484" mesh="${vol_mesh}"
+
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="-0.1 -0.1 -0.1 0.04 0.07  0.21" mesh="${vol_mesh}"
                                select="points"/>
-         <ComputeIndicesFromBoxROI id="surfacePressureTriangleIds" box="64.5 212 -490 104 239 -454" mesh="${vol_mesh}"
+        <ComputeIndicesFromBoxROI id="rightFaceGroup" box="0 0 0.19999 0.03 0.06 0.21" mesh="${vol_mesh}"
                                select="surfaceElements"/>
+
+        <ComputeIndicesFromBoxROI id="leftFaceGroup" box="0 0 -0.000000001 0.03 0.06 0.00000001" mesh="${vol_mesh}"
+                               select="points"/>
+
     </workflow>
 
 
     <environment>
-        <solver linearSolver="iterativeCG" processingUnit="CPU"
+        <solver linearSolver="direct" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="100"/>
+            <step name="initial" dt="0.5" iterations="20" gravity="0 0 0"/>
         </simulation>
     </environment>
 
