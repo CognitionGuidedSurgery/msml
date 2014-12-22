@@ -544,7 +544,7 @@ string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfi
 	vtkSmartPointer<vtkPolyData> mesh = IOHelper::VTKReadPolyData(infile);
 
 	vtkSmartPointer<vtkPolyDataNormals> normalGenerator = vtkSmartPointer<vtkPolyDataNormals>::New();
-	normalGenerator->SetInputData(mesh);
+	__SetInput(normalGenerator,mesh);
 	normalGenerator->ComputePointNormalsOn();
 	normalGenerator->ComputeCellNormalsOn();
 	normalGenerator->Update();

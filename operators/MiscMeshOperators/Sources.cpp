@@ -79,7 +79,7 @@ namespace MSML {
         currentSphereSource->SetThetaResolution(thetaResolution);
         currentSphereSource->SetPhiResolution(phiResolution);
         #if VTK_MAJOR_VERSION <= 5
-          appendFilter->AddInputConnection(currentSphereSource->GetProducerPort());
+          appendFilter->AddInputConnection(currentSphereSource->GetOutputPort());
         #else
           appendFilter->AddInputData(currentSphereSource->GetOutput());
         #endif
