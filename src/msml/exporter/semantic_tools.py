@@ -7,7 +7,6 @@ from jinja2 import Template
 from .base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
-import rdflib.plugins.sparql as sparql
 from rdflib import Graph, Literal, BNode, Namespace, RDF, URIRef
 from rdflib.namespace import DC, FOAF, OWL, RDF, RDFS
 from collections import defaultdict
@@ -54,10 +53,15 @@ class OntoClassRef(URIRef):
         returnStr = template.render(name=self.getClassName(), superclass=superclass)
 
 
-        return
+        return returnStr
 
 
-
+class PropertyInfo(object):
+    def __init__(self, type=OWL.DatatypeProperty, exactCardinality=True, cardinality=1, range=None ):
+        self.type = type;
+        self.exactCardinality = exactCardinality;
+        self.cardinality = cardinality;
+        self.range = range
 
 class OntologyParser(object):
     def __init__(self, ontologyName):
@@ -127,33 +131,47 @@ class OntologyParser(object):
 
     def parseAttributes(self, className):
         #get object properties within class domain
-        classList = self._ontoGraph.subjects(RDF.type, OWL.Class)
+        classURI = URIRef(className)
+        propList = self._ontoGraph.subjects(RDFS.domain, classURI )
+
+        returnDict = dict()
 
 
-        classList = self._ontoGraph.subjects(RDF.type, OWL.Class)
-        for currentClass in classList:
-            print currentClass
 
-        print('Now with sparql')
-        #self._ontoGraph.bind("owl", OWL)
+        for property in propList:
+            ranges = self._ontoGraph.triples( (property, RDFS.range, None) )
+            rangeBNode = self._ontoGraph.value( property, RDFS.range, None )
 
-        # typeURI = URIRef(RDF.type)
-        # classURI = OWL.Class
-        #
-        # queryString = "SELECT ?name  WHERE { ?name <"+RDF.type.lower()+"> <"+OWL.Class.lower()+">}"
-        # print(queryString)
-        #
-        # testStr = 'SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#class>}'
-        # q=sparql.prepareQuery('SELECT ?name  WHERE { ?name <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?c}')
-        # qres = self._ontoGraph.query(q)
-        #
-        # for row in qres:
-        #     print(row)
-        #
-        #
-        # print('complete')
-        #
-        # msml.sorts.conversion(typea, typeb,)
+            #distinguish between datatype property and objectproperty
+            propertyType = self._ontoGraph.value( property, RDF.type, None)
+
+            if propertyType == OWL.DatatypeProperty:
+                print ('datatypeproperty found')
+            else:
+
+
+                cardinality = self._ontoGraph.value( rangeBNode, OWL.qualifiedCardinality, None )
+
+                if cardinality is None:
+                    cardinality = self._ontoGraph.value( rangeBNode, OWL.minQualifiedCardinality, None )
+
+                if cardinality is None:
+                    print('Error, cardinality not specified for property '+property)
+
+                propertyURI = OntoClassRef(property)
+
+                returnDict[propertyURI.getClassName()] = cardinality
+
+                restrinctionBNode = self._ontoGraph.value( rangeBNode, OWL.restriction, None )
+                cardinality = self._ontoGraph.value( rangeBNode, OWL.qualifiedCardinality, None )
+                for restriction in ranges:
+                    print restriction
+
+                print 'test'
+
+
+
+        return returnDict
 
     def addClassToString(self, className, establishedClasses):
 

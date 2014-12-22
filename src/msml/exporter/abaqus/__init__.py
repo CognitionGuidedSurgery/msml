@@ -96,7 +96,7 @@ class AbaqusExporter(XMLExporter):
         modulepath = path(__file__).dirname()
 
 
-        parser = OntologyParser(modulepath / 'MSMLOnto.rdf-xml.owl')
+        parser = OntologyParser(modulepath / 'MSMLBaseOntology.owl')
         modulesDirectory = modulepath / '..' / '..' / 'model' / 'generated'
         parser.createPythonModule(modulesDirectory)
 
