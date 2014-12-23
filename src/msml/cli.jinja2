@@ -1,0 +1,54 @@
+{% macro element(name, value) -%}
+    {% if value -%}
+        <{{ name }}>{{ value }}</{{ name }}>
+    {% else %}
+        <!-- {{ name }} is not given -->
+    {%- endif %}
+{%- endmacro %}
+
+{% macro handle_param(p) %}
+        <{{ p.type }}>
+            <name>{{ p.name }}</name>
+            <label>{{ p.label }}</label>
+            <longflag>{{ p.longflag }}</longflag>
+            {{ element("channel", p.channel) }}
+            {{ element("index", p.index) }}
+            {{ element("description", p.description) }}
+        </{{ p.type }}>
+{% endmacro %}
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    {{ element('category', category) }}
+    {{ element('title', title) }}
+    {{ element('description', description) }}
+    {{ element('version', version) }}
+    {{ element('documentation-url', docurl) }}
+    {{ element('license', license) }}
+    {{ element('contributor', contributor) }}
+    {{ element('acknowledgements', acknowledgements) }}
+
+    <parameters>
+        <label>Input</label>
+        <description><![CDATA[Input Files]]></description>
+        {% for param in inputs %}
+            {{ handle_param(param) }}
+        {% endfor %}
+    </parameters>
+
+    <parameters>
+        <label>Paramters</label>
+        <description><![CDATA[Parameters]]></description>
+        {% for param in parameters %}
+            {{ handle_param(param) }}
+        {% endfor %}
+    </parameters>
+
+
+    <parameters advance="true">
+        <label>Output</label>
+        <description><![CDATA[Output]]></description>
+        {% for param in outputs %}
+            {{ handle_param(param) }}
+        {% endfor %}
+    </parameters>
+</executable>
