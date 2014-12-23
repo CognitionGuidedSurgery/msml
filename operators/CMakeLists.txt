@@ -60,7 +60,7 @@ SET(CMAKE_BUILD_TYPE Debug CACHE STRING
 ########################################################################################################################
 
 IF(MSVC)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP" CACHE STRING)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP" CACHE STRING "Build with Multiple Processes")
 ELSE()
   ## Activating c++0x for gcc
   ## currently supported by VTK6.X (bug)
