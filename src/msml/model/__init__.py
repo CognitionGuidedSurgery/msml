@@ -43,7 +43,7 @@ __date__ = "2014-01-25"
 
 from .alphabet import *
 from .base import *
-from .writer import *
+#from .writer import *
 from .dag import *
 
 
