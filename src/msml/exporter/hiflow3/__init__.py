@@ -30,6 +30,8 @@
 __authors__ = 'Nicolai Schoch, Alexander Weigl <uiduw@student.kit.edu>'
 __license__ = 'GPLv3'
 
+import os
+
 import jinja2
 
 from msml.model import *
@@ -39,15 +41,11 @@ import msml.ext.misc
 
 class MSMLHiFlow3ExporterWarning(MSMLWarning): pass
 
-
 from .. import log
 
 from path import path
 from collections import namedtuple
 from ..base import Exporter
-
-from .findrot import find_rotation, convert4x4
-from msml.sorts import get_sort, conversion
 
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(path(__file__).dirname()))
 
@@ -157,7 +155,6 @@ HIFLOW_FEATURES = frozenset(
      'sets_surface_supported', 'environment_simulation_steps_supported', 'object_element_fixedConstraint_supported',
      'env_timeintegration_dynamicImplicitEuler_supported'])
 
-
 class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
 
@@ -198,18 +195,17 @@ class HiFlow3Exporter(Exporter):
         """Execute `runHiFlow3`
 
         """
-        import msml.envconfig
-        import os
+	import msml.envconfig
+	import os
 
-        try:
-            os.makedirs("SimResults")
-        except:
-            pass
+	try:
+		os.makedirs("SimResults")
+	except: pass
 
-        for scenefile in self.scenes:
-            cmd = "%s %s" % (msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
-            log.info("Executing HiFlow3: %s" % cmd)
-            os.system(cmd)
+	for scenefile in self.scenes:
+	        cmd = "%s %s" % (msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
+        	log.info("Executing HiFlow3: %s" % cmd)
+	        os.system(cmd)
 
 
     def create_scenes(self):
@@ -220,13 +216,6 @@ class HiFlow3Exporter(Exporter):
         :return:
         """
         self.scenes = list()
-
-        from msml.ext.msmlvtk import transform
-
-        gravity = conversion(str, get_sort('vector.float'))(self._msml_file.env.simulation[0].gravity)
-        rotmatrix = convert4x4( find_rotation(gravity, (0,0,-1)) )
-
-        
 
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
@@ -279,7 +268,7 @@ class HiFlow3Exporter(Exporter):
             else:
                 SolveInstationary = 0
 
-            # print os.path.abspath(hf3_filename), "!!!!!!"
+            #print os.path.abspath(hf3_filename), "!!!!!!"
 
             with open(hf3_filename, 'w') as fp:
                 content = SCENE_TEMPLATE.render(
@@ -308,14 +297,13 @@ class HiFlow3Exporter(Exporter):
         :type obj: msml.model.base.SceneObject
         :return:
         """
-
         def create():
             for step in self._msml_file.env.simulation:
                 filename = '%s_%s_%s.bc.xml' % (self._msml_file.filename.namebase, obj.id, step.name)
                 data = self.create_bcdata(obj, step.name)
-                content = BCDATA_TEMPLATE.render(data=data)
+                content = BCDATA_TEMPLATE.render(data = data)
                 with open(filename, 'w') as h:
-                    h.write(content)
+                        h.write(content)
                 yield filename
 
         return list(create())
@@ -340,7 +328,7 @@ class HiFlow3Exporter(Exporter):
         else:
             cs = None
 
-        if cs is None:  # nothing to do here
+        if cs is None: # nothing to do here
             log.warn("No constraint region found for step %s" % step)
             return bcdata
 
@@ -362,7 +350,6 @@ class HiFlow3Exporter(Exporter):
                 bcdata.fp.append(count, points, force_vector)
 
         return bcdata
-
 
 def count_vector(vec, count):
     assert len(vec) == 3
