@@ -28,7 +28,7 @@
 
 __author__ = 'schoch'
 import sys
-#import vtk
+import vtk
 
 
 def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integer):
