@@ -81,18 +81,18 @@ class OperatorTest(TestCase):
         print type(a), len(a)
 
     def test_closestPoints_without_radius(self):
-        input_file = test_common.REF_DIR / 'test_tetgen_1.vtk'
+        input_file = test_common.REF_DIR / 'bunny_tets.vtk'
         result = vtk.closest_point(input_file, vector=(0, 0, 0))
         self.assertDictEqual(
            result,
-           {'index': 300L, 'dist': 0.034515867743136364, 'point': (0.004885139875113964, 0.034125298261642456, 0.001715969992801547)})
+           {'index': 4943L, 'dist': 0.03453012740706179, 'point': (0.004991060122847557, 0.034084200859069824, 0.002384589985013008)})
 
     def test_closestPoints_with_radius(self):
-        input_file = test_common.REF_DIR / 'test_tetgen_1.vtk'
+        input_file = test_common.REF_DIR / 'bunny_tets.vtk'
         result = vtk.closest_point(input_file, vector=(0.0, 0.0, 0.0), radius=10.0)
         self.assertDictEqual(
             result,
-            {'index': 300L, 'dist': 0.034515867743136364, 'point': (0.004885139875113964, 0.034125298261642456, 0.001715969992801547)})
+            {'index': 4943L, 'dist': 0.03453012740706179, 'point': (0.004991060122847557, 0.034084200859069824, 0.002384589985013008)})
 
 
 
