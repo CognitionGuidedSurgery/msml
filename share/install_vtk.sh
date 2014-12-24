@@ -29,7 +29,7 @@ fi
     cd ..
 #fi
 
-if [ ! -d $INSTALL_DIR ]
+if [ ! -d $INSTALL_DIR ]; then
     cd $BUILD_DIR
     make install
     cd ..
