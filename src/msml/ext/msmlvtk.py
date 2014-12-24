@@ -42,7 +42,7 @@ class MSMLVTKImportWarning(MSMLWarning):
 try:
     import vtk
 except:
-    logger.warn("Could not import vtk python module. Did you install python-vtk?")
+    logger.fatal("Could not import vtk python module. Did you install python-vtk?")
 
 def read_ugrid(filename):
     if filename.endswith(".pvtu"):
