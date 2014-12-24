@@ -1,8 +1,8 @@
 #!/bin/bash -x
 cd /home/ubuntu/msml/
 
-export LD_LIBRARY_PATH=./cache/VTK-6.1.0-INSTALL/lib:$LD_LIBRARY_PATH
-export PYTHONPATH=./cbuild/bin/:./cache/VTK-6.1.0-INSTALL/lib/python2.7/site-packages
+export LD_LIBRARY_PATH=/home/ubuntu/msml/cache/VTK-6.1.0-INSTALL/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=/home/ubuntu/msml/cbuild/bin/:/home/ubuntu/msml/cache/VTK-6.1.0-INSTALL/lib/python2.7/site-packages
 
 echo "Nose Test:"
 nosetests -vv --with-coverage  \
