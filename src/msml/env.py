@@ -138,6 +138,9 @@ class _BinarySearchPath(list):
         for i in len(self):
             self[i] = path(self[i])
 
+    def __str__(self):
+        return ':'.join(self)
+
     def add_paths(self, string):
         """append all paths given as a string
         Seperator is ":" on linux, windows ";"

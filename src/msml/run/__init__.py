@@ -409,7 +409,7 @@ class ExecutorsHelper(object):
     def execute_variable(memory, variable, overwrite=False):
         assert isinstance(memory, Memory)
 
-        if variable.name not in memory or overwrite:
+        if (variable.name not in memory) or overwrite:
             return {variable.name: variable.value}
 
 

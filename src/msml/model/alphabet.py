@@ -28,6 +28,7 @@
 
 from collections import OrderedDict
 import pickle
+import re
 
 from ..sorts import *
 from ..exceptions import *
@@ -429,6 +430,12 @@ class Operator(object):
         :rtype: bool"""
         return True
 
+    def get_default_args(self):
+        defaults = dict()
+        for x in self.parameters.values():
+            if x.default is not None:
+                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
+        return defaults
 
 # def check_types(self, args, kwargs):
 # sig = signature(self.func)
@@ -485,14 +492,9 @@ class PythonOperator(Operator):
         # r = self.__function(**kwargs)
         
         #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
-        defaults = dict()
-        for x in self.parameters.values():
-            if x.default is not None:
-                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
-        kwargsUpdated = defaults
+        kwargsUpdated = self.get_default_args()
         kwargsUpdated.update(kwargs)
-                   
-        
+
         args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
         orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
         
@@ -500,7 +502,7 @@ class PythonOperator(Operator):
         log.debug("Args: %s" % args)
         
         count = sum('*' in str(arg) for arg in kwargsUpdated.values())
-        if (count == 2):        
+        if count == 2:
             r = executeOperatorSequence(self, orderedKwArgs, self.settings.get('seq_parallel', True))
         else:
             r = self._function(*args)
@@ -533,7 +535,7 @@ class PythonOperator(Operator):
         return self.bind_function() is not None
 
 
-class ShellOperator(Operator):
+class ShellOperator(PythonOperator):
     """ShellOperator
 
     """
@@ -541,55 +543,51 @@ class ShellOperator(Operator):
     def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
         Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
         self.command_tpl = runtime['template']
+        self.extract_pattern = runtime.get('ouput_pattern', None)
 
-    def __call__(self, **kwargs):
-        import os
-        
-        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
-        defaults = dict()
-        for x in self.parameters.values():
-            if x.default is not None:
-                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
-        kwargsUpdated = defaults
-        kwargsUpdated.update(kwargs)
-                   
-        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
-        
-        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
-        if (count == 2):                
-            r = executeOperatorSequence(self, orderedKwArgs ,self.settings.get('seq_parallel',True))
-        else:
-            self._function(args)
-        
-        results = None
-        if len(self.output) == 1 and 'out_filename' in kwargs:
-            results = {self.output_names()[0]: kwargs.get('out_filename')}
-        return results
-    
+        self.extract_names = map(lambda s: s.strip(" ,\n"), runtime.get('output_names', '').split(' '))
+
+    def bind_function(self):
+        pass
+
+    def _check_function(self):
+        pass
+
     def _function(self, *args):
-        if (len(args)==1):
-            args = args[0]
         kwargs =  dict(zip(self.acceptable_names(), args))
-        command = self.command_tpl.format(**kwargs).strip().split(" ")
+        command = self.command_tpl.format(**kwargs).strip()
+        executable = str(msml.env.binary_search_path)
+        log.debug("Execute: %s", command)
+        proc = subprocess.Popen(command,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                shell=True,
+                                env={'PATH' : executable})
+        proc.wait()
+        output = proc.stdout.read()
 
-        cmd, args = command[0], command[1:]
-        executable = msml.env.binary_search_path.find_executable(cmd)
-        if executable:
-            args.insert(0, executable)
-            log.debug("Execute: %s", args)
-            proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            proc.wait()
-            output = proc.stdout.read()
+        for line in output.splitlines():
+            log.debug("%s: %s", command, line)
 
-            for line in output.splitlines():
-                log.debug("%s: %s", cmd, line)
-
-
-            if proc.returncode != 0:
-                log.error("%s return with nonzero", args)
+        if proc.returncode == 0:
+            if self.extract_pattern:
+                rp = re.compile(self.extract_pattern, re.MULTILINE | re.DOTALL)
+                matcher = rp.match(output)
+                if matcher:
+                    try:
+                        # no error case
+                        return [matcher.group(n) for n in self.extract_names]
+                    except KeyError as e:
+                        log.error("output of %s is not within the regex %s",e.message, self.extract_pattern )
+                        raise
+                else:
+                    log.error("regex %r not matched previous output", self.extract_pattern)
+                    raise BaseException("regex %r not matched previous output" % self.extract_pattern)
+            else:
+                return list()
         else:
-            log.critical("Could not find executable: %s", cmd)
+            log.error("%s return with nonzero", args)
+            raise BaseException("%s return with nonzero" % args)
 
 
 
