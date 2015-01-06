@@ -35,17 +35,17 @@
 			</sets>		
 			<material>	
 				<region id="pistonAMaterial" indices="${pistonAMatIds}">
-                    <linearElasticMaterial youngModulus="2200" poissonRatio="0.45"/>
+                    <linearElasticMaterial youngModulus="200" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
                 </region>		
 				 <region id="pistonBMaterial" indices="${pistonBMatIds}">
-                    <linearElasticMaterial youngModulus="2000" poissonRatio="0.45"/>
+                    <linearElasticMaterial youngModulus="200" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
                 </region>		
             </material>		
 			<constraints>		
 				<constraint name="test" forStep="${initial}">                    
-					<surfacePressureOnMesh mesh="${SurfacePressureExtractor}" indices="${pressureIndices}" pressure="3000"/>				
+					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" pressure="30"/>				
                 </constraint>									
 			</constraints>				
 			<output>
@@ -99,6 +99,21 @@
 		<ComputeIndicesFromMaterialId id="cylinderMatIds" num="1" mesh="${FixedForcesSplit}" type="elements" />
 		<ComputeIndicesFromMaterialId id="pistonAMatIds" num="2" mesh="${MovingForcesSplit}" type="elements" />	
 		<ComputeIndicesFromMaterialId id="pistonBMatIds" num="3" mesh="${MovingForcesSplit}" type="elements" />	
+		
+		<SelectVolumesByMaterialID id="PressurePistonASplit" selectedVolumesFilename="pressure_pistonA.vtk" 
+										mesh="${MovingForcesSplit}" group="2"/>											
+													
+		<ExtractSurfaceMesh id="SurfacePressureExtractor" mesh="${PressurePistonASplit}" 
+									   targetSurfaceMeshFilename="pressure_pistonA_surface.vtk" />
+									   <!--SelectSurfacesByNormalDirections-->
+		<SurfaceFromVolumeAndNormalDirection id="PressureSurfaceSelected" 
+											 surface="${SurfacePressureExtractor}"
+											 normalDir="0 0 1" margin="30"
+											 filteredSurface="filtered_pressure_surface.vtk"/>
+											
+		<ComputeIndicesFromMaterialId id="pressureIndices" num="2" 
+									  mesh="${PressureSurfaceSelected}" type="faces" />
+		
 					   
 		<!-- contact geometry-->
 		<!-- 0 is outside, 1 is cylinder body, 2 is smaller piston, 3 is larger piston
@@ -121,29 +136,38 @@
 		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}"	targetSurfaceMeshFilename="${output_fixed_surface}"/>	
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
-		
+		<!--
 		<ExtractAllSurfacesByMaterial id="SurfacePressureExtractor" meshIn="${MovingSplit}" 
 									   meshOutFilename="testmesh.vtk" cut="false"/> 
-									   
+		
+		
 		<ComputeIndicesFromMaterialId id="pressureIndices" num="1" 
 									  mesh="${SurfacePressureExtractor}" type="faces" />
-									  
+		-->							  
 		<!-- Measure surface volume of cylinder befor simulation -->
+		<!--
 		<ExtractSurfaceMesh id="CylinderSurfacePreSim"  
 							mesh="${VolumeForcesMesher}"  targetSurfaceMeshFilename="cylinder_surface_presim.vtk"/>						   
 		<SurfaceMeshVolume id="CylinderPreSimVolume" mesh="${CylinderSurfacePreSim}"/>		
 									  
+		<SelectVolumesByMaterialID id="TumorVolume" selectedVolumesFilename="tumorunstructured.vtk" 
+													mesh="tumor.vtk" group="42"/>							  
+		<TransformMeshBarycentric volumeMeshToDeform="${TumorVolume}" referenceVolumeMesh="${MovingSplit}"
+								  deformedVolumeMesh="${MovingSplit}" targetVolumeMesh="deformed.vtk"/>							  
+		-->
 		<!-- Measure surface volume of cylinder after simulation, should increase -->
+		<!--
 		<ExtractSurfaceMesh id="CylinderSurfacePostSim"  
 							mesh="${fixedMesh}"  targetSurfaceMeshFilename="cylinder_surface_postsim.vtk"/>						   
 		<SurfaceMeshVolume id="CylinderPostSimVolume" mesh="${CylinderSurfacePostSim}"/>	
-				
+		-->	
+		
   </workflow>
     <environment>		
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="10" gravity="0 -9.81 0"/>
+            <step name="initial" dt="0.05" iterations="2" gravity="0 -9.81 0"/>
         </simulation>	
     </environment>
 </msml:msml>
