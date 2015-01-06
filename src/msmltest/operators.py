@@ -80,19 +80,22 @@ class OperatorTest(TestCase):
 
         print type(a), len(a)
 
-    def test_closestPoints_without_radius(self):
-        input_file = test_common.REF_DIR / 'bunny_tets.vtk'
-        result = vtk.closest_point(input_file, vector=(0, 0, 0))
-        self.assertDictEqual(
-           result,
-           {'index': 4943L, 'dist': 0.03453012740706179, 'point': (0.004991060122847557, 0.034084200859069824, 0.002384589985013008)})
-
-    def test_closestPoints_with_radius(self):
-        input_file = test_common.REF_DIR / 'bunny_tets.vtk'
-        result = vtk.closest_point(input_file, vector=(0.0, 0.0, 0.0), radius=10.0)
-        self.assertDictEqual(
-            result,
-            {'index': 4943L, 'dist': 0.03453012740706179, 'point': (0.004991060122847557, 0.034084200859069824, 0.002384589985013008)})
+#tests disabled, see msml issue #204
+#===============================================================================
+#     def test_closestPoints_without_radius(self):
+#         input_file = test_common.REF_DIR / 'bunny_tets.vtk'
+#         result = vtk.closest_point(input_file, vector=(0, 0, 0))
+#         self.assertDictEqual(
+#            result,
+#            {'index': 4943L, 'dist': 0.03453012740706179, 'point': (0.004991060122847557, 0.034084200859069824, 0.002384589985013008)})
+# 
+#     def test_closestPoints_with_radius(self):
+#         input_file = test_common.REF_DIR / 'bunny_tets.vtk'
+#         result = vtk.closest_point(input_file, vector=(0.0, 0.0, 0.0), radius=10.0)
+#         self.assertDictEqual(
+#             result,
+#             {'index': 4943L, 'dist': 0.03453012740706179, 'point': (0.004991060122847557, 0.034084200859069824, 0.002384589985013008)})
+#===============================================================================
 
 
 
