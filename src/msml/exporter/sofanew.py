@@ -372,7 +372,8 @@ class SofaExporter(XMLExporter):
                     
                     constraintNode = self.sub("Node", objectNode, name="SurfaceLoad")
                     vtkLoaderName = "LOADER"
-                    
+                    #pulse mode default seems to be 1
+                    pulseMode = '1'
                     #see if it is surface pressure with a mesh given
                     if(currentConstraintType == "surfacePressureOnMesh"):  
                         #create a new vtkLoader for pressure mesh and adjust loader name                      
@@ -381,7 +382,8 @@ class SofaExporter(XMLExporter):
                         loaderNode = self.sub("MeshVTKLoader", constraintNode,
                                           name=vtkLoaderName,
                                           createSubelements="0",
-                                          filename=pressureMesh)          
+                                          filename=pressureMesh)         
+                        pulseMode = self.get_value_from_memory(constraint, 'pulse')
 
                     self.sub("MeshTopology", constraintNode,
                              name="SurfaceTopo",
@@ -396,11 +398,11 @@ class SofaExporter(XMLExporter):
                     else:
                         log.error("The SOFA exporter only supports one pressure value for index set")
                     p_speed = p / 10
-
+                   
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
-                                                             pulseMode="1",
+                                                             pulseMode=pulseMode,
                                                              pressureSpeed=p_speed,
                                                              # TODO this is broken
                                                              pressure=p,
