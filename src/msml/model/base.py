@@ -67,7 +67,7 @@ __all__ = ['Constant',
            'xor']
 
 
-def xor(l):
+def xor(seq, start = False):
     """
     xor on iterables
 
@@ -82,9 +82,9 @@ def xor(l):
     True
 
 
-    :returns: True if an odd numbers of True values within the ``l``
+    :returns: True if an odd numbers of True values within the ``seq``
     """
-    return reduce(lambda x, y: x ^ y, map(bool, l), False)
+    return reduce(lambda x, y: x ^ y, map(bool, seq), start)
 
 
 class MSMLFile(object):
