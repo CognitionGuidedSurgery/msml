@@ -45,7 +45,9 @@
             </material>		
 			<constraints>		
 				<constraint name="test" forStep="${initial}">                    
-					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" pressure="30"/>				
+					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" 
+					pulse="1"
+					pressure="30"/>				
                 </constraint>									
 			</constraints>				
 			<output>
