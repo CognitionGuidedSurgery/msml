@@ -39,14 +39,20 @@
                     <mass massDensity="0.001"/>
                 </region>		
 				 <region id="pistonBMaterial" indices="${pistonBMatIds}">
-                    <linearElasticMaterial youngModulus="200" poissonRatio="0.45"/>
+                    <linearElasticMaterial youngModulus="50" poissonRatio="0.45"/>
                     <mass massDensity="0.001"/>
                 </region>		
             </material>		
 			<constraints>		
 				<constraint name="test" forStep="${initial}">                    
-					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" pressure="30"/>				
-                </constraint>									
+					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" 
+					pressure="30" pulse="0"/>	
+					<fixedConstraint indices="${movingFixedIndices}"/>							
+                </constraint>
+				<!--
+				<constraint name="bottomFix" forStep="${initial}">                    
+				</constraint>
+				-->
 			</constraints>				
 			<output>
                 <displacement id="movingMesh" timestep="1"/>
@@ -132,11 +138,31 @@
 		<!-- select moving part, pistons -->
 		<SelectVolumesByMaterialID id="MovingSplit" selectedVolumesFilename="${output_moving_volume}" 
 										mesh="${VolumeMesher}" group="42"/>			
+		
+										
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}"	targetSurfaceMeshFilename="${output_fixed_surface}"/>	
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
+		<!-- fix left bottom of moving part-->
+		<SurfaceFromVolumeAndNormalDirection id="MovingPartFixedSelected" 
+											 surface="${MovingSurface}"
+											 normalDir="0 0 -1" margin="30"
+											 filteredSurface="filtered_moving_surface_fixedpart.vtk"/>
+		<!-- get indices of fixed left bottom part-->											
+		<ComputeIndicesFromBoxROI id="movingFixedIndices" box="19.5 19.6 18.5 78.5 78.5 19.8" 
+									  mesh="${MovingForcesSplit}" select="points" />
+		
+		<CGALMeshVolumeFromSurface id="VolumeTumorMesher" meshFilename="tumor_meshed.vtk" surfaceMesh="tumor.vtk"
+                       facetAngle="15" facetSize="3" facetDistance="2" cellSize="8"
+                       cellRadiusEdgeRatio="3"  odt="false" lloyd="false" pertube="false"
+                       exude="false"/>
 		<!--
+		<ExtractSurfaceMesh id="TumorSurface"  mesh="${VolumeTumorMesher}" targetSurfaceMeshFilename="tumor_surface.vtk"/>
+		
+		<TransformSurfaceBarycentric surfaceMeshToDeform="${TumorSurface}" referenceVolumeMesh="movingMesh0.vtu"
+								  deformedVolumeMesh="movingMesh20.vtu" targetSurfaceFilename="deformed_tumor.vtk"/>	
+		
 		<ExtractAllSurfacesByMaterial id="SurfacePressureExtractor" meshIn="${MovingSplit}" 
 									   meshOutFilename="testmesh.vtk" cut="false"/> 
 		
@@ -152,8 +178,7 @@
 									  
 		<SelectVolumesByMaterialID id="TumorVolume" selectedVolumesFilename="tumorunstructured.vtk" 
 													mesh="tumor.vtk" group="42"/>							  
-		<TransformMeshBarycentric volumeMeshToDeform="${TumorVolume}" referenceVolumeMesh="${MovingSplit}"
-								  deformedVolumeMesh="${MovingSplit}" targetVolumeMesh="deformed.vtk"/>							  
+								  
 		-->
 		<!-- Measure surface volume of cylinder after simulation, should increase -->
 		<!--
