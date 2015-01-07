@@ -17,8 +17,8 @@ class SlidingContactTest(TestCase):
                        executor='sequential', add_search_path=[test_common.MSML_ALPHABET_DIR])
         self.mf = self.app._load_msml_file(msml_file)
         mem = self.app.execute_msml(self.mf, ) 
-        surfacePreVolume =  mem._internal['CylinderPreSimVolume']['volume']
-        surfacePostVolume =  mem._internal['CylinderPostSimVolume']['volume']
-        print surfacePreVolume<surfacePostVolume
-        print surfacePostVolume
+        #surfacePreVolume =  mem._internal['CylinderPreSimVolume']['volume']
+        #surfacePostVolume =  mem._internal['CylinderPostSimVolume']['volume']
+        #print surfacePreVolume<surfacePostVolume
+        #print surfacePostVolume
         
