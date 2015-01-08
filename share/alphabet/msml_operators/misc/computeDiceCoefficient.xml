@@ -13,8 +13,7 @@ xsi:schemaLocation="http://sfb125.de/msml" name="ComputeDiceCoefficient">
                 Filename of surface A.
             </meta>
 		</arg>
-        <arg name="surfaceB" logical="SurfaceMesh" physical="file.vtk">
-		</arg>
+        <arg name="surfaceB" logical="SurfaceMesh" physical="file.vtk">		
 			<meta key="doc">
                 Filename of surface B.
             </meta>
