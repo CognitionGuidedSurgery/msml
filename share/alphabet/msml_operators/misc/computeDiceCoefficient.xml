@@ -1,10 +1,10 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-xsi:schemaLocation="http://sfb125.de/msml" name="ComputeDiceCoefficient">
+xsi:schemaLocation="http://sfb125.de/msml" name="ComputeDiceCoefficientPolydata">
     <meta key="doc">
         Compute the Dice coefficient of two given mesh surfaces. 
     </meta>
     <runtime>
-        <python module="msml.ext.misc" function="ComputeDiceCoefficient" />
+        <python module="msml.ext.misc" function="ComputeDiceCoefficientPolydata" />
     </runtime>
 
     <input>
