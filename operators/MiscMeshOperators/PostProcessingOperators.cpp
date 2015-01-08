@@ -839,17 +839,69 @@ void ComputeOrganVolume(const char* volumeFilename){
 	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
 }
 
+double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2)
+{
+		vtkSmartPointer<vtkPolyData> meshA = IOHelper::VTKReadPolyData(filename);		
+		vtkSmartPointer<vtkPolyData> meshB = IOHelper::VTKReadPolyData(filename2);		
+
+		//calculate volume of meshA
+		vtkSmartPointer<vtkMassProperties> meshAProps = vtkMassProperties::New();
+		__SetInput(meshAProps,meshA);
+		meshAProps->Update();
+		double meshAVolume = meshAProps->GetVolume();
+		std::cout << "1.Volume : " << meshAVolume << std::endl;
+
+		//calculate volume of mesB
+		vtkSmartPointer<vtkMassProperties> meshBProps = vtkMassProperties::New();
+		__SetInput(meshBProps,meshB);
+		meshBProps->Update();
+		double meshBVolume = meshBProps->GetVolume();
+		std::cout << "2.Volume : " << meshBVolume << std::endl;
+
+		//set up the boolean operation filter and compute intersection of meshA and meshB
+		vtkSmartPointer<vtkBooleanOperationPolyDataFilter> booleanOperation =
+		vtkSmartPointer<vtkBooleanOperationPolyDataFilter>::New();
+#if VTK_MAJOR_VERSION < 6
+		booleanOperation->SetInput(0, meshA);
+		booleanOperation->SetInput(1, meshB);
+#else
+		booleanOperation->AddInputData(0, meshA);
+		booleanOperation->AddInputData(1, meshB);
+#endif
+		booleanOperation->SetOperationToIntersection();
+		booleanOperation->Modified();
+		booleanOperation->Update();
+		vtkSmartPointer<vtkPolyData> pol = booleanOperation->GetOutput();
+		IOHelper::VTKWritePolyData("intersection.vtk",pol);
+		
+		//calculate volume of intersection
+		vtkSmartPointer<vtkMassProperties> meshIntersectionProps = vtkMassProperties::New();
+		__SetInput(meshIntersectionProps,pol);
+		meshIntersectionProps->Modified();	
+		meshIntersectionProps->Update();
+		double overlap = meshIntersectionProps->GetVolume();
+		std::cout << "Overlapping Volume: " << overlap << std::endl;
+	
+		//calculate dice coefficent
+		double diceCoeff = (2*overlap)/(meshAVolume + meshBVolume);
+		cout << "DICE-Coefficient: " << diceCoeff << endl;
+		return diceCoeff;
+}
+
 void ComputeDiceCoefficient(const char* filename, const char* filename2)
 {
+		log_error()<<"computing dice coefficient"<<std::endl;
 		vtkUnstructuredGrid* currentGrid =  IOHelper::VTKReadUnstructuredGrid(filename);
 		vtkUnstructuredGrid* referenceGrid = IOHelper::VTKReadUnstructuredGrid(filename2);
+		log_error()<<"load ok"<<std::endl;
 
 		vtkSmartPointer<vtkGeometryFilter> geometryFilter =
 		vtkSmartPointer<vtkGeometryFilter>::New();
-
+		log_error()<<"filter setup ok"<<std::endl;
 		__SetInput(geometryFilter,currentGrid);
 		geometryFilter->Update();
 		vtkPolyData* polydata = geometryFilter->GetOutput();
+		log_error()<<"filter ok"<<std::endl;
 
 		vtkSmartPointer<vtkGeometryFilter> geometryFilter2 =
 		vtkSmartPointer<vtkGeometryFilter>::New();
