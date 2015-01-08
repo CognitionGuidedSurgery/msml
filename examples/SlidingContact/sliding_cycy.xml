@@ -46,8 +46,9 @@
 			<constraints>		
 				<constraint name="test" forStep="${initial}">                    
 					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" 
-					pulse="1"
-					pressure="30"/>				
+					pulse="0"
+					pressure="70"/>
+				<fixedConstraint indices="${leftPistonFix}"/>				
                 </constraint>									
 			</constraints>				
 			<output>
@@ -116,6 +117,11 @@
 		<ComputeIndicesFromMaterialId id="pressureIndices" num="2" 
 									  mesh="${PressureSurfaceSelected}" type="faces" />
 		
+		<!-- fix left side of piston -->
+		<ComputeIndicesFromBoxROI id="leftPistonFix"
+								   box="19.5 19.5 18.5 78.5 78.5 20.1" mesh="${MovingForcesSplit}"
+								   select="points"/>	
+		
 					   
 		<!-- contact geometry-->
 		<!-- 0 is outside, 1 is cylinder body, 2 is smaller piston, 3 is larger piston
@@ -138,38 +144,37 @@
 		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}"	targetSurfaceMeshFilename="${output_fixed_surface}"/>	
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
-		<!--
-		<ExtractAllSurfacesByMaterial id="SurfacePressureExtractor" meshIn="${MovingSplit}" 
-									   meshOutFilename="testmesh.vtk" cut="false"/> 
-		
-		
-		<ComputeIndicesFromMaterialId id="pressureIndices" num="1" 
-									  mesh="${SurfacePressureExtractor}" type="faces" />
-		-->							  
+				
 		<!-- Measure surface volume of cylinder befor simulation -->
-		<!--
+
 		<ExtractSurfaceMesh id="CylinderSurfacePreSim"  
-							mesh="${VolumeForcesMesher}"  targetSurfaceMeshFilename="cylinder_surface_presim.vtk"/>						   
+							mesh="${VolumeForcesMesher}" targetSurfaceMeshFilename="cylinder_surface_presim.vtk"/>						   
 		<SurfaceMeshVolume id="CylinderPreSimVolume" mesh="${CylinderSurfacePreSim}"/>		
 									  
-		<SelectVolumesByMaterialID id="TumorVolume" selectedVolumesFilename="tumorunstructured.vtk" 
-													mesh="tumor.vtk" group="42"/>							  
-		<TransformMeshBarycentric volumeMeshToDeform="${TumorVolume}" referenceVolumeMesh="${MovingSplit}"
-								  deformedVolumeMesh="${MovingSplit}" targetVolumeMesh="deformed.vtk"/>							  
-		-->
+					  
+		<TransformMeshBarycentric id="baryMapping" volumeMeshToDeform="tumor_meshed.vtk" referenceVolumeMesh="${MovingSplit}"
+								  deformedVolumeMesh="${movingMesh}" targetVolumeMesh="deformed.vtk"/>							  
+	
+		
 		<!-- Measure surface volume of cylinder after simulation, should increase -->
+		
 		<!--
 		<ExtractSurfaceMesh id="CylinderSurfacePostSim"  
 							mesh="${fixedMesh}"  targetSurfaceMeshFilename="cylinder_surface_postsim.vtk"/>						   
 		<SurfaceMeshVolume id="CylinderPostSimVolume" mesh="${CylinderSurfacePostSim}"/>	
 		-->	
+		<ExtractSurfaceMesh id="TumorSurfacePostsim"  
+							mesh="${baryMapping}" targetSurfaceMeshFilename="tumor_surface_postsim.vtk"/>	
+		<ExtractSurfaceMesh id="TumorSurfacePresim"  
+							mesh="tumor_meshed.vtk" targetSurfaceMeshFilename="tumor_surface_presim.vtk"/>	
+		<ComputeDiceCoefficientPolydata id="dice" surfaceA="${TumorSurfacePostsim}" surfaceB="${TumorSurfacePresim}" intersectionMesh="intersection.vtk"/>
 		
   </workflow>
     <environment>		
         <solver linearSolver="iterativeCG" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="2" gravity="0 -9.81 0"/>
+            <step name="initial" dt="0.05" iterations="50" gravity="0 -9.81 0"/>
         </simulation>	
     </environment>
 </msml:msml>

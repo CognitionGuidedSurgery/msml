@@ -51,7 +51,7 @@ LIBRARY_API  std::string ColorMeshFromComparison(std::string modelFilename, std:
 LIBRARY_API void ComputeOrganVolume(const char* volumeFilename);
 LIBRARY_API void ComputeOrganCrossSectionArea(const char* volumeFilename);
 LIBRARY_API void ComputeDiceCoefficient(const char* filename, const char* filename2);
-LIBRARY_API double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2);
+LIBRARY_API double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2,const char *intersectionFile);
 
 
 LIBRARY_API void ColorMesh(const char* modelFilename, const char* coloredModelFilename);
