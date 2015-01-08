@@ -72,7 +72,7 @@ class SimulationRunner(object):
 
     def run(self):
         #self._executer._init_workflow()
-        self._memory = self._theApp.execute_msml(self._mfile)
+        self._memory = self._executer.run()
 
 
     #future extensions for fine grain execution control
