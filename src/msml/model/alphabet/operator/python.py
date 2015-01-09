@@ -2,6 +2,10 @@ from .base import *
 
 __author__ = 'Alexander Weigl'
 
+from .... import log
+from ....log import error
+from ...sequence import executeOperatorSequence
+
 class PythonOperator(Operator):
     """Operator for Python functions.
 
