@@ -498,14 +498,27 @@ class SofaExporter(XMLExporter):
                     #if '$' not in constraint.displacement:
                     #    disp_vec = [float(x) for x in constraint.displacement]
 
-                    tempMovement = '%s' % ' '.join(map(str, disp_vec))
-                    theMovement = "0 0 0 " + tempMovement + " 0 0 0"
-                    constraintNode = self.sub('LinearMovementConstraint', objectNode,
-                                              name=constraint.id or constraint_set.name,
-                                              indices=indices, movements=theMovement, keyTimes=keytimes)
-                    #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
-                    #                      name=constraint.id or constraint_set.name,
-                    #                      dispIndices=indices, displacements=constraint.displacement)
+                    if len(disp_vec) == 3:
+                        tempMovement = '%s' % ' '.join(map(str, disp_vec))
+                        theMovement = "0 0 0 " + tempMovement + " 0 0 0"
+                        constraintNode = self.sub('LinearMovementConstraint', objectNode,
+                                                  name=constraint.id or constraint_set.name,
+                                                  indices=indices, movements=theMovement, keyTimes=keytimes)
+                    else:
+                        numberOfDisplacements = len(disp_vec) / 3;
+                        if (numberOfDisplacements != len(indices_vec)):
+                            print("Error, displacement vector and indices do not match.")
+                        for i in range(0,numberOfDisplacements-1):
+                            tempDisplacement = disp_vec[3*i:3*i+2]
+                            tempMovement = '%s' % ' '.join(map(str, tempDisplacement))
+                            theMovement = "0 0 0 " + tempMovement + " 0 0 0"
+                            constraintNode = self.sub('LinearMovementConstraint', objectNode,
+                              name=constraint.id+str(i) or constraint_set.name,
+                              indices=str(indices_vec[i]), movements=theMovement, keyTimes=keytimes)
+                        # constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
+                        #                       name=constraint.id or constraint_set.name,
+                        #                       dispIndices=indices, displacements=tempMovement)
+
                 elif currentConstraintType == "forceConstraint":
                     indices_vec = self.get_value_from_memory(constraint, 'indices')
                     indices = '%s' % ', '.join(map(str, indices_vec))
