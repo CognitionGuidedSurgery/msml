@@ -1,0 +1,4 @@
+<repository xmlns="http://msml.org/repository/1.0/"
+            msml-version="1.0" active="false">
+    <package>r1.xml</package>
+</repository>

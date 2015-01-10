@@ -108,6 +108,8 @@ class SofaExporter(XMLExporter):
         #uncomment to use four gpus
         #os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
 
+        cmd = msml.envconfig.SOFA_EXECUTABLE
+
         if (msml.envconfig.SOFA_EXECUTABLE.lower().find('runsofa') > -1): #linux: runSofa, windows: RunSofa.exe
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
             callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -l SOFACuda -g batch -n ' + str(
@@ -115,8 +117,8 @@ class SofaExporter(XMLExporter):
                                                 self.export_file) + '\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom)
 
-        log.info("Executing %s" % cmd)
-        log.info("Working directory: %s" % os.getcwd())
+            log.info("Executing %s" % cmd)
+            log.info("Working directory: %s" % os.getcwd())
 
         import subprocess
 

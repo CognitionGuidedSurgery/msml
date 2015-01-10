@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://msml.org/repository/1.0/" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:mur="http://msml.org/repository/1.0/" attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	<element name="repository" type="mur:repositoryType"></element>
+
+	<complexType name="repositoryType">
+		<choice maxOccurs="unbounded" minOccurs="0">
+			<element name="import" type="mur:importType" />
+            <element name="package" type="mur:packageType" />
+		</choice>
+		<attribute name="active" type="boolean" />
+		<attribute name="msml-version" type="string" />
+	</complexType>
+
+	<complexType name="importType">
+		<simpleContent>
+			<extension base="string">
+				<attribute name="exclude" type="string" use="optional"></attribute>
+				<attribute name="include" type="string"></attribute>
+			</extension>
+		</simpleContent>
+	</complexType>
+
+
+	<complexType name="packageType">
+		<simpleContent>
+			<extension base="string"></extension>
+		</simpleContent>
+	</complexType>
+
+	<simpleType name="packageType1">
+		<restriction base="string"></restriction>
+	</simpleType>
+</schema>
