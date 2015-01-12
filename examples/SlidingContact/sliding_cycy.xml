@@ -145,28 +145,18 @@
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
 				
-		<!-- Measure surface volume of cylinder befor simulation -->
-
-		<ExtractSurfaceMesh id="CylinderSurfacePreSim"  
-							mesh="${VolumeForcesMesher}" targetSurfaceMeshFilename="cylinder_surface_presim.vtk"/>						   
-		<SurfaceMeshVolume id="CylinderPreSimVolume" mesh="${CylinderSurfacePreSim}"/>		
-									  
-					  
-		<TransformMeshBarycentric id="baryMapping" volumeMeshToDeform="tumor_meshed.vtk" referenceVolumeMesh="${MovingSplit}"
+				
+		<!-- Transform tumor mesh-->			  
+		<TransformMeshBarycentric id="tumorBaryTransform" volumeMeshToDeform="tumor_meshed.vtk" referenceVolumeMesh="${MovingForcesSplit}"
 								  deformedVolumeMesh="${movingMesh}" targetVolumeMesh="deformed.vtk"/>							  
 	
 		
-		<!-- Measure surface volume of cylinder after simulation, should increase -->
-		
-		<!--
-		<ExtractSurfaceMesh id="CylinderSurfacePostSim"  
-							mesh="${fixedMesh}"  targetSurfaceMeshFilename="cylinder_surface_postsim.vtk"/>						   
-		<SurfaceMeshVolume id="CylinderPostSimVolume" mesh="${CylinderSurfacePostSim}"/>	
-		-->	
+		<!-- Extract surface of tumor mesh before and after barycentric transformation-->			
 		<ExtractSurfaceMesh id="TumorSurfacePostsim"  
-							mesh="${baryMapping}" targetSurfaceMeshFilename="tumor_surface_postsim.vtk"/>	
+							mesh="${tumorBaryTransform}" targetSurfaceMeshFilename="tumor_surface_postsim.vtk"/>	
 		<ExtractSurfaceMesh id="TumorSurfacePresim"  
 							mesh="tumor_meshed.vtk" targetSurfaceMeshFilename="tumor_surface_presim.vtk"/>	
+		<!-- Compute the dice coefficent of original tumor and transformed tumor-->
 		<ComputeDiceCoefficientPolydata id="dice" surfaceA="${TumorSurfacePostsim}" surfaceB="${TumorSurfacePresim}" intersectionMesh="intersection.vtk"/>
 		
   </workflow>
