@@ -600,6 +600,8 @@ class SofaExporter(XMLExporter):
       
 
     def createPostProcessingRequests(self, objectNode, msmlObject):
+        if(self.id not in self._memory_update):
+            self._memory_update={self.id:{}}
         for request in msmlObject.output:
             assert isinstance(request, ObjectElement)
             filename = self.working_dir / request.id
@@ -629,18 +631,11 @@ class SofaExporter(XMLExporter):
                         lastNumber = 1
                     else:
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
-
+                        
+                    lastNumberStr = str(lastNumber)
                     if _bool(request.useAsterisk):  #TODO: et_value_from_memory(request, 'useAsterisk')
-                        self._memory_update[self.id] = {request.id: VTK(str(filename + '*' + ".vtu"))}
-                    else:
-                        if(self.id not in self._memory_update):
-                            self._memory_update={self.id:{}}
-                        self._memory_update[self.id][request.id] = VTK("%s%d.vtu" % (filename, lastNumber)) 
-                        #if(self.id not in self._memory_update):
-                        #    self._memory_update[self.id] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))}
-                       # else:
-                        #   self._memory_update[self.id].update({request.id: VTK(str(filename + str(lastNumber) + ".vtu"))})
-
+                        lastNumberStr = "*"                                       
+                    self._memory_update[self.id][request.id] = VTK("%s%s.vtu" % (filename, lastNumberStr)) 
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
                     exportEveryNumberOfSteps = self.get_value_from_memory(request, 'timestep')
