@@ -20,6 +20,10 @@
              physical="str"/>	
 		<var name="output_fixed_surface" value="fixed_surface.vtk" logical="Mesh"
              physical="str"/>	 
+			 
+     	 
+			 
+			 
     </variables>
 	<scene>
 		<object id="moving">
@@ -52,8 +56,8 @@
                 </constraint>									
 			</constraints>				
 			<output>
-                <displacement id="movingMesh" timestep="1"/>
-            </output>		
+                <displacement id="movingMesh" timestep="1" useAsterisk="true"/> 
+		</output>		
         </object>
 		<object id="fixed">
 		    <mesh>
@@ -144,21 +148,21 @@
 		<ExtractSurfaceMesh id="FixedSurface"  mesh="${FixedSplit}"	targetSurfaceMeshFilename="${output_fixed_surface}"/>	
 		<!-- extract surfaces for fixed and moving part -->
 		<ExtractSurfaceMesh id="MovingSurface"  mesh="${MovingSplit}" targetSurfaceMeshFilename="${output_moving_surface}"/>
-				
-				
-		<!-- Transform tumor mesh-->			  
-		<TransformMeshBarycentric id="tumorBaryTransform" volumeMeshToDeform="tumor_meshed.vtk" referenceVolumeMesh="${MovingForcesSplit}"
-								  deformedVolumeMesh="${movingMesh}" targetVolumeMesh="deformed.vtk"/>							  
-	
 		
-		<!-- Extract surface of tumor mesh before and after barycentric transformation-->			
-		<ExtractSurfaceMesh id="TumorSurfacePostsim"  
-							mesh="${tumorBaryTransform}" targetSurfaceMeshFilename="tumor_surface_postsim.vtk"/>	
+		<!-- Extract surface of tumor mesh before and after barycentric transformation-->	
 		<ExtractSurfaceMesh id="TumorSurfacePresim"  
 							mesh="tumor_meshed.vtk" targetSurfaceMeshFilename="tumor_surface_presim.vtk"/>	
-		<!-- Compute the dice coefficent of original tumor and transformed tumor-->
-		<ComputeDiceCoefficientPolydata id="dice" surfaceA="${TumorSurfacePostsim}" surfaceB="${TumorSurfacePresim}" intersectionMesh="intersection.vtk"/>
 		
+		<!-- Transform tumor mesh-->			  
+		<TransformMeshBarycentric id="tumorBaryTransform" volumeMeshToDeform="tumor_meshed.vtk" referenceVolumeMesh="${MovingForcesSplit}"
+								  deformedVolumeMesh="${movingMesh}" targetVolumeMesh="deformed_surf_meshes*.vtk"/>		
+	  <!-- Compute the dice coefficent of original tumor and transformed tumor
+		
+		<ExtractSurfaceMesh id="TumorSurfacePostsim"  
+							mesh="${tumorBaryTransform_{i}}" targetSurfaceMeshFilename="tumor_surface_postsim_{i}.vtk"/>
+		
+		<ComputeDiceCoefficientPolydata id="dice" surfaceA="${TumorSurfacePostsim}" surfaceB="${TumorSurfacePresim}" intersectionMesh="intersection.vtk"/>
+		-->
   </workflow>
     <environment>		
         <solver linearSolver="iterativeCG" processingUnit="CPU"
