@@ -71,10 +71,11 @@ class PythonOperator(Operator):
             self._function = getattr(mod, self.function_name)
 
             return self._function
-        except ImportError, e:
-            error("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
-        except AttributeError, e:
-            error("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
+        except ImportError as e:
+            #TODO print stack traces
+            error("%s.%s is not available (module not found), got exception message '%s'" % (self.modul_name, self.function_name, e.message))
+        except AttributeError as e:
+            error("%s.%s is not available (function/attribute not found), got exception message '%s" % (self.modul_name, self.function_name, e.message))
 
 
     def validate(self):
