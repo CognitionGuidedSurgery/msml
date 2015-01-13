@@ -35,7 +35,7 @@ __date__ = '2014-02-21'
 
 
 class Sort(object):
-    """A sort is a mixture from an physical and a logical data type.
+    """A sort is a mixture from an physical and a _logical data type.
 
     It provides the function of sort comparison.
     """
@@ -98,7 +98,7 @@ class Sort(object):
 
     @property
     def logical(self):
-        """the logical data type"""
+        """the _logical data type"""
         return self._logical
 
     @logical.setter
@@ -112,7 +112,7 @@ class Sort(object):
 #
 
 class MSMLLTop(object):
-    """Top of the logical hierarchy"""
+    """Top of the _logical hierarchy"""
     pass
 
 
@@ -247,6 +247,7 @@ class InFile(str, MSMLPhysicalTop):
 class PNG(InFile):
     pass
 
+class TXT(InFile): pass
 
 class ContainerFile(InFile):
     pass

@@ -39,15 +39,12 @@ entry point, where you can access to various subsystem.
 
 from __future__ import print_function
 
-import sys
-
 from .env import *
 
 # need first step caused of sys.path
 # this is terrible to execute on module load
 # but else we do not have chance for changing
 # sys.path for initialization in msml.sorts
-from msml.log import fatal
 
 load_envconfig()
 
@@ -156,6 +153,11 @@ def create_argument_parser():
                              metavar="FOLDER", action="store",
                              help="specifies msml user repositories with alphabet definition")
 
+    exec_parser.add_argument("-p", "--package", nargs="+", default=list(), dest="packages",
+                             metavar="FOLDER", action="store",
+                             help="specifies msml user repositories with alphabet definition")
+
+
     exec_parser.add_argument('-m', '--variables', metavar="FILE", dest="memoryfile", action="store",
                              help="predefined memory content")
 
@@ -239,6 +241,7 @@ class App(object):
                  add_operator_path=None, memory_init_file=None, output_dir=None, executor=None,
                  execution_options=None, exporter_options=None,
                  seq_parallel=True, repositories=None,
+                 packages=None,
                  options=None, **kwargs):
 
         options = dict(options if options else {})  # create copy
@@ -265,7 +268,7 @@ class App(object):
         self._output_dir = output_dir or options.get('output_folder', None)
 
         self._repositories = repositories or options.get('repositories', [])
-
+        self._packages = packages or options.get('packages', [])
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -290,6 +293,7 @@ class App(object):
             self.alphabet.validate()
 
     def _init_repositories_and_packages(self):
+        # loading repositories incl. defaults
         effective_repositories = list(self._repositories)
         effective_repositories += DEFAULT_REPOSITORIES
 
@@ -297,15 +301,25 @@ class App(object):
         metarepo.add_imports(*effective_repositories)
         packages = metarepo.resolve_packages()
 
+        # include single packages, useful for testing
+        for pth in self._packages:
+            try:
+                p = Package.from_file(pth)
+                packages.insert(0, p)
+            except FileNotFoundError:
+                log.error("Explicit given package %s could not be loaded: Not found", pth)
+
+        # msml default package at first place
         try:
             packages.insert(0, Package.from_file(MSML_DEFAULT_PACKAGE))
         except FileNotFoundError:
-            log.fatal("The MSML default operator are not available, the package file %s is missing", MSML_DEFAULT_PACKAGE)
+            log.fatal("The MSML default operator are not available, the package file %s is missing",
+                      MSML_DEFAULT_PACKAGE)
             sys.exit(100)
 
         for p in packages:
             log.info("Activate %s", p)
-        alpha, bin , py = get_concrete_paths(packages)
+        alpha, bin, py = get_concrete_paths(packages)
 
         log.debug("Register alphabet dir: %s", alpha)
         self.additional_alphabet_dir += clean_paths(alpha)

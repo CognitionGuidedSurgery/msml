@@ -96,7 +96,7 @@ class SortsDefinition(object):
         try:
             return self.logical_cache[typestr]
         except KeyError as e:
-            log.warn("logical type %s requested, but does not exist" % typestr)
+            log.warn("_logical type %s requested, but does not exist" % typestr)
             return None
 
     def _find_physical(self, fmtstr):
@@ -125,7 +125,7 @@ class SortsDefinition(object):
         return fn
 
     def _bulk_sorts_load(self, defs):
-        temp = (('logical', self.register_logical),
+        temp = (('_logical', self.register_logical),
                 ('physical', self.register_physical))
 
         for tp, register in temp:
@@ -145,7 +145,7 @@ class SortsDefinition(object):
 
 
 DEFAULTS_SORTS = {
-    'logical': [
+    '_logical': [
         (MSMLLTop, "top", "object", "*"),
         Index,
         IndexSet,
@@ -197,6 +197,8 @@ DEFAULTS_SORTS = {
         PNG,
         ctx,
         vdx,
+        (TXT, 'TXT', 'txt'),
+        (InFile, 'NRRD', 'nrrd'), #TODO
     ],
 }
 
@@ -375,6 +377,10 @@ register_conversion(unicode, get_sort("str"), MSMLString, 100)
 register_conversion(unicode, get_sort('VTI'), VTI, 100)
 register_conversion(unicode, get_sort('vector.float'), _list_float, 100)
 register_conversion(unicode, get_sort('vector.int'), _list_integer, 100)
+
+register_conversion(str, PNG, PNG, 100)
+register_conversion(str, get_sort('NRRD'), InFile, 100)
+register_conversion(str, TXT, InFile, 100)
 
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
