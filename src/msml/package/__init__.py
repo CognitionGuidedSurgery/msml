@@ -242,7 +242,7 @@ class Package(object):
 
     @staticmethod
     def from_file(filename):
-        filename = path(filename)
+        filename = path(filename).abspath()
         if filename.isdir():
             base = filename
             filename = base / MSML_PACKAGE_FILENAME

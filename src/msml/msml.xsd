@@ -101,10 +101,7 @@
             </element>
             <element name="sh">
                 <complexType>
-                    <attribute name="file" type="string" use="required">
-                    </attribute>
-                    <attribute name="wd" type="string" use="required"/>
-                    <attribute name="template" type="string"/>
+                    <attribute name="template" type="string" use="required"/>
                 </complexType>
             </element>
             <element name="so">

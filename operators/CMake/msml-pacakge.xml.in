@@ -1,0 +1,14 @@
+<package name="msml-base" version="1.0" xmlns="http://msml.org/package/1.0/">
+	<information>
+		<maintainer name="MSML Team" email="msml@lists.kit.edu" />
+		<documentation>.</documentation>
+		<homepage url="http://msml.org/" />
+		<repository url="http://github.com/CognitionGuidedSurgery/msml.git" type="git" />
+	</information>
+
+	<alphabet-dir>alphabet</alphabet-dir>
+	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}</binary-dir>
+	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}/Release</binary-dir>
+	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}/Debug</binary-dir>
+	<python-dir>${CMAKE_PYTHON_DIRECTORY}"</python-dir>
+</package>
