@@ -33,7 +33,6 @@ from jinja2 import Template
 
 TMPL = """
 digraph G {
-  splines=ortho
   node [shape=box]
 
   {% for n in nodes %}
@@ -91,7 +90,7 @@ class GraphDotWriter(object):
         def _edge(e):
             a,b, data = e
             ref = data['ref']
-            _a = "%d:outlink" % (id(a))
+            _a = "%d:outlink:s" % (id(a))
             link_to = ref.linked_to.name
             _b = "%d:%s:n" % (id(b),link_to)
            
@@ -118,12 +117,13 @@ def todot_task(task):
     inputs = task.arguments.keys()    
      
      #all inputs in first row of table
-    inputs_row = "".join(map(lambda inp: '<TD port="f1">' + inp + '</TD>',inputs))    
+    input_colspan = 100/len(inputs)
+    inputs_row = "".join(map(lambda inp: '<TD port="%s" colspan="%s%%">%s</TD>'%(inp,input_colspan,inp),inputs))    
     #name of task in second raw
-    task_name = '<TD align="center">'+task.id+':'+task.name+'</TD>'
+    task_name = '<TD align="center" colspan="100%">'+task.id+':'+task.name+'</TD>'
     #outputs in third row
-    task_out = '<TD align="center">out</TD>'
-    
+    task_out = '<TD align="center" colspan="100%" port="outlink">out</TD>'
+    input_colspan = 100/len(inputs)
     table_str = """<<table border="1" cellborder="1" cellspacing="0" bgcolor="white">
                       <TR>%s</TR>
                       <TR>%s</TR>  
@@ -149,6 +149,6 @@ def todot_var(obj):
 
 @todot.when_type(Reference)
 def todot_ref(ref):
-    return {'taillabel': str(ref.linked_to.arginfo.sort),
-            'headlabel': str(ref.linked_from.arginfo.sort), 
+    return {'taillabel': '',#str(ref.linked_to.arginfo.sort),
+            'headlabel': '',#str(ref.linked_from.arginfo.sort), 
             'fontsize':'8'}
