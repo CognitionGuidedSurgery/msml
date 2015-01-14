@@ -26,6 +26,7 @@ class Lungs(object):
         self.app = App(exporter='nsofa', output_dir=test_common.TMP_DIR / 'batchedPressureNew' + str(p), executor='sequential', 
                        add_search_path=[test_common.MSML_ALPHABET_DIR])
         self.mf = self.app._load_msml_file(msml_filename)
+        self.app.show(msml_filename)
         self._surface_pressure = p
     
     def __call__(self):

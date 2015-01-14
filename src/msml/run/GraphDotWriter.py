@@ -85,14 +85,16 @@ class GraphDotWriter(object):
         dag = self.dag
         assert isinstance(dag, DiGraph)
 
-        nodes = [N(id(n), kvstr(todot(n)))
+        nodes = [N(id(n), todot(n))
                  for n in dag.nodes_iter()]
 
         def _edge(e):
             a,b, data = e
             ref = data['ref']
-            _a = "%d" % (id(a))
-            _b = "%d" % (id(b))
+            _a = "%d:outlink" % (id(a))
+            link_to = ref.linked_to.name
+            _b = "%d:%s:n" % (id(b),link_to)
+           
             l = kvstr(todot(ref))
             return E(_a, _b, l)
 
@@ -108,23 +110,45 @@ from simplegeneric import generic
 
 @generic
 def todot(obj):
-    return {'label': str(obj), 'color': 'red'}
+    return kvstr({'label': str(obj), 'color': 'red'})
 
 @todot.when_type(Task)
 def todot_task(task):
-    return {'label': "{%s|%s}" % (task.id, task.name), 'color': 'red', 'shape':'record'}
+    print task.arguments    
+    inputs = task.arguments.keys()    
+     
+     #all inputs in first row of table
+    inputs_row = "".join(map(lambda inp: '<TD port="f1">' + inp + '</TD>',inputs))    
+    #name of task in second raw
+    task_name = '<TD align="center">'+task.id+':'+task.name+'</TD>'
+    #outputs in third row
+    task_out = '<TD align="center">out</TD>'
+    
+    table_str = """<<table border="1" cellborder="1" cellspacing="0" bgcolor="white">
+                      <TR>%s</TR>
+                      <TR>%s</TR>  
+                      <TR>%s</TR>
+                   </table>>                     
+                """ % (inputs_row,task_name,task_out)
+                     
+    return kvstr({'label': table_str},True)
+    
+    
+    #return {'label': "{{ %s }| %s:%s |{ <%s> %s }}" % (inputs_label,task.name,task.id,"outlink","out"), 'color': 'red', 'shape':'record'}
+    #return {'label': "{%s|%s}" % (task.id, task.name), 'color': 'red', 'shape':'record'}
 
 
 @todot.when_type(Exporter)
 def todot_exporter(exporter):
-    return {'label': str(exporter), 'color': 'yellow', 'shape':'house'}
+    return kvstr({'label': '<outlink> ' + str(exporter), 'color': 'yellow', 'shape':'house'})
 
 
 @todot.when_type(MSMLVariable)
 def todot_var(obj):
-    return {'label': "{%s|%s}" % (obj.name,obj.value) , 'color': 'green', 'shape':'record'}
+    return kvstr({'label': "{%s|<outlink> %s}" % (obj.name,obj.value) , 'color': 'green', 'shape':'record'})
 
 @todot.when_type(Reference)
 def todot_ref(ref):
     return {'taillabel': str(ref.linked_to.arginfo.sort),
-            'headlabel': str(ref.linked_from.arginfo.sort), 'fontsize':'8'}
+            'headlabel': str(ref.linked_from.arginfo.sort), 
+            'fontsize':'8'}
