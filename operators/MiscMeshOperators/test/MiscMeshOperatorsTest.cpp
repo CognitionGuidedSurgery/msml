@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE(TestComputeDiceCoefficientPolydata)
 	const char* inputMeshFileB = INPUT("bunny_polydata_transformed.vtk");
 
 	//meshB is a slightly scaled and rotated version of meshA
-	double dice = PostProcessingOperators::ComputeDiceCoefficientPolydata(inputMeshFileA,inputMeshFileB);
+	double dice = PostProcessingOperators::ComputeDiceCoefficientPolydata(inputMeshFileA,inputMeshFileB,"intersection.vtk");
 	//dice coefficient should be over 0.5 
 	BOOST_CHECK(dice>0.5&&dice<1);
 }

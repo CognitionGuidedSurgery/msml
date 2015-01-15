@@ -33,7 +33,8 @@
 							mesh="${MorphedPistonSplit}" targetSurfaceMeshFilename="morphed_piston_surface.vtk"/>						   
 		<SurfaceMeshVolume id="MorphedPistonSurfaceVolume" mesh="${MorphedPistonSurface}"/>		
 		
-		<ComputeDiceCoefficientPolydata id="computeDice" surfaceA="${MorphedPistonSurface}" surfaceB="${OriginalPistonSurface}"/>
+		<ComputeDiceCoefficientPolydata id="computeDice" surfaceA="${MorphedPistonSurface}" surfaceB="${OriginalPistonSurface}"
+										intersectionMesh="intersection.vtk"/>
 		
 		
 	</workflow>   

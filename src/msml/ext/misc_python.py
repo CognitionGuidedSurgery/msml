@@ -3,7 +3,8 @@ from shutil import copyfile
 import os
 import numpy as np
 from scipy import interpolate
-from scipy.optimize import leastsq,root,minimize,curve_fit
+#from scipy.optimize import leastsq,root,minimize,curve_fit
+
 
 
 def copy_file(filename_in, filename_out, workingdir):
