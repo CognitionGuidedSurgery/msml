@@ -59,17 +59,8 @@ def load_envconfig():
     """
     env_path = path(__file__)
 
-    #for local non installation
-    alphabet_path = env_path.dirname() / '..' / '..' / 'share' / 'alphabet'
-    alphabet_search_paths.append(alphabet_path)
-
     import msml.envconfig as C
     import sys
-
-    #Import release and debug paths here !
-    sys.path.append(C.operators_path)
-    sys.path.append(C.operators_path_release)
-    sys.path.append(C.operators_path_debug)
 
     #Add windows paths to python path - Python sometimes only checks this directories for dependencies (e.g. boost dlls)
     win_path = os.environ.get('path')

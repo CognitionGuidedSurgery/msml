@@ -213,7 +213,7 @@ class Package(object):
             self.repository = repository or Package.Information.Repository()
 
     def __init__(self, base_path, name, version,
-                 information=None, alphabet_dir=None, python_dir=None, binary_dir=None):
+                 information=None, alphabet_dir=None, python_dir=None, binary_dir=None, rc_files = None):
         self.base_path = base_path
         self.name = name
         self.version = version
@@ -221,7 +221,7 @@ class Package(object):
         self.alphabet_dir = alphabet_dir or []
         self.binary_dir = binary_dir or []
         self.python_dir = python_dir or []
-
+        self.rc_files = rc_files or []
 
     def validate(self):
         r = True
@@ -275,6 +275,7 @@ class Package(object):
         p.alphabet_dir = _textall("alphabet-dir")
         p.python_dir = _textall("python-dir")
         p.binary_dir = _textall("binary-dir")
+        p.rc_files= _textall("rc-file")
 
         return p
 
@@ -291,6 +292,9 @@ class Package(object):
     def full_binary_dir(self):
         return prefix_paths(self.base_path, self.binary_dir)
 
+    def full_rcfiles(self):
+        return prefix_paths(self.base_path, self.rc_files)
+
 def prefix_paths(prefix, seq):
     p = path(prefix)
     return map(lambda s: p / s, seq)
@@ -306,13 +310,14 @@ def get_concrete_paths(seq):
     alpha = list()
     bin = list()
     py = list()
+    rcfiles = list()
 
     for package in seq:
         alpha += package.full_alphabet_dir()
         bin += package.full_binary_dir()
         py += package.full_python_dir()
-
-    return alpha, bin, py
+        rcfiles +=package.full_rcfiles()
+    return alpha, bin, py, rcfiles
 
 
 def clean_paths(seq):

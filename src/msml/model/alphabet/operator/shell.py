@@ -67,7 +67,7 @@ class ShellOperator(PythonOperator):
         output = proc.stdout.read()
 
         for line in output.splitlines():
-            log.debug("%s: %s", command, line)
+            log.debug("%s: %s", self.name, line)
 
         if proc.returncode == 0:
             if self.extract_pattern:

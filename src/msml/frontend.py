@@ -319,7 +319,11 @@ class App(object):
 
         for p in packages:
             log.info("Activate %s", p)
-        alpha, bin, py = get_concrete_paths(packages)
+
+        alpha, bin, py, rcfiles = get_concrete_paths(packages)
+
+        for f in rcfiles:
+            execfile(f, {'app': self})
 
         log.debug("Register alphabet dir: %s", alpha)
         self.additional_alphabet_dir += clean_paths(alpha)
@@ -327,8 +331,14 @@ class App(object):
         log.debug("Add to Python path: %s", py)
         sys.path += clean_paths(py)
 
-        log.debug("Binary Path %s", bin)
+        log.debug("Add to Binary Path %s", bin)
         msml.env.binary_search_path += clean_paths(bin)
+
+        log.debug("--")
+        log.debug("Alphabet Path: %s", msml.env.alphabet_search_paths)
+        log.debug("Python Path: %s", sys.path)
+        log.debug("Binary Path: %s", msml.env.binary_search_path)
+        log.debug("--")
 
     @property
     def output_dir(self):
