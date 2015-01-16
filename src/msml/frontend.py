@@ -39,12 +39,15 @@ entry point, where you can access to various subsystem.
 
 from __future__ import print_function
 
+import sys
+
 from .env import *
 
 # need first step caused of sys.path
 # this is terrible to execute on module load
 # but else we do not have chance for changing
 # sys.path for initialization in msml.sorts
+from msml.log import fatal
 
 load_envconfig()
 
@@ -268,7 +271,7 @@ class App(object):
         self._output_dir = output_dir or options.get('output_folder', None)
 
         self._repositories = repositories or options.get('repositories', [])
-        self._packages = packages or options.get('packages', [])
+
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -319,11 +322,7 @@ class App(object):
 
         for p in packages:
             log.info("Activate %s", p)
-
-        alpha, bin, py, rcfiles = get_concrete_paths(packages)
-
-        for f in rcfiles:
-            execfile(f, {'app': self})
+        alpha, bin, py = get_concrete_paths(packages)
 
         log.debug("Register alphabet dir: %s", alpha)
         self.additional_alphabet_dir += clean_paths(alpha)
@@ -331,7 +330,7 @@ class App(object):
         log.debug("Add to Python path: %s", py)
         sys.path += clean_paths(py)
 
-        log.debug("Add to Binary Path %s", bin)
+        log.debug("Binary Path %s", bin)
         msml.env.binary_search_path += clean_paths(bin)
 
         log.debug("--")
