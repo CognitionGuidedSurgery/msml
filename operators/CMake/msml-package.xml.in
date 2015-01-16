@@ -7,6 +7,8 @@
 	</information>
 
 	<alphabet-dir>alphabet</alphabet-dir>
-	<binary-dir>../cbuild/bin</binary-dir>
-	<python-dir>../cbuild/bin</python-dir>
+	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}</binary-dir>
+	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}/Release</binary-dir>
+	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}/Debug</binary-dir>
+	<python-dir>${CMAKE_PYTHON_DIRECTORY}"</python-dir>
 </package>

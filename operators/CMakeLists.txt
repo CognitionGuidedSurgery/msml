@@ -126,7 +126,7 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in
   ${CMAKE_CURRENT_SOURCE_DIR}/../share/Config.xml)
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/msml-package.xml.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/../share/msml-pacakge.xml)
+  ${CMAKE_CURRENT_SOURCE_DIR}/../share/msml-package.xml)
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/envconfig.py
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/msml/envconfig.py)
