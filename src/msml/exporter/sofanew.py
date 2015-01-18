@@ -62,7 +62,7 @@ class SofaExporter(XMLExporter):
     def __init__(self, msml_file):
         """
       Args:
-       executer (Executer)
+       executor (Executer)
 
 
       """
@@ -76,7 +76,7 @@ class SofaExporter(XMLExporter):
         self._memory_update = {}  #cache for changes to _memory, updated after execution.
 
     def init_exec(self, executer):
-        """initialization by the executer, sets memory and executor member
+        """initialization by the executor, sets memory and executor member
 
          :return:
         """

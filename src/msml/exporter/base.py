@@ -305,7 +305,7 @@ class Exporter(object):
 
     def init_exec(self, executer):
         """
-        initialization by the executer, sets memory and executor member
+        initialization by the executor, sets memory and executor member
         :param executer: msml.run.Executer
         :return:
         """
