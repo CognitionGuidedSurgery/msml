@@ -10,5 +10,8 @@
 	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}</binary-dir>
 	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}/Release</binary-dir>
 	<binary-dir>${CMAKE_OPERATOR_DIRECTORY}/Debug</binary-dir>
-	<python-dir>${CMAKE_PYTHON_DIRECTORY}"</python-dir>
+
+	<python-dir>${CMAKE_OPERATOR_DIRECTORY}</python-dir>
+	<python-dir>${CMAKE_OPERATOR_DIRECTORY}/Release</python-dir>
+	<python-dir>${CMAKE_OPERATOR_DIRECTORY}/Debug</python-dir>
 </package>
