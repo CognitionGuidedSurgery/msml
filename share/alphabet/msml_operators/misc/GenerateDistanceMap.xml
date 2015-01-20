@@ -9,7 +9,7 @@
     </runtime>
 
     <input>
-        <arg name="surfaceMesh" logical="SurfaceMesh" physical="file.vtk" />
+        <arg name="volumeMesh" logical="VolumeMesh" physical="file.vtk" />
     </input>
 
     <output>

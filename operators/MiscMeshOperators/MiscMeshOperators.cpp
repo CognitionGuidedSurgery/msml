@@ -1620,17 +1620,17 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 	}
 }
 
-string GenerateDistanceMap(const char* inputPolyData, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
+string GenerateDistanceMap(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
 {
-  vtkSmartPointer<vtkPolyData> polydata = IOHelper::VTKReadPolyData(inputPolyData);
+  vtkSmartPointer<vtkUnstructuredGrid> polydata = IOHelper::VTKReadUnstructuredGrid(inputUnstructuredGrid);
   vtkSmartPointer<vtkImageData> aDistMap = GenerateDistanceMap(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
   IOHelper::VTKWriteImage(targetImage, aDistMap);
   return targetImage;
 }
 
-vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkPolyData* polydata, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
+vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* aUnstructuredGrid, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
 {
-  vtkSmartPointer<vtkImageData> image = ImageCreateGeneric(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  vtkSmartPointer<vtkImageData> image = ImageCreateGeneric(aUnstructuredGrid, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
   #if VTK_MAJOR_VERSION <= 5
     image->SetScalarTypeToFloat();
     image->SetNumberOfScalarComponents(1);
@@ -1639,12 +1639,19 @@ vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkPolyData* polydata, int res
     image->AllocateScalars(VTK_FLOAT, 1); //1 component per voxel 
 #endif
 
-  vtkSmartPointer<vtkImplicitPolyDataDistance> implicitPolyDataDistance = vtkSmartPointer<vtkImplicitPolyDataDistance>::New();
-  implicitPolyDataDistance->SetInput(polydata);
+  vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocatorRef->SetDataSet(aUnstructuredGrid);
+  cellLocatorRef->BuildLocator();
 
   int* dims = image->GetDimensions();
   double* spacing = image->GetSpacing();
   double* origin = image->GetOrigin();
+
+  vtkIdType containingCellRefId;
+  double closestPointInCell[3];
+  int subId=0;
+  double dist=0;
+
   for (int z = 0; z < dims[2]; z++)
   {
     for (int y = 0; y < dims[1]; y++)
@@ -1655,9 +1662,10 @@ vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkPolyData* polydata, int res
           pInMM[0] = origin[0]+x*spacing[0];
           pInMM[1] = origin[1]+y*spacing[1];
           pInMM[2] = origin[2]+z*spacing[2];
-          float* point = static_cast<float*>(image->GetScalarPointer(x,y,z));
-          float signedDistance = implicitPolyDataDistance->EvaluateFunction(pInMM);
-          *point = signedDistance;
+          float* point = static_cast<float*>(image->GetScalarPointer(x,y,z));  
+          cellLocatorRef->FindClosestPoint(pInMM,  closestPointInCell, containingCellRefId, subId, dist);
+
+          *point = dist;
         } //x
     } //y
   } //z
