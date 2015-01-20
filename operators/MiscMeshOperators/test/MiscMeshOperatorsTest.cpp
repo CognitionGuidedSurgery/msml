@@ -21,7 +21,7 @@
 BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap)
 {
   vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
-    GenerateDistanceMap(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk.vtk")), 10, 0, "", 0);
+    GenerateDistanceMap(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
 }
 
 
