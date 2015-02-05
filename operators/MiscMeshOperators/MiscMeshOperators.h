@@ -121,6 +121,9 @@ namespace MiscMeshOperators
   LIBRARY_API std::string GenerateDistanceMap(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin );
   LIBRARY_API vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* unstructuredGrid, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin);
 
+  LIBRARY_API std::string GenerateDistanceMap3d(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin );
+  LIBRARY_API vtkSmartPointer<vtkImageData> GenerateDistanceMap3d(vtkUnstructuredGrid* unstructuredGrid, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin);
+
   LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateGeneric(vtkPointSet* grid, double resolution, float isotropicVoxelSize, const char* referenceCoordinateGrid, float additionalIsotropicMargin);
   LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
   LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);

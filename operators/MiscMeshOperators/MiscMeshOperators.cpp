@@ -1620,6 +1620,70 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 	}
 }
 
+
+string GenerateDistanceMap3d(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
+{
+  vtkSmartPointer<vtkUnstructuredGrid> polydata = IOHelper::VTKReadUnstructuredGrid(inputUnstructuredGrid);
+  vtkSmartPointer<vtkImageData> aDistMap = GenerateDistanceMap3d(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  IOHelper::VTKWriteImage(targetImage, aDistMap);
+  return targetImage;
+}
+
+vtkSmartPointer<vtkImageData> GenerateDistanceMap3d(vtkUnstructuredGrid* aUnstructuredGrid, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
+{
+  vtkSmartPointer<vtkImageData> image = ImageCreateGeneric(aUnstructuredGrid, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  #if VTK_MAJOR_VERSION <= 5
+    image->SetScalarTypeToFloat();
+    image->SetNumberOfScalarComponents(1);
+    image->AllocateScalars();
+#else
+    image->AllocateScalars(VTK_FLOAT, 3); //3c omponents per voxel 
+#endif
+
+  vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocatorRef->SetDataSet(aUnstructuredGrid);
+  cellLocatorRef->BuildLocator();
+
+  int* dims = image->GetDimensions();
+  double* spacing = image->GetSpacing();
+  double* origin = image->GetOrigin();
+
+  vtkIdType containingCellRefId;
+  double closestPointInCell[3];
+  int subId=0;
+  double dist=0;
+
+  for (int z = 0; z < dims[2]; z++)
+  {
+    log_debug() << "Generating distance map for slice " << z << "/" << dims[2] << endl;
+    for (int y = 0; y < dims[1]; y++)
+    {
+        for (int x = 0; x < dims[0]; x++)
+        {
+          double pInMM[3];
+          pInMM[0] = origin[0]+x*spacing[0];
+          pInMM[1] = origin[1]+y*spacing[1];
+          pInMM[2] = origin[2]+z*spacing[2];
+          float* point = static_cast<float*>(image->GetScalarPointer(x,y,z));  
+          cellLocatorRef->FindClosestPoint(pInMM,  closestPointInCell, containingCellRefId, subId, dist);
+          if (dist>0)
+          {
+            point[0] = abs(pInMM[0] - closestPointInCell[0]);
+            point[1] = abs(pInMM[1] - closestPointInCell[1]);
+            point[2] = abs(pInMM[2] - closestPointInCell[2]);
+          }
+          else
+          {
+            point[0] = 0;
+            point[1] = 0;
+            point[2] = 0;
+          }
+        } //x
+    } //y
+  } //z
+  return image;
+}
+
 string GenerateDistanceMap(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
 {
   vtkSmartPointer<vtkUnstructuredGrid> polydata = IOHelper::VTKReadUnstructuredGrid(inputUnstructuredGrid);
@@ -1654,6 +1718,7 @@ vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* aUnstruct
 
   for (int z = 0; z < dims[2]; z++)
   {
+    log_debug() << "Generating distance map for slice " << z << "/" << dims[2] << endl;
     for (int y = 0; y < dims[1]; y++)
     {
         for (int x = 0; x < dims[0]; x++)

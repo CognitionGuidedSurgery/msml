@@ -24,6 +24,12 @@ BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap)
     GenerateDistanceMap(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
 }
 
+BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap3d)
+{
+  vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
+    GenerateDistanceMap3d(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
+}
+
 
 BOOST_AUTO_TEST_CASE( TestTransformMeshBarycentric)
 {
