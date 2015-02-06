@@ -83,7 +83,7 @@
 #include "vtkTriangle.h"
 #include "vtkGenericCell.h"
 #include "vtkCellLocator.h"
-
+#include "vtkPolyDataConnectivityFilter.h"
 
 
 
@@ -590,6 +590,77 @@ string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfi
 	return outfile;
 }
 
+
+string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
+										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial,
+										 int newMeshMaterial)
+{
+
+	vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(infile);		
+	vtkDataArray* cellsData = grid->GetCellData()->GetArray("Materials");	
+	vtkSmartPointer<vtkPoints> p = vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkCellArray> newGridCells = vtkSmartPointer<vtkCellArray>::New();	
+	vtkSmartPointer<vtkUnstructuredGrid> uGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+	vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+
+	for(vtkIdType cellId = 0; cellId<grid->GetNumberOfCells();cellId++)
+	{		
+		if(cellsData->GetTuple1(cellId)!=baseMeshMaterial)continue;
+		if(grid->GetCellType(cellId)!=10)continue;
+		vtkSmartPointer<vtkIdList> cellPointIds = vtkSmartPointer<vtkIdList>::New();
+		grid->GetCellPoints(cellId, cellPointIds); 		
+		std::list<vtkIdType> neighbors;		
+		
+		vtkSmartPointer<vtkGenericCell> cell2 = vtkSmartPointer<vtkGenericCell>::New();	
+		grid->GetCell(cellId,cell2);
+		for(int faceIndex = 0;faceIndex<cell2->GetNumberOfFaces();faceIndex++)
+		{
+			vtkCell *faceCell = cell2->GetFace(faceIndex);
+			vtkIdList *facePoints = faceCell->GetPointIds();
+			vtkSmartPointer<vtkIdList> idList =  vtkSmartPointer<vtkIdList>::New();
+			for(int fpi=0;fpi<faceCell->GetNumberOfPoints();fpi++)
+			{				
+				idList->InsertNextId(facePoints->GetId(fpi)); 
+			}			
+			vtkSmartPointer<vtkIdList> neighborCellIds = vtkSmartPointer<vtkIdList>::New(); 
+			grid->GetCellNeighbors(cellId, idList, neighborCellIds);
+			for(vtkIdType j = 0; j < neighborCellIds->GetNumberOfIds(); j++)
+			{
+				vtkIdType neighbourId = neighborCellIds->GetId(j);
+				double neighbourMat = cellsData->GetTuple1(neighbourId);
+				//only push if mat is ok
+				if(std::find(otherMeshesMaterial.begin(), otherMeshesMaterial.end(), neighbourMat)!=otherMeshesMaterial.end())
+				{										
+					//save points and faces to new grid							
+					vtkPoints *facePointCoords = faceCell->GetPoints();
+					vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
+					for(int coordsIndex=0;coordsIndex<faceCell->GetNumberOfPoints();coordsIndex++)
+					{						
+						vtkIdType slotId = p->InsertNextPoint(facePointCoords->GetPoint(coordsIndex));
+						triangle->GetPointIds()->SetId(coordsIndex,slotId);
+					}																
+					triangles->InsertNextCell(triangle);
+				}		
+			}
+		}		
+	}
+	
+	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+	polydata->SetPoints(p);
+	polydata->SetPolys(triangles);
+
+	vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
+	cleaner->SetInputData(polydata);
+	cleaner->Update();
+
+	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivity = vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
+	connectivity->SetExtractionModeToLargestRegion();
+	connectivity->SetInputData(cleaner->GetOutput());
+	connectivity->Update();
+
+	IOHelper::VTKWritePolyData(outfile,connectivity->GetOutput());		
+	return outfile;
+}
 
 
 /*

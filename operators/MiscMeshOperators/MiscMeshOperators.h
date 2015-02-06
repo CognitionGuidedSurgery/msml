@@ -136,11 +136,18 @@ namespace MiscMeshOperators
 			            double toErode, std::vector<double> morph_kernel);    
   
   LIBRARY_API std::string SelectVolumesByMaterialID(const char* infile,const char* oufile, std::vector<int> group);
+ 
   LIBRARY_API std::string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<int> toReplace, int replaceBy);
   LIBRARY_API std::vector<double> BoundsFromMaterialID(const char* infile, int materialID);
 
-  LIBRARY_API std::string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfile, std::vector<double> desiredNormalDir, 
+  LIBRARY_API std::string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfile, 
+															  std::vector<double> desiredNormalDir, 
 															  double margin);
+  
+  LIBRARY_API std::string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
+										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial,
+										 int newMeshMaterial);
+
 
 } //end namespace MiscMeshOperators
 } // end namespace MSML

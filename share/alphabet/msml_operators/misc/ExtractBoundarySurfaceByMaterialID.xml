@@ -1,0 +1,47 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ExtractBoundarySurfaceByMaterials">
+	 <meta key="doc">
+		Extract a boundary surface between two or more regions of a volume mesh (where regions are defined by
+		material ids).
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="ExtractBoundarySurfaceByMaterials" />
+    </runtime>
+
+    <input>
+        <arg name="surface" logical="VolumeMesh" physical="file.vtk" />
+    </input>  
+	
+    <parameters>	
+		<arg name="boundarySurface" physical="str" >
+			<meta key="doc">
+				The boundary surface, that is, the surface between two or more volume regions.
+            </meta>
+		</arg>
+		<arg name="baseRegionMaterial" physical="int" >
+            <meta key="doc">
+				Material ID of the base volume region, cells of the boundary surface will be taken from this region.
+            </meta>
+        </arg>		
+		<arg name="otherRegionsMaterial" physical="vector.int" >
+            <meta key="doc">
+				Material IDs of the other volume regions, if cells of base volume have neighbors in one of the
+				regions, these cells will be extracted.
+            </meta>
+        </arg>	
+		<arg name="boundarySurfaceMaterial" physical="int" >
+            <meta key="doc">
+				Material ID of the extracted boundary surface. Must be a material ID NOT occuring in input volume.
+            </meta>
+        </arg>	
+		
+       </parameters>
+	<output>
+        <arg name="boundarySurface" logical="SurfaceMesh" physical="file.vtk">
+			<meta key="doc">
+				The filtered boundary surface.
+            </meta>
+		</arg>
+    </output>
+</msml:operator>
