@@ -81,8 +81,6 @@ prolog = """
 from .package import *
 from path import path
 
-from .envconfig import MSML_DEFAULT_PACKAGE
-
 DEFAULT_REPOSITORIES = [MSML_REPOSITORY_FILENAME, "~/.config/msml/%s" % MSML_REPOSITORY_FILENAME]
 
 
@@ -347,12 +345,13 @@ class App(object):
                 log.error("Explicit given package %s could not be loaded: Not found", pth)
 
         # msml default package at first place
-        try:
-            packages.insert(0, Package.from_file(MSML_DEFAULT_PACKAGE))
-        except FileNotFoundError:
-            log.fatal("The MSML default operator are not available, the package file %s is missing",
-                      MSML_DEFAULT_PACKAGE)
-            sys.exit(100)
+        # weigl, it is now down in load
+        #try:
+        #    packages.insert(0, Package.from_file(MSML_DEFAULT_PACKAGE))
+        #except FileNotFoundError:
+        #    log.fatal("The MSML default operator are not available, the package file %s is missing",
+        #              MSML_DEFAULT_PACKAGE)
+        #    sys.exit(100)
 
         for p in packages:
             log.info("Activate %s", p)
