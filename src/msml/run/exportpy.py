@@ -26,14 +26,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # endregion
 
-from ..run import *
+"""Transform MSML files into a equivalence Python file.
 
+"""
+
+from jinja2 import Template
+from simplegeneric import generic
+
+from ..run import *
 from ..exporter import Exporter
 from ..model import Task, MSMLVariable
-
-from jinja2 import Environment, FileSystemLoader, Template
-
-from simplegeneric import generic
 
 
 T = Template("""#!/usr/bin/python
@@ -43,7 +45,11 @@ import msml.frontend
 app = App()
 alphabet = app.alphabet
 
+memory = {}
 """)
+
+__all__ = ["exportpy"]
+
 
 def exportpy(msml_file):
     graphb = DefaultGraphBuilder(msml_file, msml_file.exporter).dag
@@ -58,33 +64,48 @@ def exportpy(msml_file):
 def execute():
     pass
 
+import msml.exporter
+from msml.model import *
+
+
 @execute.when_type(Exporter)
 def execute_exporter(exporter):
-    print "_exporter_clazz = msml.exporter.get_exporter('%s')" % exporter.name
-    print "_exporter = _exporter_clazz(mem)"
+    ename = ""
+    for ex in msml.exporter.get_known_exporters():
+        if isinstance(exporter, msml.exporter.get_exporter(ex)):
+            ename = ex
+            break
+
+    print "_exporter_clazz = msml.exporter.get_exporter('%s')" % ename
+    print "msml_file = msml.xml.load_msml_file(%r)" % str(exporter._msml_file.filename)
+    print "_exporter = _exporter_clazz(msml_file)"
+    print "_exporter._memory = memory"
 
 
 @execute.when_type(MSMLVariable)
 def execute_variable(var):
-    print "%s = '%s'" % (var.name, var.value)
+    print "memory[%r] = '%s'" % (var.name, var.value)
+
 
 from itertools import starmap
+
 
 @execute.when_type(Task)
 def execute_task(task):
     def refo(a):
         if isinstance(a.linked_from.task, MSMLVariable):
-            return a.linked_from.task.name
-        return a.linked_from.task.id + "_"  +a.linked_from.task.name
+            return "memory[%r]" % a.linked_from.task.name
+        return "memory[%r][%r]" % (a.linked_from.task.id, a.linked_from.task.name)
 
 
-    onames = ', '.join( map(lambda x: task.id +"_"+x , task.operator.output.keys()))
+    # onames = ', '.join( map(lambda x: task.id +"_"+x , task.operator.output.keys()))
 
-    inames = ', '.join( starmap(lambda name, ref:
-                                "%s = %s" %(name, refo(ref)),
-                                task.arguments.items()) )
+    inames = ', '.join(starmap(lambda name, ref:
+                               "%s = %s" % (name, refo(ref)),
+                               task.arguments.items()))
 
     opname = task.operator.name
 
-    print "%s = alphabet.get('%s')" % (opname, task.operator.name)
-    print "%s = %s(%s)" % (onames,opname,inames)
+    print "%s = alphabet.get(%r)" % (opname, task.operator.name)
+    print "memory[%r] = %s(%s)" % (task.id, opname, inames)
+    print

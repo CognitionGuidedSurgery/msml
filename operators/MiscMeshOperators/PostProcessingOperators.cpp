@@ -316,7 +316,7 @@ std::string ColorMesh(std::string modelFilename, std::string coloredModelFilenam
     return coloredModelFilename;
 }
 
-
+//should use polydata 
 void ColorMesh(const char* modelFilename, const char* coloredModelFilename)
 {
     //load the vtk quadratic mesh
@@ -627,25 +627,7 @@ std::string GenerateDVF(const char* referenceGridFilename, const char* deformedG
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceGridFilename);
     vtkSmartPointer<vtkUnstructuredGrid> deformedGrid = IOHelper::VTKReadUnstructuredGrid(deformedGridFilename);
 
-    vtkSmartPointer<vtkImageData> outputDVF;
-    if (strlen(referenceCoordinateGrid)>0)
-    {
-      outputDVF = MiscMeshOperators::ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
-      if (spacingParam>0)
-      {
-        MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
-      }
-    }
-
-    else
-    {
-      outputDVF = MiscMeshOperators::ImageCreateWithMesh(referenceGrid, 100);
-    }
-
-    if (spacingParam>0)
-    {
-      MiscMeshOperators::ImageChangeVoxelSize(outputDVF, spacingParam);
-    }
+    vtkSmartPointer<vtkImageData> outputDVF = MiscMeshOperators::ImageCreateGeneric(referenceGrid, 0, spacingParam, referenceCoordinateGrid, 0); 
 
     GenerateDVFImp(referenceGrid, deformedGrid, outputDVF, interpolateOutsideDistance);
  
@@ -857,17 +839,73 @@ void ComputeOrganVolume(const char* volumeFilename){
 	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
 }
 
+double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2, const char *intersectionFile="")
+{
+		vtkSmartPointer<vtkPolyData> meshA = IOHelper::VTKReadPolyData(filename);		
+		vtkSmartPointer<vtkPolyData> meshB = IOHelper::VTKReadPolyData(filename2);		
+
+		//calculate volume of meshA
+		vtkSmartPointer<vtkMassProperties> meshAProps = vtkMassProperties::New();
+		__SetInput(meshAProps,meshA);
+		meshAProps->Update();
+		double meshAVolume = meshAProps->GetVolume();
+		std::cout << "1.Volume : " << meshAVolume << std::endl;
+
+		//calculate volume of mesB
+		vtkSmartPointer<vtkMassProperties> meshBProps = vtkMassProperties::New();
+		__SetInput(meshBProps,meshB);
+		meshBProps->Update();
+		double meshBVolume = meshBProps->GetVolume();
+		std::cout << "2.Volume : " << meshBVolume << std::endl;
+
+		//set up the boolean operation filter and compute intersection of meshA and meshB
+		vtkSmartPointer<vtkBooleanOperationPolyDataFilter> booleanOperation =
+		vtkSmartPointer<vtkBooleanOperationPolyDataFilter>::New();
+#if VTK_MAJOR_VERSION < 6
+		booleanOperation->SetInput(0, meshA);
+		booleanOperation->SetInput(1, meshB);
+#else
+		booleanOperation->AddInputData(0, meshA);
+		booleanOperation->AddInputData(1, meshB);
+#endif
+		booleanOperation->SetOperationToIntersection();
+		booleanOperation->Modified();
+		booleanOperation->Update();
+		vtkSmartPointer<vtkPolyData> pol = booleanOperation->GetOutput();
+
+		if(intersectionFile!="")
+		{			
+			IOHelper::VTKWritePolyData(intersectionFile,pol);
+		}
+		
+		//calculate volume of intersection
+		vtkSmartPointer<vtkMassProperties> meshIntersectionProps = vtkMassProperties::New();
+		__SetInput(meshIntersectionProps,pol);
+		meshIntersectionProps->Modified();	
+		meshIntersectionProps->Update();
+		double overlap = meshIntersectionProps->GetVolume();
+		std::cout << "Overlapping Volume: " << overlap << std::endl;
+	
+		//calculate dice coefficent
+		double diceCoeff = (2*overlap)/(meshAVolume + meshBVolume);
+		cout << "DICE-Coefficient: " << diceCoeff << endl;
+		return diceCoeff;
+}
+
 void ComputeDiceCoefficient(const char* filename, const char* filename2)
 {
+		log_error()<<"computing dice coefficient"<<std::endl;
 		vtkUnstructuredGrid* currentGrid =  IOHelper::VTKReadUnstructuredGrid(filename);
 		vtkUnstructuredGrid* referenceGrid = IOHelper::VTKReadUnstructuredGrid(filename2);
+		log_error()<<"load ok"<<std::endl;
 
 		vtkSmartPointer<vtkGeometryFilter> geometryFilter =
 		vtkSmartPointer<vtkGeometryFilter>::New();
-
+		log_error()<<"filter setup ok"<<std::endl;
 		__SetInput(geometryFilter,currentGrid);
 		geometryFilter->Update();
 		vtkPolyData* polydata = geometryFilter->GetOutput();
+		log_error()<<"filter ok"<<std::endl;
 
 		vtkSmartPointer<vtkGeometryFilter> geometryFilter2 =
 		vtkSmartPointer<vtkGeometryFilter>::New();
@@ -907,7 +945,6 @@ void ComputeDiceCoefficient(const char* filename, const char* filename2)
 		std::cout << "2.Volume : " << volume2 << "mm^3" << endl;
 		float diceCoeff = (float)(2*overlap)/(volume1 + volume2);
 		cout << "DICE-Coefficient: " << diceCoeff << endl;
-
 }
 
 void ComputeOrganCrossSectionArea(const char* volumeFilename){
@@ -962,19 +999,22 @@ void ComputeOrganCrossSectionArea(const char* volumeFilename){
 }
 
 
-string ImageWeightedSum(const char* polydataFilePattern, bool normalize, const char* outfile)
+string ImageSum(const char* imagedataFilePattern, bool normalize, const char* outfile)
 {
-  std::vector<std::string> polydata = IOHelper::getAllFilesByMask(polydataFilePattern);
-
-  int numer_of_images = polydata.size();
+ 
+  std::vector<std::string> imagedata = IOHelper::getAllFilesByMask(imagedataFilePattern);
+  int numer_of_images = imagedata.size();
   std::vector<double> weights(numer_of_images);
   vtkSmartPointer<vtkImageWeightedSum> sumFilter = vtkSmartPointer<vtkImageWeightedSum>::New();
+  if (!normalize) 
+    sumFilter->NormalizeByWeightOff();
   vtkSmartPointer<vtkImageData> curentVoxelImage;
 
   for (int i=0; i<numer_of_images;i++)
   {
-    curentVoxelImage = IOHelper::VTKReadImage(polydata[i].c_str());
+    curentVoxelImage = IOHelper::VTKReadImage(imagedata[i].c_str());
     __AddInput(sumFilter,curentVoxelImage);
+
     weights[i] = 1.0;
   }
   

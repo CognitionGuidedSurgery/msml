@@ -1,0 +1,29 @@
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="surfacePressureOnMesh" category="constraint"
+              quantity="single">
+
+
+    <description>
+        Add pressure load to surface nodes of given mesh. 
+		The pressure value can either be the same for all nodes (i.e. one scalar) or one pressure value has to be specified for each node.	
+    </description>
+
+
+    <parameters>		
+		 <arg name="mesh" physical="vtk" logical="TriangularSurface">
+            <meta key="doc" value="Set indices of points where force/pressure acts separated by spaces."/>
+        </arg>
+        <arg name="indices" physical="ListF" logical="IndexSet">
+            <meta key="doc" value="Set indices of points where force/pressure acts separated by spaces."/>
+        </arg>
+		<arg name="pressure" physical="ListF" logical="Scalar">
+            <meta key="doc" value="Set force/pressure (which acts orthogonally) on the facets. Either provide one pressure value for all points or a vector that contains pressure values for all nodes in the indices list separated by space"/>
+        </arg>
+		<arg name="pulse" logical="bool">
+			<meta key="doc" value="Enable or disable pulse mode."/>
+        </arg>
+
+    </parameters>
+
+</msml:element>

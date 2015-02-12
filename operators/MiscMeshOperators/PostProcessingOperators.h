@@ -51,6 +51,8 @@ LIBRARY_API  std::string ColorMeshFromComparison(std::string modelFilename, std:
 LIBRARY_API void ComputeOrganVolume(const char* volumeFilename);
 LIBRARY_API void ComputeOrganCrossSectionArea(const char* volumeFilename);
 LIBRARY_API void ComputeDiceCoefficient(const char* filename, const char* filename2);
+LIBRARY_API double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2,const char *intersectionFile);
+
 
 LIBRARY_API void ColorMesh(const char* modelFilename, const char* coloredModelFilename);
 LIBRARY_API void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
@@ -81,9 +83,9 @@ LIBRARY_API void TransformMeshBarycentric(vtkUnstructuredGrid* mesh, vtkUnstruct
 LIBRARY_API std::string TransformSurfaceBarycentric(const char* meshPath, const char* referenceGridPath, const char* deformedGridPath, const char* outMeshPath, float interpolateOutsideDistance);
 LIBRARY_API void TransformSurfaceBarycentric(vtkPolyData* mesh, vtkUnstructuredGrid* referenceGrid, vtkUnstructuredGrid* deformedGrid, vtkPolyData* outMesh, float interpolateOutsideDistance);
 
-LIBRARY_API std::string ImageWeightedSum(const char* polydataFilePattern, bool normalize, const char* outfile);
+LIBRARY_API std::string ImageSum(const char* imagedataFilePattern, bool normalize, const char* outfile);
 
-void CalcVecBarycentric(double* pInMM, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vecOut);
+LIBRARY_API void CalcVecBarycentric(double* pInMM, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vecOut);
 
 } //end namespace PostProcessingOperators
 } // end namespace MediAssist

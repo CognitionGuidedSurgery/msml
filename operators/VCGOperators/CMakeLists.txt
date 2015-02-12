@@ -112,12 +112,5 @@ MSML_LIBRARY(
   SOURCES   ${VCGOperators_SRCS}
   LIBRARIES ${VCGOperators_LIBS})
 
-
-
-
-
-
-
-
-
-
+ADD_DEPENDENCIES(VCGOperators VCG)
+ADD_DEPENDENCIES(_VCGOperatorsPython VCG)

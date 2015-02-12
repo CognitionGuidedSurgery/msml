@@ -1,7 +1,9 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="GenerateDVF">
-
+    <meta key="doc">
+        Generate a displacement vector field with displacements from refMesh into deformedMesh sampled on refMesh.
+    </meta>
     <runtime>
         <python module="msml.ext.misc" function="GenerateDVF" />
     </runtime>
@@ -19,7 +21,11 @@
         <arg name="DVFFilename" physical="str" optional="true" target="true" />
         <arg name="spacing" physical="float" optional="true" default="5"/>
         <arg name="refImageCube" logical="Image3D" physical="file.vtk" optional="true" default=""/>
-        <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10"/>
+        <arg name="interpolateOutsideDistance" physical="float" optional="true" default="10">
+            <meta key="doc">
+                Interpolate dvf value outside the mesh within this distance (helpful if meshes are slightly smaller than the image you want to deform with this dvf)
+            </meta>
+        </arg>
     </parameters>
 
 </msml:operator>

@@ -10,15 +10,18 @@
 #include <vtkPolyData.h>
 #include <IOHelper.h>
 #include <Sources.h>
+#include <stdio.h>
+
+#include "../common/test_common.h"
+
 
 using namespace MSML;
 
 int main( int argc, char * argv[])
 {
-  double cordsArray[] = { 0, 0, 9, 1, 2,3};
-  std::vector<double> coordinates(cordsArray, cordsArray + sizeof(cordsArray) / sizeof(double));
-  Sources::GenerateSpheres(coordinates, 10.0, 10, 10, "C:/dev/msml/share/testdata/tmp/sphere_polydata.vtk");
 
+  MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
+   
 	return EXIT_SUCCESS;
 }
 

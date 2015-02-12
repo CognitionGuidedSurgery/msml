@@ -38,10 +38,10 @@ from ..base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
 
-import rdflib
+#import rdflib
 from msml.exporter.semantic_tools import OntologyParser
 from rdflib import URIRef
-from rdflib.namespace import RDF
+#from rdflib.namespace import RDF
 
 
 from msml.model import *
@@ -59,7 +59,7 @@ class AbaqusExporter(XMLExporter):
         Exporter.__init__(self, msml_file)
 
     def init_exec(self, executer):
-        """initialization by the executer, sets memory and executor member
+        """initialization by the executor, sets memory and executor member
          :param executer: msml.run.Executer
          :return:
         """

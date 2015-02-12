@@ -1,0 +1,9 @@
+<repository xmlns="http://msml.org/repository/1.0/"
+            msml-version="1.0" active="true">
+    <package>p1.xml</package>
+    <package>p2.xml</package>
+    <import>repo-q.xml</import>
+    <package>p3.xml</package>
+    <package>p4.xml</package>
+    <import>repo-s.xml</import>
+</repository>

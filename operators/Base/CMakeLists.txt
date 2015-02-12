@@ -28,5 +28,5 @@ SET(Base_LIBS "")
 MSML_LIBRARY(
   NAME Base
   SWIG_FILE base.i
-  SOURCES "Converters.h"
+  SOURCES "Converters.h" "Converters.cpp"
   LIBRARIES ${Base_LIBS})

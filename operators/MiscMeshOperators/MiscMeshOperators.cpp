@@ -69,6 +69,7 @@
 #include <vtkUnstructuredGridGeometryFilter.h>
 #include "vtkDataSetSurfaceFilter.h"
 #include "vtkUnstructuredGridGeometryFilter.h"
+#include <vtkImplicitPolyDataDistance.h>
 
 #include <vtkImageData.h>
 #include <vtkPolyDataToImageStencil.h>
@@ -82,7 +83,7 @@
 #include "vtkTriangle.h"
 #include "vtkGenericCell.h"
 #include "vtkCellLocator.h"
-
+#include "vtkPolyDataConnectivityFilter.h"
 
 
 
@@ -102,7 +103,9 @@
 
 #include <vtkImageDilateErode3D.h>
 #include <vtkImageThreshold.h>
-
+#include <vtkPolyDataNormals.h>
+#include <vtkMath.h>
+#include <math.h>
 
 
 using namespace std;
@@ -519,7 +522,246 @@ bool DebugPrint(vector<int> to_print)
 	cerr<<std::endl;
 	return true;
 }
+/*
+Calculate angle between two vectors. Output angle as radians.
+Copied from here:
+http://review.source.kitware.com/#/t/3804/
+(This function should be included in recent versions of vtk)
+*/
+double AngleBetweenVectors(const double v1[3], const double v2[3])
+{
+	double cross[3];
+	vtkMath::Cross(v1, v2, cross);
+	return atan2(vtkMath::Norm(cross), vtkMath::Dot(v1, v2));
+}
+/*
+   Select surface elements from a mesh based on normal direction of surface elements.
+   All surface elements having a normal vector facing in same direction (including a margin) as desired input normal vector 
+   will be selected and saved to outfile.
+*/
+string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfile, std::vector<double> desiredNormalDir, double margin)
+{
+	vtkSmartPointer<vtkPolyData> mesh = IOHelper::VTKReadPolyData(infile);
 
+	vtkSmartPointer<vtkPolyDataNormals> normalGenerator = vtkSmartPointer<vtkPolyDataNormals>::New();
+	__SetInput(normalGenerator,mesh);
+	normalGenerator->ComputePointNormalsOn();
+	normalGenerator->ComputeCellNormalsOn();
+	normalGenerator->Update();
+
+	log_info()<<mesh->GetNumberOfCells()<<" cells before filtering with ("
+			  <<desiredNormalDir[0]<<","<<desiredNormalDir[1]<<","<<desiredNormalDir[2]<<") margin:"<<margin<<std::endl;
+
+	vtkSmartPointer<vtkPolyData> normalsMesh = normalGenerator->GetOutput();
+
+	vtkSmartPointer<vtkCellData> cellData = normalsMesh->GetCellData();
+    vtkSmartPointer<vtkDataArray> cellNormals = cellData->GetNormals();	
+	int num = cellData->GetNumberOfTuples();
+	vtkSmartPointer<vtkFloatArray> selNormals = vtkSmartPointer<vtkFloatArray>::New();
+	selNormals->SetName("selNormals");
+	selNormals->SetNumberOfTuples(num);
+	normalsMesh->GetCellData()->AddArray(selNormals);
+	
+	double* inpNormal = &desiredNormalDir[0];	
+	vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+	
+	for(int i=0;i<num;++i)
+	{
+		double *normal = cellNormals->GetTuple(i);
+		double normAngle = vtkMath::DegreesFromRadians(AngleBetweenVectors(normal,inpNormal));					
+		if(normAngle<margin)
+		{
+			selNormals->SetValue(i,normAngle);
+		}else
+		{
+			selNormals->SetValue(i,180);
+		}
+	}
+	__SetInput(threshold, normalsMesh);
+	
+    threshold->ThresholdBetween(0,margin);
+    threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "selNormals");
+    threshold->Update();
+	vtkSmartPointer<vtkUnstructuredGrid> extractedMesh = threshold->GetOutput();
+	log_info()<<extractedMesh->GetNumberOfCells()<<" cells after filtering"<<std::endl;
+
+	IOHelper::VTKWriteUnstructuredGrid(outfile,extractedMesh);
+	
+	return outfile;
+}
+
+
+string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
+										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial,
+										 int newMeshMaterial)
+{
+
+	vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(infile);		
+	vtkDataArray* cellsData = grid->GetCellData()->GetArray("Materials");	
+	vtkSmartPointer<vtkPoints> p = vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkCellArray> newGridCells = vtkSmartPointer<vtkCellArray>::New();	
+	vtkSmartPointer<vtkUnstructuredGrid> uGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+	vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+
+	for(vtkIdType cellId = 0; cellId<grid->GetNumberOfCells();cellId++)
+	{		
+		if(cellsData->GetTuple1(cellId)!=baseMeshMaterial)continue;
+		if(grid->GetCellType(cellId)!=10)continue;
+		vtkSmartPointer<vtkIdList> cellPointIds = vtkSmartPointer<vtkIdList>::New();
+		grid->GetCellPoints(cellId, cellPointIds); 		
+		std::list<vtkIdType> neighbors;		
+		
+		vtkSmartPointer<vtkGenericCell> cell2 = vtkSmartPointer<vtkGenericCell>::New();	
+		grid->GetCell(cellId,cell2);
+		for(int faceIndex = 0;faceIndex<cell2->GetNumberOfFaces();faceIndex++)
+		{
+			vtkCell *faceCell = cell2->GetFace(faceIndex);
+			vtkIdList *facePoints = faceCell->GetPointIds();
+			vtkSmartPointer<vtkIdList> idList =  vtkSmartPointer<vtkIdList>::New();
+			for(int fpi=0;fpi<faceCell->GetNumberOfPoints();fpi++)
+			{				
+				idList->InsertNextId(facePoints->GetId(fpi)); 
+			}			
+			vtkSmartPointer<vtkIdList> neighborCellIds = vtkSmartPointer<vtkIdList>::New(); 
+			grid->GetCellNeighbors(cellId, idList, neighborCellIds);
+			for(vtkIdType j = 0; j < neighborCellIds->GetNumberOfIds(); j++)
+			{
+				vtkIdType neighbourId = neighborCellIds->GetId(j);
+				double neighbourMat = cellsData->GetTuple1(neighbourId);
+				//only push if mat is ok
+				if(std::find(otherMeshesMaterial.begin(), otherMeshesMaterial.end(), neighbourMat)!=otherMeshesMaterial.end())
+				{										
+					//save points and faces to new grid							
+					vtkPoints *facePointCoords = faceCell->GetPoints();
+					vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
+					for(int coordsIndex=0;coordsIndex<faceCell->GetNumberOfPoints();coordsIndex++)
+					{						
+						vtkIdType slotId = p->InsertNextPoint(facePointCoords->GetPoint(coordsIndex));
+						triangle->GetPointIds()->SetId(coordsIndex,slotId);
+					}																
+					triangles->InsertNextCell(triangle);
+				}		
+			}
+		}		
+	}
+	
+	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+	polydata->SetPoints(p);
+	polydata->SetPolys(triangles);
+
+	vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
+	cleaner->SetInputData(polydata);
+	cleaner->Update();
+
+	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivity = vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
+	connectivity->SetExtractionModeToLargestRegion();
+	connectivity->SetInputData(cleaner->GetOutput());
+	connectivity->Update();
+
+	IOHelper::VTKWritePolyData(outfile,connectivity->GetOutput());		
+	return outfile;
+}
+
+
+/*
+	For given image: replace occurence of every value in toReplace-vector  by replaceBy
+	Input: Image with values 1,2,3
+	toReplace-Argument: 1,2
+	replaceBy-Argument: 42
+	Output: Image with values 3,42
+*/
+string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<int> toReplace, int replaceBy)
+{
+	vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(infile); 
+    vtkDataArray* pd = image->GetPointData()->GetScalars();
+	double replaceValue = replaceBy;
+    for (int i=0; i<pd->GetNumberOfTuples();i++)
+    {		
+		double* value = pd->GetTuple(i);
+		//if value is contained in toReplace vector, replace by replaceBy value
+		if(std::find(toReplace.begin(), toReplace.end(), *value)!=toReplace.end())
+		{	
+			pd->SetTuple(i,  &replaceValue);
+		}        
+    }
+	IOHelper::VTKWriteImage(outfile,image);
+	return outfile;
+}
+
+vector<double> BoundsFromMaterialID(const char* infile, int materialID)
+{
+	vtkSmartPointer<vtkUnstructuredGrid> dataGrid = IOHelper::VTKReadUnstructuredGrid(infile); 
+	vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+    __SetInput(threshold, dataGrid);
+    threshold->ThresholdBetween(materialID,materialID);
+    threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Materials");
+    threshold->Update();
+	
+	vtkSmartPointer<vtkUnstructuredGrid> mesh = threshold->GetOutput();	
+	double *bounds = mesh->GetBounds();
+	//not really nice
+	std::vector<double> vecBounds(bounds, bounds + 6);	
+	return vecBounds;
+}
+
+
+
+/*
+	Select volumes by their material id. All volumes with id given in group vector will be selected, 
+	merged, and saved.
+*/
+string SelectVolumesByMaterialID(const char* infile, const char* outfile, std::vector<int> group)
+{
+	vtkSmartPointer<vtkUnstructuredGrid> inputGrid = IOHelper::VTKReadUnstructuredGrid(infile);	
+	log_debug()<<"selecting started..."<<std::endl;
+
+	int totalNumberVolumes = 0;
+	int totalNumberCells = 0;
+	int totalNumberPoints = 0;
+	//collect selected volumes here
+	std::vector<vtkSmartPointer<vtkUnstructuredGrid> > volumes;
+
+	//get volumes, sum up their total number of cells/points --> needed by the merger
+	//total number of cells, points must be known in advance, before merging is started
+	for (std::vector<int>::iterator it = group.begin() ; it != group.end(); ++it)
+	{
+		int matId = *it;
+		log_debug() << "selecting cells of id: "<< matId <<std::endl;
+        vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+        __SetInput(threshold, inputGrid);
+		threshold->ThresholdBetween(matId,matId);
+        threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Materials");
+        threshold->Update();       
+		log_debug() << "There are " << threshold->GetOutput()->GetNumberOfCells() << " cells after thresholding with " <<  matId << std::endl;     
+		//extract volume
+		vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+		mesh->DeepCopy(threshold->GetOutput());	
+		volumes.push_back(mesh);
+		totalNumberVolumes++;
+		totalNumberPoints+=mesh->GetNumberOfPoints();
+		totalNumberCells+=mesh->GetNumberOfCells();		
+	}  	
+	//set up the merger
+	vtkSmartPointer<vtkUnstructuredGrid> unionMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();	
+	vtkSmartPointer<vtkMergeCells> merger = vtkSmartPointer<vtkMergeCells>::New();
+	merger->SetUnstructuredGrid(unionMesh);
+	merger->MergeDuplicatePointsOn();
+	merger->SetPointMergeTolerance(0.00001);	
+	merger->SetTotalNumberOfCells(totalNumberCells);
+	merger->SetTotalNumberOfPoints(totalNumberPoints);
+	merger->SetTotalNumberOfDataSets(totalNumberVolumes);
+	for(std::vector<vtkSmartPointer<vtkUnstructuredGrid> >::iterator it = volumes.begin(); it!=volumes.end(); ++it)
+	{
+		merger->MergeDataSet(*it);
+	}
+	merger->Finish();	
+
+	//save the merged data
+	log_debug()<<"saving..."<<std::endl;
+	IOHelper::VTKWriteUnstructuredGrid(outfile, unionMesh);
+	log_debug()<<"selecting finished"<<std::endl;	
+    return outfile;
+}
 /*
   Morph given image cube file using this vtk filter:
   http://www.vtk.org/doc/nightly/html/classvtkImageDilateErode3D.html#details
@@ -530,14 +772,14 @@ bool DebugPrint(vector<int> to_print)
 
   output is a vti-image
 */
-bool MorphCube(const char *infile, const char *outfile, double toDilate, double toErode,
+string MorphCube(const char *infile, const char *outfile, double toDilate, double toErode,
 					std::vector<double> morph_kernel)
 {
 	//fail if morph_kernel does not contain exactly three values
 	if(morph_kernel.size()!=3)
 	{
 		log_error()<<"Exactly three values are needed for kernel size!"<<std::endl;
-		return false;
+		return infile;
 	}
 	//load image
 	vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(infile);	
@@ -554,7 +796,7 @@ bool MorphCube(const char *infile, const char *outfile, double toDilate, double 
 
 	//save image
 	IOHelper::VTKWriteImage(outfile,dilateErode->GetOutput());
-	return true;
+	return outfile;
 }
 
 /*
@@ -959,26 +1201,7 @@ std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int res
 
 bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
-    vtkSmartPointer<vtkImageData> whiteImage;
-    //Method A: Generate bounds, spacing and origine based on mesh:
-    if (resolution>0)
-    {
-      whiteImage = ImageCreateWithMesh(inputMesh, resolution);
-    }
-
-    else if(isotropicVoxelSize>0)
-    {
-      whiteImage = ImageCreateWithMesh(inputMesh, 100);
-      ImageChangeVoxelSize(whiteImage, isotropicVoxelSize);
-    }
-
-    //Method B: Get bounds, spacing and origin from given grid:
-    else 
-    {
-      whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
-    }
-    if (additionalIsotropicMargin!=0)
-      ImageEnlargeIsotropic(whiteImage, additionalIsotropicMargin);
+    vtkSmartPointer<vtkImageData> whiteImage = ImageCreateGeneric(inputMesh, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
 
 #if VTK_MAJOR_VERSION <= 5
     whiteImage->SetScalarTypeToUnsignedChar();
@@ -1466,8 +1689,157 @@ std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile,  std
 		log_debug() <<"Vector field with name "<<vectorFieldName<<" was not found" << std::endl;
 		return vectorField;
 	}
-
 }
+
+
+string GenerateDistanceMap3d(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
+{
+  vtkSmartPointer<vtkUnstructuredGrid> polydata = IOHelper::VTKReadUnstructuredGrid(inputUnstructuredGrid);
+  vtkSmartPointer<vtkImageData> aDistMap = GenerateDistanceMap3d(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  IOHelper::VTKWriteImage(targetImage, aDistMap);
+  return targetImage;
+}
+
+vtkSmartPointer<vtkImageData> GenerateDistanceMap3d(vtkUnstructuredGrid* aUnstructuredGrid, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
+{
+  vtkSmartPointer<vtkImageData> image = ImageCreateGeneric(aUnstructuredGrid, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  #if VTK_MAJOR_VERSION <= 5
+    image->SetScalarTypeToFloat();
+    image->SetNumberOfScalarComponents(1);
+    image->AllocateScalars();
+#else
+    image->AllocateScalars(VTK_FLOAT, 3); //3c omponents per voxel 
+#endif
+
+  vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocatorRef->SetDataSet(aUnstructuredGrid);
+  cellLocatorRef->BuildLocator();
+
+  int* dims = image->GetDimensions();
+  double* spacing = image->GetSpacing();
+  double* origin = image->GetOrigin();
+
+  vtkIdType containingCellRefId;
+  double closestPointInCell[3];
+  int subId=0;
+  double dist=0;
+
+  for (int z = 0; z < dims[2]; z++)
+  {
+    log_debug() << "Generating distance map for slice " << z << "/" << dims[2] << endl;
+    for (int y = 0; y < dims[1]; y++)
+    {
+        for (int x = 0; x < dims[0]; x++)
+        {
+          double pInMM[3];
+          pInMM[0] = origin[0]+x*spacing[0];
+          pInMM[1] = origin[1]+y*spacing[1];
+          pInMM[2] = origin[2]+z*spacing[2];
+          float* point = static_cast<float*>(image->GetScalarPointer(x,y,z));  
+          cellLocatorRef->FindClosestPoint(pInMM,  closestPointInCell, containingCellRefId, subId, dist);
+          if (dist>0)
+          {
+            point[0] = abs(pInMM[0] - closestPointInCell[0]);
+            point[1] = abs(pInMM[1] - closestPointInCell[1]);
+            point[2] = abs(pInMM[2] - closestPointInCell[2]);
+          }
+          else
+          {
+            point[0] = 0;
+            point[1] = 0;
+            point[2] = 0;
+          }
+        } //x
+    } //y
+  } //z
+  return image;
+}
+
+string GenerateDistanceMap(const char* inputUnstructuredGrid, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin )
+{
+  vtkSmartPointer<vtkUnstructuredGrid> polydata = IOHelper::VTKReadUnstructuredGrid(inputUnstructuredGrid);
+  vtkSmartPointer<vtkImageData> aDistMap = GenerateDistanceMap(polydata, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  IOHelper::VTKWriteImage(targetImage, aDistMap);
+  return targetImage;
+}
+
+vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* aUnstructuredGrid, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin)
+{
+  vtkSmartPointer<vtkImageData> image = ImageCreateGeneric(aUnstructuredGrid, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+  #if VTK_MAJOR_VERSION <= 5
+    image->SetScalarTypeToFloat();
+    image->SetNumberOfScalarComponents(1);
+    image->AllocateScalars();
+#else
+    image->AllocateScalars(VTK_FLOAT, 1); //1 component per voxel 
+#endif
+
+  vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocatorRef->SetDataSet(aUnstructuredGrid);
+  cellLocatorRef->BuildLocator();
+
+  int* dims = image->GetDimensions();
+  double* spacing = image->GetSpacing();
+  double* origin = image->GetOrigin();
+
+  vtkIdType containingCellRefId;
+  double closestPointInCell[3];
+  int subId=0;
+  double dist=0;
+
+  for (int z = 0; z < dims[2]; z++)
+  {
+    log_debug() << "Generating distance map for slice " << z << "/" << dims[2] << endl;
+    for (int y = 0; y < dims[1]; y++)
+    {
+        for (int x = 0; x < dims[0]; x++)
+        {
+          double pInMM[3];
+          pInMM[0] = origin[0]+x*spacing[0];
+          pInMM[1] = origin[1]+y*spacing[1];
+          pInMM[2] = origin[2]+z*spacing[2];
+          float* point = static_cast<float*>(image->GetScalarPointer(x,y,z));  
+          cellLocatorRef->FindClosestPoint(pInMM,  closestPointInCell, containingCellRefId, subId, dist);
+
+          *point = dist;
+        } //x
+    } //y
+  } //z
+  return image;
+}
+
+vtkSmartPointer<vtkImageData> ImageCreateGeneric(vtkPointSet* grid, double resolution, float isotropicVoxelSize, const char* referenceCoordinateGrid, float additionalIsotropicMargin)
+{
+  vtkSmartPointer<vtkImageData> whiteImage;
+  
+  //Method A: Generate bounds, spacing and origine based on mesh:
+  if (resolution>0)
+  {
+    whiteImage = ImageCreateWithMesh(grid, resolution);
+  }
+
+  else if(isotropicVoxelSize>0)
+  {
+    whiteImage = ImageCreateWithMesh(grid, 100);
+    ImageChangeVoxelSize(whiteImage, isotropicVoxelSize);
+  }
+
+  //Method B: Get bounds, spacing and origin from given grid:
+  else if (!string(referenceCoordinateGrid).empty())
+  {
+    whiteImage = ImageCreate(IOHelper::VTKReadImage(referenceCoordinateGrid));
+  }
+  else
+  {
+    log_error() << "ImageCreateGeneric: Please specify resolution, isotropicVoxelSize or referenceCoordinateGrid" << endl;
+  }
+
+  if (additionalIsotropicMargin!=0)
+    ImageEnlargeIsotropic(whiteImage, additionalIsotropicMargin);
+
+  return whiteImage;
+}
+
 vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution)
 {
   vtkSmartPointer<vtkImageData> newVTKImage = vtkSmartPointer<vtkImageData>::New();

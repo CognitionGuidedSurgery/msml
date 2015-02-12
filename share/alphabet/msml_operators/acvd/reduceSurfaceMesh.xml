@@ -1,0 +1,34 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ACVDReduceSurfaceMesh">
+
+    <runtime>
+        <python module="msml.ext.acvd" function="ReduceSurfaceMesh" />
+    </runtime>
+   <input>
+        <arg name="inputMeshFile" logical="TriangularSurface" physical="file.vtk" />  
+    </input>
+
+    <output>
+        <arg name="outmesh" logical="TriangularSurface" physical="file.vtk" />
+    </output>
+
+    <parameters>
+        <arg name="outputMeshFile" physical="str" optional="true" target="true"/>  
+		<arg name="verticesCount" physical="int" target="true">  
+			<meta key="doc">
+				Number of vertices in output.
+            </meta>
+		</arg>		
+		<arg name="forceManifold" physical="bool">  
+			<meta key="doc">
+				If output mesh is forced to be manifold or not.
+            </meta>
+		</arg>
+		<arg name="asciiOutput" physical="bool">  
+			<meta key="doc">
+				If output should be in ascii or binary vtk format.
+            </meta>
+		</arg>		
+    </parameters>
+</msml:operator>

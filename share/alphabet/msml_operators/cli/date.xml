@@ -1,0 +1,25 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="date">
+
+	<runtime>
+        <sh file="paraview" wd="" template="date +'%T' | cat"
+                ouput_pattern="(?P&lt;hour&gt;\d\d):(?P&lt;min&gt;\d\d):(?P&lt;sec&gt;\d\d)"
+                output_names="hour min sec"/>
+	</runtime>
+
+    <annotation>
+        <entry key="doc">returns current hours, minute, seconds of day.
+        Primary for testing system.</entry>
+    </annotation>
+
+	<input>
+	</input>
+
+    <output>
+        <arg name="hour" physical="int"/>
+        <arg name="min" physical="int"/>
+        <arg name="s" physical="int"/>
+    </output>
+
+</msml:operator>

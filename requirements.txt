@@ -16,3 +16,7 @@ colorama
 #sphinx
 #sphinxcontrib-napoleon
 #sphinx-bootstrap-theme
+
+# package support
+pyyaml
+addict

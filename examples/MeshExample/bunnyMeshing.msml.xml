@@ -7,17 +7,17 @@
 
     <workflow>
         <ConvertSTLToVTK id="vtkConverter" STLMesh="BunnyXL.stl" targetFilename="BunnySurface.vtk"/>
-        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr" surfaceMesh="${vtkConverter}" imageFilename="BunnyVoxelImage.vti" resolution="250"/>
+        <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr" surfaceMesh="${vtkConverter}" targetImageFilename="BunnyVoxelImage.vti" resolution="100" additionalIsotropicMargin="0.01" />
 
-        <MarchingCube id="aMarchingCube" image="${VoxelizeSurfaceMeshr}" out_filename="BunnyVoxelImageMarching.vtk" isoValue="255.0" />
-        <CalculateSubdivisionSurface id="aCalculateSubdivisionSurface" surfaceMesh="${aMarchingCube}" meshFilename="BunnyVoxelImageMarchingSub.vtk" subdivisions="1" method="Loop" />
+        <vtkMarchingCube id="aMarchingCube" image="${VoxelizeSurfaceMeshr}" outFilename="BunnyVoxelImageMarching.vtk" isoValue="255.0" />
+        <CGALCalculateSubdivisionSurface id="aCalculateSubdivisionSurface" surfaceMesh="${aMarchingCube}" targetMeshFilename="BunnyVoxelImageMarchingSub.vtk" subdivisions="1" method="Loop" />
         
-        <SmoothMesh id="aSmoothMesh" mesh="${aMarchingCube}" surfaceMeshFilename="smoothed.vtk" iterations="50"  featureAngle="30" passBand="0.1" 
-            boundarySmoothing="false" featureEdgeSmoothing="false" nonManifoldSmoothing="false" normalized_coordinates="true" />
+        <vtkSmoothMesh id="aSmoothMesh" mesh="${aMarchingCube}" targetSurfaceMeshFilename="smoothed.vtk" iterations="50"  featureAngle="30" passBand="0.1" 
+            boundarySmoothing="false" featureEdgeSmoothing="false" nonManifoldSmoothing="false" normalizedCoordinates="true" />
         
-        <SimplificateMesh id="aSimplificateMesh" inputMeshFile="${aSmoothMesh}" outputMeshFile="BunnyVoxelImageMarchingSimpl.vtk" stopnr="1000" />
+        <CGALSimplificateSurface id="aSimplificateMesh" inputMeshFile="${aSmoothMesh}" outputMeshFile="BunnyVoxelImageMarchingSimpl.vtk" stopnr="1000" />
 
-        <CGALMeshVolumeFromVoxels id="bunnyVolumeMesher2" surfaceMesh="${aSimplificateMesh}" meshFilename="bunnyVolumeFromPolydata.vtk"
+        <CGALMeshVolumeFromSurface id="bunnyVolumeMesher2" surfaceMesh="${aSimplificateMesh}" meshFilename="bunnyVolumeFromPolydata.vtk"
                        preserveFeatures="false" facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
                        cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
                        

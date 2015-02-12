@@ -10,7 +10,7 @@
     </input>  
 	
     <parameters>	
-		<arg name="TargetMorphedImage" logical="SegmentationImage3D" physical="str" optional="true" target="true">
+		<arg name="morphedImage" logical="SegmentationImage3D" physical="str" optional="true" target="true">
 			<meta key="doc">
 				The morphed image.
 			</meta>

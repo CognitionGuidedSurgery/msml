@@ -282,6 +282,13 @@ def msml_file_factory(msml_node):
             m = mesh_node.attrib['mesh']
             i = mesh_node.attrib['id']
             return Mesh(t, i, m)
+        
+        def _parse_contactGeometry(contactGeometry_node):
+            'example:     <contactsurface id="contactSurface" surface="${MovingSurface}"/>'
+            t = _tag_name(contactGeometry_node.tag)
+            m = contactGeometry_node.attrib['surface']
+            i = contactGeometry_node.attrib['id']
+            return ContactGeometry(t, i, m)
 
         def _parse_constraints(constraints_node):
             '''example:
@@ -337,8 +344,10 @@ def msml_file_factory(msml_node):
             sets.surfaces = _parse_indexgroup_list(surfaces_sets)
             sets.elements = _parse_indexgroup_list(element_sets)
 
+        constraints = ObjectConstraints(name="empty")      
         constraints_node = object_node.find('constraints')
-        constraints = _parse_constraints(constraints_node)
+        if(constraints_node is not None):
+            constraints = _parse_constraints(constraints_node)
 
         material_node = object_node.find('material')
         material = _parse_material(material_node)
@@ -351,6 +360,12 @@ def msml_file_factory(msml_node):
         scene_object.sets = sets
         scene_object.material = material
         scene_object.constraints = constraints
+        
+        #collision detection stuff
+        #get contact surface
+        contactGeometryNode = object_node.find("contactsurface")
+        if(contactGeometryNode is not None):
+            scene_object.contactGeometry = _parse_contactGeometry(contactGeometryNode)       
 
         return scene_object
 
@@ -375,13 +390,19 @@ def msml_file_factory(msml_node):
         env.solver.timeIntegration = solver_node.get('timeIntegration')
         env.solver.dampingRayleighRatioMass = solver_node.get('dampingRayleighRatioMass')
         env.solver.dampingRayleighRatioStiffness = solver_node.get('dampingRayleighRatioStiffness')
+        env.solver.mass = solver_node.get('mass')
 
         simulation_node = env_node.find('simulation')
         for s in simulation_node.iterchildren():
+            #parse gravity attribute, if given            
+            gravityAttrib = s.get('gravity')         
+            gravity = None  
+            if(gravityAttrib is not None):
+                gravity = map(float, gravityAttrib.split())
             env.simulation.add_step(name=s.get('name'),
                                     dt=s.get('dt'),
                                     iterations=s.get('iterations'),
-                                    gravity=s.get('gravity'))
+                                    gravity=gravity)
 
         return env
 

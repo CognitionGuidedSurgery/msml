@@ -1,0 +1,35 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ReplaceMaterialID">
+	 <meta key="doc">
+		For given image: replace occurence of every value in toReplace-vector  by replaceBy
+		Input: Image with values 1,2,3
+		toReplace-Argument: 1,2
+		replaceBy-Argument: 42
+		Output: Image with values 3,42		
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="ReplaceMaterialID" />
+    </runtime>
+
+    <input>
+        <arg name="image" logical="Image3D" physical="file.vtk" />
+    </input>  
+	
+    <parameters>	
+		<arg name="replacedImageFile" physical="str" logical="Image3D"/>
+		<arg name="toReplace" physical="vector.int" >
+            <meta key="doc">
+				Values to replace.
+            </meta>
+        </arg>
+		<arg name="replaceBy" physical="int" >
+            <meta key="doc">
+				The value to replace by.
+            </meta>
+        </arg>
+       </parameters>
+	<output>
+        <arg name="replacedImage" logical="VolumeMesh" physical="file.vtk" />
+    </output>
+</msml:operator>

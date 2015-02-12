@@ -96,7 +96,7 @@ class SortsDefinition(object):
         try:
             return self.logical_cache[typestr]
         except KeyError as e:
-            log.warn("logical type %s requested, but does not exist" % typestr)
+            log.warn("_logical type %s requested, but does not exist" % typestr)
             return None
 
     def _find_physical(self, fmtstr):
@@ -125,7 +125,7 @@ class SortsDefinition(object):
         return fn
 
     def _bulk_sorts_load(self, defs):
-        temp = (('logical', self.register_logical),
+        temp = (('_logical', self.register_logical),
                 ('physical', self.register_physical))
 
         for tp, register in temp:
@@ -145,7 +145,7 @@ class SortsDefinition(object):
 
 
 DEFAULTS_SORTS = {
-    'logical': [
+    '_logical': [
         (MSMLLTop, "top", "object", "*"),
         Index,
         IndexSet,
@@ -197,6 +197,8 @@ DEFAULTS_SORTS = {
         PNG,
         ctx,
         vdx,
+        (TXT, 'TXT', 'txt'),
+        (InFile, 'NRRD', 'nrrd'), #TODO
     ],
 }
 
@@ -245,6 +247,9 @@ class ConversionNetwork(networkx.DiGraph):
         self.add_edge(a, b, fn=fn, precedence=precedence)
 
     def converter(self, a, b):
+        """returns a function that converts elements of type `a` to element with type `b`.
+
+        """
         def c(n1, n2):
             data = self.get_edge_data(n1, n2)
             return data['fn']
@@ -334,28 +339,48 @@ def _list_integer(s):
 def _list_uinteger(s):
     return _list_of_type(s, lambda x: MSMLUInt(float(x)))
 
+def _single_float_list(f):
+    return list([f])
 
-register_conversion(str, get_sort("str"), MSMLString, 100)
-register_conversion(str, get_sort("int"), int, 100)
-register_conversion(str, get_sort("float"), float, 100)
-register_conversion(str, get_sort("bool"), _bool, 100)
-register_conversion(str, get_sort("VTK"), VTK, 100)
-register_conversion(str, get_sort("STL"), STL, 100)
-register_conversion(str, get_sort("ctx"), ctx, 100)
-register_conversion(str, get_sort("vdx"), vdx, 100)
-register_conversion(str, get_sort('vector.int'), _list_integer, 100)
-register_conversion(str, get_sort('vector.float'), _list_float, 100)
-register_conversion(tuple, get_sort('vector.int'), _list_float, 100)
-register_conversion(tuple, get_sort('vector.float'), _list_float, 100)
-register_conversion(list, get_sort('vector.int'), _list_float, 100)
-register_conversion(list, get_sort('vector.float'), _list_float, 100)
-register_conversion(str, get_sort('VTI'), VTI, 100)
-register_conversion(get_sort('int'), get_sort('str'), str, 100)
-register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float,100)
-register_conversion(get_sort('vector.float'), get_sort('vector.int'), _list_integer,100)
-register_conversion(get_sort('float'), get_sort('int'), int, 100)
+def _single_int_list(i):
+    return list([i])
+
+register_conversion(float, get_sort('vector.float'), _single_float_list, 100)
 register_conversion(float, int, int, 100)
+register_conversion(get_sort('float'), get_sort('int'), int, 100)
+register_conversion(get_sort('int'), get_sort('str'), str, 100)
+register_conversion(get_sort('int'), get_sort('str'), str, 100)
+register_conversion(get_sort('vector.float'), get_sort('vector.int'), _list_integer,100)
+register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float,100)
+register_conversion(int, get_sort('vector.int'), _single_int_list, 100)
+register_conversion(list, get_sort('vector.float'), _list_float, 100)
+register_conversion(list, get_sort('vector.int'), _list_float, 100)
+register_conversion(str, get_sort("STL"), STL, 100)
+register_conversion(str, get_sort("VTK"), VTK, 100)
+register_conversion(str, get_sort("bool"), _bool, 100)
+register_conversion(str, get_sort("ctx"), ctx, 100)
+register_conversion(str, get_sort("float"), float, 100)
+register_conversion(str, get_sort("int"), int, 100)
+register_conversion(str, get_sort("str"), MSMLString, 100)
+register_conversion(str, get_sort("vdx"), vdx, 100)
+register_conversion(str, get_sort('VTI'), VTI, 100)
+register_conversion(str, get_sort('vector.float'), _list_float, 100)
+register_conversion(str, get_sort('vector.int'), _list_integer, 100)
+register_conversion(tuple, get_sort('vector.float'), _list_float, 100)
+register_conversion(tuple, get_sort('vector.int'), _list_float, 100)
+register_conversion(unicode, get_sort("STL"), STL, 100)
+register_conversion(unicode, get_sort("VTK"), VTK, 100)
+register_conversion(unicode, get_sort("bool"), _bool, 100)
+register_conversion(unicode, get_sort("float"), float, 100)
+register_conversion(unicode, get_sort("int"), int, 100)
+register_conversion(unicode, get_sort("str"), MSMLString, 100)
+register_conversion(unicode, get_sort('VTI'), VTI, 100)
+register_conversion(unicode, get_sort('vector.float'), _list_float, 100)
+register_conversion(unicode, get_sort('vector.int'), _list_integer, 100)
 
+register_conversion(str, PNG, PNG, 100)
+register_conversion(str, get_sort('NRRD'), InFile, 100)
+register_conversion(str, TXT, InFile, 100)
 
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 

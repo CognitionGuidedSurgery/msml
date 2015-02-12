@@ -1,0 +1,16 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+  <variables>
+    <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="TriangularSurface" physical="file.vtk"/>
+  </variables>
+  <workflow>        
+  <CGALMeshVolumeFromSurface id="bunnyVolumeMesher2" surfaceMesh="${input_surf_mesh}" meshFilename="bunnyVolumeFromPolydata.vtk"
+                       preserveFeatures="false" facetAngle="20" facetSize="0.005" facetDistance="0.005" cellRadiusEdgeRatio="3"
+                       cellSize="0.01" odt="false" lloyd="false" pertube="false" exude="false"/>
+    <GenerateDistanceMap id="aGenerateDistanceMap" volumeMesh="${bunnyVolumeMesher2}" targetImageFilename="BunnyVoxelDistanceMap.vti" resolution="50"/>
+    <GenerateDistanceMap3d id="aGenerateDistanceMap3d" volumeMesh="${bunnyVolumeMesher2}" targetImageFilename="BunnyVoxelDistanceMapd.vti" resolution="50"/>
+  </workflow>
+
+</msml:msml>
