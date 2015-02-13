@@ -7,12 +7,30 @@
         <python module="msml.ext.tetgen" function="TetgenCreateVolumeMesh"/>
     </runtime>
 
+    <annotation>
+        <entry key="license">GPLv3</entry>
+        <entry key="contributors" value="Stefan Suwelack"/>
+        <entry key="doc">Transformation from surfaces into volume meshes.
+
+            Please more text here.
+        </entry>
+        <entry key="categories">Mesher,GPLv3</entry>
+    </annotation>
+
     <input>
-        <arg name="surfaceMesh" logical="TriangularSurface" physical="vtk"/>
+        <arg name="surfaceMesh" logical="TriangularSurface" physical="vtk">
+            <meta key="doc">
+
+            </meta>
+        </arg>
     </input>
 
     <output>
-        <arg name="mesh" logical="Mesh" physical="vtk"/>
+        <arg name="mesh" logical="Mesh" physical="vtk">
+            <meta key="doc">
+
+            </meta>
+        </arg>
     </output>
 
     <parameters>
@@ -22,13 +40,45 @@
             </meta>
         </arg>
 
-        <arg name="preserveBoundary" physical="bool"/>
-        <arg name="maxEdgeRadiusRatio" physical="float" optional="true" default="2.0"/>
-        <arg name="minDihedralAngleDegrees" physical="int" optional="true" default="0"/>
-        <arg name="maxTetVolumeOrZero" physical="float" optional="true" default="0"/>
-        <arg name="optimizationLevel" physical="int" optional="true" default="2"/>
-        <arg name="optimizationUseEdgeAndFaceFlips" physical="bool" optional="true" default="true"/>
-        <arg name="optimizationUseVertexSmoothing" physical="bool" optional="true" default="true"/>
-        <arg name="optimizationUseVertexInsAndDel" physical="bool" optional="true" default="true"/>
+        <arg name="preserveBoundary" physical="bool">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="maxEdgeRadiusRatio" physical="float" optional="true" default="2.0">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="minDihedralAngleDegrees" physical="int" optional="true" default="0">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="maxTetVolumeOrZero" physical="float" optional="true" default="0">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="optimizationLevel" physical="int" optional="true" default="2">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="optimizationUseEdgeAndFaceFlips" physical="bool" optional="true" default="true">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="optimizationUseVertexSmoothing" physical="bool" optional="true" default="true">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
+        <arg name="optimizationUseVertexInsAndDel" physical="bool" optional="true" default="true">
+            <meta key="doc">
+                Please more text here.
+            </meta>
+        </arg>
     </parameters>
 </msml:operator>

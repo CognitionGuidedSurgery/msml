@@ -103,7 +103,7 @@ class SortsDefinition(object):
         try:
             return self.physical_cache[fmtstr]
         except KeyError as e:
-            s="physical type %s requested, but does not exist" % fmtstr
+            s = "physical type %s requested, but does not exist" % fmtstr
             log.error(s)
             raise BaseException(s)
 
@@ -198,7 +198,7 @@ DEFAULTS_SORTS = {
         ctx,
         vdx,
         (TXT, 'TXT', 'txt'),
-        (InFile, 'NRRD', 'nrrd'), #TODO
+        (InFile, 'NRRD', 'nrrd'),  # TODO
     ],
 }
 
@@ -250,6 +250,7 @@ class ConversionNetwork(networkx.DiGraph):
         """returns a function that converts elements of type `a` to element with type `b`.
 
         """
+
         def c(n1, n2):
             data = self.get_edge_data(n1, n2)
             return data['fn']
@@ -307,7 +308,7 @@ def _bool(s):
     if s is None:
         return False
     if isinstance(s, str):
-        return s.lower() in ('True', 'TRUE','true', 'on', 'yes')
+        return s.lower() in ('True', 'TRUE', 'true', 'on', 'yes')
     return bool(s)
 
 
@@ -339,19 +340,22 @@ def _list_integer(s):
 def _list_uinteger(s):
     return _list_of_type(s, lambda x: MSMLUInt(float(x)))
 
+
 def _single_float_list(f):
     return list([f])
 
+
 def _single_int_list(i):
     return list([i])
+
 
 register_conversion(float, get_sort('vector.float'), _single_float_list, 100)
 register_conversion(float, int, int, 100)
 register_conversion(get_sort('float'), get_sort('int'), int, 100)
 register_conversion(get_sort('int'), get_sort('str'), str, 100)
 register_conversion(get_sort('int'), get_sort('str'), str, 100)
-register_conversion(get_sort('vector.float'), get_sort('vector.int'), _list_integer,100)
-register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float,100)
+register_conversion(get_sort('vector.float'), get_sort('vector.int'), _list_integer, 100)
+register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float, 100)
 register_conversion(int, get_sort('vector.int'), _single_int_list, 100)
 register_conversion(list, get_sort('vector.float'), _list_float, 100)
 register_conversion(list, get_sort('vector.int'), _list_float, 100)
@@ -377,7 +381,7 @@ register_conversion(unicode, get_sort("str"), MSMLString, 100)
 register_conversion(unicode, get_sort('VTI'), VTI, 100)
 register_conversion(unicode, get_sort('vector.float'), _list_float, 100)
 register_conversion(unicode, get_sort('vector.int'), _list_integer, 100)
-
+register_conversion(type(None), bool, _bool, 100)
 register_conversion(str, PNG, PNG, 100)
 register_conversion(str, get_sort('NRRD'), InFile, 100)
 register_conversion(str, TXT, InFile, 100)
@@ -388,6 +392,7 @@ register_conversion(str, TXT, InFile, 100)
 try:
     from msml.ext.misc import ConvertVTKToVTU
     import os.path
+
     def convert_vtk_to_vtu(vtk):
         """Convert VTK to VTU file format.
         :param vtk:

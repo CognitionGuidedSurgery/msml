@@ -29,17 +29,11 @@
 
 __author__ = 'Alexander Weigl'
 
-#print(os.environ['LD_LIBRARY_PATH'])
-
-from warnings import warn
-
-from msml.exceptions import MSMLUnknownModuleWarning
-
+import msml.log
 
 try:
     from  NetgenOperatorsPython import *
 except ImportError, e:
-    warn("Could not load NetgenOperatorsPython. "
+    msml.log.error("Could not load NetgenOperatorsPython. "
          "This is the C++-Modul. Have you successfully compiled and installed it? "
-         "Error is %s" % e,
-         MSMLUnknownModuleWarning, 0)
+         "Error is %s", e)
