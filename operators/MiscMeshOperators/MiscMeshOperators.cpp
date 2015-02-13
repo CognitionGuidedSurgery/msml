@@ -592,10 +592,8 @@ string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfi
 
 
 string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
-										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial,
-										 int newMeshMaterial)
-{
-
+										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial)
+{	
 	vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(infile);		
 	vtkDataArray* cellsData = grid->GetCellData()->GetArray("Materials");	
 	vtkSmartPointer<vtkPoints> p = vtkSmartPointer<vtkPoints>::New();
@@ -644,10 +642,20 @@ string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile
 			}
 		}		
 	}
-	
 	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
 	polydata->SetPoints(p);
 	polydata->SetPolys(triangles);
+
+	int num = polydata->GetNumberOfCells();
+	vtkSmartPointer<vtkIntArray> materials = vtkSmartPointer<vtkIntArray>::New();
+	materials->SetNumberOfValues(num);
+	materials->SetName("Materials");
+	//TODO: no function to fill all values at once?
+	for(int i=0;i<num;++i)
+	{
+		materials->SetValue(i,baseMeshMaterial);
+	}
+	polydata->GetCellData()->SetScalars(materials);
 
 	vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
 	cleaner->SetInputData(polydata);
@@ -656,9 +664,13 @@ string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile
 	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivity = vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
 	connectivity->SetExtractionModeToLargestRegion();
 	connectivity->SetInputData(cleaner->GetOutput());
-	connectivity->Update();
+	connectivity->Update();	
 
-	IOHelper::VTKWritePolyData(outfile,connectivity->GetOutput());		
+	vtkSmartPointer<vtkAppendFilter> appendFilter = vtkSmartPointer<vtkAppendFilter>::New();
+	appendFilter->AddInputData(connectivity->GetOutput());
+	appendFilter->Update();
+
+	IOHelper::VTKWriteUnstructuredGrid(outfile,appendFilter->GetOutput());		
 	return outfile;
 }
 

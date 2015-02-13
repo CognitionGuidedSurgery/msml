@@ -145,8 +145,7 @@ namespace MiscMeshOperators
 															  double margin);
   
   LIBRARY_API std::string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
-										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial,
-										 int newMeshMaterial);
+										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial);
 
 
 } //end namespace MiscMeshOperators
