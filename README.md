@@ -15,9 +15,7 @@
          Date: 2014-02-20
    
 
-Master: [![Circle CI](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/master.svg?style=svg)](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/master) 
-Experimental:
-[![Circle CI](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/experimental.svg?style=svg)](https://circleci.com/gh/CognitionGuidedSurgery/msml/tree/experimental) 
+[![Circle CI](https://circleci.com/gh/CognitionGuidedSurgery/msml.svg?style=svg)](https://circleci.com/gh/CognitionGuidedSurgery/msml)
 [![Coverage Status](https://coveralls.io/repos/CognitionGuidedSurgery/msml/badge.png)](https://coveralls.io/r/CognitionGuidedSurgery/msml)
 
 # About
