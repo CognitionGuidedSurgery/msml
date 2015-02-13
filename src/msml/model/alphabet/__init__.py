@@ -319,7 +319,7 @@ class Slot(object):
 
 
     def __getattr__(self, item):
-        if meta in self.__dict__ and item in self.meta:
+        if 'meta' in self.__dict__ and item in self.meta:
             return self.meta[item]
         else:
             super(Slot, self).__getattr__(item)
