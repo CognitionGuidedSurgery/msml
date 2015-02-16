@@ -484,11 +484,58 @@ bool ExtractSurfaceMesh( const char* infile, const char* outfile)
 
     //save the subdivided polydata
     IOHelper::VTKWritePolyData(outfile, mesh);
-
     return result;
-
-
 }
+/*
+ Calculate a gradient on given surface, in x-direction and ranging from startVal to stopVal.
+ Argument stepWidth sets width in x-Direction of sliding window used for cell selection.
+*/
+vector<double> GradientOnSurface(const char* inFile, double startVal, double stopVal, double stepWidth)
+{
+	log_debug()<<"compute gradient from: "<<startVal<<" to:"<<stopVal<<std::endl;
+	vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(inFile);
+	vector<double> gradient(grid->GetNumberOfCells());
+	//fill gradient array with startVal
+	std::fill(gradient.begin(),gradient.end(),startVal);
+
+	//slide box accross surface and pick cells using cell locator
+	vtkSmartPointer<vtkCellLocator> locator = vtkSmartPointer<vtkCellLocator>::New();	
+	locator->SetNumberOfCellsPerBucket(1);
+	locator->SetNumberOfCellsPerNode(1);
+	locator->SetDataSet(grid);
+	locator->BuildLocator();
+	
+	double* boundingBox = grid->GetBounds();
+	//variate x-range of bounding box (first two values)
+	double xMin = boundingBox[0];
+	double xMax = boundingBox[1];	
+	
+	int num = grid->GetNumberOfCells();
+	//vtkSmartPointer<vtkFloatArray> gradientCellData = vtkSmartPointer<vtkFloatArray>::New();
+	//gradientCellData->SetName("gradient");
+	//gradientCellData->SetNumberOfTuples(num);
+	//grid->GetCellData()->AddArray(gradientCellData);
+		
+	double steps = (xMax-xMin)/stepWidth;
+	double mapValueOffset = (stopVal-startVal)/steps;
+	double currentValue = startVal;
+	for(double xOffset=xMin;xOffset<xMax;xOffset+=stepWidth)
+	{		
+		boundingBox[0] = xOffset;
+		boundingBox[1] = xOffset+stepWidth;
+		vtkSmartPointer<vtkIdList> cellsInBBox = vtkSmartPointer<vtkIdList>::New();		
+		locator->FindCellsWithinBounds(boundingBox,cellsInBBox);		
+		for(int i=0;i<cellsInBBox->GetNumberOfIds();++i)
+		{			
+			//gradientCellData->SetTuple1(cellsInBBox->GetId(i),currentValue);			
+			gradient[cellsInBBox->GetId(i)]=currentValue;
+		}
+		currentValue+=mapValueOffset;
+	}	
+	//IOHelper::VTKWriteUnstructuredGrid((string(inFile)+"_gradient.vtk").c_str(),grid);
+	return gradient;
+}
+
 
 /*
 	Get vector of all material numbers used in given mesh

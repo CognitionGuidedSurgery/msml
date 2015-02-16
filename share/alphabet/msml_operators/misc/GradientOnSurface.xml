@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="GradientOnSurface">
+	<meta key="doc">
+		Create a gradient on given surface, from start to stop value.
+		Gradient will be created in x-direction.
+		The computed value for each cell is returned in cell id order.
+	</meta>
+    <runtime>
+        <python module="msml.ext.misc"
+                function="GradientOnSurface"/>
+    </runtime>
+
+    <input>
+        <arg name="mesh" logical="SurfaceMesh" physical="file.vtk"/>
+    </input>
+
+    <output>
+        <arg name="gradient" logical="IndexSet" physical="vector.int"/>
+    </output>
+
+    <parameters>
+        <arg name="start" physical="float">
+			<meta key="doc">
+				Start value of the gradient
+			</meta>
+		</arg>
+        <arg name="stop" physical="float">
+			<meta key="doc">
+				Stop value of the gradient
+			</meta>
+		</arg>
+        <arg name="stepWidth" physical="float">
+			<meta key="doc">
+				Width of the sliding window
+			</meta>
+		</arg>
+    </parameters>
+
+
+</msml:operator>
