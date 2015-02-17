@@ -32,9 +32,7 @@ MSMLFile to XML
 
 __author__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 
-from lxml import etree
-
-from msml.exporter.visitor import *
+from msml.io.visitor import *
 
 
 def Sub(root, tagname, **kwargs):

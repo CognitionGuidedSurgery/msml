@@ -1,0 +1,23 @@
+class {{name}}({{superclass}}):
+{% if not objectAttributes and not listAttributes %}    pass{% endif %}
+{% if listAttributes %}
+    def __init__(self):
+        {% for attribute in listAttributes %}self._{{attribute[3:]}}s = list()
+{% endfor %}{% endif %}
+{% if objectAttributes %}{% for attribute in objectAttributes %}
+    @property
+    def {{ attribute[3:] }}(self):
+        return self._{{ attribute }}
+
+    @{{ attribute[3:] }}.setter
+    def sets(self, value):
+        self._{{ attribute[3:] }} = value
+{% endfor %}{% endif %}
+{% if listAttributes %}{% for attribute in listAttributes %}
+    def add{{ attribute[3:] }}({{attribute[3:]}}):
+        self._{{attribute[3:]}}s.append({{attribute[3:]}})
+{% endfor %}{% endif %}
+
+
+
+

@@ -39,12 +39,15 @@ from msml.exceptions import *
 import msml.env
 
 import rdflib
-from msml.exporter.semantic_tools import OntologyParser
+from msml.exporter.OWL_python_bridge.semantic_tools import OntologyParser
 from rdflib import URIRef
 from rdflib.namespace import RDF
 
-
-from msml.model import *
+#from msml.model.generated import msmlBase, msmlScene
+#from msml.model import *
+from msml.exporter.mapper import *
+from msml.exporter.mapper.mapper import *
+from msml.exporter.mapper.msml2msml_mapping import *
 
 from ...log import error, warn, info, fatal, critical, debug
 
@@ -91,16 +94,31 @@ class AbaqusExporter(XMLExporter):
 
     def write_inp(self, inpfile):
         assert isinstance(inpfile, file)
-        info(" and rdf lib testing")
 
-        modulepath = path(__file__).dirname()
+        #modulepath = path(__file__).dirname()
 
 
-        parser = OntologyParser(modulepath / 'MSMLBaseOntology.owl')
-        modulesDirectory = modulepath / '..' / '..' / 'model' / 'generated'
-        parser.createPythonModule(modulesDirectory)
+        #parser = OntologyParser(modulepath / 'MSMLBaseOntology.owl')
+        #modulesDirectory = modulepath / '..' / '..' / 'model' / 'generated'
+        #parser.createPythonModule(modulesDirectory)
 
-        print('great')
+        root_source = self._msml_file.scene
+
+
+
+        root_target = msmlScene.Scene()
+
+
+
+        my_mapper = Mapper(Msml2MsmlMapping())
+
+
+
+        my_mapper.map(root_source, root_target )
+
+
+
+
 
         #parser.parse_ontology_from_python_memory(
         #    URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)

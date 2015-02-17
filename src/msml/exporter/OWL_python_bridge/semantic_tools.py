@@ -4,13 +4,12 @@ __license__ = 'GPLv3'
 import lxml.etree as etree
 from jinja2 import Template
 
-from .base import XMLExporter, Exporter
 from msml.exceptions import *
 import msml.env
 from rdflib import Graph, Literal, BNode, Namespace, RDF, URIRef
 from rdflib.namespace import DC, FOAF, OWL, RDF, RDFS
 from collections import defaultdict
-from jinja2 import Template, Environment
+from jinja2 import Template, Environment, PackageLoader
 from os import path
 import importlib
 import inspect
@@ -40,7 +39,8 @@ class OntoClassRef(URIRef):
 
     def toStr(self, superclasses=None, attributeDict=None):
         returnStr =''
-        env = Environment(keep_trailing_newline=True, lstrip_blocks=False, trim_blocks=False)
+        #env = Environment(keep_trailing_newline=True, lstrip_blocks=False, trim_blocks=False, loader=PackageLoader('msml.exporter.OWL_python_bridge', 'templates'))
+        env = Environment( keep_trailing_newline=False,loader=PackageLoader('msml.exporter.OWL_python_bridge', 'templates'))
         superclass = ''
         if not superclasses:
             superclass = 'object'
@@ -48,9 +48,21 @@ class OntoClassRef(URIRef):
             for theClass in superclasses:
                 superclass += theClass.getClassName() + ','
             superclass = superclass[:-1]
+        objectAttributes = None
+        listAttributes = None
 
-        template = env.from_string('\nclass {{name}}({{superclass}}):\n   pass\n ')
-        returnStr = template.render(name=self.getClassName(), superclass=superclass)
+        if(attributeDict):
+            objectAttributes = list()
+            listAttributes = list()
+            for attribute in attributeDict:
+                if attributeDict[attribute] == 2:
+                    listAttributes.append(attribute)
+                else:
+                    objectAttributes.append(attribute)
+
+
+        template = env.get_template('class_template.html')
+        returnStr = template.render(name=self.getClassName(), superclass=superclass, listAttributes=listAttributes, objectAttributes=objectAttributes)
 
 
         return returnStr
@@ -121,10 +133,10 @@ class OntologyParser(object):
             for className in theModule:
                 #check if class is already there
                 currentModuleString  += self.addClassToString(className, establishedClasses)
-                print className.getClassName()
+                #print className.getClassName()
 
             theFilename = path.abspath(path.join( directory, moduleName+'.py'))
-            print theFilename
+            #print theFilename
             file = open(theFilename, "w")
             file.write(currentModuleString)
             file.close()
@@ -154,20 +166,25 @@ class OntologyParser(object):
 
                 if cardinality is None:
                     cardinality = self._ontoGraph.value( rangeBNode, OWL.minQualifiedCardinality, None )
+                    #little hack here, if cardinality is 1, make it two
+                    if cardinality is None:
+                        print('Error, cardinality not specified for property '+property)
+                    else:
+                        cardinality = 2
 
-                if cardinality is None:
-                    print('Error, cardinality not specified for property '+property)
+
 
                 propertyURI = OntoClassRef(property)
 
-                returnDict[propertyURI.getClassName()] = cardinality
+                if propertyURI.getClassName():
+                    returnDict[propertyURI.getClassName()] = cardinality
 
                 restrinctionBNode = self._ontoGraph.value( rangeBNode, OWL.restriction, None )
                 cardinality = self._ontoGraph.value( rangeBNode, OWL.qualifiedCardinality, None )
-                for restriction in ranges:
-                    print restriction
+                #for restriction in ranges:
+                 #   print restriction
 
-                print 'test'
+                #print 'test'
 
 
 
@@ -176,7 +193,7 @@ class OntologyParser(object):
     def addClassToString(self, className, establishedClasses):
 
         if not className.getClassName() in establishedClasses:
-            finalString =' '
+            finalString =''
             #check for superclass
             superClasses = self._ontoGraph.objects(URIRef(className), RDFS.subClassOf)
             classesList = list()
@@ -189,7 +206,10 @@ class OntologyParser(object):
             establishedClasses.add(className.getClassName())
             #add in the attributes
             attributes = self.parseAttributes(className)
-            finalString += className.toStr(superclasses=classesList, attributeDict =attributes )
+           
+            stringToAdd = className.toStr(superclasses=classesList, attributeDict =attributes )
+            finalString=finalString+stringToAdd
+
             return finalString
         else:
             return ''

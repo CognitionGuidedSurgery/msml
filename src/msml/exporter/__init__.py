@@ -45,7 +45,7 @@ from .base import *
 from .abaqus import AbaqusExporter
 from .sofanew import SofaExporter
 from .hiflow3 import HiFlow3Exporter
-from .semantic_tools import OntologyParser
+from msml.exporter.OWL_python_bridge.semantic_tools import OntologyParser
 from .febio import FeBioExporter
 
 __all__ = ['register_exporter', 'get_exporter',
