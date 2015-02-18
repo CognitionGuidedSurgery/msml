@@ -147,7 +147,7 @@ namespace MiscMeshOperators
   LIBRARY_API std::string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
 										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial);
 
-  LIBRARY_API std::vector<double> GradientOnSurface(const char* inFile, double startVal, double stopVal, double stepWidth);
+  LIBRARY_API std::vector<double> GradientOnSurface(const char* inFile, std::vector<double> values, int steps);
 
 } //end namespace MiscMeshOperators
 } // end namespace MSML

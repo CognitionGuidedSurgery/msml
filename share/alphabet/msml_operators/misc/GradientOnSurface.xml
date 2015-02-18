@@ -3,7 +3,7 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://sfb125.de/msml" name="GradientOnSurface">
 	<meta key="doc">
-		Create a gradient on given surface, from start to stop value.
+		Create a gradient on given surface, running over values given as argument
 		Gradient will be created in x-direction.
 		The computed value for each cell is returned in cell id order.
 	</meta>
@@ -21,19 +21,14 @@
     </output>
 
     <parameters>
-        <arg name="start" physical="float">
+        <arg name="values" physical="vector.float">
 			<meta key="doc">
-				Start value of the gradient
+				Values to interpolate between.
 			</meta>
-		</arg>
-        <arg name="stop" physical="float">
+		</arg>       
+        <arg name="steps" physical="int">
 			<meta key="doc">
-				Stop value of the gradient
-			</meta>
-		</arg>
-        <arg name="stepWidth" physical="float">
-			<meta key="doc">
-				Width of the sliding window
+				Number of steps to perform
 			</meta>
 		</arg>
     </parameters>

@@ -487,16 +487,13 @@ bool ExtractSurfaceMesh( const char* infile, const char* outfile)
     return result;
 }
 /*
- Calculate a gradient on given surface, in x-direction and ranging from startVal to stopVal.
- Argument stepWidth sets width in x-Direction of sliding window used for cell selection.
+ Calculate a gradient on given surface, in x-direction and running over values-array
+ Argument steps sets resolution of gradient (maximum number of separate regions).
 */
-vector<double> GradientOnSurface(const char* inFile, double startVal, double stopVal, double stepWidth)
-{
-	log_debug()<<"compute gradient from: "<<startVal<<" to:"<<stopVal<<std::endl;
+vector<double> GradientOnSurface(const char* inFile, vector<double> values, int steps)
+{	
 	vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(inFile);
 	vector<double> gradient(grid->GetNumberOfCells());
-	//fill gradient array with startVal
-	std::fill(gradient.begin(),gradient.end(),startVal);
 
 	//slide box accross surface and pick cells using cell locator
 	vtkSmartPointer<vtkCellLocator> locator = vtkSmartPointer<vtkCellLocator>::New();	
@@ -516,22 +513,52 @@ vector<double> GradientOnSurface(const char* inFile, double startVal, double sto
 	//gradientCellData->SetNumberOfTuples(num);
 	//grid->GetCellData()->AddArray(gradientCellData);
 		
-	double steps = (xMax-xMin)/stepWidth;
-	double mapValueOffset = (stopVal-startVal)/steps;
-	double currentValue = startVal;
-	for(double xOffset=xMin;xOffset<xMax;xOffset+=stepWidth)
+	double stepWidth = (xMax-xMin)/steps;
+
+	//compute values for each region
+	//how many valueSteps for eachRegion
+	int valueRegionSteps = steps/(values.size()-1);
+
+	vector<double> vals;
+	for(int i=0;i<values.size();i++)
+	{
+		double mapValueOffset = (values[i+1]-values[i])/valueRegionSteps;
+		log_debug()<<"region step: "<<mapValueOffset<<std::endl;
+		double currentValue = values[i];
+		log_debug()<<"region steps: "<<valueRegionSteps<<std::endl;
+		for(int step=0;step<valueRegionSteps;++step)
+		{			
+			log_debug()<<"current value: "<<currentValue<<std::endl;			
+			vals.push_back(currentValue);
+			currentValue+=mapValueOffset;
+		}
+	}
+	int regionCounter = 0;
+	double regionValue = 0;
+	log_debug()<<"num vals: "<<vals.size()<<std::endl;
+	double xOffset = xMin;
+	for(int i=0;i<steps;++i)
 	{		
+		regionValue = vals[i];
+		//update the bbox
 		boundingBox[0] = xOffset;
 		boundingBox[1] = xOffset+stepWidth;
+
+		log_debug()<<"xmin: "<<boundingBox[0]<<" xmax: "<<boundingBox[1]<<std::endl;
+
 		vtkSmartPointer<vtkIdList> cellsInBBox = vtkSmartPointer<vtkIdList>::New();		
 		locator->FindCellsWithinBounds(boundingBox,cellsInBBox);		
+		log_debug()<<"value: "<<regionValue<<std::endl;
+		log_debug()<<"cells: "<<cellsInBBox->GetNumberOfIds()<<std::endl;
 		for(int i=0;i<cellsInBBox->GetNumberOfIds();++i)
-		{			
-			//gradientCellData->SetTuple1(cellsInBBox->GetId(i),currentValue);			
-			gradient[cellsInBBox->GetId(i)]=currentValue;
+		{		
+			//gradientCellData->SetTuple1(cellsInBBox->GetId(i),regionValue);			
+			gradient[cellsInBBox->GetId(i)]=regionValue;
 		}
-		currentValue+=mapValueOffset;
-	}	
+		regionCounter++;
+		xOffset+=stepWidth;
+	}
+	
 	//IOHelper::VTKWriteUnstructuredGrid((string(inFile)+"_gradient.vtk").c_str(),grid);
 	return gradient;
 }
