@@ -394,21 +394,43 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
-                    p = self.get_value_from_memory(constraint, 'pressure')
-                    if len(p) == 1:
-                        p=p[0] #bad hack to implement the new defintion of surfacePressure (pressure can be vector)
-                    else:
-                        log.error("The SOFA exporter only supports one pressure value for index set")
-                    p_speed = p / 10
-                   
-                    surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
+                    pressureArg = self.get_value_from_memory(constraint, 'pressure')                  
+                    if len(pressureArg) == 1:                       
+                        pressure=pressureArg[0] #bad hack to implement the new definition of surfacePressure (pressure can be vector)
+                        p_speed = pressure / 10
+                        surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
                                                              pulseMode=pulseMode,
                                                              pressureSpeed=p_speed,
                                                              # TODO this is broken
-                                                             pressure=p,
+                                                             pressure=pressure,
                                                              triangleIndices=indices)
+                    else:                   
+                        #workaround for support of surfacePressure as  vector
+                        #each distinct scalar pressure value in surfacePressure-vector gets a custom SurfacePressureForceField-Node
+                        #each Node covers multiple indices, for indices having same pressure value assigned
+                        #daniel: speed hack for my contact model 
+                        p_speed = 150
+                        pressureArg= [round(x,2) for x in pressureArg]
+                        sortedPressuresIndices = sorted((e,i) for i,e in enumerate(pressureArg))
+                        values = set(map(lambda x:x[0], sortedPressuresIndices))
+                        pressureGroups = [[y[1] for y in sortedPressuresIndices if y[0]==x] for x in values]                        
+                        valueList = list(values)
+                        for (groupId,pressureGroup) in enumerate(pressureGroups):                             
+                            force = valueList[groupId]  
+                            surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
+                                                             template="Vec3f",
+                                                             name="surfacePressure_"+str(groupId),
+                                                             pulseMode=pulseMode,
+                                                             pressureSpeed=p_speed,
+                                                             # TODO this is broken
+                                                             pressure=force,
+                                                             triangleIndices=pressureGroup)       
+                                         
+                   
+                    
+                    
 
                     self.sub("BarycentricMapping", constraintNode,
                              template=self._processing_unit + ",Vec3f",
