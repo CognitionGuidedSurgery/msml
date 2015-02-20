@@ -10,7 +10,7 @@
     </runtime>
 
     <input>
-        <arg name="surface" logical="VolumeMesh" physical="file.vtk" />
+        <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
     </input>  
 	
     <parameters>	
@@ -29,13 +29,7 @@
 				Material IDs of the other volume regions, if cells of base volume have neighbors in one of the
 				regions, these cells will be extracted.
             </meta>
-        </arg>	
-		<arg name="boundarySurfaceMaterial" physical="int" >
-            <meta key="doc">
-				Material ID of the extracted boundary surface. Must be a material ID NOT occuring in input volume.
-            </meta>
-        </arg>	
-		
+        </arg>		
        </parameters>
 	<output>
         <arg name="boundarySurface" logical="SurfaceMesh" physical="file.vtk">

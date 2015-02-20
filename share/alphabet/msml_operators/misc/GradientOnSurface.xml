@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="GradientOnSurface">
+	<meta key="doc">
+		Create a gradient on given surface, running over values given as argument
+		Gradient will be created in x-direction.
+		The computed value for each cell is returned in cell id order.
+	</meta>
+    <runtime>
+        <python module="msml.ext.misc"
+                function="GradientOnSurface"/>
+    </runtime>
+
+    <input>
+        <arg name="mesh" logical="SurfaceMesh" physical="file.vtk"/>
+    </input>
+
+    <output>
+        <arg name="gradient" logical="IndexSet" physical="vector.int"/>
+    </output>
+
+    <parameters>
+        <arg name="values" physical="vector.float">
+			<meta key="doc">
+				Values to interpolate between.
+			</meta>
+		</arg>       
+        <arg name="steps" physical="int">
+			<meta key="doc">
+				Number of steps to perform
+			</meta>
+		</arg>
+    </parameters>
+
+
+</msml:operator>
