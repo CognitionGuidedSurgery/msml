@@ -58,6 +58,7 @@ class ShellOperator(PythonOperator):
         ld_library_path = os.environ.get("LD_LIBRARY_PATH", '') + ":" + env_path
         log.debug("Execute: %s", command)
         proc = subprocess.Popen(command,
+                                close_fds=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
                                 shell=True,

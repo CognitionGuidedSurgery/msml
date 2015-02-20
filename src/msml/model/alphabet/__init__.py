@@ -322,7 +322,7 @@ class Slot(object):
         if 'meta' in self.__dict__ and item in self.meta:
             return self.meta[item]
         else:
-            super(Slot, self).__getattr__(item)
+            return self.__dict__[item]
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)

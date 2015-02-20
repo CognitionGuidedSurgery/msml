@@ -1,3 +1,8 @@
+.git/
+cbuild/ 
+examples/
+
+# gitignore : 
 
 .coverage
 .metadata
@@ -27,4 +32,3 @@ src/msml/envconfig.py
 /*.cmd
 *.log
 *.orig
-share/msml-package.xml

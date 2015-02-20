@@ -7,7 +7,7 @@
 	</runtime>
 
     <annotation>
-        <entry key="doc">
+        <entry key="doc">This operators open paraview with the given vtk file.
 
 - calls paraview with the given ``mesh``
 - user have to click apply to display within paraview
