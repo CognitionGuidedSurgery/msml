@@ -30,26 +30,17 @@ __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 
 import lxml.etree as etree
-from jinja2 import Template
 
-
-from path import path
 from ..base import XMLExporter, Exporter
-from msml.exceptions import *
-import msml.env
+from msml.model.generated import msmlScene
 
-import rdflib
-from msml.exporter.OWL_python_bridge.semantic_tools import OntologyParser
-from rdflib import URIRef
-from rdflib.namespace import RDF
 
-#from msml.model.generated import msmlBase, msmlScene
 #from msml.model import *
-from msml.exporter.mapper import *
-from msml.exporter.mapper.mapper import *
-from msml.exporter.mapper.msml2msml_mapping import *
+from msml.io.mapper.mapper import *
+from msml.io.mapper.msml2msml_mapping import *
 
-from ...log import error, warn, info, fatal, critical, debug
+from ...log import error, info
+
 
 class MSMLAbaqusExporterWarning(MSMLWarning): pass
 
@@ -106,15 +97,15 @@ class AbaqusExporter(XMLExporter):
 
 
 
-        root_target = msmlScene.Scene()
+        root_target = msmlScene.Scenario()
 
 
 
-        my_mapper = Mapper(Msml2MsmlMapping())
+        my_mapper = Mapper(Msml2MsmlMapping(self))
 
 
 
-        my_mapper.map(root_source, root_target )
+        my_mapper.map(root_source, root_target)
 
 
 

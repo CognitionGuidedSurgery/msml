@@ -2,8 +2,8 @@ __author__ = 'Alexander Weig'
 
 import inspect
 
-import msml.io.visitor
-from msml.io.visitor import *
+import msml.exporter.visitor
+from msml.exporter.visitor import *
 
 
 def f(*args):
@@ -28,7 +28,7 @@ class _Printer(object):
 Printer = _Printer()
 
 
-class PrintVisitor(msml.io.visitor.Visitor):
+class PrintVisitor(msml.exporter.visitor.Visitor):
     def scene_end(self, _msml, _scene, scene):
         Printer.scene_end(_msml, _scene, scene)
 
@@ -150,11 +150,11 @@ def main():
     msml_file = msml.xml.load_msml_file("/home/weigl/workspace/msml/examples/BunnyExample/bunny.msml.msml_xml")
 
 
-    exporter = msml.io.visitor.VisitorExporterFramework(msml_file, PrintVisitor)
+    exporter = msml.exporter.visitor.VisitorExporterFramework(msml_file, PrintVisitor)
     exporter.render()
 
 
-    exporter = msml.io.visitor.VisitorExporterFramework(msml_file, PrintVisitorDisp)
+    exporter = msml.exporter.visitor.VisitorExporterFramework(msml_file, PrintVisitorDisp)
     exporter.render()
 
 

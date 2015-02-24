@@ -32,7 +32,7 @@ MSMLFile to XML
 
 __author__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 
-from msml.io.visitor import *
+from msml.exporter.visitor import *
 
 
 def Sub(root, tagname, **kwargs):
