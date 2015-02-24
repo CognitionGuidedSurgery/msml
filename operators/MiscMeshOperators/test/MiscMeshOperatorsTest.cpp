@@ -21,7 +21,13 @@
 BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap)
 {
   vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
-    GenerateDistanceMap(IOHelper::VTKReadPolyData(INPUT("bunny_polydata.vtk")), 10, 0, "", 0);
+    GenerateDistanceMap(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
+}
+
+BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap3d)
+{
+  vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
+    GenerateDistanceMap3d(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
 }
 
 
@@ -285,10 +291,34 @@ BOOST_AUTO_TEST_CASE(TestComputeDiceCoefficientPolydata)
 	const char* inputMeshFileB = INPUT("bunny_polydata_transformed.vtk");
 
 	//meshB is a slightly scaled and rotated version of meshA
-	double dice = PostProcessingOperators::ComputeDiceCoefficientPolydata(inputMeshFileA,inputMeshFileB);
+	double dice = PostProcessingOperators::ComputeDiceCoefficientPolydata(inputMeshFileA,inputMeshFileB,"intersection.vtk");
 	//dice coefficient should be over 0.5 
 	BOOST_CHECK(dice>0.5&&dice<1);
 }
 
+BOOST_AUTO_TEST_CASE(TestGradientOnSurface)
+{	
+	
+	const char* inputMeshFile  = INPUT("bunny_polydata.vtk");
+	const char* inputGridFile  = OUTPUT("bunny_usgrid.vtk");
+	//create unstructured grid from poly data bunny
+	MiscMeshOperators::ConvertVTKPolydataToUnstructuredGrid(inputMeshFile,inputGridFile);	
+	//create the vector of pressure values gradient should run over
+	std::vector<double> pressureValues;
+	pressureValues.push_back(10);
+	pressureValues.push_back(50);
+	pressureValues.push_back(10);
+
+	//compute gradient
+	std::vector<double> gradient = MiscMeshOperators::GradientOnSurface(inputGridFile,pressureValues,40);
+	int gradientSize = gradient.size();
+	//at least 3 values must be returned in gradient
+	BOOST_CHECK(gradientSize>3);
+	double gradientLeft = gradient.front();
+	double gradientRight = gradient.back();
+	//test if gradient is plausible
+	BOOST_CHECK((gradientLeft>0&&gradientLeft<50)&&
+				(gradientRight>0&&gradientRight<50));
+}
 
 

@@ -49,7 +49,7 @@ class FeBioExporter(XMLExporter):
     def __init__(self, msml_file):
         """
           Args:
-           executer (Executer)
+           executor (Executer)
         """
         self.name = 'FeBioExporter'
         self.id = 'FeBioExporter'
@@ -58,7 +58,7 @@ class FeBioExporter(XMLExporter):
         self.working_dir = path()
 
     def init_exec(self, executer):
-        """initialization by the executer, sets memory and executor member
+        """initialization by the executor, sets memory and executor member
 
         :param executer: msml.run.Executer
         :return:

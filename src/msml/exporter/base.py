@@ -202,8 +202,12 @@ class Exporter(object):
                         try:
                             value = const.attributes[para.name]
                         except KeyError:
-                            raise MSMLError(
-                                "parameter %s of constraint %s has not proper value" % (para.name, const.id))
+                            #look for default value, if it is an optional argument, there should be a default value
+                            if(para.default is not None):
+                                value = para.default
+                            #non optional argument or no default value => error
+                            else:
+                                raise MSMLError("parameter %s of constraint %s has not proper value" % (para.name, const.id))
 
                         name = self.get_input_objectelement_name(const, para)
                         self._input[name] = Slot(name, para.physical_type, parent=self)
@@ -305,7 +309,7 @@ class Exporter(object):
 
     def init_exec(self, executer):
         """
-        initialization by the executer, sets memory and executor member
+        initialization by the executor, sets memory and executor member
         :param executer: msml.run.Executer
         :return:
         """

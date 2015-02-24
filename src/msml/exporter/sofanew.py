@@ -62,7 +62,7 @@ class SofaExporter(XMLExporter):
     def __init__(self, msml_file):
         """
       Args:
-       executer (Executer)
+       executor (Executer)
 
 
       """
@@ -76,7 +76,7 @@ class SofaExporter(XMLExporter):
         self._memory_update = {}  #cache for changes to _memory, updated after execution.
 
     def init_exec(self, executer):
-        """initialization by the executer, sets memory and executor member
+        """initialization by the executor, sets memory and executor member
 
          :return:
         """
@@ -108,6 +108,8 @@ class SofaExporter(XMLExporter):
         #uncomment to use four gpus
         #os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
 
+        cmd = msml.envconfig.SOFA_EXECUTABLE
+
         if (msml.envconfig.SOFA_EXECUTABLE.lower().find('runsofa') > -1): #linux: runSofa, windows: RunSofa.exe
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
             callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -l SOFACuda -g batch -n ' + str(
@@ -115,8 +117,8 @@ class SofaExporter(XMLExporter):
                                                 self.export_file) + '\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom)
 
-        log.info("Executing %s" % cmd)
-        log.info("Working directory: %s" % os.getcwd())
+            log.info("Executing %s" % cmd)
+            log.info("Working directory: %s" % os.getcwd())
 
         import subprocess
 
@@ -392,21 +394,43 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
-                    p = self.get_value_from_memory(constraint, 'pressure')
-                    if len(p) == 1:
-                        p=p[0] #bad hack to implement the new defintion of surfacePressure (pressure can be vector)
-                    else:
-                        log.error("The SOFA exporter only supports one pressure value for index set")
-                    p_speed = p / 10
-                   
-                    surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
+                    pressureArg = self.get_value_from_memory(constraint, 'pressure')                  
+                    if len(pressureArg) == 1:                       
+                        pressure=pressureArg[0] #bad hack to implement the new definition of surfacePressure (pressure can be vector)
+                        p_speed = pressure / 10
+                        surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
                                                              pulseMode=pulseMode,
                                                              pressureSpeed=p_speed,
                                                              # TODO this is broken
-                                                             pressure=p,
+                                                             pressure=pressure,
                                                              triangleIndices=indices)
+                    else:                   
+                        #workaround for support of surfacePressure as  vector
+                        #each distinct scalar pressure value in surfacePressure-vector gets a custom SurfacePressureForceField-Node
+                        #each Node covers multiple indices, for indices having same pressure value assigned
+                        #daniel: speed hack for my contact model 
+                        p_speed = 150
+                        pressureArg= [round(x,2) for x in pressureArg]
+                        sortedPressuresIndices = sorted((e,i) for i,e in enumerate(pressureArg))
+                        values = set(map(lambda x:x[0], sortedPressuresIndices))
+                        pressureGroups = [[y[1] for y in sortedPressuresIndices if y[0]==x] for x in values]                        
+                        valueList = list(values)
+                        for (groupId,pressureGroup) in enumerate(pressureGroups):                             
+                            force = valueList[groupId]  
+                            surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
+                                                             template="Vec3f",
+                                                             name="surfacePressure_"+str(groupId),
+                                                             pulseMode=pulseMode,
+                                                             pressureSpeed=p_speed,
+                                                             # TODO this is broken
+                                                             pressure=force,
+                                                             triangleIndices=pressureGroup)       
+                                         
+                   
+                    
+                    
 
                     self.sub("BarycentricMapping", constraintNode,
                              template=self._processing_unit + ",Vec3f",
@@ -613,6 +637,8 @@ class SofaExporter(XMLExporter):
       
 
     def createPostProcessingRequests(self, objectNode, msmlObject):
+        if(self.id not in self._memory_update):
+            self._memory_update={self.id:{}}
         for request in msmlObject.output:
             assert isinstance(request, ObjectElement)
             filename = self.working_dir / request.id
@@ -642,12 +668,11 @@ class SofaExporter(XMLExporter):
                         lastNumber = 1
                     else:
                         lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
-
+                        
+                    lastNumberStr = str(lastNumber)
                     if _bool(request.useAsterisk):  #TODO: et_value_from_memory(request, 'useAsterisk')
-                        self._memory_update[self.id] = {request.id: VTK(str(filename + '*' + ".vtu"))}
-                    else:
-                        self._memory_update[self.id] = {request.id: VTK(str(filename + str(lastNumber) + ".vtu"))}
-
+                        lastNumberStr = "*"                                       
+                    self._memory_update[self.id][request.id] = VTK("%s%s.vtu" % (filename, lastNumberStr)) 
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
                     exportEveryNumberOfSteps = self.get_value_from_memory(request, 'timestep')

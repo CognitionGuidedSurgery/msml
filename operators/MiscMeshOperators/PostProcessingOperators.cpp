@@ -839,7 +839,7 @@ void ComputeOrganVolume(const char* volumeFilename){
 	cout << "Volume: " << mass->GetVolume()  << " mm^3" << endl << "Surface: " << mass->GetSurfaceArea()<< " mm^2" << endl;
 }
 
-double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2)
+double ComputeDiceCoefficientPolydata(const char* filename, const char* filename2, const char *intersectionFile="")
 {
 		vtkSmartPointer<vtkPolyData> meshA = IOHelper::VTKReadPolyData(filename);		
 		vtkSmartPointer<vtkPolyData> meshB = IOHelper::VTKReadPolyData(filename2);		
@@ -872,7 +872,11 @@ double ComputeDiceCoefficientPolydata(const char* filename, const char* filename
 		booleanOperation->Modified();
 		booleanOperation->Update();
 		vtkSmartPointer<vtkPolyData> pol = booleanOperation->GetOutput();
-		IOHelper::VTKWritePolyData("intersection.vtk",pol);
+
+		if(intersectionFile!="")
+		{			
+			IOHelper::VTKWritePolyData(intersectionFile,pol);
+		}
 		
 		//calculate volume of intersection
 		vtkSmartPointer<vtkMassProperties> meshIntersectionProps = vtkMassProperties::New();
@@ -941,7 +945,6 @@ void ComputeDiceCoefficient(const char* filename, const char* filename2)
 		std::cout << "2.Volume : " << volume2 << "mm^3" << endl;
 		float diceCoeff = (float)(2*overlap)/(volume1 + volume2);
 		cout << "DICE-Coefficient: " << diceCoeff << endl;
-
 }
 
 void ComputeOrganCrossSectionArea(const char* volumeFilename){

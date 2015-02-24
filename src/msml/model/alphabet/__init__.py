@@ -260,7 +260,7 @@ class Slot(object):
 
     def __init__(self, name, physical, logical=None,
                  required=True, default=None,
-                 meta=dict(), parent=None):
+                 meta=None, parent=None):
         if physical is None:
             pname = None
             if parent:
@@ -286,7 +286,8 @@ class Slot(object):
         """
         self.default = default
         """default value of this slot. has to be if :py:var:`required` is True"""
-        self.meta = meta
+
+        self.meta = meta or dict()
         """various and arbitrary meta data
         :type: dict"""
 
@@ -318,10 +319,10 @@ class Slot(object):
 
 
     def __getattr__(self, item):
-        if 'meta' in self.__dict__:
+        if 'meta' in self.__dict__ and item in self.meta:
             return self.meta[item]
         else:
-            super(Slot, self).__getattr__(item)
+            return self.__dict__[item]
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)

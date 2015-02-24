@@ -61,6 +61,7 @@ class Operator(object):
         :type meta: dict
         """
         self.name = name
+        self.__name__ = name # For Celery support (weigl)
 
         self.input = _list_to_dict(input)
         """:type: dict"""

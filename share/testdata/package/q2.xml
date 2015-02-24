@@ -1,0 +1,23 @@
+<package name="Q2" version="1.0" xmlns="http://msml.org/package/1.0/">
+	<information>
+		<maintainer name="N" email="E" />
+		<documentation>
+			A
+            B
+            C
+            D
+            E
+            F
+
+            G
+
+
+		</documentation>
+		<homepage url="url" />
+		<repository url="rurl" type="git" />
+	</information>
+
+	<alphabet-dir>Q2A</alphabet-dir>
+	<binary-dir>Q2B</binary-dir>
+	<python-dir>Q2P</python-dir>
+</package>

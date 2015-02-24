@@ -19,6 +19,13 @@ xsi:schemaLocation="http://sfb125.de/msml" name="ComputeDiceCoefficientPolydata"
             </meta>
 		</arg>		
     </input>
+	<parameters>
+		<arg name="intersectionMesh" physical="str" optional="true">
+            <meta key="doc">
+				Filename for the intersection mesh.
+            </meta>
+        </arg>
+	</parameters>
 
     <output>
         <arg name="diceCoefficient" physical="float">
