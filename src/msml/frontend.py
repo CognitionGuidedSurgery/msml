@@ -162,9 +162,15 @@ def create_argument_parser():
     show_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
 
     # validate
-    validate_parser = sub_parser.add_parser('validate',
-                                            help="validates the current msml environment")
+    validate_parser = sub_parser.add_parser('validate', help="validates the current msml environment")
     validate_parser.set_defaults(which="validate")
+
+    # expy
+    expy_parser = sub_parser.add_parser('expy', help="transforms msml files into Python")
+    expy_parser.set_defaults(which="expy")
+    expy_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
+                             help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
+    expy_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
     return parser
 
 
@@ -279,14 +285,16 @@ class App(object):
 
         a = root / "alphabet"
         log.debug("Register alphabet dir: %s", a)
+        self.additional_alphabet_dir.append(a)
 
         p = root / "py"
         log.debug("Add to Python path: %s", p)
         if p not in sys.path:
             sys.path.append(p)
 
-        self.additional_alphabet_dir.append(a)
-
+        msml.env.binary_search_path.add(
+            root / "bin"
+        )
 
         rcfile = root / "sorts.py"
         log.debug("Execute rcfile: %s", rcfile)
@@ -438,7 +446,6 @@ class App(object):
 
 
         """
-
         import msml.run.exportpy
 
         for fil in self.files:
@@ -496,11 +503,10 @@ class App(object):
                                 'expy': self.expy,
                                 'writexsd': self.writexsd,
                                 'check': self.check_file})
-
-        try:
-            cmd = self._options["which"]
+        cmd = self._options["which"]
+        if cmd in COMMANDS:
             COMMANDS[cmd]()
-        except IndexError:
+        else:
             log.error("Could not find application: %s" % cmd)
 
 

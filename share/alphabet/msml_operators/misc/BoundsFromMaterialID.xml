@@ -1,0 +1,30 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="BoundsFromMaterialID">
+	 <meta key="doc">
+		Apply threshold to input mesh (using material ID to threshold) and
+		return bounds of mesh after thresholding with material ID.
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="BoundsFromMaterialID" />
+    </runtime>
+
+    <input>
+        <arg name="mesh" logical="VolumeMesh" physical="file.vtk" />
+    </input>  
+	
+    <parameters>	
+		<arg name="materialID" physical="int" >
+            <meta key="doc">
+				Material ID used for threshold.
+            </meta>
+        </arg>		
+       </parameters>
+	<output>
+        <arg name="bounds" logical="vector" physical="vector.float">
+			<meta key="doc">
+				Bounds of mesh after threshold, in order: (xmin,xmax,ymin,ymax,zmin,zmax)
+            </meta>
+		</arg>
+    </output>
+</msml:operator>

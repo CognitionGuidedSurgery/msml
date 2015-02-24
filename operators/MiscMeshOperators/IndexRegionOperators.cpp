@@ -40,17 +40,12 @@
 //#include <boost/graph/adjacency_list.hpp>
 //using namespace boost;
 namespace MSML {
-    namespace IndexRegionOperators {
+    namespace IndexRegionOperators {	
 
         vector<unsigned int>  ComputeIndicesFromBoxROI(string filename, vector<double> box, string type)
-        {
-            vtkSmartPointer<vtkUnstructuredGridReader> reader =
-                vtkSmartPointer<vtkUnstructuredGridReader>::New();
-            reader->SetFileName(filename.c_str());
-            reader->Update();
-
-            vtkUnstructuredGrid* theMesh = reader->GetOutput();
-
+        {			
+			vtkSmartPointer<vtkUnstructuredGrid> theMesh = IOHelper::VTKReadUnstructuredGrid(filename.c_str());
+			
             //get points
             vtkPoints* thePoints = theMesh->GetPoints();
             vector<unsigned int> indices;
@@ -60,8 +55,8 @@ namespace MSML {
             if(type.compare("points") == 0)
             {
                 int count = 0;
-
-                for(unsigned int i=0; i<thePoints->GetNumberOfPoints(); i++)
+				int numPoints = thePoints->GetNumberOfPoints();
+				for(unsigned int i=0; i<numPoints; i++)
                 {
                     thePoints->GetPoint(i, currentPoint);
 
@@ -79,17 +74,17 @@ namespace MSML {
             else if(type.compare("elements") == 0)
             {
                 vtkCell* currentCell;
-                vtkUnsignedCharArray* cellsTypes = reader->GetOutput()->GetCellTypesArray();
+                vtkUnsignedCharArray* cellsTypes = theMesh->GetCellTypesArray();
                 vtkIdType numberOfPoints;
                 double currentBounds[6];
                 int count = 0;
-
-                for(unsigned int i=0; i<reader->GetOutput()->GetNumberOfCells(); i++)
+				int numCells = theMesh->GetNumberOfCells();
+				for(unsigned int i=0; i<numCells; i++)
                 {
                     if (*cellsTypes->GetTuple(i) == VTK_TETRA || *cellsTypes->GetTuple(i) == VTK_HEXAHEDRON ||
                             *cellsTypes->GetTuple(i) == VTK_QUADRATIC_TETRA || *cellsTypes->GetTuple(i) == VTK_QUADRATIC_HEXAHEDRON)
                     {
-                        reader->GetOutput()->GetCellBounds(i, currentBounds);
+                        theMesh->GetCellBounds(i, currentBounds);
 
                         if( (currentBounds[0]>=box[0]) && (currentBounds[2]>=box[1]) && (currentBounds[4]>=box[2])
                                 && (currentBounds[1]<=box[3]) && (currentBounds[3]<=box[4]) && (currentBounds[5]<=box[5]))
@@ -100,22 +95,22 @@ namespace MSML {
                     }
                 }
                 log_error() << count << " elements found in box" << endl;
-            }
+            }	
 
             else if(type.compare("surfaceElements") == 0)
 			{
 				vtkCell* currentCell;
-				vtkUnsignedCharArray* cellsTypes = reader->GetOutput()->GetCellTypesArray();
+				vtkUnsignedCharArray* cellsTypes = theMesh->GetCellTypesArray();
 				vtkIdType numberOfPoints;
 				double currentBounds[6];
 				int count = 0;
-
-				for(unsigned int i=0; i<reader->GetOutput()->GetNumberOfCells(); i++)
+				int numCells = theMesh->GetNumberOfCells();
+				for(unsigned int i=0; i<numCells; i++)
 				{
 					if (*cellsTypes->GetTuple(i) == VTK_TRIANGLE ||	*cellsTypes->GetTuple(i) == VTK_QUADRATIC_TRIANGLE)
 					{
 
-						reader->GetOutput()->GetCellBounds(i, currentBounds);
+						theMesh->GetCellBounds(i, currentBounds);
 
 						if( (currentBounds[0]>=box[0]) && (currentBounds[2]>=box[1]) && (currentBounds[4]>=box[2])
 								&& (currentBounds[1]<=box[3]) && (currentBounds[3]<=box[4]) && (currentBounds[5]<=box[5]))
@@ -144,16 +139,13 @@ namespace MSML {
         vector<unsigned int> ComputeIndicesFromMaterialId(string filename, int id, string type)
         {
             vector<unsigned int> indices;
-            vtkSmartPointer<vtkUnstructuredGridReader> reader =
-                vtkSmartPointer<vtkUnstructuredGridReader>::New();
-            reader->SetFileName(filename.c_str());
-            reader->Update();
+			vtkSmartPointer<vtkUnstructuredGrid> theMesh = IOHelper::VTKReadUnstructuredGrid(filename.c_str());
 
             if(type.compare("points_experimental") == 0)
             {
-                vtkDataArray* pointData = reader->GetOutput()->GetPointData()->GetScalars();
-
-                for(unsigned int i=0; i< reader->GetOutput()->GetNumberOfPoints(); i++)
+                vtkDataArray* pointData = theMesh->GetPointData()->GetScalars();
+				int numPoints = theMesh->GetNumberOfPoints();
+                for(unsigned int i=0; i< numPoints; i++)
                 {
                     if(*pointData->GetTuple(i) == id)
                     {
@@ -165,11 +157,11 @@ namespace MSML {
             else if(type.compare("faces") == 0)
             {
                 vtkCell* currentCell;
-                vtkDataArray* cellsData = reader->GetOutput()->GetCellData()->GetScalars();
-                vtkUnsignedCharArray* cellsTypes = reader->GetOutput()->GetCellTypesArray();
+                vtkDataArray* cellsData = theMesh->GetCellData()->GetScalars();
+                vtkUnsignedCharArray* cellsTypes = theMesh->GetCellTypesArray();
                 vtkIdType numberOfPoints;
-
-                for(unsigned int i=0; i< reader->GetOutput()->GetNumberOfCells(); i++)
+				int numCells = theMesh->GetNumberOfCells();
+				for(unsigned int i=0; i< numCells; i++)
                 {
                     if ((*cellsTypes->GetTuple(i) == VTK_TRIANGLE || (*cellsTypes->GetTuple(i) ==VTK_QUAD)) ||
                             *cellsTypes->GetTuple(i) == VTK_QUADRATIC_TRIANGLE || *cellsTypes->GetTuple(i) == VTK_QUADRATIC_QUAD)
@@ -183,11 +175,11 @@ namespace MSML {
             else if(type.compare("elements") == 0)
             {
                 vtkCell* currentCell;
-                vtkDataArray* cellsData = reader->GetOutput()->GetCellData()->GetScalars();
-                vtkUnsignedCharArray* cellsTypes = reader->GetOutput()->GetCellTypesArray();
+                vtkDataArray* cellsData = theMesh->GetCellData()->GetScalars();
+                vtkUnsignedCharArray* cellsTypes = theMesh->GetCellTypesArray();
                 vtkIdType numberOfPoints;
-
-                for(unsigned int i=0; i< reader->GetOutput()->GetNumberOfCells(); i++)
+				int numCells = theMesh->GetNumberOfCells();
+                for(unsigned int i=0; i< numCells; i++)
                 {
                     if (*cellsTypes->GetTuple(i) == VTK_TETRA || *cellsTypes->GetTuple(i) == VTK_HEXAHEDRON ||
                             *cellsTypes->GetTuple(i) == VTK_QUADRATIC_TETRA || *cellsTypes->GetTuple(i) == VTK_QUADRATIC_HEXAHEDRON)

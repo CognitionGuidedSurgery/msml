@@ -118,6 +118,10 @@ namespace MiscMeshOperators
   LIBRARY_API  std::vector<double> ExtractVectorField(std::string inputVolumeMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
   LIBRARY_API  std::vector<double> ExtractVectorField( vtkUnstructuredGrid* inputMeshFile, std::string vectorFieldName, std::vector<unsigned int> nodeList);
 
+  LIBRARY_API std::string GenerateDistanceMap(const char* inputPolyData, const char*  targetImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin );
+  LIBRARY_API vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkPolyData* polydata, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, double additionalIsotropicMargin);
+
+  LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateGeneric(vtkPointSet* grid, double resolution, float isotropicVoxelSize, const char* referenceCoordinateGrid, float additionalIsotropicMargin);
   LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreateWithMesh(vtkPointSet* grid, double resolution);
   LIBRARY_API vtkSmartPointer<vtkImageData> ImageCreate(vtkImageData* refImageGrid);
   LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double voxelSize);
@@ -125,8 +129,17 @@ namespace MiscMeshOperators
   LIBRARY_API void ImageChangeVoxelSize(vtkImageData* image, double* voxelSize);
   LIBRARY_API void ImageEnlargeIsotropic(vtkImageData* image, double enlargement);
 
-  LIBRARY_API bool MorphCube(const char *infile, const char *outfile, double toDilate, 
-			            double toErode, std::vector<double> morph_kernel);    } //end namespace MiscMeshOperators
+  LIBRARY_API std::string MorphCube(const char *infile, const char *outfile, double toDilate, 
+			            double toErode, std::vector<double> morph_kernel);    
+  
+  LIBRARY_API std::string SelectVolumesByMaterialID(const char* infile,const char* oufile, std::vector<int> group);
+  LIBRARY_API std::string ReplaceMaterialID(const char* infile, const char* outfile, std::vector<int> toReplace, int replaceBy);
+  LIBRARY_API std::vector<double> BoundsFromMaterialID(const char* infile, int materialID);
+
+  LIBRARY_API std::string SurfaceFromVolumeAndNormalDirection(const char* infile, const char* outfile, std::vector<double> desiredNormalDir, 
+															  double margin);
+
+} //end namespace MiscMeshOperators
 } // end namespace MSML
 
 

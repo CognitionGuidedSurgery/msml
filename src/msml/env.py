@@ -37,6 +37,7 @@ __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
 
 import os
+import sys
 
 from path import path
 
@@ -50,7 +51,6 @@ CURRENT_ALPHABET = None
 
 # path where the msml file resides
 msml_file_path = None
-
 
 def load_envconfig():
     """
@@ -107,7 +107,7 @@ def gather_alphabet_files():
         if loc.isfile():
             files.append(loc)
         else:
-            files += loc.walkfiles("*.xml", errors='warn')
+            files += loc.walkfiles("*.xml", errors='ignore')
     return files
 
 
@@ -127,3 +127,47 @@ def load_alphabet(fil="alphabet.cache"):
     else:
         log.warn("WARNING: alphabet file »%s« not found, please run msml.py alphabet" % fil)
         return None
+
+
+class _BinarySearchPath(list):
+    def __init__(self):
+        super(_BinarySearchPath, self).__init__()
+        self.add_paths(os.environ['PATH'])
+
+    def _ensure_paths(self):
+        for i in len(self):
+            self[i] = path(self[i])
+
+    def __str__(self):
+        return ':'.join(self)
+
+    def add_paths(self, string):
+        """append all paths given as a string
+        Seperator is ":" on linux, windows ";"
+        """
+        sep = ';' if sys.platform == 'win32' else ':'
+        for p in string.split(sep):
+            self.append(path(p))
+
+    def find_executable(self, name):
+        """finds the absolute executable path for the given `name
+
+        If names contains spaces, the first token is taken.
+
+        :param name:
+         :type name: str
+        :return:
+        """
+        name = name.strip()
+        pos = name.find(' ')
+        if pos > 0:
+            name = name[:pos+1]
+
+        for p in self:
+            test = p/name
+            test_win = p/name + '.exe'
+            if test.exists() or test_win.exists():
+                return test.abspath()
+        return None
+
+binary_search_path = _BinarySearchPath()

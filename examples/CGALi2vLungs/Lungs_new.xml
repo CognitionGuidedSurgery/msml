@@ -7,7 +7,7 @@
              physical="file.vtk"/>
         <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk" />
         <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk" />
-        <var name="surface_pressure" value="50" logical="float" />
+        <var name="surface_pressure" value="50" physical="float" />
     </variables>
 
     <scene>

@@ -1,0 +1,30 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ImageSum">
+    <runtime>
+        <python module="msml.ext.misc" function="ImageSum" />
+    </runtime>
+    <meta key="doc">
+        Sum images - all images must have the same dimensions!
+    </meta>
+    <input>
+        <arg name="image" logical="Image3D" physical="str">
+            <meta key="doc">
+                A file name pattern like MyImage1*.vti
+            </meta>
+        </arg>
+    </input>  
+
+    <parameters>	
+        <arg name="normalize" physical="bool" optional="true" default="false" >
+            <meta key="doc">
+                Setting NormalizeByWeight on will divide the final result by the total weight of the component functions.
+            </meta>
+        </arg>
+        <arg name="targetSumImage" physical="str" optional="true" target="true">
+        </arg>
+    </parameters>
+    <output>
+        <arg name="SumImage" logical="Image3D" physical="file.vtk" />
+    </output>
+</msml:operator>

@@ -1,0 +1,18 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml ../../test.xsd">  
+   <workflow>							
+		<ACVDReduceSurfaceMesh id="FixedReduced" inputMeshFile="TestACVD_cylinder_rough.vtk" 
+												 outputMeshFile="TestACVD_cylinder_remeshed.vtk" 
+												 verticesCount="2000" forceManifold="true" asciiOutput="true"/>		
+												 
+		
+  </workflow>
+    <environment>		
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="200"/>
+        </simulation>	
+    </environment>
+</msml:msml>

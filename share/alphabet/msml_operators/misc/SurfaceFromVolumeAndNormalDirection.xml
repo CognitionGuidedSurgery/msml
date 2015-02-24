@@ -1,0 +1,42 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="SurfaceFromVolumeAndNormalDirection">
+	 <meta key="doc">
+		Extract a surface from a volume. Elements included in extracted surface must have
+		a normal vector facing approximately (specified by margin angle) in direction of given normalDir-Vector.
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="SurfaceFromVolumeAndNormalDirection" />
+    </runtime>
+
+    <input>
+        <arg name="surface" logical="SurfaceMesh" physical="file.vtk" />
+    </input>  
+	
+    <parameters>	
+		<arg name="filteredSurface" physical="str" >
+			<meta key="doc">
+				The filtered surface, that is, all surface elements having a normal vector facing
+				in desired direction.
+            </meta>
+		</arg>
+		<arg name="normalDir" physical="vector.float" >
+            <meta key="doc">
+				Desired normal direction.
+            </meta>
+        </arg>		
+		<arg name="margin" physical="float" >
+            <meta key="doc">
+				Allowed margin (angle between normalDir and normal direction of surface element), in degree.
+            </meta>
+        </arg>	
+       </parameters>
+	<output>
+        <arg name="filteredSurface" logical="SurfaceMesh" physical="file.vtk">
+			<meta key="doc">
+				The filtered surface, that is, all surface elements having a normal vector facing
+				in desired direction.
+            </meta>
+		</arg>
+    </output>
+</msml:operator>

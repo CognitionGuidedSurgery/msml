@@ -1,0 +1,20 @@
+version 1.4
+modality ct
+created_by 
+creation_info created by VIRTUOS Vers. VOX-4.7.14; VOI dummy_cylinder filled outside with 1.00; VOI dummy_cylinder filled inside with 999.00; VOI dummy_pistonA filled inside with 1000.00; VOI dummy_pistonB filled inside with 1001.00; 
+primary_view transversal
+data_type integer
+num_bytes 2
+byte_order msdos
+patient_name xxx,xxx*19370101
+slice_dimension 512
+pixel_size 0.976563
+slice_distance 3.000000
+slice_number 94
+xoffset 0
+dimx 512
+yoffset 0
+dimy 512
+zoffset 0
+dimz 94
+z_table no

@@ -39,7 +39,8 @@ using namespace std;
 
 namespace MSML {
   namespace Sources {
-  LIBRARY_API const char*  GenerateSpheres(vector<double> centers, double radius, int thetaResolution, int phiResolution, const char* targetFileName);
+  LIBRARY_API const char* GenerateEmptyImage3D(vector<int> dim, vector<double> spacing, vector<double> origin, const char* targetImageName);
+  LIBRARY_API const char* GenerateSpheres(vector<double> centers, double radius, int thetaResolution, int phiResolution, const char* targetFileName);
   LIBRARY_API vtkSmartPointer<vtkPolyData> GenerateSpheres(vector<double> centers, double radius, int thetaResolution, int phiResolution);
   }
 } // end MSML

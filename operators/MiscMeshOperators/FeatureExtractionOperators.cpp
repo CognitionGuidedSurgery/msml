@@ -13,6 +13,7 @@
 #include <vtkPolyDataReader.h>
 #include <vtkTriangleFilter.h>
 #include <vtkMassProperties.h>
+#include <IOHelper.h>
 
 #include "../vtk6_compat.h"
 #include "../common/log.h"
@@ -24,14 +25,12 @@ namespace FeatureExtractionOperators {
 
 Features ExtractFeatures(std::string infile) {
     log_info() << "Extracting features from " << infile << endl;
-
-    vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(infile.c_str());
-    reader->Update();
+	  
+	vtkSmartPointer<vtkPolyData> polyData = IOHelper::VTKReadPolyData(infile.c_str());
 
     // vtkMassProperties only processes triangles, so we use vtkTriangleFilter to convert all Polygons to triangles:
     vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
-    __SetInput(triangleFilter, reader->GetOutput());
+	__SetInput(triangleFilter, polyData);
     triangleFilter->Update();
 
     vtkPolyData* mesh = triangleFilter->GetOutput();

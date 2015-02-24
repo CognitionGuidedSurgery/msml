@@ -91,7 +91,7 @@
     <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="${box_def}" mesh="${surfaceExtraction}"
                                select="points"/>
-    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" surfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
+    <ExtractSurfaceMesh id="surfaceExtract" mesh="${disp}" targetSurfaceMeshFilename="surfaceOutlineDeformed.vtk"/>
     <SurfaceMeshVolume id="volumeMeasure" mesh="${surfaceExtract}"/>
 
   </workflow>

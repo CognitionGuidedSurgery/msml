@@ -2,7 +2,9 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="ApplyDVF">
-
+    <meta key="doc">
+        Deform input image by dvf: For each voxel of outputDefImage: Follow dvf to voxel in input voxel grid.
+    </meta>
     <runtime>
         <python module="msml.ext.misc" function="ApplyDVF" />
     </runtime>
@@ -19,8 +21,16 @@
 
     <parameters>
         <arg name="outputDefImageFilename" physical="str" optional="true" target="true"/>
-        <arg name="reverseDirection" physical="bool" />
-        <arg name="voxelSize" physical="float" optional="true" default="0.0"/>
+        <arg name="reverseDirection" physical="bool">
+            <meta key="doc">
+                Set reverseDirection=true if direction of provided vector field needs to be inverted. (Usually the case when dvf was created with MSMLs GenerateDVF)
+            </meta>
+        </arg>
+        <arg name="voxelSize" physical="float" optional="true" default="0.0">
+            <meta key="doc">
+                  override voxel size of reference image
+            </meta>
+        </arg>
     </parameters>
 </msml:operator>
 

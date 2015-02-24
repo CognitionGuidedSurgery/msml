@@ -105,24 +105,15 @@ class SofaExporter(XMLExporter):
         "should execute the external tool and set the memory"
         import msml.envconfig
 
-        filenameSofaBatch = "%s_SOFA_batch.txt" % self.export_file
-
-        with open(filenameSofaBatch, 'w') as f:
-            timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            f.write(os.path.join(os.getcwd(), self.export_file) + ' ' + str(
-                timeSteps) + ' ' + self.export_file + '.simu \n')
-        #uncomment to use multiple gpus
+        #uncomment to use four gpus
         #os.putenv('CUDA_DEVICE', str(random.randint(0,3)))
 
-        cmd = "%s -l SOFACuda %s" % (msml.envconfig.SOFA_EXECUTABLE, filenameSofaBatch)
-
-        if (msml.envconfig.SOFA_EXECUTABLE.find('runSofa') > -1):
+        if (msml.envconfig.SOFA_EXECUTABLE.lower().find('runsofa') > -1): #linux: runSofa, windows: RunSofa.exe
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -g batch -n ' + str(
+            callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -l SOFACuda -g batch -n ' + str(
                 timeSteps) + ' ' + os.path.join(os.getcwd(),
                                                 self.export_file) + '\n'
-            #callCom = os.path.join(os.getcwd(),self.export_file) + ' ' + str(timeSteps) + ' ' + '/tmp/simoutput.simu -l SofaCUDA -l MediAssist'
-            cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom )
+            cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom)
 
         log.info("Executing %s" % cmd)
         log.info("Working directory: %s" % os.getcwd())
@@ -166,25 +157,28 @@ class SofaExporter(XMLExporter):
             #physicsElementNode = msmlObject.find("material")
             self.createMeshTopology(objectNode, msmlObject)
             self.createMaterialRegions(objectNode, msmlObject)
-
-                     #add solver
-            self.createSolvers()
-
+           
             #create simulation steps
             self.createConstraintRegions(objectNode, msmlObject)
 
             #creat post processing request
             self.createPostProcessingRequests(objectNode, msmlObject)
 
-
+        #daniel: moved this, each node could have its own solvers, right?
+        #but for now, this method generates solvers below root-node NOT below individual object-node
+        #add solver
+        self.createSolvers()
+    
 
         return etree.ElementTree(self.node_root)
 
     def createMeshTopology(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
+        #daniel: for multi mesh support
         mesh_type = msmlObject.mesh.type
-        meshFileName = self.working_dir / self.get_value_from_memory(msmlObject.mesh)
+        mesh_id = (msmlObject.id + "_mesh")
+        meshFileName = self.working_dir / self.get_value_from_memory(mesh_id)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
 
@@ -204,6 +198,8 @@ class SofaExporter(XMLExporter):
                      name="dofs", template=self._processing_unit, src="@LOADER")
             self.sub("MeshTopology", objectNode,
                      name="topo", src="@LOADER")
+            if(msmlObject.hasContactGeometry):
+                self.createContactNode(objectNode,msmlObject)
         elif mesh_type == "quadraticTet":
             loaderNode = self.sub("MeshExtendedVTKLoader", objectNode,
                                   name="LOADER", filename=meshFileName)
@@ -216,7 +212,21 @@ class SofaExporter(XMLExporter):
                  "Mesh type must be mesh.volume.linearTetrahedron.vtk or mesh.volume.quadraticTetrahedron.vtk")
             return None
         return loaderNode
-
+    
+    def createContactNode(self,objectNode,msmlObject):
+        surface_id = (msmlObject.id + "_surface")
+        surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
+        collisionNode = self.sub("Node",objectNode,name="1")
+        self.sub("MeshVTKLoader", collisionNode,name="LOADER" ,filename=surfaceFileName, createSubelements="0")
+        self.sub("MechanicalObject",collisionNode,template="Vec3d", name="dofs",
+                                            position="@LOADER.position",velocity="0 0 0",
+                                            force="0 0 0",externalForce="0 0 0", derivX="0 0 0",  restScale="1" )
+        self.sub("MeshTopology",collisionNode,name="topo",position="@LOADER.position",edges="@LOADER.edges",
+                                        triangles="@LOADER.triangles",quads="@LOADER.quads", tetrahedra="@LOADER.tetras",  hexahedra="@LOADER.hexas")
+        self.sub("BarycentricMapping", collisionNode,template="Vec3f,Vec3d", name="barycentricMap1",  input="@../",  output="@./" )
+        self.sub("TriangleModelInRegularGrid",collisionNode,template="Vec3d", name="tTriangleModel1")
+        self.sub("TLineModel", collisionNode,template="Vec3d")
+        self.sub("TPointModel", collisionNode,template="Vec3d")
 
     def createSolvers(self):
         #TODO: self.get_value_from_memory
@@ -328,7 +338,9 @@ class SofaExporter(XMLExporter):
             return ' '.join(map(str, mapping))
 
         assert isinstance(msmlObject, SceneObject)
-
+        #do nothing on empty constraint set
+        if(not any(msmlObject.constraints)):
+            return
         for constraint_set in (msmlObject.constraints[0], ):  #TODO take all constraints
             assert isinstance(constraint_set, ObjectConstraints)
 
@@ -354,15 +366,29 @@ class SofaExporter(XMLExporter):
                     #check if mesh is in MSML folder
 
                     #if not -> copy
-                elif currentConstraintType == "surfacePressure":
+                elif currentConstraintType == "surfacePressure" or currentConstraintType == "surfacePressureOnMesh":
                     indices_vec = self.get_value_from_memory(constraint, 'indices')
-                    indices = '%s' % ', '.join(map(str, indices_vec))
+                    indices = '%s' % ', '.join(map(lambda s: str(int(s)), indices_vec))
+                    
                     constraintNode = self.sub("Node", objectNode, name="SurfaceLoad")
+                    vtkLoaderName = "LOADER"
+                    #pulse mode default seems to be 1
+                    pulseMode = '1'
+                    #see if it is surface pressure with a mesh given
+                    if(currentConstraintType == "surfacePressureOnMesh"):  
+                        #create a new vtkLoader for pressure mesh and adjust loader name                      
+                        pressureMesh = self.get_value_from_memory(constraint, 'mesh')
+                        vtkLoaderName = "PRESSUREMESHLOADER"
+                        loaderNode = self.sub("MeshVTKLoader", constraintNode,
+                                          name=vtkLoaderName,
+                                          createSubelements="0",
+                                          filename=pressureMesh)         
+                        pulseMode = self.get_value_from_memory(constraint, 'pulse')
 
                     self.sub("MeshTopology", constraintNode,
                              name="SurfaceTopo",
-                             position="@LOADER.position",
-                             triangles="@LOADER.triangles", quads="@LOADER.quads")
+                             position="@%s.position" % vtkLoaderName,
+                             triangles="@%s.triangles" % vtkLoaderName, quads="@%s.quads" % vtkLoaderName)
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
@@ -372,11 +398,11 @@ class SofaExporter(XMLExporter):
                     else:
                         log.error("The SOFA exporter only supports one pressure value for index set")
                     p_speed = p / 10
-
+                   
                     surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
-                                                             pulseMode="1",
+                                                             pulseMode=pulseMode,
                                                              pressureSpeed=p_speed,
                                                              # TODO this is broken
                                                              pressure=p,
@@ -385,7 +411,7 @@ class SofaExporter(XMLExporter):
                     self.sub("BarycentricMapping", constraintNode,
                              template=self._processing_unit + ",Vec3f",
                              name="barycentricMapSurfacePressure",
-                             input="@..", output="@.")
+                             input="@..", output="@.")            
 
                 elif currentConstraintType == "springMeshToFixed":
 
@@ -470,14 +496,51 @@ class SofaExporter(XMLExporter):
                     #if '$' not in constraint.displacement:
                     #    disp_vec = [float(x) for x in constraint.displacement]
 
-                    tempMovement = '%s' % ' '.join(map(str, disp_vec))
-                    theMovement = "0 0 0 " + tempMovement + " 0 0 0"
-                    constraintNode = self.sub('LinearMovementConstraint', objectNode,
+                    if len(disp_vec) == 3:
+                        tempMovement = '%s' % ' '.join(map(str, disp_vec))
+                        theMovement = "0 0 0 " + tempMovement + " 0 0 0"
+                        constraintNode = self.sub('LinearMovementConstraint', objectNode,
+                                                  name=constraint.id or constraint_set.name,
+                                                  indices=indices, movements=theMovement, keyTimes=keytimes)
+                    else:
+                        numberOfDisplacements = len(disp_vec) / 3;
+                        if (numberOfDisplacements != len(indices_vec)):
+                            print("Error, displacement vector and indices do not match.")
+                        for i in range(0,numberOfDisplacements-1):
+                            tempDisplacement = disp_vec[3*i:3*i+2]
+                            tempMovement = '%s' % ' '.join(map(str, tempDisplacement))
+                            theMovement = "0 0 0 " + tempMovement + " 0 0 0"
+                            constraintNode = self.sub('LinearMovementConstraint', objectNode,
+                              name=constraint.id+str(i) or constraint_set.name,
+                              indices=str(indices_vec[i]), movements=theMovement, keyTimes=keytimes)
+                        # constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
+                        #                       name=constraint.id or constraint_set.name,
+                        #                       dispIndices=indices, displacements=tempMovement)
+
+                elif currentConstraintType == "forceConstraint":
+                    indices_vec = self.get_value_from_memory(constraint, 'indices')
+                    indices = '%s' % ', '.join(map(str, indices_vec))
+
+                    #TODO: How do we get the disp values from memory?
+                    force_vec = self.get_value_from_memory(constraint, 'force')
+                    finalForceVec = list();
+
+                    #if only one force is given, assign it to every node
+                    if(len(force_vec)==3):
+                        for index in indices_vec:
+                            finalForceVec.extend(force_vec)
+                    else:
+                         finalForceVec =  force_vec
+
+                    #disp_vec = {0,0,0.01}
+                    #if '$' not in constraint.displacement:
+                    #    disp_vec = [float(x) for x in constraint.displacement]
+
+                    tempForce = '%s' % ' '.join(map(str, finalForceVec))
+
+                    constraintNode = self.sub('ConstantForceField', objectNode,
                                               name=constraint.id or constraint_set.name,
-                                              indices=indices, movements=theMovement, keyTimes=keytimes)
-                    #constraintNode = self.sub("DirichletBoundaryConstraint", objectNode,
-                    #                      name=constraint.id or constraint_set.name,
-                    #                      dispIndices=indices, displacements=constraint.displacement)
+                                              points=indices, forces=tempForce)
 
                 elif currentConstraintType == "shapeMatchingConstraint":
                     referenceMesh = self.get_value_from_memory(constraint, 'referenceMesh')
@@ -523,15 +586,31 @@ class SofaExporter(XMLExporter):
         dt = str(self._msml_file.env.simulation[0].dt)
         root = etree.Element("Node", name="root", dt=dt)
         theGravityVec = self._msml_file.env.simulation[0].gravity
-        theGravity = str(theGravityVec)
+        theGravity = ' '.join('%.3f' % val for val in theGravityVec)
         #timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
         if theGravity is None:
-            theGravity = '0 -9.81 0'
+            theGravity = '0 -9.81 0'            
         root.set("gravity", theGravity)
+        #test if any SceneObject has contact geometry        
+        sceneHasContactGeom = any(map(lambda obj : (isinstance(obj,SceneObject) and obj.hasContactGeometry),        
+                                     self._msml_file._scene))
+        if(sceneHasContactGeom): 
+            self.createSceneContactNodes(root)
         return root
 
         #sofa_exporter handles displacementOutputRequest only. Other postProcessing operators need to be adressed in... ?
-
+    
+    #create collision detection scene stuff
+    def createSceneContactNodes(self, root):      
+        etree.SubElement(root,"LayeredDepthImagesPipeline",name="default0",pressure="5",
+                                                                 resolution="128",resolutionPixel="80",
+                                                                 depthBB="6",  GPUCollisionVolume="1")
+        etree.SubElement(root,"LDIDetection", name="default1" )
+        etree.SubElement(root,"MinProximityIntersection", name="Proximity",alarmDistance="0.3",contactDistance="0.2")
+        etree.SubElement(root,"BruteForceDetection", name="N2")
+        etree.SubElement(root,"DefaultContactManager", name="Response",  response="LDI")
+        etree.SubElement(root,"DefaultCollisionGroupManager", name="Group")
+      
 
     def createPostProcessingRequests(self, objectNode, msmlObject):
         for request in msmlObject.output:
