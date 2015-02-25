@@ -219,7 +219,7 @@ class Exporter(object):
 
             #daniel: for multi mesh support
             #cat object id and 'mesh-string to get a unique id in exporter (object id is unique??)
-            mesh_exporter_id = (scene_obj.id + '_mesh')            
+            mesh_exporter_id = self.get_input_mesh_name(scene_obj.mesh)          
             self._input[mesh_exporter_id] = Slot(mesh_exporter_id, self.mesh_sort[0], self.mesh_sort[1],
                                        required=True, parent=self)
             self._attributes[mesh_exporter_id] = parse_attribute_value(scene_obj.mesh.mesh) 

@@ -179,7 +179,7 @@ class SofaExporter(XMLExporter):
 
         #daniel: for multi mesh support
         mesh_type = msmlObject.mesh.type
-        mesh_id = (msmlObject.id + "_mesh")
+        mesh_id = self.get_input_mesh_name(msmlObject.mesh) 
         meshFileName = self.working_dir / self.get_value_from_memory(mesh_id)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
@@ -386,7 +386,8 @@ class SofaExporter(XMLExporter):
                                           createSubelements="0",
                                           filename=pressureMesh)         
                         pulseMode = self.get_value_from_memory(constraint, 'pulse')
-
+                        #check if speed argument is given
+                        speedArg = self.get_value_from_memory(constraint,"speed")                       
                     self.sub("MeshTopology", constraintNode,
                              name="SurfaceTopo",
                              position="@%s.position" % vtkLoaderName,
@@ -410,9 +411,9 @@ class SofaExporter(XMLExporter):
                         #workaround for support of surfacePressure as  vector
                         #each distinct scalar pressure value in surfacePressure-vector gets a custom SurfacePressureForceField-Node
                         #each Node covers multiple indices, for indices having same pressure value assigned
-                        #daniel: speed hack for my contact model 
-                        p_speed = 150
                         pressureArg= [round(x,2) for x in pressureArg]
+                         #daniel: speed hack for my contact model       
+                        p_speed = speedArg
                         sortedPressuresIndices = sorted((e,i) for i,e in enumerate(pressureArg))
                         values = set(map(lambda x:x[0], sortedPressuresIndices))
                         pressureGroups = [[y[1] for y in sortedPressuresIndices if y[0]==x] for x in values]                        
@@ -422,11 +423,13 @@ class SofaExporter(XMLExporter):
                             surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure_"+str(groupId),
-                                                             pulseMode=pulseMode,
-                                                             pressureSpeed=p_speed,
-                                                             # TODO this is broken
-                                                             pressure=force,
-                                                             triangleIndices=pressureGroup)       
+                                                            pulseMode=pulseMode,
+                                                            pressureSpeed=p_speed,
+                                                           # TODO this is broken
+                                                           pressure=force,
+                                                           triangleIndices=pressureGroup)       
+                     
+                         
                                          
                    
                     
