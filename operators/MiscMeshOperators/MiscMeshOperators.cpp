@@ -732,12 +732,12 @@ string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile
 	polydata->GetCellData()->SetScalars(materials);
 
 	vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
-	cleaner->SetInputData(polydata);
+	__SetInput(cleaner,polydata);
 	cleaner->Update();
 
 	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivity = vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
 	connectivity->SetExtractionModeToLargestRegion();
-	connectivity->SetInputData(cleaner->GetOutput());
+	__SetInput(connectivity,cleaner->GetOutput());
 	connectivity->Update();	
 
 	vtkSmartPointer<vtkAppendFilter> appendFilter = vtkSmartPointer<vtkAppendFilter>::New();
