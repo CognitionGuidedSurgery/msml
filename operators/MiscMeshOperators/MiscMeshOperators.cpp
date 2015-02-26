@@ -741,7 +741,7 @@ string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile
 	connectivity->Update();	
 
 	vtkSmartPointer<vtkAppendFilter> appendFilter = vtkSmartPointer<vtkAppendFilter>::New();
-	appendFilter->AddInputData(connectivity->GetOutput());
+	__SetInput(appendFilter,connectivity->GetOutput());
 	appendFilter->Update();
 
 	IOHelper::VTKWriteUnstructuredGrid(outfile,appendFilter->GetOutput());		
