@@ -51,8 +51,10 @@ class AbaqusExporter(XMLExporter):
     def __init__(self, msml_file):
         """
         """
-        self.name = 'AbaqusExporter'
-        Exporter.__init__(self, msml_file)
+        #self.name = 'AbaqusExporter'
+        self.initialize(msml_file, name = "AbaqusExporter", mesh_sort = ("mesh", "Mesh"))
+
+        #Exporter.__init__(self, msml_file)
 
     def init_exec(self, executer):
         """initialization by the executer, sets memory and executor member

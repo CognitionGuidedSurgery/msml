@@ -88,12 +88,13 @@ class Msml2MsmlMapping(BaseMapping):
         mesh.id = element.id + "_mesh"
         meshData = gen.MeshDataObject()
         meshData.id = element.id + "_mesh_data"
-        meshData.physicaltype = mbase.VTKContainerFile()
+
         if element.type == 'linearTet':
             meshData.logicaltype = mbase.LinearTetrahedralMesh()
         else:
             raise MSMLError("Mesh logical type %s for mesh %s not supported by msml2msml mapping" % (element.type, element.id))
         meshData.value = self._exporter.get_value_from_memory(mesh.id)
+        meshData.physicaltype = type(meshData.value)
         parent_target.add_child(mesh)
         parent_target.mesh = mesh
         mesh.add_child(meshData)

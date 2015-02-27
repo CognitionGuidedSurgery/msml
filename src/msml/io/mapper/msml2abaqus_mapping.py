@@ -6,7 +6,9 @@ import msml.model.generated.abaqus as ab
 class MSML2AbaqusMapping(BaseMapping):
 
 
+    def __init__(self):
 
+        BaseMapping.__init__(self)
 
     @complete_map_pre(mod.Constraint)
     def map_Constraint_pre(self, element,parent_source,parent_target, source,target):
@@ -416,12 +418,12 @@ class MSML2AbaqusMapping(BaseMapping):
 
     @complete_map_pre(mod.Mesh)
     def map_Mesh_pre(self, element,parent_source,parent_target, source,target):
-        print('map_Mesh_pre not implemented')
+        return None,None
 
 
     @complete_map_post(mod.Mesh)
     def map_Mesh_post(self, element,parent_source,parent_target,source,target):
-        print('map_Mesh_post not implemented')
+        return None,None
 
 
 
@@ -430,6 +432,9 @@ class MSML2AbaqusMapping(BaseMapping):
 
     @complete_map_pre(mod.MeshDataObject)
     def map_MeshDataObject_pre(self, element,parent_source,parent_target, source,target):
+        #create new mesh data object with appropriate physical type
+
+
         print('map_MeshDataObject_pre not implemented')
 
 
@@ -560,7 +565,7 @@ class MSML2AbaqusMapping(BaseMapping):
         parent_target.add_child(part)
         parent_target.addPart(part)
 
-        return part, None
+        return part, type(mod.Mesh())
 
 
 

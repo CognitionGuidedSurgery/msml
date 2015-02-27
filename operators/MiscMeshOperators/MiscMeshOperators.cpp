@@ -1397,6 +1397,60 @@ bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int 
 //
 //}
 
+bool ConvertVTKToGenericMesh(std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity, std::string inputMesh)
+{
+    return ConvertVTKToGenericMesh(vertices ,cellSizes, connectivity, IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()));
+}
+
+bool ConvertVTKToGenericMesh(std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity, const char* infile)
+{
+    return ConvertVTKToGenericMesh(vertices ,cellSizes, connectivity, IOHelper::VTKReadUnstructuredGrid(infile));
+}
+
+bool ConvertVTKToGenericMesh(std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity, vtkUnstructuredGrid* inputMesh)
+{
+    vertices.clear();
+    vtkPoints* thePoints = inputMesh->GetPoints();
+    vtkIdType numberOfPoints = inputMesh->GetNumberOfPoints();
+    double currentPoint[3];
+
+    for(int i=0; i<numberOfPoints; i++)
+    {
+        thePoints->GetPoint(i,currentPoint);
+        vertices.push_back(currentPoint[0]);
+        vertices.push_back(currentPoint[1]);
+        vertices.push_back(currentPoint[2]);
+
+    }
+
+    vtkCellArray* theCells = inputMesh->GetCells();
+    vtkIdType numberOfCells = inputMesh->GetNumberOfCells();
+    connectivity.clear();
+    cellSizes.clear();
+
+    for(unsigned int i=0; i<numberOfCells; i++) // iterate over all triangles
+    {
+
+        vtkSmartPointer<vtkIdList> cellPointIds =
+            vtkSmartPointer<vtkIdList>::New();
+
+        inputMesh->GetCellPoints(i, cellPointIds);
+        unsigned int currentCellSize = cellPointIds->GetNumberOfIds();
+        cellSizes.push_back(currentCellSize );
+
+
+        for(unsigned int j=0; j<currentCellSize;j++) //original points
+        {
+            connectivity.push_back(cellPointIds->GetId(j));
+        }
+    }
+
+
+
+    return true;
+}
+
+
 std::vector<double> ExtractPointPositions( std::vector<int> indices, std::string inputMesh)
 {
 	return ExtractPointPositions(indices, IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str()));
@@ -1423,6 +1477,7 @@ std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstruct
         outputPositions.push_back(currentPoint[2]);
 
     }
+
 
     return outputPositions;
 

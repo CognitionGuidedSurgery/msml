@@ -199,6 +199,7 @@ DEFAULTS_SORTS = {
         vdx,
         (TXT, 'TXT', 'txt'),
         (InFile, 'NRRD', 'nrrd'),  # TODO
+        (GenericMesh, 'mesh'),
     ],
 }
 
@@ -388,6 +389,13 @@ register_conversion(str, TXT, InFile, 100)
 
 # register_conversion(VTK, MSMLString, lambda x: MSMLString(x.filename + ";" + x.partname), 100)
 
+try:
+    from msml.ext.converters_python import vtk_mesh2generic_mesh
+    register_conversion(VTK, get_sort('mesh'), vtk_mesh2generic_mesh, 100)
+
+
+except:
+    log.error("No Conversion VTK to GenericMesh avaible. Abaqus may not useable")
 
 try:
     from msml.ext.misc import ConvertVTKToVTU
