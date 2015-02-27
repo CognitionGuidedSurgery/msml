@@ -107,6 +107,10 @@ namespace MiscMeshOperators
   LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);
   LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh);
 
+  LIBRARY_API  bool ConvertVTKToGenericMesh(std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity, std::string inputMesh);
+  LIBRARY_API  bool ConvertVTKToGenericMesh( std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity,  const char* infile);
+  LIBRARY_API  bool ConvertVTKToGenericMesh( std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity,  vtkUnstructuredGrid* inputMesh);
+
   LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile);
   LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh);
 

@@ -209,7 +209,7 @@ def main():
     #                     Module("msml.exporter.features"),
     #                     Module("msml.exporter.sofanew"),
     #                     Module("msml.exporter.msml_namespace"),
-    #                     Module("msml.exporter.semantic_tools"),
+    #                     Module("msml.exporter.OWL_python_bridge"),
     #                     Module("msml.exporter.sofavisitor"),
     #                     Module("msml.exporter.visitor"),
     #             ),

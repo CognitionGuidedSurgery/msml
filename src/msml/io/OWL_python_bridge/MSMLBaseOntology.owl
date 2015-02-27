@@ -1,0 +1,1146 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY swrl "http://www.w3.org/2003/11/swrl#" >
+    <!ENTITY swrlb "http://www.w3.org/2003/11/swrlb#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY msmlBase "http://www.msml.org/ontology/msmlBase#" >
+    <!ENTITY msmlScene "http://www.msml.org/ontology/msmlScene#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
+    <!ENTITY xsp "http://www.owl-ontologies.com/2005/08/07/xsp.owl#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.msml.org/ontology#"
+     xml:base="http://www.msml.org/ontology"
+     xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+     xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+     xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+     xmlns:msmlBase="http://www.msml.org/ontology/msmlBase#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:msmlScene="http://www.msml.org/ontology/msmlScene#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://www.msml.org/ontology/MSML.owl"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology#annotationProperty_16 -->
+
+    <owl:AnnotationProperty rdf:about="http://www.msml.org/ontology#annotationProperty_16"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/MSML.owl#hasOutput -->
+
+    <owl:ObjectProperty rdf:about="http://www.msml.org/ontology/MSML.owl#hasOutput">
+        <rdfs:domain rdf:resource="&msmlScene;SceneObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.msml.org/ontology/MSML.owl#hasOutput"/>
+                <owl:onClass rdf:resource="&msmlScene;OutputRequest"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#forStep -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;forStep">
+        <rdfs:domain rdf:resource="&msmlScene;Constraint"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;forStep"/>
+                <owl:onClass rdf:resource="&msmlScene;SimulationStep"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasChild -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasChild">
+        <rdfs:domain rdf:resource="&msmlScene;ContainerNode"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasChild"/>
+                <owl:onClass rdf:resource="&msmlScene;Node"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasConstraint -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasConstraint">
+        <rdfs:domain rdf:resource="&msmlScene;ConstraintGroup"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasConstraint"/>
+                <owl:onClass rdf:resource="&msmlScene;Constraint"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasConstraintGroup -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasConstraintGroup">
+        <rdfs:domain rdf:resource="&msmlScene;SceneObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasConstraintGroup"/>
+                <owl:onClass rdf:resource="&msmlScene;ConstraintGroup"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasDataObject -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasDataObject">
+        <rdfs:domain rdf:resource="&msmlScene;Mesh"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasDataObject"/>
+                <owl:onClass rdf:resource="&msmlScene;DataObject"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasEnvironment -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasEnvironment">
+        <rdfs:domain rdf:resource="&msmlScene;Scenario"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasEnvironment"/>
+                <owl:onClass rdf:resource="&msmlScene;Environment"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasIndexSet -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasIndexSet">
+        <rdfs:domain rdf:resource="&msmlScene;Constraint"/>
+        <rdfs:domain rdf:resource="&msmlScene;MaterialRegion"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasIndexSet"/>
+                <owl:onClass rdf:resource="&msmlBase;IndexSet"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasIndexSetContainer -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasIndexSetContainer">
+        <rdfs:domain rdf:resource="&msmlScene;SceneObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasIndexSetContainer"/>
+                <owl:onClass rdf:resource="&msmlScene;IndexSetContainer"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasIndexSetData -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasIndexSetData">
+        <rdfs:domain rdf:resource="&msmlScene;IndexSetContainer"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasIndexSetData"/>
+                <owl:onClass rdf:resource="&msmlScene;IndexSetDataObject"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasLogicalType -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasLogicalType">
+        <rdfs:domain rdf:resource="&msmlScene;DataObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasLogicalType"/>
+                <owl:onClass rdf:resource="&msmlBase;LogicalType"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasMaterialProperty -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasMaterialProperty">
+        <rdfs:domain rdf:resource="&msmlScene;MaterialRegion"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasMaterialProperty"/>
+                <owl:onClass rdf:resource="&msmlScene;MaterialProperty"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasMaterialRegion -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasMaterialRegion">
+        <rdfs:domain rdf:resource="&msmlScene;SceneObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasMaterialRegion"/>
+                <owl:onClass rdf:resource="&msmlScene;MaterialRegion"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasMesh -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasMesh">
+        <rdfs:domain rdf:resource="&msmlScene;SceneObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasObject"/>
+                <owl:onClass rdf:resource="&msmlScene;Mesh"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasObject -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasObject">
+        <rdfs:domain rdf:resource="&msmlScene;Scene"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasObject"/>
+                <owl:onClass rdf:resource="&msmlScene;SceneObject"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasPhysicalType -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasPhysicalType">
+        <rdfs:domain rdf:resource="&msmlScene;DataObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasPhysicalType"/>
+                <owl:onClass rdf:resource="&msmlBase;PhysicalType"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasScene -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasScene">
+        <rdfs:domain rdf:resource="&msmlScene;Scenario"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasScene"/>
+                <owl:onClass rdf:resource="&msmlScene;Scene"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasSets -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasSets">
+        <rdfs:domain rdf:resource="&msmlScene;SceneObject"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasSets"/>
+                <owl:onClass rdf:resource="&msmlScene;IndexSetContainer"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasSolver -->
+
+    <owl:ObjectProperty rdf:about="&msmlScene;hasSolver">
+        <rdfs:domain rdf:resource="&msmlScene;SimulationStep"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasSolver"/>
+                <owl:onClass rdf:resource="&msmlScene;Solver"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology#density -->
+
+    <owl:DatatypeProperty rdf:about="http://www.msml.org/ontology#density">
+        <rdfs:domain rdf:resource="&msmlScene;MassProperty"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/MSML.owl#beta -->
+
+    <owl:DatatypeProperty rdf:about="http://www.msml.org/ontology/MSML.owl#beta">
+        <rdfs:domain rdf:resource="&msmlScene;RayleighDampingProperty"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasElementType -->
+
+    <owl:DatatypeProperty rdf:about="http://www.msml.org/ontology/abaqus#hasElementType"/>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#alpha -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;alpha">
+        <rdfs:domain rdf:resource="&msmlScene;RayleighDampingProperty"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#dt -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;dt">
+        <rdfs:domain rdf:resource="&msmlScene;Solver"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasValue -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;hasValue">
+        <rdfs:domain rdf:resource="&msmlScene;DataObject"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#id -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;id">
+        <rdfs:domain rdf:resource="&msmlScene;IdContainerNode"/>
+        <rdfs:domain rdf:resource="&msmlScene;IdNode"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#iterations -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;iterations">
+        <rdfs:domain rdf:resource="&msmlScene;Solver"/>
+        <rdfs:range rdf:resource="&xsd;unsignedInt"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#poissonRatio -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;poissonRatio">
+        <rdfs:domain rdf:resource="&msmlScene;LinearElasticProperty"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#processingUnit -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;processingUnit">
+        <rdfs:domain rdf:resource="&msmlScene;Solver"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#solverType -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;solverType">
+        <rdfs:domain rdf:resource="&msmlScene;Solver"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#youngModulus -->
+
+    <owl:DatatypeProperty rdf:about="&msmlScene;youngModulus">
+        <rdfs:domain rdf:resource="&msmlScene;LinearElasticProperty"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- msmlRep:JinjaTemplate -->
+
+    <owl:DatatypeProperty rdf:about="msmlRep:JinjaTemplate"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#AbaqusScenario -->
+
+    <owl:Class rdf:about="http://www.msml.org/ontology/abaqus#AbaqusScenario">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ScenarioRoot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#CTX -->
+
+    <owl:Class rdf:about="&msmlBase;CTX">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#CauchyStress -->
+
+    <owl:Class rdf:about="&msmlBase;CauchyStress">
+        <rdfs:subClassOf rdf:resource="&msmlBase;TensorQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#ContainerFile -->
+
+    <owl:Class rdf:about="&msmlBase;ContainerFile">
+        <rdfs:subClassOf rdf:resource="&msmlBase;InFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#DICOM -->
+
+    <owl:Class rdf:about="&msmlBase;DICOM">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Displacement -->
+
+    <owl:Class rdf:about="&msmlBase;Displacement">
+        <rdfs:subClassOf rdf:resource="&msmlBase;VectorQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#ElementSet -->
+
+    <owl:Class rdf:about="&msmlBase;ElementSet">
+        <rdfs:subClassOf rdf:resource="&msmlBase;IndexSet"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#FaceSet -->
+
+    <owl:Class rdf:about="&msmlBase;FaceSet">
+        <rdfs:subClassOf rdf:resource="&msmlBase;IndexSet"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Force -->
+
+    <owl:Class rdf:about="&msmlBase;Force">
+        <rdfs:subClassOf rdf:resource="&msmlBase;VectorQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#HDF5 -->
+
+    <owl:Class rdf:about="&msmlBase;HDF5">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Image -->
+
+    <owl:Class rdf:about="&msmlBase;Image">
+        <rdfs:subClassOf rdf:resource="&msmlBase;LogicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Image2D -->
+
+    <owl:Class rdf:about="&msmlBase;Image2D">
+        <rdfs:subClassOf rdf:resource="&msmlBase;Image"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Image3D -->
+
+    <owl:Class rdf:about="&msmlBase;Image3D">
+        <rdfs:subClassOf rdf:resource="&msmlBase;Image"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#InFile -->
+
+    <owl:Class rdf:about="&msmlBase;InFile">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#IndexSet -->
+
+    <owl:Class rdf:about="&msmlBase;IndexSet">
+        <rdfs:subClassOf rdf:resource="&msmlBase;LogicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Indices -->
+
+    <owl:Class rdf:about="&msmlBase;Indices">
+        <rdfs:subClassOf rdf:resource="&msmlBase;LogicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#LinearHexahedralMesh -->
+
+    <owl:Class rdf:about="&msmlBase;LinearHexahedralMesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;VolumeMesh"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#LinearTetrahedralMesh -->
+
+    <owl:Class rdf:about="&msmlBase;LinearTetrahedralMesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;VolumeMesh"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#LogicalType -->
+
+    <owl:Class rdf:about="&msmlBase;LogicalType"/>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLFloat -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLFloat">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLInt -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLInt">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLListF -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLListF">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLListI -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLListI">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLListUI -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLListUI">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLString -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLString">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#MSMLUInt -->
+
+    <owl:Class rdf:about="&msmlBase;MSMLUInt">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Mesh -->
+
+    <owl:Class rdf:about="&msmlBase;Mesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;LogicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#NodeSet -->
+
+    <owl:Class rdf:about="&msmlBase;NodeSet">
+        <rdfs:subClassOf rdf:resource="&msmlBase;IndexSet"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#PhysicalQuantity -->
+
+    <owl:Class rdf:about="&msmlBase;PhysicalQuantity">
+        <rdfs:subClassOf rdf:resource="&msmlBase;LogicalType"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#PhysicalType -->
+
+    <owl:Class rdf:about="&msmlBase;PhysicalType"/>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#QuadraticTetrahedralMesh -->
+
+    <owl:Class rdf:about="&msmlBase;QuadraticTetrahedralMesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;VolumeMesh"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#STL -->
+
+    <owl:Class rdf:about="&msmlBase;STL">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#ScalarQuantity -->
+
+    <owl:Class rdf:about="&msmlBase;ScalarQuantity">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#SurfaceMesh -->
+
+    <owl:Class rdf:about="&msmlBase;SurfaceMesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;Mesh"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#TensorQuantity -->
+
+    <owl:Class rdf:about="&msmlBase;TensorQuantity">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#TriangularMesh -->
+
+    <owl:Class rdf:about="&msmlBase;TriangularMesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;SurfaceMesh"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VTI -->
+
+    <owl:Class rdf:about="&msmlBase;VTI">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VTKContainerFile -->
+
+    <owl:Class rdf:about="&msmlBase;VTKContainerFile">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VTU -->
+
+    <owl:Class rdf:about="&msmlBase;VTU">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VTX -->
+
+    <owl:Class rdf:about="&msmlBase;VTX">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ContainerFile"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VectorQuantity -->
+
+    <owl:Class rdf:about="&msmlBase;VectorQuantity">
+        <rdfs:subClassOf rdf:resource="&msmlBase;PhysicalQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#Velocity -->
+
+    <owl:Class rdf:about="&msmlBase;Velocity">
+        <rdfs:subClassOf rdf:resource="&msmlBase;VectorQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VolumeMesh -->
+
+    <owl:Class rdf:about="&msmlBase;VolumeMesh">
+        <rdfs:subClassOf rdf:resource="&msmlBase;Mesh"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlBase#VonMisesStress -->
+
+    <owl:Class rdf:about="&msmlBase;VonMisesStress">
+        <rdfs:subClassOf rdf:resource="&msmlBase;ScalarQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Constraint -->
+
+    <owl:Class rdf:about="&msmlScene;Constraint">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ConstraintGroup -->
+
+    <owl:Class rdf:about="&msmlScene;ConstraintGroup">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ContainerNode -->
+
+    <owl:Class rdf:about="&msmlScene;ContainerNode">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Node"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ContinuumMechanicsProperty -->
+
+    <owl:Class rdf:about="&msmlScene;ContinuumMechanicsProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;MaterialProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#DataObject -->
+
+    <owl:Class rdf:about="&msmlScene;DataObject">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ElasticityProperty -->
+
+    <owl:Class rdf:about="&msmlScene;ElasticityProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;SolidMechanicsProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Elements -->
+
+    <owl:Class rdf:about="&msmlScene;Elements">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContainerNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Environment -->
+
+    <owl:Class rdf:about="&msmlScene;Environment">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Node"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Faces -->
+
+    <owl:Class rdf:about="&msmlScene;Faces">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContainerNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#FixedConstraint -->
+
+    <owl:Class rdf:about="&msmlScene;FixedConstraint">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Constraint"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#FluidMechanicsProperty -->
+
+    <owl:Class rdf:about="&msmlScene;FluidMechanicsProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContinuumMechanicsProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#IdContainerNode -->
+
+    <owl:Class rdf:about="&msmlScene;IdContainerNode">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContainerNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#IdNode -->
+
+    <owl:Class rdf:about="&msmlScene;IdNode">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Node"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#IndexSetContainer -->
+
+    <owl:Class rdf:about="&msmlScene;IndexSetContainer">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#IndexSetDataObject -->
+
+    <owl:Class rdf:about="&msmlScene;IndexSetDataObject">
+        <rdfs:subClassOf rdf:resource="&msmlScene;DataObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#LinearElasticProperty -->
+
+    <owl:Class rdf:about="&msmlScene;LinearElasticProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ElasticityProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#LinearSolver -->
+
+    <owl:Class rdf:about="&msmlScene;LinearSolver">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Solver"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#MassProperty -->
+
+    <owl:Class rdf:about="&msmlScene;MassProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContinuumMechanicsProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#MaterialProperty -->
+
+    <owl:Class rdf:about="&msmlScene;MaterialProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#MaterialRegion -->
+
+    <owl:Class rdf:about="&msmlScene;MaterialRegion">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Mesh -->
+
+    <owl:Class rdf:about="&msmlScene;Mesh">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#MeshDataObject -->
+
+    <owl:Class rdf:about="&msmlScene;MeshDataObject">
+        <rdfs:subClassOf rdf:resource="&msmlScene;DataObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Node -->
+
+    <owl:Class rdf:about="&msmlScene;Node"/>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Nodes -->
+
+    <owl:Class rdf:about="&msmlScene;Nodes">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContainerNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ODESolver -->
+
+    <owl:Class rdf:about="&msmlScene;ODESolver">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Solver"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#OutputRequest -->
+
+    <owl:Class rdf:about="&msmlScene;OutputRequest">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#RayleighDampingProperty -->
+
+    <owl:Class rdf:about="&msmlScene;RayleighDampingProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ViscoelasticProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Scenario -->
+
+    <owl:Class rdf:about="&msmlScene;Scenario">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ScenarioRoot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ScenarioRoot -->
+
+    <owl:Class rdf:about="&msmlScene;ScenarioRoot">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Node"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Scene -->
+
+    <owl:Class rdf:about="&msmlScene;Scene">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Node"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#SceneObject -->
+
+    <owl:Class rdf:about="&msmlScene;SceneObject">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#SimulationEnvironment -->
+
+    <owl:Class rdf:about="&msmlScene;SimulationEnvironment">
+        <rdfs:subClassOf rdf:resource="&msmlScene;Node"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#SimulationStep -->
+
+    <owl:Class rdf:about="&msmlScene;SimulationStep">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#SolidMechanicsProperty -->
+
+    <owl:Class rdf:about="&msmlScene;SolidMechanicsProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContinuumMechanicsProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#Solver -->
+
+    <owl:Class rdf:about="&msmlScene;Solver">
+        <rdfs:subClassOf rdf:resource="&msmlScene;IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ViscoelasticProperty -->
+
+    <owl:Class rdf:about="&msmlScene;ViscoelasticProperty">
+        <rdfs:subClassOf rdf:resource="&msmlScene;ContinuumMechanicsProperty"/>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/MSML.owl#Element -->
+
+    <owl:NamedIndividual rdf:about="http://www.msml.org/ontology/MSML.owl#Element">
+        <rdf:type rdf:resource="&msmlScene;Elements"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#ContainerNode -->
+
+    <owl:NamedIndividual rdf:about="&msmlScene;ContainerNode">
+        <rdf:type rdf:resource="&msmlScene;ContainerNode"/>
+    </owl:NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.5.0) http://owlapi.sourceforge.net -->
+

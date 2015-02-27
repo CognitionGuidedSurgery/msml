@@ -1,0 +1,26 @@
+class {{name}}({{superclass}}):
+{% if not objectAttributes and not listAttributes %}    pass{% endif %}
+{% if listAttributes %}
+   def __init__(self):{% for attribute in listAttributes %}
+      self._{{attribute.lower()}}s = list(){% endfor %}
+      {{superclass}}.__init__(self)
+{% endif %}
+{% if objectAttributes %}{% for attribute in objectAttributes %}
+   @property
+   def {{ attribute.lower() }}(self):
+      return self._{{ attribute.lower() }}
+
+   @{{ attribute.lower() }}.setter
+   def {{ attribute.lower() }}(self, value):
+      self._{{ attribute.lower()}} = value
+{% endfor %}{% endif %}
+{% if listAttributes %}{% for attribute in listAttributes %}
+   def add{{ attribute }}(self,{{attribute.lower()}}):
+      self._{{attribute.lower()}}s.append({{attribute.lower()}})
+   def get{{ attribute }}s(self):
+      return self._{{attribute.lower()}}s
+{% endfor %}{% endif %}
+
+
+
+
