@@ -32,12 +32,14 @@ __license__ = 'GPLv3'
 import lxml.etree as etree
 
 from ..base import XMLExporter, Exporter
-from msml.model.generated import msmlScene
+import msml.model.generated.msmlScene as ms
+import msml.model.generated.abaqus as asc
 
 
 #from msml.model import *
 from msml.io.mapper.mapper import *
 from msml.io.mapper.msml2msml_mapping import *
+from msml.io.mapper.msml2abaqus_mapping import *
 
 from ...log import error, info
 
@@ -97,19 +99,21 @@ class AbaqusExporter(XMLExporter):
 
 
 
-        root_target = msmlScene.Scenario()
-
-
+        root_target = ms.Scenario()
 
         my_mapper = Mapper(Msml2MsmlMapping(self))
 
-
-
         my_mapper.map(root_source, root_target)
 
+        root_a = asc.InputDeck()
+        aMapper = MSMLMapper(MSML2AbaqusMapping())
+        aMapper.map(root_target, root_a)
 
 
 
+
+
+        print('hello')
 
         #parser.parse_ontology_from_python_memory(
         #    URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)

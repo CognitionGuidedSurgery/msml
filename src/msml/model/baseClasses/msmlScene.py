@@ -51,7 +51,7 @@ class ScenarioRoot(Node):
         self._root = self
 
     def add_to_inventory(self, object, id=None):
-        if id is not Node:
+        if id is not None:
             if id not in self._inventory:
                 self._inventory[id] = object
             else:
@@ -59,6 +59,7 @@ class ScenarioRoot(Node):
         else:
             #in this case generate random id
             id = uuid.uuid4()
+            object.id = id
             self._inventory[id] = object
 
     def get_object_by_type(self, objectType):
