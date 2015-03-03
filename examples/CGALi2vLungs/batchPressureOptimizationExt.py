@@ -8,8 +8,10 @@ import os
 import ntpath
 from path import path
 
-import numpy as np
-from scipy import optimize
+import argparse
+
+# import numpy as np
+# from scipy import optimize
 
 from msml import frontend 
 import msml
@@ -46,9 +48,29 @@ def f_to_minimize(p_array):
     volume = l() 
     return abs(volume- 8400000)
 
-
-msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
-p0 = x0 = np.asarray((20))
-pn = optimize.fmin_cg(f_to_minimize, x0, epsilon=1)
-print pn
+if __name__ == '__main__':   #TODO: make sure we need this cond and its not blocking multiple call from cmd.
+    #parser
+    parser = argparse.ArgumentParser(description='Start a lung pressure example.')
+    parser.add_argument('pressure')
+    parser.add_argument('--out', dest='resultfile', action='store',
+                  default='result.xml', help='output (.xml) (default: result.xml)')
+    args = parser.parse_args()
     
+    #init vars (before work directory is changes!)
+    msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
+    result_file = os.path.abspath( args.resultfile)
+    
+    #go
+    value = f_to_minimize( [float(args.pressure)] )
+    print 'Results volume difference:{volume} with pressure:{pressure}'.format(volume=value, pressure=float(args.pressure))
+    
+    #write results 
+    f = open(result_file, 'w')
+    f.write('<volume>{volume}</volume>\n'.format(volume=value))
+    f.close()
+    
+     
+    # p0 = x0 = np.asarray((20))
+    # pn = optimize.fmin_cg(f_to_minimize, x0, epsilon=1)
+    # print pn
+

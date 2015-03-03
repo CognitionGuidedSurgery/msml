@@ -41,14 +41,14 @@ def f_to_minimize(p_array):
     p = p_array[0]
     if (p<-50 or p > 70): # 
         print p
-        return 8119088+100*(abs(p)+1)
+        return 8400000+100*(abs(p)+1)
     l = Lungs(msml_file, p)
     volume = l() 
-    return abs(volume- 8400000)
+    return abs(volume - 8400000)
 
-
-msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
-p0 = x0 = np.asarray((20))
-pn = optimize.fmin_cg(f_to_minimize, x0, epsilon=1)
-print pn
+if __name__ == '__main__':    
+    msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
+    p0 = x0 = np.asarray((20))
+    pn = optimize.fmin_cg(f_to_minimize, x0, epsilon=1)
+    print pn
     
