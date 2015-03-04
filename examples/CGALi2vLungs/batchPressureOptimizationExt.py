@@ -57,7 +57,7 @@ if __name__ == '__main__':   #TODO: make sure we need this cond and its not bloc
     args = parser.parse_args()
     
     #init vars (before work directory is changes!)
-    msml_file = os.path.abspath('../CGALi2vLungs/Lungs_simple.xml')
+    msml_file = 'C:\Projekte\msml_github\examples\CGALi2vLungs\Lungs_simple.xml'
     result_file = os.path.abspath( args.resultfile)
     
     #go
@@ -66,7 +66,10 @@ if __name__ == '__main__':   #TODO: make sure we need this cond and its not bloc
     
     #write results 
     f = open(result_file, 'w')
+    f.write('<xml>\n')
     f.write('<volume>{volume}</volume>\n'.format(volume=value))
+    f.write('<press>{press}</press>\n'.format(press=float(args.pressure)))
+    f.write('</xml>\n')
     f.close()
     
      
