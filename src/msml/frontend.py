@@ -303,7 +303,7 @@ class App(object):
         self._output_dir = output_dir or options.get('output_folder', None)
 
         self._repositories = repositories or options.get('repositories', [])
-        self._packages = packages or options.get('repositories', [])
+        self._packages = packages or options.get('packages', [])
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
