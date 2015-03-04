@@ -13,15 +13,19 @@ __all__ = ['ShellOperator']
 jinja_env = jinja2.Environment(auto_reload=False)
 
 def flag(value, name):
+    prefix = "-" if not name.startswith("-") else ""
     if value:
-        return "-%s" % name
+        return "%s%s" % (prefix, name)
     else:
         return ""
 
 
 def option(value, name):
+    prefix = "--" if not name.startswith("-") else ""
+
     if value is not None:
-        return "-%s %s" % (name, value)
+        return "%s%s %s" % (prefix, name, value)
+
     return ""
 
 jinja_env.filters['flag'] = flag
@@ -56,7 +60,7 @@ class ShellOperator(PythonOperator):
         command = self.command(kwargs).strip()
         env_path = str(binary_search_path)
         ld_library_path = os.environ.get("LD_LIBRARY_PATH", '') + ":" + env_path
-        log.debug("Execute: %s", command)
+        log.debug("Execute: %s\n |  %s", command, os.getcwd())
         proc = subprocess.Popen(command,
                                 close_fds=True,
                                 stdout=subprocess.PIPE,
