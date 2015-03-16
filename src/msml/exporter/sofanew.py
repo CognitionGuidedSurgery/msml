@@ -218,7 +218,7 @@ class SofaExporter(XMLExporter):
     def createContactNode(self,objectNode,msmlObject):
         surface_id = (msmlObject.id + "_surface")
         surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
-        collisionNode = self.sub("Node",objectNode,name="1")
+        collisionNode = self.sub("Node",objectNode,name="Contact")
         self.sub("MeshVTKLoader", collisionNode,name="LOADER" ,filename=surfaceFileName, createSubelements="0")
         self.sub("MechanicalObject",collisionNode,template="Vec3d", name="dofs",
                                             position="@LOADER.position",velocity="0 0 0",
@@ -229,6 +229,12 @@ class SofaExporter(XMLExporter):
         self.sub("TriangleModelInRegularGrid",collisionNode,template="Vec3d", name="tTriangleModel1")
         self.sub("TLineModel", collisionNode,template="Vec3d")
         self.sub("TPointModel", collisionNode,template="Vec3d")
+        #export contact geometry after simulation, if desired
+        exportFile = msmlObject._contactGeometry.exportFile
+        if(exportFile):            
+            self.sub("VTKExporter", collisionNode, XMLformat="1", edges="0", exportAtEnd="true", exportEveryNumberOfSteps="1",
+                                filename=self.working_dir / exportFile,listening="true", tetras="1",triangles="0")
+ 
 
     def createSolvers(self):
         #TODO: self.get_value_from_memory
