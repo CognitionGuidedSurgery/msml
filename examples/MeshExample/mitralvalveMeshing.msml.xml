@@ -11,7 +11,7 @@
         <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${vtkConverter}" targetImageFilename="mitralvalveImage.vti" accuracy_level="7" smoothing="1"/>
         <!-- DistanceMapOperator -->
         
-        <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mitralvalveVolumeSurface.vtk" isoValue="30"/>
+        <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mitralvalveVolumeSurface.vtk" isoValue="90"/>
         <!-- Voxel2ContourOperator; maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
         
         <!-- <ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput) -->
@@ -22,10 +22,10 @@
                        cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
                        exude="false"/>
         
-        <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolMesh.vtu"/>
+        <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolMesh_hf3vtu.vtu"/>
         <!-- convertVTKbinaryToVTU -->
         
-        <!-- <vtuToHf3inpWithBdyFacetMatIDsProducer id="aVtuToHf3inpWithBdyFacetMatIDsProducer" inputfilename="${vtuConverter}" outputfilename="mvVolMesh_hf3inp.inp" integer="0"/> -->
+        <vtuToHf3inpWithBdyFacetMatIDsProducer id="aVtuToHf3inpWithBdyFacetMatIDsProducer" inputfilename="${vtuConverter}" outputfilename="mvVolMesh_hf3inp.inp" integer="0"/>
         <!-- MSMLalize vtu2HF3inpWithmatIDs-Python-Operator -->
         
         <!-- Simulation_Mgmt_Operator -->

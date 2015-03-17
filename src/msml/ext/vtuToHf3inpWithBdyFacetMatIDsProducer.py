@@ -29,6 +29,7 @@
 __author__ = 'schoch'
 import sys
 import vtk
+#from .msmlvtk import * # NEW 2014-12-23
 
 
 def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integer):
@@ -76,6 +77,8 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	reader.SetFileName(inputfilename)
 	reader.Update()
 	unstructuredGrid = reader.GetOutput()
+	# Alternatively:
+	#unstructuredGrid = read_ugrid(inputfilename) # NEW 2014-12-23
 	print "Reading vtu input file: DONE."
 	print "Executing script ..."
 	
