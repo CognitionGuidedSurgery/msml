@@ -86,8 +86,12 @@ namespace MSML
 			      << " and "            << numberOfPoints << " points." << std::endl;
     
     double av_length = computeAvLengthCount(pd);
+    // Note: in case of bad surface mesh quality (e.g. long surface triangles),
+    // the av_length is not a reliable/good measure!
     
   	const double ispacing = av_length / ref_fac;
+  	// Note: in case of bad surface mesh quality (e.g. long surface triangles),
+  	// the ispacing is not intelligent/reasonable anymore!
 
     // Datatype
 #if VTK_MAJOR_VERSION <= 5
