@@ -32,7 +32,7 @@ __author__ = 'weigl'
 
 from lxml import etree
 
-from .visitor import *
+from .msml.io.visitor import *
 import math
 
 

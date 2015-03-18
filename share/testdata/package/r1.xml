@@ -1,0 +1,23 @@
+<package name="R1" version="1.0" xmlns="http://msml.org/package/1.0/">
+	<information>
+		<maintainer name="N" email="E" />
+		<documentation>
+			A
+            B
+            C
+            D
+            E
+            F
+
+            G
+
+
+		</documentation>
+		<homepage url="url" />
+		<repository url="rurl" type="git" />
+	</information>
+
+	<alphabet-dir>R1A</alphabet-dir>
+	<binary-dir>R1B</binary-dir>
+	<python-dir>R1P</python-dir>
+</package>

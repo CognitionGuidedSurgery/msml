@@ -1,0 +1,57 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="date">
+
+    <runtime>
+        <sh file="" wd="" template="date +'%T' | cat"
+            output_pattern="(?P&lt;hour&gt;\d\d):(?P&lt;min&gt;\d\d):(?P&lt;sec&gt;\d\d)"
+            output_names="hour min sec"/>
+    </runtime>
+
+    <annotation>
+        <entry key="doc">Collects date information from the system.
+
+*Returns* the current hours, minute, seconds of the day.
+
+Primary for testing the system and MSML
+        </entry>
+
+        <entry key="category">
+            Test, Date, MSML
+        </entry>
+
+        <entry key="contributor">
+            Alexander Weigl
+        </entry>
+
+        <entry key="license">
+            GPL
+        </entry>
+    </annotation>
+
+    <input>
+    </input>
+
+    <output>
+        <arg name="hour" physical="int">
+            <meta key="doc">
+                Current hours. *Range:* [0,23]
+            </meta>
+        </arg>
+
+        <arg name="min" physical="int">
+            <meta key="doc">
+            Current minutes.
+                *Range:* [0,59]
+            </meta>
+        </arg>
+
+        <arg name="s" physical="int">
+            <meta key="doc">
+                Current seconds:
+                *Range:* [0,59]
+            </meta>
+        </arg>
+    </output>
+
+</msml:operator>

@@ -40,11 +40,12 @@ entry point, where you can access to various subsystem.
 from __future__ import print_function
 
 from .env import *
-import sys
+
 # need first step caused of sys.path
 # this is terrible to execute on module load
 # but else we do not have chance for changing
 # sys.path for initialization in msml.sorts
+
 load_envconfig()
 
 from .analytics.alphabet_analytics import *
@@ -56,7 +57,6 @@ from msml.run.GraphDotWriter import *
 from msml.run import DefaultGraphBuilder
 
 import os
-from path import path
 
 import msml
 import msml.env
@@ -78,6 +78,10 @@ prolog = """
  | | | | | |\__ \| | | | | || | Language
  |_| |_| |_||___/|_| |_| |_||_|
 """
+from .package import *
+from path import path
+
+DEFAULT_REPOSITORIES = [MSML_REPOSITORY_FILENAME, "~/.config/msml/%s" % MSML_REPOSITORY_FILENAME]
 
 
 def create_argument_parser():
@@ -136,10 +140,11 @@ def create_argument_parser():
 
     exec_parser.add_argument('-r', '--runner', dest='executor', metavar='EXECUTER', action='store',
                              default='sequential',
-                             help='select the wanted executer', choices=set(msml.run.get_known_executors()))
+                             help='select the wanted executor', choices=set(msml.run.get_known_executors()))
 
     exec_parser.add_argument("-E", "--exopt", nargs="+", default=dict(), dest="exporter_options",
                              metavar='key:val', action=KeyValueAction)
+
     exec_parser.add_argument("-R", "--runopt", nargs="+", default=dict(), dest="executor_options",
                              metavar='key:val', action=KeyValueAction)
 
@@ -147,11 +152,14 @@ def create_argument_parser():
                              metavar="FOLDER", action="store",
                              help="specifies msml user repositories with alphabet definition")
 
+    exec_parser.add_argument("-p", "--package", nargs="+", default=list(), dest="packages",
+                             metavar="FOLDER", action="store",
+                             help="specifies msml user repositories with alphabet definition")
+
     exec_parser.add_argument('-m', '--variables', metavar="FILE", dest="memoryfile", action="store",
                              help="predefined memory content")
 
-    exec_parser.add_argument('files', metavar="FILES", nargs='+',
-                             help="MSML files to be executed")
+    exec_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
 
     # show
     show_parser = sub_parser.add_parser('show', help="prints out the build graph")
@@ -160,6 +168,44 @@ def create_argument_parser():
                              help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
 
     show_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
+
+    show_parser = sub_parser.add_parser('show', help="prints out the build graph")
+    show_parser.set_defaults(which="show")
+    show_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
+                             help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
+
+    show_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
+
+    # cli
+    cli_parser = sub_parser.add_parser('cli', help="convert to cli")
+    cli_parser.set_defaults(which="cli")
+    cli_parser.add_argument('files', metavar="FILES", nargs='+', help="MSML files to be executed")
+    cli_parser.add_argument('-e', '--exporter', dest='exporter', metavar='EXPORTER', action='store',
+                            help='select the wanted exporter', choices=set(msml.exporter.get_known_exporters()))
+
+    cli_parser.add_argument('-o', '--output', metavar='FOLDER', dest='output_folder', action='store',
+                            help="output directory for all generated data")
+
+    cli_parser.add_argument('-r', '--runner', dest='executor', metavar='EXECUTER', action='store',
+                            default='sequential',
+                            help='select the wanted executor', choices=set(msml.run.get_known_executors()))
+
+    cli_parser.add_argument("-E", "--exopt", nargs="+", default=dict(), dest="exporter_options",
+                            metavar='key:val', action=KeyValueAction)
+
+    cli_parser.add_argument("-R", "--runopt", nargs="+", default=dict(), dest="executor_options",
+                            metavar='key:val', action=KeyValueAction)
+
+    cli_parser.add_argument("--repository", nargs="+", default=list(), dest="repositories",
+                            metavar="FOLDER", action="store",
+                            help="specifies msml user repositories with alphabet definition")
+
+    cli_parser.add_argument("-p", "--package", nargs="+", default=list(), dest="packages",
+                            metavar="FOLDER", action="store",
+                            help="specifies msml user repositories with alphabet definition")
+
+    cli_parser.add_argument('-m', '--variables', metavar="FILE", dest="memoryfile", action="store",
+                            help="predefined memory content")
 
     # validate
     validate_parser = sub_parser.add_parser('validate', help="validates the current msml environment")
@@ -230,6 +276,7 @@ class App(object):
                  add_operator_path=None, memory_init_file=None, output_dir=None, executor=None,
                  execution_options=None, exporter_options=None,
                  seq_parallel=True, repositories=None,
+                 packages=None,
                  options=None, **kwargs):
 
         options = dict(options if options else {})  # create copy
@@ -255,11 +302,8 @@ class App(object):
 
         self._output_dir = output_dir or options.get('output_folder', None)
 
-
-        repositories = repositories or options.get('repositories', [])
-        if repositories:
-            for repo in repositories:
-                self._install_repository(repo)
+        self._repositories = repositories or options.get('repositories', [])
+        self._packages = packages or options.get('packages', [])
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -275,33 +319,61 @@ class App(object):
         """
 
         msml.env.load_user_file()
+
+        self._init_repositories_and_packages()
+
         self._load_alphabet()
 
         if not self._novalidate:
             self.alphabet.validate()
 
-    def _install_repository(self, repo):
-        root = path(repo).abspath()
+    def _init_repositories_and_packages(self):
+        # loading repositories incl. defaults
+        effective_repositories = list(self._repositories)
+        effective_repositories += DEFAULT_REPOSITORIES
 
-        a = root / "alphabet"
-        log.debug("Register alphabet dir: %s", a)
-        self.additional_alphabet_dir.append(a)
+        metarepo = Repository(path("."))
+        metarepo.add_imports(*effective_repositories)
+        packages = metarepo.resolve_packages()
 
-        p = root / "py"
-        log.debug("Add to Python path: %s", p)
-        if p not in sys.path:
-            sys.path.append(p)
+        # include single packages, useful for testing
+        for pth in self._packages:
+            try:
+                p = Package.from_file(pth)
+                packages.insert(0, p)
+            except FileNotFoundError:
+                log.error("Explicit given package %s could not be loaded: Not found", pth)
 
-        msml.env.binary_search_path.add(
-            root / "bin"
-        )
+        # msml default package at first place
+        # weigl, it is now down in load
+        #try:
+        #    packages.insert(0, Package.from_file(MSML_DEFAULT_PACKAGE))
+        #except FileNotFoundError:
+        #    log.fatal("The MSML default operator are not available, the package file %s is missing",
+        #              MSML_DEFAULT_PACKAGE)
+        #    sys.exit(100)
 
-        rcfile = root / "sorts.py"
-        log.debug("Execute rcfile: %s", rcfile)
+        for p in packages:
+            log.info("Activate %s", p)
+        alpha, bin, py, rc = get_concrete_paths(packages)
 
-        if rcfile:
-            execfile(rcfile, {'app': self})
+        for f in rc:
+            execfile(f, {'app': self})
 
+        log.debug("Register alphabet dir: %s", alpha)
+        self.additional_alphabet_dir += clean_paths(alpha)
+
+        log.debug("Add to Python path: %s", py)
+        sys.path += clean_paths(py)
+
+        log.debug("Binary Path %s", bin)
+        msml.env.binary_search_path += clean_paths(bin)
+
+        log.debug("--")
+        log.debug("Alphabet Path: %s", msml.env.alphabet_search_paths)
+        log.debug("Python Path: %s", sys.path)
+        log.debug("Binary Path: %s", msml.env.binary_search_path)
+        log.debug("--")
 
     @property
     def output_dir(self):
@@ -496,11 +568,30 @@ class App(object):
             # print(export_alphabet_overview_rst(self.alphabet))
 
 
+    def cli(self):
+        from .api import clisupport
+
+        for f in self.files:
+            m = self._load_msml_file(f)
+            self._prepare_msml_model(m)
+            c = clisupport.GenerateCLIFromMSML(m)
+
+            c.executor = self.executor
+            c.executor_options = self._executor_options
+            c.exporter_options = self._exporter_options
+            c.exporter = self.exporter
+            c.memory = self.memory_init_file
+            c.packages = self._packages
+            c.repositories = self._repositories
+
+            c.generate(path(f).namebase + ".py", [])
+
     def _exec(self):
         COMMANDS = OrderedDict({'show': self.show,
                                 'exec': self.execution,
                                 'validate': self.validate,
                                 'expy': self.expy,
+                                'cli': self.cli,
                                 'writexsd': self.writexsd,
                                 'check': self.check_file})
         cmd = self._options["which"]

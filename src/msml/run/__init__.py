@@ -228,6 +228,10 @@ class PhaseExecutor(LinearSequenceExecutor):
     def _prepare(self):
         buckets = super(PhaseExecutor, self)._prepare()
 
+        self.pre_bucket = []
+        self.post_bucket=[]
+        self.sim_bucket=[]
+
         is_pre = True
 
         for bucket in buckets:
@@ -409,7 +413,7 @@ class ExecutorsHelper(object):
     def execute_variable(memory, variable, overwrite=False):
         assert isinstance(memory, Memory)
 
-        if variable.name not in memory or overwrite:
+        if (variable.name not in memory) or overwrite:
             return {variable.name: variable.value}
 
 

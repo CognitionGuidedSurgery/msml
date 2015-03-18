@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://msml.org/package/1.0/" xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:mup="http://msml.org/package/1.0/">
+    <element name="package" type="mup:packageType"/>
+    <complexType name="packageType">
+        <choice maxOccurs="unbounded" minOccurs="0">
+            <element type="mup:informationType" name="information" maxOccurs="1"/>
+            <element type="string" name="alphabet-dir"/>
+            <element type="string" name="binary-dir"/>
+            <element name="python-dir" type="string"/>
+            <element name="rc-file" type="string"/>
+        </choice>
+        <attribute name="name" use="required">
+            <simpleType>
+                <restriction base="string">
+                    <pattern value="[a-zA-Z0-9\-_]+"></pattern>
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="version" use="required">
+            <simpleType>
+                <restriction base="string">
+                    <minLength value="1"></minLength>
+                    <pattern value="\d([.\-]?\d)+(-\w+)?"></pattern>
+                </restriction>
+            </simpleType>
+        </attribute>
+    </complexType>
+    <complexType name="repositoryType">
+        <attribute type="string" name="url"/>
+        <attribute type="string" name="type"/>
+    </complexType>
+    <complexType name="informationType">
+        <all minOccurs="0" maxOccurs="1">
+            <element type="mup:maintainerType" name="maintainer"/>
+            <element type="mup:documentationType" name="documentation"/>
+            <element type="mup:homepageType" name="homepage"/>
+            <element type="mup:repositoryType" name="repository"/>
+        </all>
+    </complexType>
+    <complexType name="maintainerType">
+        <attribute type="string" name="name"/>
+        <attribute type="string" name="email"/>
+    </complexType>
+    <complexType name="homepageType">
+        <attribute type="string" name="url"/>
+    </complexType>
+    <complexType name="documentationType">
+        <simpleContent>
+            <extension base="string">
+                <attribute type="string" name="file"/>
+                <attribute type="string" name="url"/>
+            </extension>
+        </simpleContent>
+    </complexType>
+</schema>

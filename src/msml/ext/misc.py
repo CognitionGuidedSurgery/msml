@@ -34,7 +34,7 @@ Small wrapper around MiscMeshOperatorsPython.so
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-28"
 
-from warnings import warn
+from ..log import warn
 
 from msml.exceptions import MSMLUnknownModuleWarning
 
@@ -42,8 +42,7 @@ try:
     from MiscMeshOperatorsPython import *
 except ImportError, e:
     import sys
-    warn("Could not import MiscMeshOperatorsPython. "
+    warn("Could not import 'MiscMeshOperatorsPython`. "
          "This is a C++-Modul. "
          "Have you successfully compiled and installed it? "
-         "Error is %s, Current sys.path: %s" % (e, sys.path),
-         MSMLUnknownModuleWarning, 0)
+         "Error is %s, Current sys.path: %s", e, sys.path)

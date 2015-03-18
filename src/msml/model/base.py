@@ -67,7 +67,7 @@ __all__ = ['Constant',
            'xor']
 
 
-def xor(l):
+def xor(seq, start = False):
     """
     xor on iterables
 
@@ -82,9 +82,9 @@ def xor(l):
     True
 
 
-    :returns: True if an odd numbers of True values within the ``l``
+    :returns: True if an odd numbers of True values within the ``seq``
     """
-    return reduce(lambda x, y: x ^ y, map(bool, l), False)
+    return reduce(lambda x, y: x ^ y, map(bool, seq), start)
 
 
 class MSMLFile(object):
@@ -1194,7 +1194,7 @@ class ContactGeometry(object):
 
     """
 
-    def __init__(self, type="linear", id=None, value=None):
+    def __init__(self, type="linear", id=None, value=None, exportFile=""):
         """
         :param str type: type of the contact surface (one of ``linear``, ``quadratic``)
         :param str id: id of the contact surface 
@@ -1203,6 +1203,7 @@ class ContactGeometry(object):
         self.type = type
         self.id = id
         self.value = value
+        self.exportFile = exportFile
 
     @property
     def surface(self):

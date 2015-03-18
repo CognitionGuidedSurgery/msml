@@ -20,7 +20,7 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-  MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_polydata.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
+  MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
    
 	return EXIT_SUCCESS;
 }

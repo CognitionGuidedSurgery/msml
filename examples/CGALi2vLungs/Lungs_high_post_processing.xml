@@ -1,0 +1,28 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="SegmentationImage3D"
+             physical="file.vtk"/>
+        <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk"  physical="file.vtk"/>
+        <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk"  physical="file.vtk"/>
+        <var name="surface_pressure" value="50" physical="float" />
+    </variables>
+
+
+    <workflow>
+        <TransformMeshBarycentric id="segTransform" volumeMeshToDeform="${combo_mesh_filename}" referenceVolumeMesh="${tet_only_mesh_filename}" deformedVolumeMesh="disp*.vtu" targetVolumeMesh="deformed_surf_meshes*.vtu"/>		
+    </workflow>
+
+    
+
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="100"/>
+        </simulation>
+    </environment>
+
+</msml:msml>

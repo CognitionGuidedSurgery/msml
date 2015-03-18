@@ -35,187 +35,186 @@ import math
 from itertools import starmap
 from ..log import logger
 
-
 class MSMLVTKImportWarning(MSMLWarning):
     pass
 
 try:
     import vtk
-except:
-    logger.warn("Could not import vtk python module. Did you install python-vtk?")
 
-def read_ugrid(filename):
-    if filename.endswith(".pvtu"):
-        reader = vtk.vtkXMLPUnstructuredGridReader()
-    elif filename.endswith(".vtk"):
-        reader = vtk.vtkUnstructuredGridReader()
-    elif filename.endswith(".vtu"):
-        reader = vtk.vtkXMLUnstructuredGridReader()
-    else:
-        raise BaseException("Illegal filename suffix %s" % filename)
+    def read_ugrid(filename):
+        if filename.endswith(".pvtu"):
+            reader = vtk.vtkXMLPUnstructuredGridReader()
+        elif filename.endswith(".vtk"):
+            reader = vtk.vtkUnstructuredGridReader()
+        elif filename.endswith(".vtu"):
+            reader = vtk.vtkXMLUnstructuredGridReader()
+        else:
+            raise BaseException("Illegal filename suffix %s" % filename)
 
-    reader.SetFileName(filename)
-    reader.Update()
+        reader.SetFileName(filename)
+        reader.Update()
 
-    return reader.GetOutput()
+        return reader.GetOutput()
 
-def write_surface(ugrid, filename):
-    surface_filter = vtk.vtkDataSetSurfaceFilter()
-    surface_filter.SetInputData(ugrid)
+    def write_surface(ugrid, filename):
+        surface_filter = vtk.vtkDataSetSurfaceFilter()
+        surface_filter.SetInputData(ugrid)
 
-    triangle_filter = vtk.vtkTriangleFilter()
-    triangle_filter.SetInputConnection(surface_filter.GetOutputPort())
+        triangle_filter = vtk.vtkTriangleFilter()
+        triangle_filter.SetInputConnection(surface_filter.GetOutputPort())
 
-    writer = vtk.vtkPolyDataWriter()
-    writer.SetFileName(filename)
-    writer.SetInputConnection(triangle_filter.GetOutputPort())
-    writer.Write()
+        writer = vtk.vtkPolyDataWriter()
+        writer.SetFileName(filename)
+        writer.SetInputConnection(triangle_filter.GetOutputPort())
+        writer.Write()
 
-def write_stl(ugrid, filename):
-    surface_filter = vtk.vtkDataSetSurfaceFilter()
-    surface_filter.SetInputConnection(ugrid)
+    def write_stl(ugrid, filename):
+        surface_filter = vtk.vtkDataSetSurfaceFilter()
+        surface_filter.SetInputConnection(ugrid)
 
-    triangle_filter = vtk.vtkTriangleFilter()
-    triangle_filter.SetInputConnection(surface_filter.GetOutputPort())
+        triangle_filter = vtk.vtkTriangleFilter()
+        triangle_filter.SetInputConnection(surface_filter.GetOutputPort())
 
-    writer = vtk.vtkSTLWriter()
-    writer.SetFileName(filename)
-    writer.SetInputConnection(triangle_filter.GetOutputPort())
-    writer.Write()
+        writer = vtk.vtkSTLWriter()
+        writer.SetFileName(filename)
+        writer.SetInputConnection(triangle_filter.GetOutputPort())
+        writer.Write()
 
-def write_vtu(ugrid, filename, mode = 'ascii'):
-    writer = vtk.vtkXMLUnstructuredGridWriter()
-    if mode == 'ascii':
-        writer.SetDataModeToAscii()
-    elif mode == 'binary':
-        writer.SetDataModeToBinary()
-    elif mode == 'append':
-        writer.SetDataModetoAppend()
+    def write_vtu(ugrid, filename, mode = 'ascii'):
+        writer = vtk.vtkXMLUnstructuredGridWriter()
+        if mode == 'ascii':
+            writer.SetDataModeToAscii()
+        elif mode == 'binary':
+            writer.SetDataModeToBinary()
+        elif mode == 'append':
+            writer.SetDataModetoAppend()
 
-    writer.SetFileName(filename)
-    writer.SetInputData(ugrid)
-    writer.Write()
+        writer.SetFileName(filename)
+        writer.SetInputData(ugrid)
+        writer.Write()
 
-def write_vtk(ugrid, filename):
-    writer = vtk.vtkUnstructuredGridWriter()
-    writer.SetFileName(filename)
-    writer.SetInputData(ugrid)
-    writer.Write()
+    def write_vtk(ugrid, filename):
+        writer = vtk.vtkUnstructuredGridWriter()
+        writer.SetFileName(filename)
+        writer.SetInputData(ugrid)
+        writer.Write()
 
-def closest_point(mesh, vector, radius = None):
-    locator = vtk.vtkPointLocator()
-    ugrid = read_ugrid(mesh)
-    locator.SetDataSet(ugrid)
+    def closest_point(mesh, vector, radius = None):
+        locator = vtk.vtkPointLocator()
+        ugrid = read_ugrid(mesh)
+        locator.SetDataSet(ugrid)
 
-    vector = map(float, vector)
-    assert len(vector) == 3
+        vector = map(float, vector)
+        assert len(vector) == 3
 
-    if radius is None:
-        index = locator.FindClosestPoint(vector)
-    else:
-        a = vtk.mutable(0.0)
-        index = locator.FindClosestPointWithinRadius(radius, vector, a)
+        if radius is None:
+            index = locator.FindClosestPoint(vector)
+        else:
+            a = vtk.mutable(0.0)
+            index = locator.FindClosestPointWithinRadius(radius, vector, a)
 
-    point = ugrid.GetPoint(index)
-    distance = math.sqrt(sum(starmap(lambda a, b: (b-a)**2, zip(vector, point))))
-    return {'index': index, 'point': point, 'dist': distance}
+        point = ugrid.GetPoint(index)
+        distance = math.sqrt(sum(starmap(lambda a, b: (b-a)**2, zip(vector, point))))
+        return {'index': index, 'point': point, 'dist': distance}
 
 
-def get_impact(ugrid, start, direction, factor = 1000):
-    cl = vtk.vtkCellLocator()
-    ugrid = read_ugrid(ugrid)
-    cl.SetDataSet(ugrid)
+    def get_impact(ugrid, start, direction, factor = 1000):
+        cl = vtk.vtkCellLocator()
+        ugrid = read_ugrid(ugrid)
+        cl.SetDataSet(ugrid)
 
-    mult = lambda f, x: map(lambda a: f*a, x)
-    end = mult(1000, direction)
+        mult = lambda f, x: map(lambda a: f*a, x)
+        end = mult(1000, direction)
 
 
-    points = vtk.vtkPoints()
-    cells = vtk.vtkIdList()
+        points = vtk.vtkPoints()
+        cells = vtk.vtkIdList()
 
-    cl.intersectWithLine(start, end, points, cells)
+        cl.intersectWithLine(start, end, points, cells)
 
-    ugrid.GetCell(cells.getId(0))
+        ugrid.GetCell(cells.getId(0))
 
 
 
 
 
 
-def view_stl(filename):
-    """
-    http://www.vtk.org/Wiki/VTK/Examples/Python/STLReader
-    """
-    reader = vtk.vtkSTLReader()
-    reader.SetFileName(filename)
+    def view_stl(filename):
+        """
+        http://www.vtk.org/Wiki/VTK/Examples/Python/STLReader
+        """
+        reader = vtk.vtkSTLReader()
+        reader.SetFileName(filename)
 
-    mapper = vtk.vtkPolyDataMapper()
-    if vtk.VTK_MAJOR_VERSION <= 5:
+        mapper = vtk.vtkPolyDataMapper()
+        if vtk.VTK_MAJOR_VERSION <= 5:
+            mapper.SetInput(reader.GetOutput())
+        else:
+            mapper.SetInputConnection(reader.GetOutputPort())
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        # Create a rendering window and renderer
+        ren = vtk.vtkRenderer()
+        renWin = vtk.vtkRenderWindow()
+        renWin.AddRenderer(ren)
+
+        # Create a renderwindowinteractor
+        iren = vtk.vtkRenderWindowInteractor()
+        iren.SetRenderWindow(renWin)
+
+        # Assign actor to the renderer
+        ren.AddActor(actor)
+
+        # Enable user interface interactor
+        iren.Initialize()
+        renWin.Render()
+        iren.Start()
+
+
+    def  vtp_reader(filename):
+        reader = vtk.vtkXMLPolyDataReader()
+        reader.SetFileName(filename)
+        reader.Update()
+
+        mapper = vtk.vtkPolyDataMapper()
         mapper.SetInput(reader.GetOutput())
-    else:
-        mapper.SetInputConnection(reader.GetOutputPort())
 
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
 
-    # Create a rendering window and renderer
-    ren = vtk.vtkRenderer()
-    renWin = vtk.vtkRenderWindow()
-    renWin.AddRenderer(ren)
+    def unstructered_grid_reader(filename):
+        # Read the source file.
+        reader = vtk.vtkUnstructuredGridReader()
+        reader.SetFileName(filename)
+        reader.Update() # Needed because of GetScalarRange
+        output = reader.GetOutput()
+        scalar_range = output.GetScalarRange()
 
-    # Create a renderwindowinteractor
-    iren = vtk.vtkRenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
+        # Create the mapper that corresponds the objects of the vtk file
+        # into graphics elements
+        mapper =vtk.vtkDataSetMapper()
+        mapper.SetInputData(output)
+        mapper.SetScalarRange(scalar_range)
 
-    # Assign actor to the renderer
-    ren.AddActor(actor)
+        # Create the Actor
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
 
-    # Enable user interface interactor
-    iren.Initialize()
-    renWin.Render()
-    iren.Start()
+        # Create the Renderer
+        renderer = vtk.vtkRenderer()
+        renderer.AddActor(actor)
+        renderer.SetBackground(1, 1, 1) # Set background to white
 
+        # Create the RendererWindow
+        renderer_window = vtk.vtkRenderWindow()
+        renderer_window.AddRenderer(renderer)
 
-def  vtp_reader(filename):
-    reader = vtk.vtkXMLPolyDataReader()
-    reader.SetFileName(filename)
-    reader.Update()
-
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInput(reader.GetOutput())
-
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-
-def unstructered_grid_reader(filename):
-    # Read the source file.
-    reader = vtk.vtkUnstructuredGridReader()
-    reader.SetFileName(filename)
-    reader.Update() # Needed because of GetScalarRange
-    output = reader.GetOutput()
-    scalar_range = output.GetScalarRange()
-
-    # Create the mapper that corresponds the objects of the vtk file
-    # into graphics elements
-    mapper =vtk.vtkDataSetMapper()
-    mapper.SetInputData(output)
-    mapper.SetScalarRange(scalar_range)
-
-    # Create the Actor
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-
-    # Create the Renderer
-    renderer = vtk.vtkRenderer()
-    renderer.AddActor(actor)
-    renderer.SetBackground(1, 1, 1) # Set background to white
-
-    # Create the RendererWindow
-    renderer_window = vtk.vtkRenderWindow()
-    renderer_window.AddRenderer(renderer)
-
-    # Create the RendererWindowInteractor and display the vtk_file
-    interactor = vtk.vtkRenderWindowInteractor()
-    interactor.SetRenderWindow(renderer_window)
-    interactor.Initialize()
-    interactor.Start()
+        # Create the RendererWindowInteractor and display the vtk_file
+        interactor = vtk.vtkRenderWindowInteractor()
+        interactor.SetRenderWindow(renderer_window)
+        interactor.Initialize()
+        interactor.Start()
+except:
+    logger.fatal("Could not import vtk python module. Did you install python-vtk?")

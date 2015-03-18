@@ -32,6 +32,7 @@
 Environment things, such as defining alphabet search path, 
 defining msml-wide options and user configuration
 """
+from msml.package import Package
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -59,17 +60,17 @@ def load_envconfig():
     """
     env_path = path(__file__)
 
-    #for local non installation
-    alphabet_path = env_path.dirname() / '..' / '..' / 'share' / 'alphabet'
-    alphabet_search_paths.append(alphabet_path)
-
     import msml.envconfig as C
     import sys
 
-    #Import release and debug paths here !
-    sys.path.append(C.operators_path)
-    sys.path.append(C.operators_path_release)
-    sys.path.append(C.operators_path_debug)
+    try:
+        default_package = Package.from_file(C.MSML_DEFAULT_PACKAGE)
+
+        sys.path.extend( default_package.full_python_dir() )
+        binary_search_path.extend(default_package.full_binary_dir())
+        alphabet_search_paths.extend(default_package.full_alphabet_dir())
+    except IOError:
+        pass
 
     #Add windows paths to python path - Python sometimes only checks this directories for dependencies (e.g. boost dlls)
     win_path = os.environ.get('path')
@@ -137,6 +138,9 @@ class _BinarySearchPath(list):
     def _ensure_paths(self):
         for i in len(self):
             self[i] = path(self[i])
+
+    def __str__(self):
+        return ':'.join(self)
 
     def add_paths(self, string):
         """append all paths given as a string

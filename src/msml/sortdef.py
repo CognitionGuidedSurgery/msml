@@ -35,7 +35,7 @@ __date__ = '2014-02-21'
 
 
 class Sort(object):
-    """A sort is a mixture from an physical and a logical data type.
+    """A sort is a mixture from an physical and a _logical data type.
 
     It provides the function of sort comparison.
     """
@@ -98,7 +98,7 @@ class Sort(object):
 
     @property
     def logical(self):
-        """the logical data type"""
+        """the _logical data type"""
         return self._logical
 
     @logical.setter
@@ -112,7 +112,7 @@ class Sort(object):
 #
 
 class MSMLLTop(object):
-    """Top of the logical hierarchy"""
+    """Top of the _logical hierarchy"""
     pass
 
 
@@ -239,6 +239,36 @@ class MSMLListI(list, MSMLPhysicalTop): pass
 
 class MSMLListF(list, MSMLPhysicalTop): pass
 
+class GenericMesh(MSMLPhysicalTop):
+    def __init__(self, vertices, cell_sizes, connectivity):
+        self._vertices = vertices
+        self._connectivity = connectivity
+        self._cell_sizes = cell_sizes
+
+    @property
+    def vertices(self):
+      return self._vertices
+
+    @vertices.setter
+    def vertices(self, value):
+      self._vertices = value
+
+    @property
+    def cell_sizes(self):
+      return self._cell_sizes
+
+    @cell_sizes.setter
+    def cell_sizes(self, value):
+      self._cell_sizes = value
+
+    @property
+    def connectivity(self):
+      return self._connectivity
+
+    @connectivity.setter
+    def connectivity(self, value):
+      self._connectivity = value
+
 
 class InFile(str, MSMLPhysicalTop):
     pass
@@ -247,6 +277,7 @@ class InFile(str, MSMLPhysicalTop):
 class PNG(InFile):
     pass
 
+class TXT(InFile): pass
 
 class ContainerFile(InFile):
     pass

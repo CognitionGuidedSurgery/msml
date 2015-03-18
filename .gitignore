@@ -25,3 +25,6 @@ operators/bin_2010/
 operators/CMade/
 src/msml/envconfig.py
 /*.cmd
+*.log
+*.orig
+share/msml-package.xml

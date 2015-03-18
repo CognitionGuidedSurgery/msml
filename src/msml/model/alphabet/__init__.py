@@ -28,14 +28,17 @@
 
 from collections import OrderedDict
 import pickle
+import re
 
-from ..sorts import *
-from ..exceptions import *
+from ...sorts import *
+from ...exceptions import *
 from msml import sorts
 
-from sequence import executeOperatorSequence
+from ..sequence import executeOperatorSequence
 from msml.exceptions import MSMLUnknownModuleWarning
-from ..log import debug,info, error, warn
+from ...log import debug,info, error, warn
+
+from .operator import *
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-01-25"
@@ -257,7 +260,7 @@ class Slot(object):
 
     def __init__(self, name, physical, logical=None,
                  required=True, default=None,
-                 meta=dict(), parent=None):
+                 meta=None, parent=None):
         if physical is None:
             pname = None
             if parent:
@@ -283,7 +286,8 @@ class Slot(object):
         """
         self.default = default
         """default value of this slot. has to be if :py:var:`required` is True"""
-        self.meta = meta
+
+        self.meta = meta or dict()
         """various and arbitrary meta data
         :type: dict"""
 
@@ -315,304 +319,13 @@ class Slot(object):
 
 
     def __getattr__(self, item):
-        if 'meta' in self.__dict__:
+        if 'meta' in self.__dict__ and item in self.meta:
             return self.meta[item]
         else:
-            super(Slot, self).__getattr__(item)
+            return self.__dict__[item]
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)
 
 
-def _list_to_dict(lis, attrib='name'):
-    if not lis:
-        return OrderedDict()
-
-    d = OrderedDict()
-    for e in lis:
-        d[getattr(e, attrib)] = e
-    return d
-
-
-class Operator(object):
-    """Operator hold all slots, runtime information and meta data"""
-
-    def __init__(self,
-                 name,
-                 input=None,
-                 output=None,
-                 parameters=None,
-                 runtime=None,
-                 settings=None,
-                 meta=None):
-        """Constructs an operator from the given arguments.
-        :type name: str
-        :type input: list
-        :type output: list
-        :type:parameters: list
-        :type runtime: dict
-        :type meta: dict
-        """
-        self.name = name
-
-        self.input = _list_to_dict(input)
-        """:type: dict"""
-
-        self.output = _list_to_dict(output)
-        """:type: dict"""
-
-        self.parameters = _list_to_dict(parameters)
-        """:type: dict"""
-
-        self.meta = meta
-        """:type: dict"""
-
-        self.runtime = runtime
-        """:type: dict"""
-        
-        if settings is None:
-            settings = dict()
-        self.settings = settings
-        """:type: dict"""
-
-        self._filename = None
-        """filename of the xml file, which defined this operator
-        :type: str"""
-
-    def __str__(self): return "{Operator %s}" % self.name
-
-    def output_names(self):
-        """:returns all names of the output slots
-        :rtype: list[str]
-        """
-        return self.output.keys()
-
-    def input_names(self):
-        """:returns all names of the input slots
-        :rtype: list[str]
-        """
-        return self.input.keys()
-
-    def parameter_names(self):
-        """:returns all names of the parameter slots
-        :rtype: list[str]
-        """
-        return self.parameters.keys()
-
-    def acceptable_names(self):
-        """all names of input or parameter slots
-        :rtype: list[str]
-        """
-        return self.input_names() + self.parameter_names()
-            
-    def settings(self):
-        """all settingss
-        :rtype: list[str]
-        """
-        return self.settings
-
-    def __contains__(self, attrib):
-        """checks if attrib is a valid input or parameter name"""
-        return attrib in self.input or attrib in self.parameters
-
-    def __call__(self, *args, **env):
-        """execution of this operator, with the given arguments"""
-        pass
-
-    def get_targets(self):
-        return [p.name for p in self.parameters.values()
-                if p.target]
-
-    def validate(self):
-        """validation of this operator
-        :returns: True iff. this operator is well-defined
-        :rtype: bool"""
-        return True
-
-
-# def check_types(self, args, kwargs):
-# sig = signature(self.func)
-# type_bind = sig.bind(*self.args)
-# val_bind = sig.bind(*args)
-#
-# T = type_bind.args
-# V = val_bind.args
-#
-# return issubtype(V, T)
-#
-# def _execute(self, *args, **kwargs):
-# sig = signature(self.func)
-#         fargs = sig.bind_partial(*args)  # , **kwargs)
-#
-#         if self.check_types(args, kwargs):
-#             a = self.func(*fargs.args)
-#             if not issubtype(a, self.out):
-#                 raise BaseException("return types mismatch")
-#             return a
-#         else:
-#             raise BaseException("argument type does not match defined types")
-
-
-class PythonOperator(Operator):
-    """Operator for Python functions.
-
-    """
-
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
-        """
-        :param runtime: should include the key: "function" and "module"
-        .. seealso: :py:meth:`Operator.__init__`
-        """
-        Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
-        self.function_name = runtime['function']
-        """name of the pyhton function"""
-        self.modul_name = runtime['module']
-        """the name of the python module"""
-        self._function = None
-        """the found and bind python function"""
-
-    def _check_function(self):
-        pass
-
-    def __str__(self):
-        return "<PythonOperator: %s.%s>" % (self.modul_name, self.function_name)
-
-    def __call__(self, **kwargs):
-        if not self._function:
-            self.bind_function()
-
-        # bad for c++ modules, because of loss of signature
-        # r = self.__function(**kwargs)
-        
-        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
-        defaults = dict()
-        for x in self.parameters.values():
-            if x.default is not None:
-                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
-        kwargsUpdated = defaults
-        kwargsUpdated.update(kwargs)
-                   
-        
-        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
-        
-        log.debug("Parameter: %s" % self.acceptable_names() )
-        log.debug("Args: %s" % args)
-        
-        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
-        if (count == 2):        
-            r = executeOperatorSequence(self, orderedKwArgs, self.settings.get('seq_parallel', True))
-        else:
-            r = self._function(*args)
-
-        if len(self.output) == 0:
-            results = None
-        elif len(self.output) == 1:
-            results = {self.output_names()[0]: r}
-        else:
-            results = dict(zip(self.output_names(), r))
-
-        return results
-        
-    def bind_function(self):
-        """Search and bind the python function. Have to be called before `__call__`"""
-        import importlib
-
-        try:
-            mod = importlib.import_module(self.modul_name)
-            self._function = getattr(mod, self.function_name)
-
-            return self._function
-        except ImportError, e:
-            error("%s.%s is not available (module not found)" % (self.modul_name, self.function_name))
-        except AttributeError, e:
-            error("%s.%s is not available (function/attribute not found)" % (self.modul_name, self.function_name))
-
-
-    def validate(self):
-        return self.bind_function() is not None
-
-
-class ShellOperator(Operator):
-    """ShellOperator
-
-    """
-
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None, settings=None):
-        Operator.__init__(self, name, input, output, parameters, runtime, meta, settings)
-        self.command_tpl = runtime['template']
-
-    def __call__(self, **kwargs):
-        import os
-        
-        #replace empty values with defaults from operators xml description (by getting all defaults and overwrite with given user values)
-        defaults = dict()
-        for x in self.parameters.values():
-            if x.default is not None:
-                defaults[x.name] = sorts.conversion(str, x.sort)(x.default)
-        kwargsUpdated = defaults
-        kwargsUpdated.update(kwargs)
-                   
-        args = [kwargsUpdated.get(x, None) for x in self.acceptable_names()]
-        orderedKwArgs = OrderedDict(zip(self.acceptable_names(), args))
-        
-        count = sum('*' in str(arg) for arg in kwargsUpdated.values())
-        if (count == 2):                
-            r = executeOperatorSequence(self, orderedKwArgs ,self.settings.get('seq_parallel',True))
-        else:
-            self._function(args)
-        
-        results = None
-        if len(self.output) == 1 and 'out_filename' in kwargs:
-            results = {self.output_names()[0]: kwargs.get('out_filename')}
-        return results
-    
-    def _function(self, *args):
-        if (len(args)==1):
-            args = args[0]
-        kwargs =  dict(zip(self.acceptable_names(), args))
-        command = self.command_tpl.format(**kwargs).strip().split(" ")
-
-        cmd, args = command[0], command[1:]
-        executable = msml.env.binary_search_path.find_executable(cmd)
-        if executable:
-            args.insert(0, executable)
-            log.debug("Execute: %s", args)
-            proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            proc.wait()
-            output = proc.stdout.read()
-
-            for line in output.splitlines():
-                log.debug("%s: %s", cmd, line)
-
-
-            if proc.returncode != 0:
-                log.error("%s return with nonzero", args)
-        else:
-            log.critical("Could not find executable: %s", cmd)
-
-
-
-
-import subprocess
-import msml.env
-
-class SharedObjectOperator(PythonOperator):
-    """Shared Object Call via ctype"""
-    # TODO: executeOperatorSequence 
-
-    def __init__(self, name, input=None, output=None, parameters=None, runtime=None, meta=None):
-        Operator.__init__(self, name, input, output, parameters, runtime, meta)
-        
-        self.symbol_name = runtime['symbol']
-        self.filename = runtime['file']
-
-
-    def bind_function(self):
-        import ctypes
-
-        object = ctypes.CDLL(self.filename)
-
-        self.__function = getattr(object, self.symbol_name)
-        return self.__function
 

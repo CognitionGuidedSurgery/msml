@@ -111,7 +111,13 @@
 
     <owl:ObjectProperty rdf:about="&msmlScene;hasChild">
         <rdfs:domain rdf:resource="&msmlScene;ContainerNode"/>
-        <rdfs:range rdf:resource="&msmlScene;Node"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msmlScene;hasChild"/>
+                <owl:onClass rdf:resource="&msmlScene;Node"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
     </owl:ObjectProperty>
     
 
@@ -173,16 +179,6 @@
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:range>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.msml.org/ontology/msmlScene#isParent -->
-
-    <owl:ObjectProperty rdf:about="&msmlScene;isParent">
-        <rdfs:domain rdf:resource="&msmlScene;ContainerNode"/>
-        <rdfs:range rdf:resource="&msmlScene;Node"/>
-        <owl:inverseOf rdf:resource="&msmlScene;hasChild"/>
     </owl:ObjectProperty>
     
 

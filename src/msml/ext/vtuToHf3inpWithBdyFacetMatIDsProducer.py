@@ -9,7 +9,7 @@
 # material id of the cells will be determined as follows:
 # - every 3D cell gets the material id 10.
 # - if the z-coordinate of the boundary face's normal is greater than 
-#   zero, the corresponding 2D cell gets the material id 30,
+# zero, the corresponding 2D cell gets the material id 30,
 # - otherwise its material id will be 20.
 
 # How to run the script:
@@ -33,7 +33,6 @@ import vtk
 
 
 def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integer):
-	
 	# ======================================================================
 	# Define material ids
 	# ======================================================================
@@ -176,4 +175,3 @@ def vtu_To_Hf3inpWithBdyFacetMatID_Producer(inputfilename, outputfilename, integ
 	print "Writing HiFlow3 inp output file (including MaterialNumbers for boundaryFaces): DONE."
 	print "========================================================="
 	print " "
-

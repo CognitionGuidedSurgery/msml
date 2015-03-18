@@ -21,7 +21,13 @@
 BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap)
 {
   vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
-    GenerateDistanceMap(IOHelper::VTKReadPolyData(INPUT("bunny_polydata.vtk")), 10, 0, "", 0);
+    GenerateDistanceMap(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
+}
+
+BOOST_AUTO_TEST_CASE( TestGenerateDistanceMap3d)
+{
+  vtkSmartPointer<vtkImageData> aDistMap = MiscMeshOperators::
+    GenerateDistanceMap3d(IOHelper::VTKReadUnstructuredGrid(INPUT("bunny_tets.vtk")), 10, 0, "", 0);
 }
 
 
@@ -255,6 +261,64 @@ BOOST_AUTO_TEST_CASE(TestBoundsFromMaterialID)
 	//ymin_inner > ymin_outer and ymax_inner<ymax_outer
 	BOOST_CHECK(innerBounds[2]>outerBounds[2]&&innerBounds[3]<outerBounds[3]);
 	//zmin_inner > zmin_outer and zmax_inner<zmax_outer
-	BOOST_CHECK(innerBounds[4]>outerBounds[4]&&innerBounds[5]<outerBounds[5]);
- 
+	BOOST_CHECK(innerBounds[4]>outerBounds[4]&&innerBounds[5]<outerBounds[5]); 
 }
+
+
+BOOST_AUTO_TEST_CASE(TestSurfaceFromVolumeAndNormalDirection)
+{	
+	const char* inputMeshFile  = INPUT("bowl.vtk");
+	const char* outputMeshFile = OUTPUT("bowl_normals_selected.vtk");
+	//select all surface elements with normals facing in z-direction (0,0,1), using an angle margin of 30 deg
+	std::vector<double> desiredNormalDir;
+	desiredNormalDir.push_back(0);
+	desiredNormalDir.push_back(0);
+	desiredNormalDir.push_back(1);
+	std::string resultFile = MiscMeshOperators::SurfaceFromVolumeAndNormalDirection(inputMeshFile,outputMeshFile,desiredNormalDir,30);
+	BOOST_CHECK(outputMeshFile==resultFile);
+	//check if resulting surface mesh has less elements than input mesh, but more than zero elements (stupid test)
+	vtkSmartPointer<vtkUnstructuredGrid> resultMesh = IOHelper::VTKReadUnstructuredGrid(outputMeshFile);
+	vtkSmartPointer<vtkPolyData> inputMesh = IOHelper::VTKReadPolyData(inputMeshFile);
+	
+	BOOST_CHECK(resultMesh->GetNumberOfCells()>0&&
+			   (resultMesh->GetNumberOfCells()<inputMesh->GetNumberOfCells()));		
+
+}
+
+BOOST_AUTO_TEST_CASE(TestComputeDiceCoefficientPolydata)
+{	
+	const char* inputMeshFileA  = INPUT("bunny_polydata.vtk");
+	const char* inputMeshFileB = INPUT("bunny_polydata_transformed.vtk");
+
+	//meshB is a slightly scaled and rotated version of meshA
+	double dice = PostProcessingOperators::ComputeDiceCoefficientPolydata(inputMeshFileA,inputMeshFileB,"intersection.vtk");
+	//dice coefficient should be over 0.5 
+	BOOST_CHECK(dice>0.5&&dice<1);
+}
+
+BOOST_AUTO_TEST_CASE(TestGradientOnSurface)
+{	
+	
+	const char* inputMeshFile  = INPUT("bunny_polydata.vtk");
+	const char* inputGridFile  = OUTPUT("bunny_usgrid.vtk");
+	//create unstructured grid from poly data bunny
+	MiscMeshOperators::ConvertVTKPolydataToUnstructuredGrid(inputMeshFile,inputGridFile);	
+	//create the vector of pressure values gradient should run over
+	std::vector<double> pressureValues;
+	pressureValues.push_back(10);
+	pressureValues.push_back(50);
+	pressureValues.push_back(10);
+
+	//compute gradient
+	std::vector<double> gradient = MiscMeshOperators::GradientOnSurface(inputGridFile,pressureValues,40);
+	int gradientSize = gradient.size();
+	//at least 3 values must be returned in gradient
+	BOOST_CHECK(gradientSize>3);
+	double gradientLeft = gradient.front();
+	double gradientRight = gradient.back();
+	//test if gradient is plausible
+	BOOST_CHECK((gradientLeft>0&&gradientLeft<50)&&
+				(gradientRight>0&&gradientRight<50));
+}
+
+

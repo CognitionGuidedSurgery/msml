@@ -32,6 +32,11 @@
 		<ExtractSurfaceMesh id="MorphedPistonSurface"  
 							mesh="${MorphedPistonSplit}" targetSurfaceMeshFilename="morphed_piston_surface.vtk"/>						   
 		<SurfaceMeshVolume id="MorphedPistonSurfaceVolume" mesh="${MorphedPistonSurface}"/>		
+		
+		<ComputeDiceCoefficientPolydata id="computeDice" surfaceA="${MorphedPistonSurface}" surfaceB="${OriginalPistonSurface}"
+										intersectionMesh="intersection.vtk"/>
+		
+		
 	</workflow>   
 	 <environment>
         <solver linearSolver="iterativeCG" processingUnit="CPU"
