@@ -34,7 +34,6 @@ __date__ = "2014-03-13"
 import math
 import os
 import random
-
 from path import path
 import lxml.etree as etree
 
@@ -233,7 +232,7 @@ class SofaExporter(XMLExporter):
         exportFile = msmlObject._contactGeometry.exportFile
         if(exportFile):            
             self.sub("VTKExporter", collisionNode, XMLformat="1", edges="0", exportAtEnd="true", exportEveryNumberOfSteps="1",
-                                filename=self.working_dir / exportFile,listening="true", tetras="1",triangles="0")
+                                filename=self.working_dir / exportFile,listening="true", tetras="1",triangles="1")
  
 
     def createSolvers(self):
