@@ -190,7 +190,7 @@ DEFAULTS_SORTS = {
         (VTK, "VTK", "vtk", "file.vtk"),
         (VTU, "VTU", "vtu", "file.vtu"),
         (VTI, "VTI", "vti", "file.vti"),
-        (VTP, "VTP", "vtp", "file.vtp"),
+        (VTP, "VTP", "vtp", "file.vtp"), # TODO: add Hiflow3-InputFormat inp (including material IDs).
         DICOM,
         HDF5,
         (STL, "STL", "stl"),

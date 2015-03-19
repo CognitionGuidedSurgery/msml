@@ -1,16 +1,25 @@
 <Param>
-    <OutputPathAndPrefix>SimResults/elasticitySimulation_</OutputPathAndPrefix>
+    <OutputPathAndPrefix>SimResults/hf3_elastsim_</OutputPathAndPrefix>
 
     <Mesh>
         <Filename>{{meshfilename}}</Filename>
         <BCdataFilename>{{bcdatafilename}}</BCdataFilename>
+        <dispDirBCsRelease>0</dispDirBCsRelease> <!-- 0 for fix-it (default), 1 for let-it-swing -->
         <InitialRefLevel>0</InitialRefLevel>
+        <chanceOfContact>{{hf3_chanceOfContact}}</chanceOfContact> <!-- 0 for no contact possible, 1 for contact possible -->
     </Mesh>
 
     <LinearAlgebra>
-        <Platform>CPU</Platform>
+        <Platform>{{solverPlatform}}</Platform>  <!-- CPU, GPU (only for WITH_CUDA compilation), OPENCL (only for WITH_OPENCL compilation) -->
         <NumParaProcCPU>{{numParaProcCPU}}</NumParaProcCPU>
-        <Implementation>Naive</Implementation>
+        <MatAndVecImplementationCPU>Naive</MatAndVecImplementationCPU>
+        {% if solverPlatform=="CPU" %}
+        <MatrixImplementation>Naive</MatrixImplementation> <!-- Naive on CPU, or SCALAR on GPU -->
+        <VectorImplementation>Naive</VectorImplementation> <!-- Naive on CPU, or BLAS on GPU -->
+        {%else%}
+        <MatrixImplementation>SCALAR</MatrixImplementation> <!-- Naive on CPU, or SCALAR on GPU -->
+        <VectorImplementation>BLAS</VectorImplementation> <!-- Naive on CPU, or BLAS on GPU -->
+        {%endif%}
         <MatrixFormat>CSR</MatrixFormat>
         <NumRefLevels>1</NumRefLevels>
     </LinearAlgebra>
@@ -22,6 +31,7 @@
         <lambda>{{m.lamelambda}}</lambda> <!-- e.g.: 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
         <mu>{{m.lamemu}}</mu> <!-- e.g.: 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
         <gravity>{{m.gravity}}</gravity>
+        <calcVolumeSwitch>1</calcVolumeSwitch> <!-- 0 for no, 1 for yes (default) -->
     </ElasticityModel>
     {%endfor%}
 
@@ -45,19 +55,30 @@
         {%endif%}
     </Instationary>
 
-    <Boundary>
+    <Boundary> <!-- NOTE: for the MV simulations, the following are 'fix' default & mean values, according to medical literature -->
         <DirichletMaterial1>12345</DirichletMaterial1> <!-- fixed boundary -->
         <DirichletMaterial2>12345</DirichletMaterial2> <!-- displaced boundary -->
         <DirichletMaterial3>12345</DirichletMaterial3> <!-- displaced boundary -->
-        <NeumannMaterial1>12345</NeumannMaterial1> <!-- (lower) boundary under pressure -->
-        <NeumannMaterial1Pressure>1234567</NeumannMaterial1Pressure>
-        <NeumannMaterial2>12345</NeumannMaterial2> <!-- (upper) boundary under pressure -->
-        <NeumannMaterial2Pressure>1234567</NeumannMaterial2Pressure>
+        <NeumannMaterial1>20</NeumannMaterial1> <!-- (lower) left boundary under pressure -->
+        <NeumannMaterial1Pressure>1.5</NeumannMaterial1Pressure> <!-- blood pressure which affects the closing of the MV -->
+        <NeumannMaterial2>31</NeumannMaterial2> <!-- (upper) left boundary under pressure -->
+        <NeumannMaterial2Pressure>0.0</NeumannMaterial2Pressure> <!-- value 0.0 means: no opening after closing -->
+        <NeumannMaterial3>1234</NeumannMaterial3> <!-- (lower!) right boundary under pressure -->
+        <NeumannMaterial3Pressure>1234.5</NeumannMaterial3Pressure> <!-- no differentiation between left/right lower leaflet needed -->
+        <NeumannMaterial4>32</NeumannMaterial4> <!-- (upper!) right boundary under pressure -->
+        <NeumannMaterial4Pressure>0.0</NeumannMaterial4Pressure> <!-- value 0.0 means: no opening after closing -->
+        <NeumannBC_Pressure_StartTime>2.0</NeumannBC_Pressure_StartTime> <!-- time when cardiac cycle (closing/opening valve) begins -->
+        <NeumannBC_Pressure_EndTime>20.0</NeumannBC_Pressure_EndTime> <!-- time when cardiac cycle (closing/opening valve) ends -->
+        <ChordaePullStrength>2200</ChordaePullStrength> <!-- scaling factor for the strength of the chordae pulling the leaflets back -->
+        <ContactMaterial1>31</ContactMaterial1> <!-- left (upper) boundary subject to potential contact -->
+        <ContactMaterial2>32</ContactMaterial2> <!-- right (upper) boundary subject to potential contact -->
+        <ContactPenaltyFactor>1500.0</ContactPenaltyFactor> <!-- scalar for the cbc_-vector, e.g. in [1500..5000] -->
+        <ContactToleranceThreshold>1.0</ContactToleranceThreshold> <!-- this threshold should approx. be of the size of a cell diameter, e.g. in [1.0...1.5] -->
     </Boundary>
 
     <LinearSolver>
         <SolverName>{{linsolver}}</SolverName>
-        <MaximumIterations>1000</MaximumIterations>
+        <MaximumIterations>1500</MaximumIterations>
         <AbsoluteTolerance>1.e-8</AbsoluteTolerance>
         <RelativeTolerance>1.e-20</RelativeTolerance>
         <DivergenceLimit>1.e6</DivergenceLimit>
