@@ -1,6 +1,10 @@
-import jinja2
 import sys
+from cStringIO import StringIO
 
+_true_stdout = sys.stdout
+#sys.stdout = StringIO()
+
+import jinja2
 from msml.frontend import App
 from msml.sortdef import InFile, MSMLListF, MSMLListI, Image
 
@@ -26,20 +30,24 @@ if __name__ == "__main__": main()
 """
 
 XML = """<?xml version="1.0" encoding="utf-8"?>
-<executable>
+<executable xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="/home/weigl/ctkCmdLineModule.xsd">
   <category>MSML.XXX</category>
-  <title></title>
+  <title>Test</title>
   <description><![CDATA[]]></description>
   <version>0.0.1</version>
-  <documentation-url></documentation-url>
-  <license></license>
-  <contributor></contributor>
+  <documentation-url>http://abc.de</documentation-url>
+  <license>abc</license>
+  <contributor>weigl</contributor>
   <parameters>
+      <label>Parameters</label>
+      <description>...</description>
     {% for p in parameters %}
         <{{ p.tag }}>
             <name>{{ p.name }}</name>
             <longflag>{{ p.longflag }}</longflag>
-            <default>{{p.default}}</default>
+            <description>{{p.description}}</description>
+            <label>{% if p.label %}{{ p.label }}{%else%}{{ p.name }}{%endif%}</label>
+            {% if p.default%}<default>{{p.default}}</default>{% endif %}
         </{{ p.tag }}>
     {% endfor %}
   </parameters>
@@ -121,7 +129,8 @@ def print_cli(msmlfile):
             'tag': tag,
         }
         p.append(a)
-    print te.render(parameters=p)
+
+    _true_stdout.write(te.render(parameters=p))
 
 
 class GenerateCLIFromMSML(object):
