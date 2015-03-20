@@ -1,0 +1,41 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+
+
+
+    <workflow>
+        <!-- <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/> -->
+        
+        <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="ExportedP0067_withRings/P0067_fineMesh_0.vtp" targetImageFilename="mitralvalveImage.vti" accuracy_level="7" smoothing="1"/>
+        <!-- DistanceMapOperator -->
+        
+        <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mitralvalveVolumeSurface.vtk" isoValue="90"/>
+        <!-- Voxel2ContourOperator; maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
+        
+        <!-- <ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput) -->
+        <!-- ACVD_Remeshing_Operator / MeshCellNumber_Reduction_Operator -->
+        
+        <CGALMeshVolumeFromSurface id="aVolumeMesher" meshFilename="mitralvalveVolumeMesh3D_CGAL.vtk" surfaceMesh="${aVoxelToContourOperator}"
+                       preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
+                       cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
+                       exude="false"/>
+        
+        <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolMesh_hf3vtu.vtu"/>
+        <!-- convertVTKbinaryToVTU -->
+        
+        <vtuToHf3inpWithBdyFacetMatIDsProducer id="aVtuToHf3inpWithBdyFacetMatIDsProducer" inputfilename="${vtuConverter}" outputfilename="mvVolMesh_hf3inp_mv_0.inp" integer="0"/>
+        <!-- to be replaced by new stabil version of MSMLalized vtu2hf3inpWithmatIDs-Python-Operator -->
+        
+        <!-- Simulation_Mgmt_Operator to organize/distribute MV-scenarios-->
+        
+        <!-- EXECUTE_HIFLOW3_SIMULATOIN -->
+        
+        <!-- pvtu2vtu-Operator -->
+        
+        <!-- VonMisesStressVisualization_PostProcessing_Operator -->
+        
+    </workflow>
+
+</msml:msml>
