@@ -932,7 +932,7 @@ bool ExtractSurfaceMesh( vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh
 
     //color the polydata elements
 
-    vtkUnstructuredGrid* currentGrid = geom->GetOutput();
+	vtkSmartPointer<vtkUnstructuredGrid> currentGrid = dynamic_cast <vtkUnstructuredGrid*> (geom->GetOutput());
 
     int cellType = currentGrid->GetCellType(1);
     bool isQuadratic = false;
@@ -1036,8 +1036,7 @@ bool AssignSurfaceRegion( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* o
     __SetInput(geom,inputMesh);
     geom->Update();
 
-    vtkUnstructuredGrid* currentSurfaceMesh = geom->GetOutput();
-
+	vtkSmartPointer<vtkUnstructuredGrid> currentSurfaceMesh = dynamic_cast <vtkUnstructuredGrid*> (geom->GetOutput());
 
     //for each region mesh
     unsigned int meshCount = regionMeshes.size();
@@ -1702,7 +1701,7 @@ bool ProjectVolumeMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* out
 
 
 	//iterate over all surface point
-	vtkUnstructuredGrid* surfaceGrid = geom->GetOutput();
+	vtkSmartPointer<vtkUnstructuredGrid> surfaceGrid = dynamic_cast <vtkUnstructuredGrid*> (geom->GetOutput());
 	vtkPoints* thePointsSurface = surfaceGrid->GetPoints();
 	vtkIdType numberOfPointsSurface = thePointsSurface->GetNumberOfPoints();
 	vtkLongLongArray* realPointIds = (vtkLongLongArray*)surfaceGrid->GetPointData()->GetGlobalIds("pointIds");
