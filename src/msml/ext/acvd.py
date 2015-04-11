@@ -27,19 +27,13 @@
 # endregion
 
 
-__author__ = 'Daniel Schaubach'
+__author__ = ['Daniel Schaubach', "Alexadner Weigl"]
 
 #print(os.environ['LD_LIBRARY_PATH'])
 
-from warnings import warn
-
-from msml.exceptions import MSMLUnknownModuleWarning
-
+from ..log import warn
 
 try:
     from  ACVDOperatorsPython import *
 except ImportError, e:
-    warn("Could not load ACVDOperatorsPython. "
-         "This is the C++-Modul. Have you successfully compiled and installed it? "
-         "Error is %s" % e,
-         MSMLUnknownModuleWarning, 0)
+    warn("Could not load ACVDOperatorsPython because of %s",e)

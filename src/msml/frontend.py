@@ -284,7 +284,7 @@ class App(object):
         self._options = options
 
         self._exporter = options.get("exporter") or exporter
-        self._executor = executor or options.get('executor')
+        self._executor = executor or options.get('executor') or 'sequential'
 
         self._files = options.get('files') or files or list()
         self._additional_alphabet_path = options.get('alphabetdir') or add_search_path or list()
@@ -303,7 +303,7 @@ class App(object):
         self._output_dir = output_dir or options.get('output_folder', None)
 
         self._repositories = repositories or options.get('repositories', [])
-        self._packages = packages or options.get('repositories', [])
+        self._packages = packages or options.get('packages', [])
 
         assert isinstance(self._files, (list, tuple))
         self._alphabet = None
@@ -357,6 +357,8 @@ class App(object):
             log.info("Activate %s", p)
         alpha, bin, py, rc = get_concrete_paths(packages)
 
+        py = clean_paths(py)
+
         for f in rc:
             execfile(f, {'app': self})
 
@@ -364,7 +366,7 @@ class App(object):
         self.additional_alphabet_dir += clean_paths(alpha)
 
         log.debug("Add to Python path: %s", py)
-        sys.path += clean_paths(py)
+        sys.path += py
 
         log.debug("Binary Path %s", bin)
         msml.env.binary_search_path += clean_paths(bin)
@@ -569,6 +571,7 @@ class App(object):
 
 
     def cli(self):
+        # late import because of stdio hack
         from .api import clisupport
 
         for f in self.files:
