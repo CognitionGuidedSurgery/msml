@@ -239,6 +239,36 @@ class MSMLListI(list, MSMLPhysicalTop): pass
 
 class MSMLListF(list, MSMLPhysicalTop): pass
 
+class GenericMesh(MSMLPhysicalTop):
+    def __init__(self, vertices, cell_sizes, connectivity):
+        self._vertices = vertices
+        self._connectivity = connectivity
+        self._cell_sizes = cell_sizes
+
+    @property
+    def vertices(self):
+      return self._vertices
+
+    @vertices.setter
+    def vertices(self, value):
+      self._vertices = value
+
+    @property
+    def cell_sizes(self):
+      return self._cell_sizes
+
+    @cell_sizes.setter
+    def cell_sizes(self, value):
+      self._cell_sizes = value
+
+    @property
+    def connectivity(self):
+      return self._connectivity
+
+    @connectivity.setter
+    def connectivity(self, value):
+      self._connectivity = value
+
 
 class InFile(str, MSMLPhysicalTop):
     pass

@@ -300,6 +300,13 @@
                             </restriction>
                         </simpleType>
                     </attribute>
+                    <attribute use="optional" default="1" name="hf3_chanceOfContactBoolean">
+                        <simpleType>
+                            <restriction base="int">
+                                <minExclusive value="0"/>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
                     <attribute name="linearSolver">
                         <simpleType>
                             <restriction base="string">

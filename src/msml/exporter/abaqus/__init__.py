@@ -30,23 +30,19 @@ __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 
 import lxml.etree as etree
-from jinja2 import Template
 
-
-from path import path
 from ..base import XMLExporter, Exporter
-from msml.exceptions import *
-import msml.env
-
-#import rdflib
-from msml.exporter.semantic_tools import OntologyParser
-from rdflib import URIRef
-#from rdflib.namespace import RDF
+import msml.model.generated.msmlScene as ms
+import msml.model.generated.abaqus as asc
 
 
-from msml.model import *
+#from msml.model import *
+from msml.io.mapper.mapper import *
+from msml.io.mapper.msml2msml_mapping import *
+from msml.io.mapper.msml2abaqus_mapping import *
 
-from ...log import error, warn, info, fatal, critical, debug
+from ...log import error, info
+
 
 class MSMLAbaqusExporterWarning(MSMLWarning): pass
 
@@ -55,11 +51,13 @@ class AbaqusExporter(XMLExporter):
     def __init__(self, msml_file):
         """
         """
-        self.name = 'AbaqusExporter'
-        Exporter.__init__(self, msml_file)
+        #self.name = 'AbaqusExporter'
+        self.initialize(msml_file, name = "AbaqusExporter", mesh_sort = ("mesh", "Mesh"))
+
+        #Exporter.__init__(self, msml_file)
 
     def init_exec(self, executer):
-        """initialization by the executor, sets memory and executor member
+        """initialization by the executer, sets memory and executor member
          :param executer: msml.run.Executer
          :return:
         """
@@ -91,14 +89,36 @@ class AbaqusExporter(XMLExporter):
 
     def write_inp(self, inpfile):
         assert isinstance(inpfile, file)
-        info(" and rdf lib testing")
 
-        modulepath = path(__file__).dirname()
+        #modulepath = path(__file__).dirname()
 
 
-        parser = OntologyParser(modulepath / 'MSMLOnto.rdf-xml.owl')
-        parser.parse_ontology_from_python_memory(
-            URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
+        #parser = OntologyParser(modulepath / 'MSMLBaseOntology.owl')
+        #modulesDirectory = modulepath / '..' / '..' / 'model' / 'generated'
+        #parser.createPythonModule(modulesDirectory)
+
+        root_source = self._msml_file.scene
+
+
+
+        root_target = ms.Scenario()
+
+        my_mapper = Mapper(Msml2MsmlMapping(self))
+
+        my_mapper.map(root_source, root_target)
+
+        root_a = asc.InputDeck()
+        aMapper = MSMLMapper(MSML2AbaqusMapping())
+        aMapper.map(root_target, root_a)
+
+
+
+
+
+        print('hello')
+
+        #parser.parse_ontology_from_python_memory(
+        #    URIRef('http://www.msml.org/ontology/msmlRepresentation#pythonModelRep'), self._msml_file)
 
         #g=rdflib.Graph()
         #g.load('/home/suwelack/git/MSMLExtended/msml/share/ontology/MSMLOnto.rdf-xml.owl')

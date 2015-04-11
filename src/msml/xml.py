@@ -284,11 +284,14 @@ def msml_file_factory(msml_node):
             return Mesh(t, i, m)
         
         def _parse_contactGeometry(contactGeometry_node):
-            'example:     <contactsurface id="contactSurface" surface="${MovingSurface}"/>'
+            'example:     <contactsurface id="contactSurface" surface="${MovingSurface}" exportFile="moving_contact_surface.vtu"/>'
             t = _tag_name(contactGeometry_node.tag)
             m = contactGeometry_node.attrib['surface']
             i = contactGeometry_node.attrib['id']
-            return ContactGeometry(t, i, m)
+            
+            #check for optional argument 'exportFile' 
+            exportFile = contactGeometry_node.attrib['exportFile'] if 'exportFile' in contactGeometry_node.attrib else ''
+            return ContactGeometry(t, i, m,exportFile)
 
         def _parse_constraints(constraints_node):
             '''example:
@@ -383,8 +386,9 @@ def msml_file_factory(msml_node):
         env = MSMLEnvironment()
 
         solver_node = env_node.find('solver')
-        env.solver.processingUnit = solver_node.get('processingUnit')
+        env.solver.processingUnit = solver_node.get('processingUnit') # NEW.
         env.solver.numParallelProcessesOnCPU = solver_node.get('numParallelProcessesOnCPU')
+        env.solver.hf3_chanceOfContactBoolean = solver_node.get('hf3_chanceOfContactBoolean') # NEW.
         env.solver.linearSolver = solver_node.get('linearSolver')
         env.solver.preconditioner = solver_node.get('preconditioner')
         env.solver.timeIntegration = solver_node.get('timeIntegration')

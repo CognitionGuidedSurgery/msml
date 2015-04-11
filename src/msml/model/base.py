@@ -1193,7 +1193,7 @@ class ContactGeometry(object):
 
     """
 
-    def __init__(self, type="linear", id=None, value=None):
+    def __init__(self, type="linear", id=None, value=None, exportFile=""):
         """
         :param str type: type of the contact surface (one of ``linear``, ``quadratic``)
         :param str id: id of the contact surface 
@@ -1202,6 +1202,7 @@ class ContactGeometry(object):
         self.type = type
         self.id = id
         self.value = value
+        self.exportFile = exportFile
 
     @property
     def surface(self):

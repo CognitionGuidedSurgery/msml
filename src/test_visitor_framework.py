@@ -1,9 +1,11 @@
 __author__ = 'Alexander Weig'
 
+import inspect
+
 import msml.exporter.visitor
 from msml.exporter.visitor import *
 
-import inspect
+
 def f(*args):
     print inspect.stack()[1][3]
 

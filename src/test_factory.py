@@ -80,7 +80,7 @@ with define_scene_of(msml_file) as scene:
     )
 
 if __name__ == "__main__":
-    import msml.model.writer, sys, lxml.etree
+    import msml.io.writer, sys, lxml.etree
 
     tree = msml.model.writer.to_xml(msml_file)
     root = lxml.etree.ElementTree(tree)

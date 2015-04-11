@@ -1,0 +1,379 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY abaqus "http://www.msml.org/ontology/abaqus#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.semanticweb.org/stefan_2/ontologies/2015/1/untitled-ontology-31#"
+     xml:base="http://www.semanticweb.org/stefan_2/ontologies/2015/1/untitled-ontology-31"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:abaqus="http://www.msml.org/ontology/abaqus#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://www.semanticweb.org/stefan_2/ontologies/2015/1/untitled-ontology-31">
+        <owl:imports rdf:resource="http://www.msml.org/ontology/MSML.owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasAssembly -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasAssembly">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasAssembly"/>
+                <owl:onClass rdf:resource="&abaqus;Assembly"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasBoundaryConditionContainer -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasBoundaryConditionContainer">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasBoundaryConditionContainer"/>
+                <owl:onClass rdf:resource="&abaqus;BoundaryConditionContainer"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasFieldOutput -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasFieldOutput">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasFieldOutput"/>
+                <owl:onClass rdf:resource="&abaqus;FieldOutput"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasHistoryOutput -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasHistoryOutput">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasHistoryOutput"/>
+                <owl:onClass rdf:resource="&abaqus;HistoryOutput"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasInstance -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasInstance">
+        <rdfs:domain rdf:resource="&abaqus;Assembly"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasInstance"/>
+                <owl:onClass rdf:resource="&abaqus;Instance"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasMaterialTemplate -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasMaterialTemplate">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasMaterialTemplate"/>
+                <owl:onClass rdf:resource="&abaqus;MaterialTemplate"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasMeshDataObject -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasMeshDataObject">
+        <rdfs:domain rdf:resource="&abaqus;Part"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasMeshDataObject"/>
+                <owl:onClass rdf:resource="http://www.msml.org/ontology/msmlScene#MeshDataObject"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasOutputRequest -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasOutputRequest">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasOutputRequest"/>
+                <owl:onClass rdf:resource="&abaqus;OutputRequest"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasPart -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasPart">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasPart"/>
+                <owl:onClass rdf:resource="&abaqus;Part"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasSection -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasSection">
+        <rdfs:domain rdf:resource="&abaqus;Part"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasSection"/>
+                <owl:onClass rdf:resource="&abaqus;Section"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasIndexSet -->
+
+    <rdf:Description rdf:about="http://www.msml.org/ontology/msmlScene#hasIndexSet">
+        <rdfs:domain rdf:resource="&abaqus;BoundaryCondition"/>
+    </rdf:Description>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasIndexSetContainer -->
+
+    <rdf:Description rdf:about="http://www.msml.org/ontology/msmlScene#hasIndexSetContainer">
+        <rdfs:domain rdf:resource="&abaqus;Assembly"/>
+        <rdfs:domain rdf:resource="&abaqus;Part"/>
+    </rdf:Description>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasElementSetId -->
+
+    <owl:DatatypeProperty rdf:about="&abaqus;hasElementSetId">
+        <rdfs:domain rdf:resource="&abaqus;Section"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasMaterialId -->
+
+    <owl:DatatypeProperty rdf:about="&abaqus;hasMaterialId">
+        <rdfs:domain rdf:resource="&abaqus;Section"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#Assembly -->
+
+    <owl:Class rdf:about="&abaqus;Assembly">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#BoundaryCondition -->
+
+    <owl:Class rdf:about="&abaqus;BoundaryCondition">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#BoundaryConditionContainer -->
+
+    <owl:Class rdf:about="&abaqus;BoundaryConditionContainer">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#DisplacementRotationBoundaryCondition -->
+
+    <owl:Class rdf:about="&abaqus;DisplacementRotationBoundaryCondition">
+        <rdfs:subClassOf rdf:resource="&abaqus;BoundaryCondition"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#FieldOutput -->
+
+    <owl:Class rdf:about="&abaqus;FieldOutput">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#FixedDisplacementBoundaryCondition -->
+
+    <owl:Class rdf:about="&abaqus;FixedDisplacementBoundaryCondition">
+        <rdfs:subClassOf rdf:resource="&abaqus;BoundaryCondition"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#HistoryOutput -->
+
+    <owl:Class rdf:about="&abaqus;HistoryOutput">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#InputDeck -->
+
+    <owl:Class rdf:about="&abaqus;InputDeck">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#ScenarioRoot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#Instance -->
+
+    <owl:Class rdf:about="&abaqus;Instance">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#Material -->
+
+    <owl:Class rdf:about="&abaqus;Material">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#MaterialTemplate -->
+
+    <owl:Class rdf:about="&abaqus;MaterialTemplate">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#OutputRequest -->
+
+    <owl:Class rdf:about="&abaqus;OutputRequest">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#Part -->
+
+    <owl:Class rdf:about="&abaqus;Part">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#PartContainer -->
+
+    <owl:Class rdf:about="&abaqus;PartContainer">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#Section -->
+
+    <owl:Class rdf:about="&abaqus;Section">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#Step -->
+
+    <owl:Class rdf:about="&abaqus;Step">
+        <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.5.0) http://owlapi.sourceforge.net -->
+

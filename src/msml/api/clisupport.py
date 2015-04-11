@@ -183,6 +183,7 @@ def get_arguments(msmlfile):
         1. if `--xml` is set, abort execution and generate CLI XML
         2. else restore stdio channels
 
+    ns = p.parse_args()
 
     .. note: only non-generated variables are exported as cli arguments
 

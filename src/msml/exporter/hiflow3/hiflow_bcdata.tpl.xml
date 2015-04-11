@@ -24,9 +24,9 @@
     "dDisplacements")}}
 
 {{bcentry(data.fp,
-    "ForceOrPressureBCs",
-    "NumberOfForceOrPressureBCPoints",
-    "ForceOrPressureBCPoints",
-    "ForcesOrPressures")}}
+    "NeumannForceBCs",
+    "NumberOfNeumannForceBCs",
+    "nBCPoints",
+    "nBCForce_ScaleAndDirection")}}
   </BCData>
 </Param>

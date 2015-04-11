@@ -34,7 +34,6 @@ __date__ = "2014-03-13"
 import math
 import os
 import random
-
 from path import path
 import lxml.etree as etree
 
@@ -179,7 +178,7 @@ class SofaExporter(XMLExporter):
 
         #daniel: for multi mesh support
         mesh_type = msmlObject.mesh.type
-        mesh_id = (msmlObject.id + "_mesh")
+        mesh_id = self.get_input_mesh_name(msmlObject.mesh) 
         meshFileName = self.working_dir / self.get_value_from_memory(mesh_id)
 
         # TODO currentMeshNode.get("name" )) - having a constant name for our the loader simplifies using it as source for nodes generated later.
@@ -218,7 +217,7 @@ class SofaExporter(XMLExporter):
     def createContactNode(self,objectNode,msmlObject):
         surface_id = (msmlObject.id + "_surface")
         surfaceFileName = self.working_dir / self.get_value_from_memory(surface_id)
-        collisionNode = self.sub("Node",objectNode,name="1")
+        collisionNode = self.sub("Node",objectNode,name="Contact")
         self.sub("MeshVTKLoader", collisionNode,name="LOADER" ,filename=surfaceFileName, createSubelements="0")
         self.sub("MechanicalObject",collisionNode,template="Vec3d", name="dofs",
                                             position="@LOADER.position",velocity="0 0 0",
@@ -229,6 +228,12 @@ class SofaExporter(XMLExporter):
         self.sub("TriangleModelInRegularGrid",collisionNode,template="Vec3d", name="tTriangleModel1")
         self.sub("TLineModel", collisionNode,template="Vec3d")
         self.sub("TPointModel", collisionNode,template="Vec3d")
+        #export contact geometry after simulation, if desired
+        exportFile = msmlObject._contactGeometry.exportFile
+        if(exportFile):            
+            self.sub("VTKExporter", collisionNode, XMLformat="1", edges="0", exportAtEnd="true", exportEveryNumberOfSteps="1",
+                                filename=self.working_dir / exportFile,listening="true", tetras="1",triangles="1")
+ 
 
     def createSolvers(self):
         #TODO: self.get_value_from_memory
@@ -386,7 +391,8 @@ class SofaExporter(XMLExporter):
                                           createSubelements="0",
                                           filename=pressureMesh)         
                         pulseMode = self.get_value_from_memory(constraint, 'pulse')
-
+                        #check if speed argument is given
+                        speedArg = self.get_value_from_memory(constraint,"speed")                       
                     self.sub("MeshTopology", constraintNode,
                              name="SurfaceTopo",
                              position="@%s.position" % vtkLoaderName,
@@ -394,21 +400,45 @@ class SofaExporter(XMLExporter):
 
                     self.sub("MechanicalObject", constraintNode, template="Vec3f", name="surfacePressDOF",
                              position="@SurfaceTopo.position")
-                    p = self.get_value_from_memory(constraint, 'pressure')
-                    if len(p) == 1:
-                        p=p[0] #bad hack to implement the new defintion of surfacePressure (pressure can be vector)
-                    else:
-                        log.error("The SOFA exporter only supports one pressure value for index set")
-                    p_speed = p / 10
-                   
-                    surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
+                    pressureArg = self.get_value_from_memory(constraint, 'pressure')                  
+                    if len(pressureArg) == 1:                       
+                        pressure=pressureArg[0] #bad hack to implement the new definition of surfacePressure (pressure can be vector)
+                        p_speed = pressure / 10
+                        surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
                                                              template="Vec3f",
                                                              name="surfacePressure",
                                                              pulseMode=pulseMode,
                                                              pressureSpeed=p_speed,
                                                              # TODO this is broken
-                                                             pressure=p,
+                                                             pressure=pressure,
                                                              triangleIndices=indices)
+                    else:                   
+                        #workaround for support of surfacePressure as  vector
+                        #each distinct scalar pressure value in surfacePressure-vector gets a custom SurfacePressureForceField-Node
+                        #each Node covers multiple indices, for indices having same pressure value assigned
+                        pressureArg= [round(x,2) for x in pressureArg]
+                         #daniel: speed hack for my contact model       
+                        p_speed = speedArg
+                        sortedPressuresIndices = sorted((e,i) for i,e in enumerate(pressureArg))
+                        values = set(map(lambda x:x[0], sortedPressuresIndices))
+                        pressureGroups = [[y[1] for y in sortedPressuresIndices if y[0]==x] for x in values]                        
+                        valueList = list(values)
+                        for (groupId,pressureGroup) in enumerate(pressureGroups):                             
+                            force = valueList[groupId]  
+                            surfacePressureForceFieldNode = self.sub("SurfacePressureForceField", constraintNode,
+                                                             template="Vec3f",
+                                                             name="surfacePressure_"+str(groupId),
+                                                            pulseMode=pulseMode,
+                                                            pressureSpeed=p_speed,
+                                                           # TODO this is broken
+                                                           pressure=force,
+                                                           triangleIndices=pressureGroup)       
+                     
+                         
+                                         
+                   
+                    
+                    
 
                     self.sub("BarycentricMapping", constraintNode,
                              template=self._processing_unit + ",Vec3f",

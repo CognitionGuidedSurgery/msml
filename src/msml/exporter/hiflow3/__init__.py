@@ -55,9 +55,9 @@ BCDATA_TEMPLATE = jinja_env.get_template("hiflow_bcdata.tpl.xml")
 
 class BcData(object):
     def __init__(self):
-        self.fc = BcDataEntry()
-        self.dc = BcDataEntry()
-        self.fp = BcDataEntry()
+        self.fc = BcDataEntry() # fixed dirichlet constraint
+        self.dc = BcDataEntry() # displacement dirichlet constraint
+        self.fp = BcDataEntry() # force/pressure neumann constraint
 
 
 class BcDataEntry(object):
@@ -145,7 +145,7 @@ class BcDataEntry(object):
 # namedtuple(...) dynamically creates a class -> class constructor.
 Entry = namedtuple("Entry", "mesh bcdata")
 
-# Hiflow supported features
+# Hiflow3-supported features
 
 HIFLOW_FEATURES = frozenset(
     ['object_element_displacement_supported', 'output_supported', 'object_element_mass_supported',
@@ -153,7 +153,7 @@ HIFLOW_FEATURES = frozenset(
      'material_region_supported', 'env_linearsolver_iterativeCG_supported', 'env_preconditioner_None_supported',
      'object_element_linearElasticMaterial_supported', 'sets_elements_supported', 'sets_nodes_supported',
      'sets_surface_supported', 'environment_simulation_steps_supported', 'object_element_fixedConstraint_supported',
-     'env_timeintegration_dynamicImplicitEuler_supported'])
+     'env_timeintegration_dynamicImplicitEuler_supported']) # NOTE: ask Alexander: anything from new stuff to be added here?!
 
 class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
@@ -245,9 +245,10 @@ class HiFlow3Exporter(Exporter):
 
                 indices = self.get_value_from_memory(matregion)
 
-                # TODO: (Nico, 2014-07-11)
-                # build inp-file with correct material region id
-                # (i.e.: hiflow_model.id for every point in indices)
+                # TODO: setup representation of hiflow_model.id for scenarios
+                # where bounding boxes cannot bound material regions.
+                # TODO: build example/test inp-file with correct material region id
+                # (i.e.: hiflow_model.id for every point in indices).
 
                 for material in matregion:
                     if 'linearElasticMaterial' == material.attributes['__tag__']:
@@ -276,7 +277,9 @@ class HiFlow3Exporter(Exporter):
                     # template arguments
                     meshfilename=meshFilename,
                     bcdatafilename=bc_filename,
+                    solverPlatform=self._msml_file.env.solver.processingUnit,
                     numParaProcCPU=self._msml_file.env.solver.numParallelProcessesOnCPU,
+                    hf3_chanceOfContact=self._msml_file.env.solver.hf3_chanceOfContactBoolean,
                     SolveInstationary=SolveInstationary,
                     DeltaT=self._msml_file.env.simulation[0].dt,
                     maxtimestep=maxtimestep,
@@ -285,8 +288,8 @@ class HiFlow3Exporter(Exporter):
                     timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
                     RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
                     RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
-                    # Note: in future, there may be some more, such as CPU/GPU, RefinementLevels, lin/quadElements, ...
-                    # So far, the remaining parameters in HiFlow3Scene.xml-files are chosen to represent a general optimal setting.
+                    # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
+                    # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
                 )
                 fp.write(content)
 
@@ -338,14 +341,14 @@ class HiFlow3Exporter(Exporter):
             indices = self.get_value_from_memory(constraint, "indices")
             points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
             count = len(points) / 3
-            points_str = list_to_hf3(points)
+            points_str = list_to_hf3(points) # TODO: adapt this for non-box-able indices/vertices/facets/cells.
 
             if constraint.tag == "fixedConstraint":
                 bcdata.fc.append(count, points, [0, 0, 0])
             elif constraint.tag == "displacementConstraint":
                 disp_vector = constraint.displacement.split(" ")
                 bcdata.dc.append(count, points, disp_vector)
-            elif constraint.tag == "surfacePressure":
+            elif constraint.tag == "surfacePressure": # TODO?! - would this need to be adapted?!
                 force_vector = constraint.pressure.split(" ")
                 bcdata.fp.append(count, points, force_vector)
 

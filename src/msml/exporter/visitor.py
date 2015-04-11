@@ -51,7 +51,7 @@ import abc
 from path import path
 
 from ..model import *
-from .base import Exporter
+from msml.exporter.base import Exporter
 
 
 class DispatcherWarning(MSMLWarning):

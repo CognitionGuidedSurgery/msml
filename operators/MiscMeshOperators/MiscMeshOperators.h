@@ -107,6 +107,10 @@ namespace MiscMeshOperators
   LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, const char* infile);
   LIBRARY_API  std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstructuredGrid* inputMesh);
 
+  LIBRARY_API  bool ConvertVTKToGenericMesh(std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity, std::string inputMesh);
+  LIBRARY_API  bool ConvertVTKToGenericMesh( std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity,  const char* infile);
+  LIBRARY_API  bool ConvertVTKToGenericMesh( std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity,  vtkUnstructuredGrid* inputMesh);
+
   LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile);
   LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh);
 
@@ -145,9 +149,9 @@ namespace MiscMeshOperators
 															  double margin);
   
   LIBRARY_API std::string ExtractBoundarySurfaceByMaterials(const char* infile, const char* outfile, 
-										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial,
-										 int newMeshMaterial);
+										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial);
 
+  LIBRARY_API std::vector<double> GradientOnSurface(const char* inFile, std::vector<double> values, int steps);
 
 } //end namespace MiscMeshOperators
 } // end namespace MSML

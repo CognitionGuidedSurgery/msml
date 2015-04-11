@@ -202,8 +202,12 @@ class Exporter(object):
                         try:
                             value = const.attributes[para.name]
                         except KeyError:
-                            raise MSMLError(
-                                "parameter %s of constraint %s has not proper value" % (para.name, const.id))
+                            #look for default value, if it is an optional argument, there should be a default value
+                            if(para.default is not None):
+                                value = para.default
+                            #non optional argument or no default value => error
+                            else:
+                                raise MSMLError("parameter %s of constraint %s has not proper value" % (para.name, const.id))
 
                         name = self.get_input_objectelement_name(const, para)
                         self._input[name] = Slot(name, para.physical_type, parent=self)
@@ -215,7 +219,7 @@ class Exporter(object):
 
             #daniel: for multi mesh support
             #cat object id and 'mesh-string to get a unique id in exporter (object id is unique??)
-            mesh_exporter_id = (scene_obj.id + '_mesh')            
+            mesh_exporter_id = self.get_input_mesh_name(scene_obj.mesh)          
             self._input[mesh_exporter_id] = Slot(mesh_exporter_id, self.mesh_sort[0], self.mesh_sort[1],
                                        required=True, parent=self)
             self._attributes[mesh_exporter_id] = parse_attribute_value(scene_obj.mesh.mesh) 
