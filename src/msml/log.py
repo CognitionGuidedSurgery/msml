@@ -30,6 +30,7 @@
 
 """This module provide basic logging facilities in color.
 """
+import contextlib
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-05-05"
@@ -230,3 +231,13 @@ debug     = thread_safe(logger.debug)
 critical  = thread_safe(logger.critical)
 exception = thread_safe(logger.exception)
 fatal     = thread_safe(logger.fatal)
+
+import  decorator
+
+@contextlib.contextmanager
+def timeit(message):
+    import time
+    starttime = time.time()
+    yield starttime
+    endtime = time.time()
+    info("%s took %f s"  % (message, endtime-starttime))

@@ -33,10 +33,8 @@ __date__ = "2014-08-20"
 
 import os
 import os.path
-import urllib2
 import tempfile
 from ..log import error, warn, info, fatal, critical, debug
-import requests
 from .. import log
 
 def xnat_get(filename, resource, project, host=None, subject=None, username=None, password=None, localname=None):
@@ -51,6 +49,8 @@ def xnat_get(filename, resource, project, host=None, subject=None, username=None
     :param localname:
     :return:
     """
+    import requests
+
     username = username or os.environ['XNAT_USER']
     password = password or os.environ['XNAT_PASS']
     host = host or os.environ['XNAT_HOST']
@@ -103,6 +103,7 @@ def xnat_put(localname, resource, project, filename=None, host=None, deleteBefor
     :param _tags:
     :return:
     """
+    import requests
 
     username = username or os.environ['XNAT_USER']
     password = password or os.environ['XNAT_PASS']
