@@ -582,7 +582,7 @@ class App(object):
             c.executor = self.executor
             c.executor_options = self._executor_options
             c.exporter_options = self._exporter_options
-            c.exporter = self.exporter
+            c.exporter = self._exporter
             c.memory = self.memory_init_file
             c.packages = self._packages
             c.repositories = self._repositories

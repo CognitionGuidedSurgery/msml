@@ -74,7 +74,7 @@ consolecatcher._overwrite_stdio()
 import jinja2, clictk
 from msml.frontend import App
 from msml.sortdef import InFile, MSMLListF, MSMLListI, Image
-
+from msml import log
 
 PYTHON = """#!{{python}} -W ignore
 
@@ -83,8 +83,10 @@ PYTHON = """#!{{python}} -W ignore
 
 # This will load the ugly stdout hack and functionalities
 # for producing cli xml + argument parsing
-from msml.api.clisupport import *
 import sys
+sys.path.append("{{msml_src}}")
+from msml.api.clisupport import *
+
 
 # absolute path to MSMLFILE
 MSMLFILE = '{{ filename }}'
@@ -92,7 +94,9 @@ MSMLFILE = '{{ filename }}'
 def main():
     cli_app(MSMLFILE,
         exporter="{{exporter}}",
+        {% if memory_init_file %}
         memory_init_file={{ memory_init_file }},
+        {% endif %}
         packages = {{ packages }},
         repositories = {{ repositories }},
         exporter_options= {{ exporter_options }},
@@ -162,16 +166,20 @@ def cli_app(msmlfile, **kwargs):
     app._prepare_msml_model(mfile)
 
     # grab arguments
-    variables = get_arguments(mfile)
+    try:
+        variables = get_arguments(mfile)
 
-    if isinstance(app.memory_init_file, dict):
-        app.memory_init_file.update(variables)
-    else:
-        app.memory_init_file = variables
+        if isinstance(app.memory_init_file, dict):
+            app.memory_init_file.update(variables)
+        else:
+            app.memory_init_file = variables
 
-    memory = app.execute_msml_file(msmlfile)
+        memory = app.execute_msml_file(msmlfile)
 
-    return memory
+        return memory
+    except:
+        consolecatcher._reset_stdio()
+        raise
 
 
 def get_arguments(msmlfile):
@@ -190,6 +198,7 @@ def get_arguments(msmlfile):
     :param msmlfile:
     :return: a dictionary of MSML variables
     """
+
     exe = generate_cli(msmlfile)
     parser = clictk.build_argument_parser(exe)
     ns = parser.parse_args()
@@ -214,7 +223,13 @@ def get_arguments(msmlfile):
             if issubclass(t.sort.physical, InFile):
                 value = os.path.abspath(value)
 
-            args[n] = conversion(str, t.sort)(value)
+            try:
+                args[n] = conversion(str, t.sort)(value)
+            except TypeError as e:
+                print("Parameter %s missing" % n)
+                log.error("Parameter %s missing: Error", n)
+                sys.exit(1)
+                raise
 
     return args
 
@@ -338,8 +353,13 @@ class GenerateCLIFromMSML(object):
 
     def generate(self, filename, outputfilter):
         template = env.from_string(PYTHON)
+
+        msml_path = os.path.abspath(os.path.dirname(__file__) + "/../../")
+
         with open(filename, 'w') as fp:
             kwargs = dict(self.__dict__)
-            kwargs[filename] = self.msmlfile.filename
+            kwargs['msml_src'] = msml_path
+            kwargs["filename"] = os.path.abspath(self.msmlfile.filename)
+            kwargs["python"] = sys.executable
             fp.write(template.render(**kwargs))
         make_executable(filename)
