@@ -342,7 +342,7 @@ void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh)
 
     //color the polydata elements
 
-    vtkUnstructuredGrid* currentGrid = geom->GetOutput();
+    vtkSmartPointer<vtkUnstructuredGrid> currentGrid = dynamic_cast <vtkUnstructuredGrid*> (geom->GetOutput());
 
     vtkPoints* thePoints = currentGrid->GetPoints();
     vtkCellArray* theCells = currentGrid->GetCells();
