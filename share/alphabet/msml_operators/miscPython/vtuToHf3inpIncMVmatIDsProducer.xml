@@ -1,0 +1,24 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="vtuToHf3inpIncMVmatIDsProducer">
+
+    <runtime>
+        <python module="msml.ext.vtuToHf3inpIncMVmatIDsProducer" function="vtu_To_hf3inp_inc_MV_matIDs_Producer"/>
+    </runtime>
+
+    <input>
+        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+		<arg name="hf3inpFile" logical="object" physical="file" />
+    </output>
+
+    <parameters>
+	    <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk">
+	       </arg>
+        <arg name="outputfilename" logical="object" physical="string">
+	       </arg>
+    </parameters>
+
+</msml:operator>

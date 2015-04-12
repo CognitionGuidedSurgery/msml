@@ -1,0 +1,26 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="mvrBCdataProducer">
+
+    <runtime>
+        <python module="msml.ext.mvrBCdataProducer" function="BCdata_for_Hf3Sim_Producer"/>
+    </runtime>
+
+    <input>
+        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+		<arg name="mvrElastSimBCdata" logical="object" physical="file" />
+    </output>
+
+    <parameters>
+	    <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk">
+	       </arg>
+	    <arg name="ringFilename" logical="object" physical="file.vtk">
+	       </arg>
+        <arg name="outputfilename" logical="object" physical="string">
+	       </arg>
+    </parameters>
+
+</msml:operator>
