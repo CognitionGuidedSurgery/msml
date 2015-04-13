@@ -9,7 +9,9 @@
 #  - vtu file that contains all the data of the
 #    original file with modified coordinates of the points and the 
 #    displacement vector as additional PointData and the strain tensor 
-#    along with the von Mises stress as additional CellData.
+#    along with the von Mises stress (w.r.t. the Lame parameters 
+#    lambda = 28466, mu = 700 for mitral valve tissue, according to 
+#    [Mansi-2012]) as additional CellData.
 # 
 # How to run the script:
 #   python calculator.py ./input/myInput.(p)vtu ./output/myOutput.vtu
@@ -82,8 +84,8 @@ def compute_vonMisesStress_for_MV(inputfilename, outputfilename):
 	calc.AddScalarVariable('Strain_6', 'Strain', 6)
 	calc.AddScalarVariable('Strain_7', 'Strain', 7)
 	calc.AddScalarVariable('Strain_8', 'Strain', 8)
-	calc.SetFunction('sqrt( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))^2 + (2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8))^2 + (2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8))^2 - ( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8)) ) - ( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8)) ) - ( (2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*1400*Strain_3)^2 + (2*1400*Strain_6)^2 + (2*1400*Strain_7)^2) )')
-	calc.SetResultArrayName('vonMisesStress_forMV_mu1400_lambda56933')
+	calc.SetFunction('sqrt( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8))^2 - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*700*Strain_3)^2 + (2*700*Strain_6)^2 + (2*700*Strain_7)^2) )')
+	calc.SetResultArrayName('vonMisesStress_forMV_mu700_lambda28466')
 	calc.Update()
 	
 	print "Computation of displacement vectors, Cauchy strain and vom Mises stress: DONE."
