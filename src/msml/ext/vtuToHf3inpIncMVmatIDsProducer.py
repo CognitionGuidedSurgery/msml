@@ -20,12 +20,16 @@
 #   - upside surfaces on posterior leaflet: matID 18,
 #   - downside surfaces: matID 20.
 
+# NOTE: The result of this script is NOT DETERMINISTIC! This means that it requires
+#       human assessment of the suitability of the results for the simulation algorithm.
 # NOTE: This version of the script uses CellNormals (as opposed to PointNormals).
-# NOTE: possibly use "filter subdivision" to refine mesh, or "smoothing filter"...
+# NOTE: In order to avoid 'blurry' matID-distribution around the interface between
+#       between the leaflets (near the commissure points),
+#       - either use MITK-remeshing results (2 separate leaflets and 1 complete MV inc IDs),
+#       - or possibly use some vtk filter "subdivision" to refine mesh "smoothing"...
 
 # How to run the script:
 #   python vtuToHf3inpIncMVmatIDsProducer.py valve3d_volumeMesh.vtu valve2d_SurfaceIncVertexIDs.vtp outputname_hf3.inp
-#   OLD: python vtuToHf3inpWithBdyFacetMatIDsProducer.py inputfilename.vtu <Integer>
 
 # Author: Nicolai Schoch, EMCL; 2015-04-12.
 # ======================================================================
@@ -61,6 +65,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	# ======================================================================
 	# read in files: -------------------------------------------------------
 	# read in 3d valve
+	# NOTE: ensure that the precedent meshing algorithm (CGAL or similar)
+	#       produces consistent/good results w.r.t. the 'normal glyphs'.
 	vtureader = vtk.vtkXMLUnstructuredGridReader()
 	vtureader.SetFileName(valve3dFilename_)
 	vtureader.Update()
@@ -82,9 +88,9 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	else:
   	  normalsSurface_.SetInput(valve3dSurface_)
 	normalsSurface_.SplittingOn()
-	normalsSurface_.ConsistencyOn()
-	normalsSurface_.AutoOrientNormalsOn()
-	normalsSurface_.ComputePointNormalsOff() # adapt here. On/Off
+	normalsSurface_.ConsistencyOn() # such that on a surface the normals are oriented either 'all' outward OR 'all' inward.
+	normalsSurface_.AutoOrientNormalsOn() # such that normals point outward or inward.
+	normalsSurface_.ComputePointNormalsOff() # adapt here. On/Off.
 	normalsSurface_.ComputeCellNormalsOn()   # adapt here.
 	normalsSurface_.FlipNormalsOff()
 	normalsSurface_.NonManifoldTraversalOn()
@@ -133,7 +139,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	# iterate over the cells of the surface and compare normals ------------
 	for i in range(valve3dSurface_.GetNumberOfCells()):
   	  # get cellId of closest point
-  	  iD = valve3dSurface_.GetCell(i).GetPointId(0) # NOTE: only one (test)point (0) of respective cell?!    ???????
+  	  iD = valve3dSurface_.GetCell(i).GetPointId(0) # NOTE: only one (test)point (0) of respective cell
   	  testPoint = valve3dSurface_.GetPoint(iD)
   	  closestPoint = np.zeros(3)
   	  closestPointDist2 = vtk.mutable(0)

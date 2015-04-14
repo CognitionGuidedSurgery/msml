@@ -33,6 +33,7 @@
         <!-- possibly update with newer stabil version of MSMLalized vtuToHf3inpIncMVmatIDsProducer-Python-Script -->
         
         <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${vtuConverter}" 
+                       ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
                        outputfilename="mvGeometryAnalyticsData.txt"/>
         
         <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${vtuConverter}" 

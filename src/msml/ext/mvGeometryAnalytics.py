@@ -21,10 +21,11 @@ import vtk
 #from .msmlvtk import * # NEEDED?!
 
 
-def mvGeometry_Analyzer(inputfilename, outputfilename):
+def mvGeometry_Analyzer(inputfilename, ringFilename, outputfilename):
 	# ======================================================================
 	# get system arguments -------------------------------------------------
 	ugFilename = inputfilename
+	ringFilename_ = ringFilename
 	outputFilename_ = outputfilename
 	
 	print " "
@@ -35,9 +36,11 @@ def mvGeometry_Analyzer(inputfilename, outputfilename):
 	
 	# ======================================================================
 	# read in files: -------------------------------------------------------
-	# read in 3d valve mesh
-	vtureader = vtk.vtkXMLUnstructuredGridReader()
-	vtureader.SetFileName(ugFilename)
+	# read in 3d valve mesh OR 3d ring mesh
+	####vtureader = vtk.vtkXMLUnstructuredGridReader() # read vtu-MV
+	###vtureader.SetFileName(ugFilename)
+	vtureader = vtk.vtkXMLPolyDataReader() # read vtp-Ring
+	vtureader.SetFileName(ringFilename_)
 	vtureader.Update()
 	uGrid = vtureader.GetOutput()
 	
@@ -52,11 +55,11 @@ def mvGeometry_Analyzer(inputfilename, outputfilename):
 	# (notation: [xmin,xmax, ymin,ymax, zmin,zmax].)
 	bounds = np.zeros(6)
 	uGrid.GetBounds(bounds)
-	# compute point in the middle of top plane
+	# compute point in the middle of top plane; raised by 0.5 * z-length of bounding box.
 	midPtTop = np.zeros(3)
 	midPtTop[0] = center[0]
 	midPtTop[1] = center[1]
-	midPtTop[2] = bounds[5]
+	midPtTop[2] = bounds[5] + 0.5 * (bounds[5]-bounds[4])
 	# compute the average 'radius' of the top plane of the bounding box
 	# compute x/y-distance-from-mid-to-border
 	xDist = midPtTop[0] - bounds[0]

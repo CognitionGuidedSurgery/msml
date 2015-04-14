@@ -89,7 +89,8 @@ def BCdata_for_Hf3Sim_Producer(inputfilename, surfaceMesh, ringFilename, outputf
 	valvePoints_ = np.zeros((2*numberOfAnnulusPtIDs_,3))
 	
 	# Store coordiantes in arrays ---------------------------------------------------------------------------
-	# NOTE: Wenn korrekte Daten von DKFZ vorhanden, dann kann man auch die Arrays VertexIDs durchlaufen und nur die point id speichern ???????
+	# NOTE: Alternatively, instead of a loop over all points and looking for their IDs,
+	#       one could also loop over the array of vertexIDs and get the pointID.
 	# find coordinates of points of ring_
 	for i in range(ring_.GetNumberOfPoints()):
 		if 0 <= int(ringVertexIds_.GetTuple1(i)) and int(ringVertexIds_.GetTuple1(i)) < numberOfAnnulusPtIDs_:
