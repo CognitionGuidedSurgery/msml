@@ -177,6 +177,8 @@ def cli_app(msmlfile, **kwargs):
         memory = app.execute_msml_file(msmlfile)
 
         return memory
+    except SystemExit:
+        pass
     except:
         consolecatcher._reset_stdio()
         raise
@@ -355,7 +357,7 @@ class GenerateCLIFromMSML(object):
         template = env.from_string(PYTHON)
 
         msml_path = os.path.abspath(os.path.dirname(__file__) + "/../../")
-
+        print filename
         with open(filename, 'w') as fp:
             kwargs = dict(self.__dict__)
             kwargs['msml_src'] = msml_path
