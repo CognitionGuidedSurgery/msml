@@ -1,4 +1,7 @@
 # encoding: utf-8
+#
+from __future__ import print_function 
+
 # region gplv3preamble
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
@@ -37,6 +40,7 @@ __date__ = "2014-05-05"
 
 import inspect
 import os.path
+import sys
 
 import logging
 import logging.config
@@ -205,9 +209,14 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("root")
 
+try:
+    logging.config.dictConfig(LOGGING)
+except:
+    print("Could not create logging facility", file=sys.stderr)
+    pass
+
+logger = logging.getLogger("root")
 
 
 
