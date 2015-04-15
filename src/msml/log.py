@@ -241,7 +241,7 @@ critical  = thread_safe(logger.critical)
 exception = thread_safe(logger.exception)
 fatal     = thread_safe(logger.fatal)
 
-import  decorator
+
 
 @contextlib.contextmanager
 def timeit(message):
