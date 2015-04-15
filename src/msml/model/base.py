@@ -36,8 +36,7 @@ from path import path
 
 from .. import log
 from msml.exceptions import *
-from ..sorts import conversion
-from msml.sorts import get_sort
+import msml.sorts as sorts
 
 
 __author__ = "Alexander Weigl"
@@ -495,11 +494,11 @@ class MSMLVariable(object):
             log.fatal(s)
             raise MSMLError(s)
 
-        self.sort = get_sort(self.physical_type, self.logical_type)
+        self.sort = sorts.get_sort(self.physical_type, self.logical_type)
         if not isinstance(self.value, self.sort.physical) and self.value is not None:
             log.info("Need convert value of %s" % self)
             from_type = type(self.value)
-            converter = conversion(from_type, self.sort)
+            converter = sorts.conversion(from_type, self.sort)
             self.value = converter(self.value)
 
     def __str__(self):
