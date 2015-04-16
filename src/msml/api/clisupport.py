@@ -273,12 +273,14 @@ def generate_cli(msmlfile, category="MSML", title=None, description=None,
         if var.name.startswith("gen_") and filter_generated_vars:
             continue
 
-        if var.name.startswith("input"):
+        if var.role == ("input"):
             ch = "input"
-        elif var.name.startswith("output"):
+        elif var.role = ("output"):
             ch = "output"
+        elif var.role = ("param"):
+            ch = "None"
         else:
-            ch = None
+            continue
 
         p = clictk.Parameter(
             var.name,

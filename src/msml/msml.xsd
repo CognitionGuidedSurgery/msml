@@ -245,6 +245,7 @@
                                     <attribute name="value" type="string"/>
                                     <attribute use="optional" name="physical" type="string"/>
                                     <attribute use="optional" name="logical" type="string"/>
+                                    <attribute use="optional" name="role" type="string"/>
                                 </complexType>
                             </element>
                             <element name="file">
@@ -253,6 +254,7 @@
                                     <attribute name="location" type="string"/>
                                     <attribute name="type" type="string"/>
                                     <attribute use="optional" name="format" type="string"/>
+                                    <attribute use="optional" name="role" type="string"/>
                                 </complexType>
                             </element>
                         </choice>
