@@ -30,6 +30,7 @@ __authors__ = 'Stefan Suwelack, Alexander Weigl'
 __license__ = 'GPLv3'
 
 import lxml.etree as etree
+from path import path
 
 from ..base import XMLExporter, Exporter
 import msml.model.generated.msmlScene as ms
@@ -40,6 +41,7 @@ import msml.model.generated.abaqus as asc
 from msml.io.mapper.mapper import *
 from msml.io.mapper.msml2msml_mapping import *
 from msml.io.mapper.msml2abaqus_mapping import *
+from msml.io.mapper.abaqus2string_mapping import *
 
 from ...log import error, info
 
@@ -111,9 +113,16 @@ class AbaqusExporter(XMLExporter):
         aMapper = MSMLMapper(MSML2AbaqusMapping())
         aMapper.map(root_target, root_a)
 
+        stringRoot = list()
+
+        strMapper = MSMLMapper(Abaqus2StringMapping())
+        strMapper.map(root_a, stringRoot)
+
+        finalString = "\n".join(stringRoot)
 
 
 
+        inpfile.write(finalString)
 
         print('hello')
 

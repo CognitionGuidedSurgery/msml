@@ -172,7 +172,7 @@
         <rdfs:range>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&msmlScene;hasIndexSet"/>
-                <owl:onClass rdf:resource="&msmlBase;IndexSet"/>
+                <owl:onClass rdf:resource="&msmlScene;IndexSetDataObject"/>
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:range>
@@ -198,7 +198,6 @@
     <!-- http://www.msml.org/ontology/msmlScene#hasIndexSetData -->
 
     <owl:ObjectProperty rdf:about="&msmlScene;hasIndexSetData">
-        <rdfs:domain rdf:resource="&msmlScene;IndexSetContainer"/>
         <rdfs:range>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&msmlScene;hasIndexSetData"/>

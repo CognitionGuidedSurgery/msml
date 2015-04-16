@@ -1,0 +1,60 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+
+    <workflow>
+        <!-- <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/> -->
+        <!-- ConvertSTLToVTK-Operator not needed anymore -->
+        
+        <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
+                       targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/>
+        <!-- SurfaceToVoxelDataOperator might be replaced by DistanceMapOperator -->
+        
+        <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}" outFilename="mvVolumeSurface.vtk" isoValue="90"/>
+        <!-- vtkMarchingCube might be replaced by Voxel2ContourOperator -->
+        <!-- maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
+        
+        <!-- <ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput) -->
+        <!-- ACVD_Remeshing_Operator / MeshCellNumber_Reduction_Operator -->
+        <!-- ReduceSurfaceMesh/ACVDremeshing-Operator not needed anymore -->
+        
+        <CGALMeshVolumeFromSurface id="aVolumeMesher" meshFilename="mvVolumeMesh3D_CGAL.vtk" surfaceMesh="${aVoxelToContourOperator}"
+                       preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
+                       cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
+                       exude="false"/>
+        
+        <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/>
+        <!-- convertVTKbinaryToVTU -->
+        
+        <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer" inputfilename="${vtuConverter}" 
+                       surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
+                       outputfilename="mvVolumeMesh3D_hf3inp.inp"/>
+        <!-- possibly update with newer stabil version of MSMLalized vtuToHf3inpIncMVmatIDsProducer-Python-Script -->
+        
+        <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${vtuConverter}" 
+                       ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
+                       outputfilename="mvGeometryAnalyticsData.txt"/>
+        
+        <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${vtuConverter}" 
+                       surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
+                       ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
+                       outputfilename="mvrSimBCdata.xml"/>
+        <!-- no suitable AnnuloplastyRing-Input provided by DKFZ yet -->
+        
+        <!-- Simulation_Mgmt_Operator to organize/distribute MV-scenarios-->
+        
+        <!-- EXECUTE_HIFLOW3_SIMULATION -->
+        
+        <!-- pvtu2vtu-Operator -->
+        <!-- pvtu2vtu-Operator not needed anymore -->
+        
+        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" inputfilename="${hf3Simulation}"
+                       outputfilename="mvr_esim_extendedData.vtu"/> -->
+        <!-- How to include simulation results in MSML pipeline?! -->
+        <!-- How to execute script for simulation results of all timesteps (and set according naming w.r.t. ts_)?! -->
+        <!-- VonMisesStressVisualization_PostProcessing_Operator -->
+        
+    </workflow>
+
+</msml:msml>

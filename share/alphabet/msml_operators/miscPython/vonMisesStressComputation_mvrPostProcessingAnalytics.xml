@@ -1,0 +1,22 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="vonMisesStressComputation_mvrPostProcessingAnalytics">
+
+    <runtime>
+        <python module="msml.ext.vonMisesStressComputation_mvrPostProcessingAnalytics" function="compute_vonMisesStress_for_MV"/>
+    </runtime>
+
+    <input>
+        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+		<arg name="mvMeshWithExtendedVonMisesStressData" logical="object" physical="file" />
+    </output>
+
+    <parameters>
+        <arg name="outputfilename" logical="object" physical="string">
+	       </arg>
+    </parameters>
+
+</msml:operator>

@@ -30,7 +30,7 @@
 		    <mesh>
 				<linearTet id="movingMesh" mesh="${MovingForcesSplit}"/>
             </mesh>
-          	<contactsurface id="contactSurface" surface="${MovingSurface}"/>			
+          	<contactsurface id="contactSurface" surface="${MovingSurface}" exportFile="moving_contact_surface.vtu"/>			
 			
 			<sets>	
 				<surfaces>
@@ -51,6 +51,7 @@
 				<constraint name="test" forStep="${initial}">                    
 					<surfacePressureOnMesh mesh="${PressureSurfaceSelected}" indices="${pressureIndices}" 
 					pulse="0"
+					speed="120"
 					pressure="70"/>
 				<fixedConstraint indices="${leftPistonFix}"/>				
                 </constraint>									
@@ -63,7 +64,7 @@
 		    <mesh>
 				<linearTet id="fixedMesh" mesh="${FixedForcesSplit}"/>
             </mesh>
-          	<contactsurface id="contactSurface" surface="${FixedSurface}"/>			
+          	<contactsurface id="contactSurface" surface="${FixedSurface}" exportFile="fixed_contact_surface.vtu"/>			
 			
 			<sets>	
 				<surfaces>

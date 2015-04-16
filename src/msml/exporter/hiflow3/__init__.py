@@ -288,6 +288,11 @@ class HiFlow3Exporter(Exporter):
                     timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
                     RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
                     RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
+                    #
+                    # TODO: include mvGeometryAnalytics-Info (computed in MSML pipeline) here.
+                    # <NeumannBC_upperMVcenterPoint>{84.0, 93.0, 160.0}</NeumannBC_upperMVcenterPoint> <!-- TODO implement this flexibly! -->
+                    # <NeumannBC_avAnnulusRingRadius>23.0</NeumannBC_avAnnulusRingRadius> <!-- TODO implement this flexibly! -->
+                    #
                     # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
                     # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
                 )
