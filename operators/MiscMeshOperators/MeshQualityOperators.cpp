@@ -10,13 +10,18 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellData.h>
+#include <vtkImageData.h>
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLImageDataReader.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkPolyDataReader.h>
 #include <vtkMeshQuality.h>
 #include <vtkVersion.h>
+#include <vtkCell.h>
+#include <vtkCellLocator.h>
+#include <vtkCellCenters.h>
 
 #include "../common/log.h"
 
@@ -130,6 +135,86 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
     };
 
     return results;
+}
+
+void MeasureGeometricalAccuracy(string infile, string source){
+
+	log_debug() << "MeasureTetrahedricMeshQuality" << endl;
+	
+	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader->SetFileName(source.c_str());
+    reader->Update();
+
+    vtkUnstructuredGrid* mesh = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader2 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader2->SetFileName(infile.c_str());
+    reader2->Update();
+
+    vtkUnstructuredGrid* imageData = reader->GetOutput();
+
+	
+	/*vtkSmartPointer<vtkXMLImageDataReader> reader2 =
+    vtkSmartPointer<vtkXMLImageDataReader>::New();
+    reader2->SetFileName(infile.c_str());
+    reader2->Update();
+
+    vtkSmartPointer<vtkImageData> imageData = reader2->GetOutput();*/
+
+	log_debug() << "There are " << imageData->GetNumberOfCells() << " cells." << endl;
+	log_debug() << "There are " << mesh->GetNumberOfCells() << " cells." << endl;
+
+	/*vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New(); 
+  
+	int subId, cellNum; 
+	double *paraCoords = new double[3]; 
+	double *xyzCoords  = new double[3]; 
+	double *vtkcellweights = new double[4]; 
+
+	int NumberOfImageDataVoxels= imageData->GetNumberOfPoints(); 
+
+	for (cellNum = 0; cellNum < NumberOfImageDataVoxels; cellNum++ ) { 
+		
+		subId = imageData->GetCell( cellNum )->GetParametricCenter(paraCoords); 
+		int &subIDadd = subId; 
+		imageData->GetCell(cellNum)->EvaluateLocation(subIDadd, paraCoords, 
+		xyzCoords, vtkcellweights); 
+		points->InsertNextPoint(xyzCoords);
+	}*/
+
+	vtkSmartPointer<vtkCellLocator> cellLocator = 
+	vtkSmartPointer<vtkCellLocator>::New();
+	cellLocator->SetDataSet(imageData);
+	cellLocator->BuildLocator();
+
+
+	vtkSmartPointer<vtkCellCenters> cellCentersFilter = 
+    vtkSmartPointer<vtkCellCenters>::New();
+#if VTK_MAJOR_VERSION <= 5
+  cellCentersFilter->SetInputConnection(imageData->GetProducerPort());
+#else
+  cellCentersFilter->SetInputData(mesh);
+#endif
+  cellCentersFilter->VertexCellsOn();
+  cellCentersFilter->Update();
+	
+
+
+  // Access the cell centers
+  for(vtkIdType i = 0; i < cellCentersFilter->GetOutput()->GetNumberOfPoints(); i++)
+    {
+    double p[3];
+    cellCentersFilter->GetOutput()->GetPoint(i, p);
+    double closestPoint[3];//the coordinates of the closest point will be returned here
+	double closestPointDist2; //the squared distance to the closest point will be returned here
+	vtkIdType cellId; //the cell id of the cell containing the closest point will be returned here
+	int subId; //this is rarely used (in triangle strips only, I believe)
+	cellLocator->FindClosestPoint(p, closestPoint, cellId, subId, closestPointDist2);
+	std::cout << "Coordinates of closest point: " << closestPoint[0] << " " << closestPoint[1] << " " << closestPoint[2] << std::endl;
+	std::cout << "Squared distance to closest point: " << closestPointDist2 << std::endl;
+	std::cout << "CellId: " << cellId << std::endl;
+	//cout << "Point " << i << " : " << p[0] << " , " << p[1] << " , " << p[2] << endl;
+    }
 }
 
 }
