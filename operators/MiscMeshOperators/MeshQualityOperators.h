@@ -35,7 +35,7 @@ LIBRARY_API std::vector<std::string> FillTetQualityMeasureTypeNames(); //alterna
 
 LIBRARY_API MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName);
 LIBRARY_API std::vector<MeshQualityStats> MeasureTetrahedricMeshQuality(std::string infile, std::vector<std::string> qualityMeasureNames);
-LIBRARY_API void MeasureGeometricalAccuracy(std::string infile, std::string source);
+LIBRARY_API void MeasureGeometricalAccuracy(std::string infile, std::string source, bool points);
 }
 }
 
