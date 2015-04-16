@@ -465,7 +465,7 @@ class MSMLVariable(object):
      the exectioner's memory.
     """
 
-    def __init__(self, name, physical=None, logical=None, value=None):
+    def __init__(self, name, physical=None, logical=None, value=None, role=None):
         """creates a variable with the given ``name``, ``logical`` and ``physical`` type and ``value``
 
         The value gets automatic transformed into the physical type.
@@ -485,6 +485,7 @@ class MSMLVariable(object):
         self.physical_type = physical
         self.logical_type = logical
         self.value = value
+        self.role = role
 
         if not self.physical_type and self.value is not None:
             self.physical_type = type(self.value)

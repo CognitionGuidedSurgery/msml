@@ -73,7 +73,7 @@ consolecatcher._overwrite_stdio()
 # loading delayed
 import jinja2, clictk
 from msml.frontend import App
-from msml.sortdef import InFile, MSMLListF, MSMLListI, Image
+from msml.sortdef import InFile, MSMLListF, MSMLListI, Image, VTI
 from msml import log
 
 PYTHON = """#!{{python}} -W ignore
@@ -273,12 +273,14 @@ def generate_cli(msmlfile, category="MSML", title=None, description=None,
         if var.name.startswith("gen_") and filter_generated_vars:
             continue
 
-        if var.name.startswith("input"):
+        if var.role == ("input"):
             ch = "input"
-        elif var.name.startswith("output"):
+        elif var.role == ("output"):
             ch = "output"
+        elif var.role == ("param"):
+            ch = "None"
         else:
-            ch = None
+            continue
 
         p = clictk.Parameter(
             var.name,
@@ -298,6 +300,7 @@ def generate_cli(msmlfile, category="MSML", title=None, description=None,
 # If a sort is missing please add here
 SORT_TO_CLI_TAG = [
     (Image, 'image'),
+    (VTI, "image"),
     (InFile, "file"),
     (int, "integer"),
     (float, "float"),

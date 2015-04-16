@@ -3,14 +3,14 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
   <variables>
-    <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="SegmentationImage3D" physical="file.vtk"/>
+    <var name="segementation_voxel_image" value="case1_T00_labled.vti" logical="SegmentationImage3D" physical="file.vti" role="input"/>
     
     <var name="tet_only_mesh_filename" value="case1_T00_tetmesh.vtk" />
     <var name="combo_mesh_filename" value="case1_T00_mesh_combo.vtk" />
     <var name="surface_pressure" value="50" physical="float" />
     
     <var name="outputDefImageFilename" value="case1_T00_labled_deformed.vti" logical="str" />
-    <var name="outputDefImage" value="case1_T00_labled_deformed.vti" logical="SegmentationImage3D" physical="file.vtk"/>
+    <var name="outputDefImage" value="case1_T00_labled_deformed.vti" logical="SegmentationImage3D" physical="file.vtk" role="output"/>
   </variables>
 
   <scene>

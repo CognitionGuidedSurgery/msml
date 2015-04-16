@@ -204,12 +204,13 @@ def msml_file_factory(msml_node):
             name = get('name')
             physical = get('physical')
             logical = get('logical')
+            role = get('role')
 
             if _tag_name(n_var.tag) == 'var':
-                v = MSMLVariable(name, physical, logical, get('value'))
+                v = MSMLVariable(name, physical, logical, get('value'), role)
 
             if _tag_name(n_var.tag) == 'file':
-                v = MSMLFileVariable(name, physical, logical, get('location'))
+                v = MSMLFileVariable(name, physical, logical, get('location'), role)
 
             vars.append(v)
         return vars
