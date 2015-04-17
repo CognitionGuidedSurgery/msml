@@ -29,7 +29,7 @@
 
 __author__ = 'Alexander Weigl'
 
-from warnings import warn
+from ..log import warn
 
 from msml.exceptions import MSMLUnknownModuleWarning
 
@@ -38,9 +38,5 @@ try:
 
 except ImportError, e:
     import sys
-    warn("Could not import CGALOperatorsPython\n"
-         "This is the C++-Modul. Have you successfully compiled and installed it?\n"
-         "Error is %s\n"
-         "sys.path is %s" % (e, sys.path),
-         MSMLUnknownModuleWarning, 0)
+    warn("Could not import CGALOperatorsPython because %s", e)
 

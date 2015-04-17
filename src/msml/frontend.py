@@ -284,7 +284,7 @@ class App(object):
         self._options = options
 
         self._exporter = options.get("exporter") or exporter
-        self._executor = executor or options.get('executor')
+        self._executor = executor or options.get('executor') or 'sequential'
 
         self._files = options.get('files') or files or list()
         self._additional_alphabet_path = options.get('alphabetdir') or add_search_path or list()
@@ -357,6 +357,8 @@ class App(object):
             log.info("Activate %s", p)
         alpha, bin, py, rc = get_concrete_paths(packages)
 
+        py = clean_paths(py)
+
         for f in rc:
             execfile(f, {'app': self})
 
@@ -364,7 +366,7 @@ class App(object):
         self.additional_alphabet_dir += clean_paths(alpha)
 
         log.debug("Add to Python path: %s", py)
-        sys.path += clean_paths(py)
+        sys.path += py
 
         log.debug("Binary Path %s", bin)
         msml.env.binary_search_path += clean_paths(bin)
@@ -569,6 +571,7 @@ class App(object):
 
 
     def cli(self):
+        # late import because of stdio hack
         from .api import clisupport
 
         for f in self.files:
@@ -579,7 +582,7 @@ class App(object):
             c.executor = self.executor
             c.executor_options = self._executor_options
             c.exporter_options = self._exporter_options
-            c.exporter = self.exporter
+            c.exporter = self._exporter
             c.memory = self.memory_init_file
             c.packages = self._packages
             c.repositories = self._repositories

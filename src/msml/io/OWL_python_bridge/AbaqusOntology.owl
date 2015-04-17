@@ -49,6 +49,21 @@
     
 
 
+    <!-- http://www.msml.org/ontology/abaqus#hasBoundaryCondition -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasBoundaryCondition">
+        <rdfs:domain rdf:resource="&abaqus;BoundaryConditionContainer"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasBoundaryCondition"/>
+                <owl:onClass rdf:resource="&abaqus;Material"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.msml.org/ontology/abaqus#hasBoundaryConditionContainer -->
 
     <owl:ObjectProperty rdf:about="&abaqus;hasBoundaryConditionContainer">
@@ -57,7 +72,7 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&abaqus;hasBoundaryConditionContainer"/>
                 <owl:onClass rdf:resource="&abaqus;BoundaryConditionContainer"/>
-                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:range>
     </owl:ObjectProperty>
@@ -110,15 +125,29 @@
     
 
 
-    <!-- http://www.msml.org/ontology/abaqus#hasMaterialTemplate -->
+    <!-- http://www.msml.org/ontology/abaqus#hasLoad -->
 
-    <owl:ObjectProperty rdf:about="&abaqus;hasMaterialTemplate">
+    <owl:ObjectProperty rdf:about="&abaqus;hasLoad">
         <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
-        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
         <rdfs:range>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="&abaqus;hasMaterialTemplate"/>
-                <owl:onClass rdf:resource="&abaqus;MaterialTemplate"/>
+                <owl:onProperty rdf:resource="&abaqus;hasLoad"/>
+                <owl:onClass rdf:resource="&abaqus;Load"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasMaterial -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasMaterial">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasMaterial"/>
+                <owl:onClass rdf:resource="&abaqus;Material"/>
                 <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
             </owl:Restriction>
         </rdfs:range>
@@ -160,13 +189,28 @@
     <!-- http://www.msml.org/ontology/abaqus#hasPart -->
 
     <owl:ObjectProperty rdf:about="&abaqus;hasPart">
-        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:domain rdf:resource="&abaqus;PartContainer"/>
         <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
         <rdfs:range>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&abaqus;hasPart"/>
                 <owl:onClass rdf:resource="&abaqus;Part"/>
                 <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasPartContainer -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasPartContainer">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasPartContainer"/>
+                <owl:onClass rdf:resource="&abaqus;PartContainer"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:range>
     </owl:ObjectProperty>
@@ -189,10 +233,26 @@
     
 
 
+    <!-- http://www.msml.org/ontology/abaqus#hasStep -->
+
+    <owl:ObjectProperty rdf:about="&abaqus;hasStep">
+        <rdfs:domain rdf:resource="&abaqus;InputDeck"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&abaqus;hasStep"/>
+                <owl:onClass rdf:resource="&abaqus;Step"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:range>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.msml.org/ontology/msmlScene#hasIndexSet -->
 
     <rdf:Description rdf:about="http://www.msml.org/ontology/msmlScene#hasIndexSet">
         <rdfs:domain rdf:resource="&abaqus;BoundaryCondition"/>
+        <rdfs:domain rdf:resource="&abaqus;Section"/>
     </rdf:Description>
     
 
@@ -202,6 +262,22 @@
     <rdf:Description rdf:about="http://www.msml.org/ontology/msmlScene#hasIndexSetContainer">
         <rdfs:domain rdf:resource="&abaqus;Assembly"/>
         <rdfs:domain rdf:resource="&abaqus;Part"/>
+    </rdf:Description>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasIndexSetData -->
+
+    <rdf:Description rdf:about="http://www.msml.org/ontology/msmlScene#hasIndexSetData">
+        <rdfs:domain rdf:resource="http://www.msml.org/ontology/msmlScene#IndexSetContainer"/>
+    </rdf:Description>
+    
+
+
+    <!-- http://www.msml.org/ontology/msmlScene#hasMaterialProperty -->
+
+    <rdf:Description rdf:about="http://www.msml.org/ontology/msmlScene#hasMaterialProperty">
+        <rdfs:domain rdf:resource="&abaqus;Material"/>
     </rdf:Description>
     
 
@@ -220,7 +296,14 @@
     <!-- http://www.msml.org/ontology/abaqus#hasElementSetId -->
 
     <owl:DatatypeProperty rdf:about="&abaqus;hasElementSetId">
-        <rdfs:domain rdf:resource="&abaqus;Section"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasKey -->
+
+    <owl:DatatypeProperty rdf:about="&abaqus;hasKey">
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
@@ -229,7 +312,15 @@
     <!-- http://www.msml.org/ontology/abaqus#hasMaterialId -->
 
     <owl:DatatypeProperty rdf:about="&abaqus;hasMaterialId">
-        <rdfs:domain rdf:resource="&abaqus;Section"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#hasPartId -->
+
+    <owl:DatatypeProperty rdf:about="&abaqus;hasPartId">
+        <rdfs:domain rdf:resource="&abaqus;Instance"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
@@ -318,17 +409,17 @@
     
 
 
-    <!-- http://www.msml.org/ontology/abaqus#Material -->
+    <!-- http://www.msml.org/ontology/abaqus#Load -->
 
-    <owl:Class rdf:about="&abaqus;Material">
+    <owl:Class rdf:about="&abaqus;Load">
         <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
     </owl:Class>
     
 
 
-    <!-- http://www.msml.org/ontology/abaqus#MaterialTemplate -->
+    <!-- http://www.msml.org/ontology/abaqus#Material -->
 
-    <owl:Class rdf:about="&abaqus;MaterialTemplate">
+    <owl:Class rdf:about="&abaqus;Material">
         <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
     </owl:Class>
     
@@ -371,6 +462,28 @@
     <owl:Class rdf:about="&abaqus;Step">
         <rdfs:subClassOf rdf:resource="http://www.msml.org/ontology/msmlScene#IdNode"/>
     </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.msml.org/ontology/abaqus#PartContainer -->
+
+    <owl:NamedIndividual rdf:about="&abaqus;PartContainer">
+        <rdf:type rdf:resource="&abaqus;PartContainer"/>
+        <abaqus:hasKey rdf:datatype="&xsd;string">**
+** PARTS
+**</abaqus:hasKey>
+    </owl:NamedIndividual>
 </rdf:RDF>
 
 

@@ -6,17 +6,17 @@ import types
 from msml.exporter.base import *
 from msml.model.base import *
 
-class Mapper(object):
+class MSMLWriter(object):
     def __init__(self, mapping):
         self._mapping = mapping
         assert isinstance(self._mapping, BaseMapping)
 
-    def map(self, source, target):
+    def map(self, source):
 
-        self.map_recursively(source, source, target, source, target)
+        self.map_recursively(source, source)
 
 
-    def map_recursively(self,current_node, parent_source,parent_target ,source, target):
+    def map_recursively(self,current_node, parent_source,root_source, ):
 
 
         #do not map root scene node, also do not map lists
@@ -49,34 +49,34 @@ class MSMLMapper(Mapper):
 
         #do not map root scene node, also do not map lists
         if type(current_node) != types.ListType:
-            new_parent_target, successorClass = self._mapping.map_element_pre( element=current_node, parent_source=parent_source,parent_target=parent_target, source=source, target=target)
-            if successorClass:
-                successorType = successorClass.__name__
-            else:
-                successorType = None
+            parent_target, successorType = self._mapping.map_element_pre( element=current_node, parent_source=parent_source,parent_target=parent_target, source=source, target=target)
 
         #if current_node is list, then iterate over list
         if isinstance(current_node, list):
             for sub_node in current_node:
-                self.map_recursively(sub_node,parent_source,new_parent_target, source, target)
+                self.map_recursively(sub_node,parent_source,parent_target, source, target)
         else:
             unmapped_children = current_node.get_children()
 
             while unmapped_children:
                 sub_node = None
                 if successorType is not None:
-                    sub_node = next(obj for obj in unmapped_children if type(obj).__name__ == successorType)
+                    sub_node = next(obj for obj in unmapped_children if type(obj) == successorType)
                 else:
                     sub_node = next(iter(unmapped_children))
 
-                successorType = self.map_recursively(sub_node,current_node,new_parent_target, source, target)
+                successorType = self.map_recursively(sub_node,current_node,parent_target, source, target)
                 unmapped_children.remove(sub_node)
 
 
+
+
+
+
+
         if type(current_node) != types.ListType:
-            parent_target, successorClass  = self._mapping.map_element_post( element=current_node, parent_source=parent_source,parent_target=parent_target, source=source, target=target)
-            if successorClass:
-                successorType = successorClass.__name__
+            parent_target, successorType  = self._mapping.map_element_post( element=current_node, parent_source=parent_source,parent_target=parent_target, source=source, target=target)
+
 
         return successorType
 

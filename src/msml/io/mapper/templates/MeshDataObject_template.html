@@ -1,0 +1,5 @@
+*Node
+{% for i in range(vertNumber)%}{{loop.index}},   {{vertices[3*(loop.index-1)]}},    {{vertices[3*(loop.index-1)+1]}},  {{vertices[3*(loop.index-1)+2]}}
+{%endfor%}*Element, type=C3D4H
+{% for size in sizes%}{{loop.index}}{% set outer_index = loop.index-1 %}{% for i in range(size)%},  {{connectivity[size*outer_index+loop.index-1] +1}}{%endfor%}
+{%endfor%}

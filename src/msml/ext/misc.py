@@ -44,5 +44,4 @@ except ImportError, e:
     import sys
     warn("Could not import 'MiscMeshOperatorsPython`. "
          "This is a C++-Modul. "
-         "Have you successfully compiled and installed it? "
          "Error is %s, Current sys.path: %s", e, sys.path)

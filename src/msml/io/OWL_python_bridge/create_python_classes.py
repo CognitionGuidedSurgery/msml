@@ -8,9 +8,9 @@ from msml.io.OWL_python_bridge.semantic_tools import OntologyParser
 modulepath = path(__file__).dirname()
 
 
-parser = OntologyParser(modulepath / 'MSMLBaseOntology.owl')
+#parser = OntologyParser(modulepath / 'MSMLBaseOntology.owl')
 modulesDirectory = modulepath / '..' / '..' / 'model' / 'generated'
-parser.createPythonModule(modulesDirectory)
+#parser.createPythonModule(modulesDirectory)
 
 parser2 = OntologyParser(modulepath / 'AbaqusOntology.owl')
 
