@@ -2,12 +2,51 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
 
+    <variables>
+        <var name="input_mv_surf_mesh" 
+             value="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
+             logical="TriangularSurface" physical="vtp"/>
+        <var name="input_mv_ring" 
+             value="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
+             logical="object" physical="vtp"/>
+    </variables>
+    
+    <scene>
+        <object id="mitralvalve">
+            <mesh>
+                <linearTet id="mvVolMesh" mesh="${aVolumeMesher}"/> <!-- what is this needed for?! -->
+            </mesh>
 
+            <material>
+                <region id="mvMaterial" indices="${aVtuToHf3inpIncMVmatIDsProducer}">
+					<matID matID="10"/>
+                    <linearElasticMaterial youngModulus="4166" poissonRatio="0.488"/> <!-- soft tissue e.g. in heart leaflets -->
+                    <mass name="stdMass" massDensity="1.000"/>
+                </region>
+            </material>
+
+            <constraints>
+				<constraint name="bodyConstraint" forStep="${initial_def_1}">
+					<mvGeometryConstraint name="${anMvGeometryAnalyzer}"/>
+					<!-- <displacementConstraint indices="${AnnulusPointsToBeDisplacedBySewingProcedureToIndexGroup}" displacement="0.0 0.02 0.0"/> -->
+					<displacedPointsConstraint points="${aBCdataForMVRsimProducer.points}" displacements="${aBCdataForMVRsimProducer.displacements}" />
+                    <surfacePressure indices="${leafletsDownsideToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
+                </constraint>
+            </constraints>
+
+            <output>
+                <displacement id="mitralvalve" timestep="1"/>
+            </output>
+        </object>
+    </scene>
+    
     <workflow>
         <!-- <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/> -->
         <!-- ConvertSTLToVTK-Operator not needed anymore -->
         
-        <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
+        <!-- <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
+                       targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/> -->
+        <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${input_mv_surf_mesh}" 
                        targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/>
         <!-- SurfaceToVoxelDataOperator might be replaced by DistanceMapOperator -->
         
@@ -25,26 +64,36 @@
                        exude="false"/>
         
         <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/>
-        <!-- convertVTKbinaryToVTU -->
+        <!-- convertVTKbinaryToVTU probably not needed, since automatic conversion takes place if needed -->
         
-        <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer" inputfilename="${vtuConverter}" 
+        
+        <!-- <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer" inputfilename="${vtuConverter}" 
                        surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
-                       outputfilename="mvVolumeMesh3D_hf3inp.inp"/>
+                       outputfilename="mvVolumeMesh3D_hf3inp.inp"/> -->
+        <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer" inputfilename="${vtuConverter}" 
+                       surfaceMesh="${input_mv_surf_mesh}"/>
         <!-- possibly update with newer stabil version of MSMLalized vtuToHf3inpIncMVmatIDsProducer-Python-Script -->
         
-        <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${vtuConverter}" 
+        <!-- <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${vtuConverter}" 
                        ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
-                       outputfilename="mvGeometryAnalyticsData.txt"/>
+                       outputfilename="mvGeometryAnalyticsData.txt"/> -->
+        <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${vtuConverter}" 
+                       ringFilename="${input_mv_ring}"/>
         
-        <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${vtuConverter}" 
+        <!-- <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${vtuConverter}" 
                        surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
                        ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
-                       outputfilename="mvrSimBCdata.xml"/>
-        <!-- no suitable AnnuloplastyRing-Input provided by DKFZ yet -->
+                       outputfilename="mvrSimBCdata.xml"/> -->
+        <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${vtuConverter}" 
+                       surfaceMesh="${input_mv_surf_mesh}" 
+                       ringFilename="${input_mv_ring}"/>
+        
+        
         
         <!-- Simulation_Mgmt_Operator to organize/distribute MV-scenarios-->
         
         <!-- EXECUTE_HIFLOW3_SIMULATION -->
+        
         
         <!-- pvtu2vtu-Operator -->
         <!-- pvtu2vtu-Operator not needed anymore -->
@@ -56,5 +105,16 @@
         <!-- VonMisesStressVisualization_PostProcessing_Operator -->
         
     </workflow>
+    
+    <environment>
+        <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" hf3_chanceOfContactBoolean="1" 
+                processingUnit="CPU" numParallelProcessesOnCPU="4" 
+                timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
+        <simulation>
+            <step name="initial_implantation_displacement" dt="0.05" iterations="20"/>
+            <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
+            <!-- <step name="subsequent_blood_pressure_and_mv_closing" dt="0.01" iterations="500"/> -->
+        </simulation>
+    </environment>
 
 </msml:msml>

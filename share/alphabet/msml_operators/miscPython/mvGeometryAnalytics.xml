@@ -16,7 +16,7 @@
 
     <parameters>
 	    <arg name="ringFilename" logical="object" physical="file.vtk">
-	       </arg>
+	       </arg> <!-- or: physical="vtp" -->
         <arg name="outputfilename" logical="object" physical="string">
 	       </arg>
     </parameters>

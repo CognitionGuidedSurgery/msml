@@ -7,19 +7,20 @@
     </runtime>
 
     <input>
-        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+        <arg name="volumeMeshFilename" logical="Mesh" physical="vtu"/>
+	    <arg name="surfaceMeshFilename" logical="TriangularSurface" physical="vtp">
+	       </arg>
+	    <arg name="ringFilename" logical="object" physical="vtp">
+	       </arg>
     </input>
 
     <output>
-		<arg name="mvrElastSimBCdata" logical="object" physical="file" />
+		<arg name="points" logical="object" physical="vector.float" />
+		<arg name="displacements" logical="object" physical="vector.float" />
     </output>
 
     <parameters>
-	    <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk">
-	       </arg>
-	    <arg name="ringFilename" logical="object" physical="file.vtk">
-	       </arg>
-        <arg name="outputfilename" logical="object" physical="string">
+        <arg name="outputFilename" logical="object" physical="string">
 	       </arg>
     </parameters>
 

@@ -40,9 +40,10 @@ from numpy import linalg as LA
 import sys
 import vtk
 #from .msmlvtk import * # NEEDED?!
+from msml.log import error,info,debug,critical,fatal
 
 
-def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilename):
+def vtu_To_hf3inp_inc_MV_matIDs_Producer(valve3dinputfilename, valve2dinputfilename):
 	# ======================================================================
 	# Define matIDs --------------------------------------------------------
 	ID_UP = 21 # preliminary result, which gets overwritten by ID_ANT and ID_POST.
@@ -52,15 +53,20 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	
 	# ======================================================================
 	# get system arguments -------------------------------------------------
-	valve3dFilename_ = inputfilename
-	valve2dFilename_ = surfaceMesh
-	outputFilename_ = outputfilename
+	valve3dFilename_ = valve3dinputfilename
+	valve2dFilename_ = valve2dinputfilename
+	outputFilename_ = "my_cool_hf3inp_outputfilename"
 	
 	print " "
 	print "==========================================================================================="
 	print "=== Execute Python script to produce HiFlow3 inp file (incl. matIDs) for MVR-Simulation ==="
 	print "==========================================================================================="
 	print " "
+	#debug(" ")
+	#debug("===========================================================================================")
+	#debug("=== Execute Python script to produce HiFlow3 inp file (incl. matIDs) for MVR-Simulation ===")
+	#debug("===========================================================================================")
+	#debug(" ")
 	
 	# ======================================================================
 	# read in files: -------------------------------------------------------
@@ -123,6 +129,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	normalsValve2dRetrieved_ = normalsValve2d_.GetOutput().GetCellData().GetNormals() # adapt here.
 	
 	print "Reading 3D and 2D-annotated input files: DONE."
+	#debug("Reading 3D and 2D-annotated input files: DONE.")
 	
 	# ======================================================================
 	# initialize cell locator for closest cell search ----------------------
@@ -187,6 +194,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	    counter += 1
 	
 	print "Computing hf3-inp MV matID information: DONE."
+	#debug("Computing hf3-inp MV matID information: DONE.")
 	
 	# ======================================================================
 	# write results to inp file --------------------------------------------
@@ -202,6 +210,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	  s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
 	  f.write(s)
 	
+	list_of_facet_matIDints = list()
+	
 	# write connectivity information of triangles
 	# integer, material id, vertex point ids
 	for i in range(valve3dSurface_.GetNumberOfCells()):
@@ -214,7 +224,10 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	  else:                           # NOTE: "cell_udlr_list_[i] = 0" means "cell on downside".
 	    matId = ID_DOWN
 	  s = str(0) + ' ' + str(matId) + ' tri ' + str(iDs.GetId(0)) + ' ' + str(iDs.GetId(1)) + ' ' + str(iDs.GetId(2)) + '\n'
+	  list_of_matIDints+=[matID, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2)]
 	  f.write(s)
+	
+	list_of_point_matIDints = list()
 	
 	# write connectivity information of tetrahedrons
 	# integer, material id, vertex point ids
@@ -223,6 +236,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	  iDs = cell.GetPointIds()
 	  matId = 10
 	  s = str(0) + ' ' + str(matId) + ' tet ' + str(iDs.GetId(0)) + ' ' + str(iDs.GetId(1)) + ' ' + str(iDs.GetId(2)) + ' ' + str(iDs.GetId(3)) + '\n'
+	  list_of_point_matIDints+=[10, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2), iDs.GetId(3)]
 	  f.write(s)
 	
 	# close stream
@@ -232,3 +246,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(inputfilename, surfaceMesh, outputfilen
 	print "Writing HiFlow3 inp output file (incl. MV matIDs): DONE."
 	print "========================================================"
 	print " "
+	#debug("Writing HiFlow3 inp output file (incl. MV matIDs): DONE.")
+	#debug("========================================================")
+	#debug(" ")
+	
+	return list_of_matIDints, list_of_point_matIDints

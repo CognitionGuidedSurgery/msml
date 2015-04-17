@@ -182,6 +182,7 @@ class Exporter(object):
 
                 for material in mr:
                     assert isinstance(material, ObjectElement)
+                    
                     for para in material.meta.parameters.values():
                         assert isinstance(para, Slot)
                         name = self.get_input_objectelement_name(material, para)

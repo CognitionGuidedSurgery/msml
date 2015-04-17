@@ -1,0 +1,20 @@
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="mvGeometryConstraint" category="constraint"
+              quantity="single">
+
+
+    <description>
+        mv geometry: vector to upper mid point of annulus, and annulus radius; merged into one list of floats.
+    </description>
+
+
+    <parameters>
+
+        <arg name="mvGeometry" physical="vector.float">
+            <meta key="doc" value="mv geometry analytics info to serve as neumann bc constraints"/>
+        </arg>
+
+    </parameters>
+
+</msml:element>

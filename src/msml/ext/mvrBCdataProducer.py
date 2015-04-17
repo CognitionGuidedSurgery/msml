@@ -20,27 +20,36 @@ import numpy as np
 from numpy import linalg as LA
 import sys
 import vtk
-import xml.etree.ElementTree as ET # NEEDED?!
-#from .msmlvtk import * # NEEDED?!
+#from .msmlvtk import * # not needed here; msmlvtk contains some rather specific vtk-functionalities...
+import xml.etree.ElementTree as ET
+from msml.log import error,info,debug,critical,fatal
 
+# TODOs:
+# - delete double function arguments transformation into function variables;
+# - delete print outputs and transform into debug information;
 
-def BCdata_for_Hf3Sim_Producer(inputfilename, surfaceMesh, ringFilename, outputfilename):
+def BCdata_for_Hf3Sim_Producer(volumeMeshFilename, surfaceMeshFilename, ringFilename):
 	# ======================================================================
 	# define number of given annulus point IDs -----------------------------
 	# (see notation/representation of Annuloplasty Rings by DKFZ and corresponding addInfo)
 	numberOfAnnulusPtIDs_ = 16
 	
 	# get system arguments -------------------------------------------------
-	valve3dFilename_ = inputfilename
-	valve2dFilename_ = surfaceMesh
+	valve3dFilename_ = volumeMeshFilename # TODO... delete double 
+	valve2dFilename_ = surfaceMeshFilename
 	ringFilename_ = ringFilename
-	outputFilename_ = outputfilename
+	outputFilename_ = "my_cool_disp_bcdata_outputfilename"
 	
 	print " "
 	print "====================================================================================="
 	print "=== Execute Python script to produce BCdata for the  HiFlow3-based MVR-Simulation ==="
 	print "====================================================================================="
 	print " "
+	#debug(" ")   # ... use Logging-API of MSML (in order to avoid console output if (not) wanted)
+	#debug("=====================================================================================")
+	#debug("=== Execute Python script to produce BCdata for the  HiFlow3-based MVR-Simulation ===")
+	#debug("=====================================================================================")
+	#debug(" ")
 	
 	# ======================================================================
 	# read in files: -------------------------------------------------------
@@ -76,6 +85,7 @@ def BCdata_for_Hf3Sim_Producer(inputfilename, surfaceMesh, ringFilename, outputf
 	ringVertexIds_ = ring_.GetPointData().GetArray('VertexIDs')
 	
 	print "Reading input files: DONE."
+	#debug("Reading input files: DONE.")
 	
 	# ======================================================================
 	# init. tree for closest point search ----------------------------------
@@ -118,6 +128,17 @@ def BCdata_for_Hf3Sim_Producer(inputfilename, surfaceMesh, ringFilename, outputf
 	displacement_ = ringPoints_ - valvePoints_
 	
 	# ======================================================================
+	# Transform points and displacements for HiFlow3-Exporter --------------
+	flatten = lambda l: [item for sublist in l 
+	                          for item in sublist]
+	
+	points = flatten(valvePoints_)
+	displacements = flatten(displacement_)
+	
+	print "Computing Dirichlet displacement BC data: DONE."
+	#debug("Computing Dirichlet displacement BC data: DONE.")
+	
+	# ======================================================================
 	# convert arrays to strings --------------------------------------------
 	valvePointString_ = ""
 	displacementString_ = ""
@@ -132,8 +153,6 @@ def BCdata_for_Hf3Sim_Producer(inputfilename, surfaceMesh, ringFilename, outputf
 			else:
 				valvePointString_ += ","
 				displacementString_ += ","
-	
-	print "Computing BC data: DONE."
 	
 	# ======================================================================
 	# Write BC data to XML file --------------------------------------------
@@ -159,3 +178,8 @@ def BCdata_for_Hf3Sim_Producer(inputfilename, surfaceMesh, ringFilename, outputf
 	print "Writing mvrSimBCdata.xml output file: DONE."
 	print "==========================================="
 	print " "
+	#debug("Writing mvrSimBCdata.xml output file: DONE.")
+	#debug("===========================================")
+	#debug(" ")
+	
+	return points, displacements

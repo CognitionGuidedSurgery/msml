@@ -18,21 +18,27 @@ __author__ = 'schoch'
 import numpy as np
 import sys
 import vtk
-#from .msmlvtk import * # NEEDED?!
+#from .msmlvtk import *  # not needed here; msmlvtk contains some rather specific vtk-functionalities...
+from msml.log import error,info,debug,critical,fatal
 
 
-def mvGeometry_Analyzer(inputfilename, ringFilename, outputfilename):
+def mvGeometry_Analyzer(inputfilename, ringFilename):
 	# ======================================================================
 	# get system arguments -------------------------------------------------
 	ugFilename = inputfilename
 	ringFilename_ = ringFilename
-	outputFilename_ = outputfilename
+	outputFilename_ = "my_cool_mvGeometryAnalytics_outputfilename"
 	
 	print " "
 	print "=================================================================================================="
 	print "=== Execute Python script to analyze MV geometry in order for the HiFlow3-based MVR-Simulation ==="
 	print "=================================================================================================="
 	print " "
+	#debug(" ")
+	#debug("==================================================================================================")
+	#debug("=== Execute Python script to analyze MV geometry in order for the HiFlow3-based MVR-Simulation ===")
+	#debug("==================================================================================================")
+	#debug(" ")
 	
 	# ======================================================================
 	# read in files: -------------------------------------------------------
@@ -69,6 +75,7 @@ def mvGeometry_Analyzer(inputfilename, ringFilename, outputfilename):
 	annulusRadius = avDist
 	
 	print "MV geometry analysis: DONE."
+	#debug("MV geometry analysis: DONE.")
 	
 	# ======================================================================
 	# write results to txt file --------------------------------------------
@@ -85,3 +92,8 @@ def mvGeometry_Analyzer(inputfilename, ringFilename, outputfilename):
 	print "Writing MVgeometryAnalyticsData output file: DONE."
 	print "=================================================="
 	print " "
+	#debug("Writing MVgeometryAnalyticsData output file: DONE.")
+	#debug("==================================================")
+	#debug(" ")
+	
+	return [midPtTop[0], midPtTop[1], midPtTop[2], annulusRadius]

@@ -1,0 +1,20 @@
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="displacedPointsConstraint" category="constraint"
+              quantity="single">
+
+
+    <description>
+        Sets the displacement for specified point coordinates. The displacement vector can either be the same for all points (i.e. one triple) or one displacement vector has to be specified for each point.
+    </description>
+
+    <parameters>
+        <arg name="points" physical="vector.float" logical="PointSet">
+            <meta key="doc" value="Set coordinates of displaced points separated by spaces."/>
+        </arg>
+        <arg name="displacement" physical="ListF" logical="Displacement">
+            <meta key="doc" value="Set the displacement vector of the points. Either provide one displacement for all points (DIM = 3) or a displacement triple for each point (DIM = 3*DIM(indices))."/>
+        </arg>
+    </parameters>
+    
+</msml:element>
