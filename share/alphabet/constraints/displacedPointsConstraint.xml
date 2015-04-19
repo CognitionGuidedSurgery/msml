@@ -12,7 +12,7 @@
         <arg name="points" physical="vector.float" logical="PointSet">
             <meta key="doc" value="Set coordinates of displaced points separated by spaces."/>
         </arg>
-        <arg name="displacement" physical="ListF" logical="Displacement">
+        <arg name="displacements" physical="ListF" logical="Displacement">
             <meta key="doc" value="Set the displacement vector of the points. Either provide one displacement for all points (DIM = 3) or a displacement triple for each point (DIM = 3*DIM(indices))."/>
         </arg>
     </parameters>

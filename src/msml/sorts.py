@@ -418,3 +418,6 @@ try:
     register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
 except:
     log.error("No Conversion VTK to VTU avaaible. Hiflow3 may not useable")
+
+    #debug
+    #register_conversion(VTK, VTU, VTU, 100)

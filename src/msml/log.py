@@ -219,19 +219,21 @@ except:
 logger = logging.getLogger("root")
 
 
+try:
+    from multiprocessing import Lock
+    from functools import wraps
 
-from multiprocessing import Lock
-from functools import wraps
-
-logger_lock = Lock()
-def thread_safe(func):
-    @wraps(func)
-    def acrel(*args, **kwargs):
-        logger_lock.acquire()
-        r = func(*args, **kwargs)
-        logger_lock.release()
-        return r
-    return acrel
+    logger_lock = Lock()
+    def thread_safe(func):
+        @wraps(func)
+        def acrel(*args, **kwargs):
+            logger_lock.acquire()
+            r = func(*args, **kwargs)
+            logger_lock.release()
+            return r
+        return acrel
+except:
+    thread_safe = lambda x: x
 
 error     = thread_safe(logger.error)
 warn      = thread_safe(logger.warn)
