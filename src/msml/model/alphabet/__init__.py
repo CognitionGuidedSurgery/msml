@@ -131,6 +131,7 @@ class Alphabet(object):
             return self._operators[obj]
         elif obj in self._object_attributes:
             return self._object_attributes[obj]
+        log.critical("No element with name %s found in alphabet, but was requested", obj)
         return None
 
     def validate(self):
