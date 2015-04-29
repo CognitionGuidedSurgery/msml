@@ -251,5 +251,6 @@ try:
         interactor.SetRenderWindow(renderer_window)
         interactor.Initialize()
         interactor.Start()
-except:
+except ImportError as e:
     logger.fatal("Could not import vtk python module. Did you install python-vtk?")
+    logger.exception(e)

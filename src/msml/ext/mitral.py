@@ -226,7 +226,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, targe
     return points, displacements
 
 
-def von_mises_stress(surface, target):
+def von_misses_stress(surface, target):
     """Given vtu/pvtu file(s) resulting from an MVR elasticity simulation
     (the solution files hence contain three scalar valued arrays named
     'u0', 'u1' and 'u2' as PointData), this vtk-based python script
