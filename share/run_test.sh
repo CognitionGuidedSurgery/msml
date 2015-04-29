@@ -13,6 +13,8 @@ nosetests -vv --with-coverage  \
 	-w src                     \
 	msmltest
 
+cp -v  msml.log $CIRCLE_ARTICFACTS
+
 error1=$? #save errorlevel 
 
 echo "Submit Result:"
