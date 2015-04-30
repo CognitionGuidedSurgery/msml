@@ -133,6 +133,8 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, targe
     kDTree = vtk.vtkKdTreePointLocator()
     kDTree.SetDataSet(valve3dSurface_)
     kDTree.BuildLocator()
+    
+    annulus_point_ids = 16
 
     # ======================================================================
     # arrays for storage of coordinates of annulus points (and interpolated points) on the MV surface and on the ring -----------------
@@ -545,7 +547,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
         # write point coordinates
         for i in range(valve3d_.GetNumberOfPoints()):
             pt = valve3d_.GetPoint(i)
-            f.write(' '.join(pt))
+            f.write(' '.join(str(pt)))
             f.write("\n")
 
         point_material = list()
