@@ -51,6 +51,12 @@ class FeBioExporter(XMLExporter):
           Args:
            executor (Executer)
         """
+        task = msml_file.workflow.lookup("bonesToIndexGroup")
+        op = task.operator
+        print(op)
+        args = op.parameters
+        num = args.values()[0]
+        print(args.values()[0].sort)
         self.name = 'FeBioExporter'
         self.id = 'FeBioExporter'
         Exporter.__init__(self, msml_file)
@@ -103,6 +109,8 @@ class FeBioExporter(XMLExporter):
 
     def write_feb(self):
         self.node_root = self.createScene()
+        print(self._msml_file.scene)
+    
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
 
@@ -123,14 +131,15 @@ class FeBioExporter(XMLExporter):
 
     def createMeshTopology(self, meshFilename, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-        theInpString = ConvertVTKMeshToFeBioMeshStringPython(meshFilename, msmlObject.id)
+        print(meshFilename);
+        theInpString = ConvertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
+        #print(theInpString);
         self.node_root.append(etree.fromstring(theInpString))
 
     def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
 
         materialNode = self.sub("Material", self.node_root)
-
         for k in range(len(msmlObject.material)):
             assert isinstance(msmlObject.material[k], MaterialRegion)
             indices_key = msmlObject.material[k].indices
@@ -177,8 +186,10 @@ class FeBioExporter(XMLExporter):
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     count += 1
-                    pressure = - float(constraint.pressure)
-                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count),
+                    pressureArg = self.get_value_from_memory(constraint, 'pressure');
+                    pressure = - float(pressureArg[0])
+                    print(pressure)
+                    pressureString = createFeBioPressureOutput(meshFilename, indices_vec, str(count),
                                                                      str(pressure))
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
