@@ -13,7 +13,7 @@ nosetests -vv --with-coverage  \
 	-w src                     \
 	msmltest
 
-cp -v  msml.log $CIRCLE_ARTICFACTS
+#cp -v  msml.log $CIRCLE_ARTIFACTS
 
 error1=$? #save errorlevel 
 
