@@ -343,83 +343,83 @@ namespace MSML{
             return c3t3;
   }
 
-        /**
-           Used by CGALSimplificateSurface
-           Map for storage of edges to be marked as non-removable.
-           Code from: https://doc.cgal.org/4.2/CGAL.CGAL.Triangulated-Surface-Mesh-Simplification/html/Surface_mesh_simplification_2edge_collapse_constrained_polyhedron_8cpp-example.html
-        */
-  class Constrains_map : public boost::put_get_helper<bool,Constrains_map>
-  {
-	public:
-		typedef boost::readable_property_map_tag category;
-		typedef bool value_type;
-		typedef bool reference;
-		typedef boost::graph_traits<Polyhedron const>::edge_descriptor key_type;
-		Constrains_map() : mConstrains(false) {}
-		reference operator[](key_type const& e) const { return e->is_border() || is_constrained(e) ; }
-		void set_is_constrained ( key_type const& e, bool is ) { mConstrains[e]=is; }
-		bool is_constrained( key_type const& e ) const { return mConstrains.is_defined(e) ? mConstrains[e] : false ; }
-	private:
-		CGAL::Unique_hash_map<key_type,bool> mConstrains ;
-  };
+ //       /**
+ //          Used by CGALSimplificateSurface
+ //          Map for storage of edges to be marked as non-removable.
+ //          Code from: https://doc.cgal.org/4.2/CGAL.CGAL.Triangulated-Surface-Mesh-Simplification/html/Surface_mesh_simplification_2edge_collapse_constrained_polyhedron_8cpp-example.html
+ //       */
+ // class Constrains_map : public boost::put_get_helper<bool,Constrains_map>
+ // {
+	//public:
+	//	typedef boost::readable_property_map_tag category;
+	//	typedef bool value_type;
+	//	typedef bool reference;
+	//	typedef boost::graph_traits<Polyhedron const>::edge_descriptor key_type;
+	//	Constrains_map() : mConstrains(false) {}
+	//	reference operator[](key_type const& e) const { return e->is_border() || is_constrained(e) ; }
+	//	void set_is_constrained ( key_type const& e, bool is ) { mConstrains[e]=is; }
+	//	bool is_constrained( key_type const& e ) const { return mConstrains.is_defined(e) ? mConstrains[e] : false ; }
+	//private:
+	//	CGAL::Unique_hash_map<key_type,bool> mConstrains ;
+ // };
 
-  /*
-  Simplificate a mesh using CGALs Triangulated Surface Mesh Simplification
-  (http://doc.cgal.org/latest/Surface_mesh_simplification/index.html#Chapter_Triangulated_Surface_Mesh_Simplification)
-  */
-   const char* CGALSimplificateSurface(const char* inputMeshFile,
-                        const char* outputMeshFile,
-                        int stopnr,
-                        std::vector<double> box = std::vector<double>()) {
-      vtkSmartPointer<vtkPolyData> inputPoly = IOHelper::VTKReadPolyData(inputMeshFile);
-	  Polyhedron polyhedron;
-	  VTKPolydataToCGALPolyhedron_converter(inputPoly, &polyhedron);
+  ///*
+  //Simplificate a mesh using CGALs Triangulated Surface Mesh Simplification
+  //(http://doc.cgal.org/latest/Surface_mesh_simplification/index.html#Chapter_Triangulated_Surface_Mesh_Simplification)
+  //*/
+  // const char* CGALSimplificateSurface(const char* inputMeshFile,
+  //                      const char* outputMeshFile,
+  //                      int stopnr,
+  //                      std::vector<double> box = std::vector<double>()) {
+  //    vtkSmartPointer<vtkPolyData> inputPoly = IOHelper::VTKReadPolyData(inputMeshFile);
+	 // Polyhedron polyhedron;
+	 // VTKPolydataToCGALPolyhedron_converter(inputPoly, &polyhedron);
 
-	  //create stop predicate
-	  CGAL::Surface_mesh_simplification::Count_stop_predicate<Polyhedron> stop(stopnr);
+	 // //create stop predicate
+	 // CGAL::Surface_mesh_simplification::Count_stop_predicate<Polyhedron> stop(stopnr);
 
-	  Constrains_map constrains_map ;
-	  //if box contains exactly six values, use region inside box to mark non-removable edges
-	  if(box.size()==6)
-	  {
-		  int totalEdges=0;
-		  int constrainedEdges=0;
-		  log_debug()<<"bounding box given"<<std::endl;
-		  //iterate over all edges, edges inside box will be marked as non-removable
-		  for(Polyhedron::Halfedge_iterator eb = polyhedron.halfedges_begin(),
-											 ee = polyhedron.halfedges_end() ; eb != ee ; ++ eb )
-		  {
-			  Point currentPoint = eb->vertex()->point();
-			   //test if edge vertex is within box
-			   if( (currentPoint[0]>=box[0]) && (currentPoint[1]>=box[1]) && (currentPoint[2]>=box[2])
-                            && (currentPoint[0]<=box[3]) && (currentPoint[1]<=box[4]) && (currentPoint[2]<=box[5]))
-			   {    //add to map of non-removable edges
-					constrains_map.set_is_constrained(eb,true);
-				    constrainedEdges++;
-			   }
-			   totalEdges++;
-		  }
-		  log_debug()<<"total edges: "<<totalEdges<<" constrained: "<<constrainedEdges<<std::endl;
-	  }
+	 // Constrains_map constrains_map ;
+	 // //if box contains exactly six values, use region inside box to mark non-removable edges
+	 // if(box.size()==6)
+	 // {
+		//  int totalEdges=0;
+		//  int constrainedEdges=0;
+		//  log_debug()<<"bounding box given"<<std::endl;
+		//  //iterate over all edges, edges inside box will be marked as non-removable
+		//  for(Polyhedron::Halfedge_iterator eb = polyhedron.halfedges_begin(),
+		//									 ee = polyhedron.halfedges_end() ; eb != ee ; ++ eb )
+		//  {
+		//	  Point currentPoint = eb->vertex()->point();
+		//	   //test if edge vertex is within box
+		//	   if( (currentPoint[0]>=box[0]) && (currentPoint[1]>=box[1]) && (currentPoint[2]>=box[2])
+  //                          && (currentPoint[0]<=box[3]) && (currentPoint[1]<=box[4]) && (currentPoint[2]<=box[5]))
+		//	   {    //add to map of non-removable edges
+		//			constrains_map.set_is_constrained(eb,true);
+		//		    constrainedEdges++;
+		//	   }
+		//	   totalEdges++;
+		//  }
+		//  log_debug()<<"total edges: "<<totalEdges<<" constrained: "<<constrainedEdges<<std::endl;
+	 // }
 
 
-	  //simplificate mesh
-	  int r = CGAL::Surface_mesh_simplification::edge_collapse
-				(polyhedron,stop,
-				CGAL::vertex_index_map(boost::get(CGAL::vertex_external_index,polyhedron))
-				.edge_index_map (boost::get(CGAL::edge_external_index ,polyhedron))
-				.edge_is_border_map(constrains_map)
-				);
-	  log_debug()<<"Edges removed: "<<r<<std::endl;
-	  //now create polydata-object
-	  vtkSmartPointer<vtkPolyData> vtkpoly = vtkSmartPointer<vtkPolyData>::New();
-	  //convert polyhedron to polydata
-	  CGALPolyhedronToVTKPolydata_converter(&polyhedron, vtkpoly);
+	 // //simplificate mesh
+	 // int r = CGAL::Surface_mesh_simplification::edge_collapse
+		//		(polyhedron,stop,
+		//		CGAL::vertex_index_map(boost::get(CGAL::vertex_external_index,polyhedron))
+		//		.edge_index_map (boost::get(CGAL::edge_external_index ,polyhedron))
+		//		.edge_is_border_map(constrains_map)
+		//		);
+	 // log_debug()<<"Edges removed: "<<r<<std::endl;
+	 // //now create polydata-object
+	 // vtkSmartPointer<vtkPolyData> vtkpoly = vtkSmartPointer<vtkPolyData>::New();
+	 // //convert polyhedron to polydata
+	 // CGALPolyhedronToVTKPolydata_converter(&polyhedron, vtkpoly);
 
-	  //write polydata to disk
-	  bool result = IOHelper::VTKWritePolyData(outputMeshFile,vtkpoly);
-	  return outputMeshFile;
-  }
+	 // //write polydata to disk
+	 // bool result = IOHelper::VTKWritePolyData(outputMeshFile,vtkpoly);
+	 // return outputMeshFile;
+  //}
   /*
   Calculate Subdivision Surface for given mesh.
   (http://doc.cgal.org/latest/Subdivision_method_3/index.html)

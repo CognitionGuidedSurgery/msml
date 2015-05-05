@@ -44,6 +44,6 @@ namespace MSML {
 							 
 	 LIBRARY_API const char* CGALCalculateSubdivisionSurface(const char* infile, const char* targetMeshFilename, int subdivisions, std::string method);
 	 LIBRARY_API const char* ConvertVTKPolydataToCGALPolyhedron(const char *inputMeshFile, const char *outputMeshFile);	 
-	 LIBRARY_API const char* CGALSimplificateSurface(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
+	 // LIBRARY_API const char* CGALSimplificateSurface(const char* inputMeshFile, const char* outputMeshFile, int stopnr,std::vector<double> box);
  }
 }
