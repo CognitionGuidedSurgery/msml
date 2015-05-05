@@ -87,6 +87,8 @@ class FeBioExporter(XMLExporter):
         print cmd
         print("Executing FeBio.")
         os.system(cmd)
+        print("Converting FeBio to VTK.")
+        self.convertToVTK(str(self.meshFile))
         xplt = self.file_name + ".xplt"
         cmd = "%s  %s" % (msml.envconfig.FEBIO_POSTVIEW_EXECUTABLE, xplt)
         os.system(cmd)
@@ -245,7 +247,9 @@ class FeBioExporter(XMLExporter):
         dt = self._msml_file.env.simulation[0].dt
         logfile = str(self.file_name + ".txt");
         print(meshFilename)
-        ConvertFEBToVTK(logfile, iterations, meshFilename)
+        for x in range(1, int(self._msml_file.env.simulation[0].iterations)+ 1):
+            print("Converting Step (FEBio -> VTK): " + str(x))
+            ConvertFEBToVTK(logfile, str(x), meshFilename)
 
     def createScene(self):
         version = "1.2"

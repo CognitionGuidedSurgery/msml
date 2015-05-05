@@ -40,7 +40,7 @@ namespace MSML {
 
 
 void ConvertFEBToVTK(const std::string modelFilename,
-					 const std::string lastStep,
+					 const std::string step,
 					 std::string inputMesh)
 {
 	vtkSmartPointer<vtkPoints> thePointsOutput =
@@ -72,7 +72,7 @@ void ConvertFEBToVTK(const std::string modelFilename,
 				break;
 			}
 			while (ssin >> temp) {
-				if(temp == lastStep) {
+				if(temp == step) {
 					start = true;
 				}
 			}
@@ -98,7 +98,7 @@ void ConvertFEBToVTK(const std::string modelFilename,
     }
     f.close();
 	string::size_type idx = modelFilename.find('.');
-	std::string vtkFile = modelFilename.substr(0, idx) + ".vtk";
+	std::string vtkFile = modelFilename.substr(0, idx) + step + ".vtk";
 	vtkGrid->SetPoints(thePointsOutput);
 	vtkGrid->GetPoints()->Modified();
 	vtkGrid->Modified();
@@ -153,7 +153,7 @@ std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std:
 			out<<"<tet4 id=\""<<i+1<< "\" mat=\"" << indices[i] << "\">";
 			for(int j=0;j<numberOfNodesPerElement;j++)
 			{
-				if(j == numberOfNodesPerElement-1){ //!!
+				if(j == numberOfNodesPerElement-1){
 					out<<currentCellPoints[j]+1;
 				} else{
 					out<<currentCellPoints[j]+1<<",";
@@ -162,7 +162,7 @@ std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std:
 			out<<"</tet4>\n";
 		}
 		/*if(numberOfNodesPerElement == 3) {
-		  out<<"<tri3 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
+		  out<<"<tri3 id=\""<<i+1<< "\" mat=\"" << indices[i] << "\">";
 		  for(int j=0;j<numberOfNodesPerElement;j++)
 		  {
 		  if(j == numberOfNodesPerElement-1){
