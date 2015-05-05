@@ -19,7 +19,7 @@
             </mesh>
 
             <material>
-                <region id="mvMaterial" indices="${aVtuToHf3inpIncMVmatIDsProducer}">
+                <region id="mvMaterial" indices="${aVtuToHf3inpIncMVmatIDsProducer.tet_material}">
                     <materialID matID="10"/>
                     <linearElasticMaterial youngModulus="4166" poissonRatio="0.488"/>
                     <!-- soft tissue e.g. in heart leaflets -->

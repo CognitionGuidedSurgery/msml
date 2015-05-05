@@ -435,7 +435,7 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
 
     def create_bcdata(self, obj, step):
 
-        for constraint in cs.constraints:
+        for constraint in obj.constraints:
             indices = self.get_value_from_memory(constraint, "indices")
             points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
             count = len(points) / 3

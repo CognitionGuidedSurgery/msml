@@ -14,7 +14,7 @@ from .msmlvtk import *
 from msml.log import debug
 
 
-def geometry_analyzer(surface, ring, target="geometry.txt"):
+def geometry_analyzer(surface, ring, target="mvGeometryInfo.txt"):
     """
     Given the 3D volume mesh of a mitral valve, this script computes
     - the bounds of bounding box,
@@ -74,18 +74,14 @@ def geometry_analyzer(surface, ring, target="geometry.txt"):
     if target is not None:
         with open(target, 'w') as f:
             f.write("midPtTop:(%s,%s,%s);\nannulusRadius:%s" % (
-                midPtTop[0], midPtTop[1], midPtTop[2], midPtTop))  # produce outputAnalytics string and write into file
+                midPtTop[0], midPtTop[1], midPtTop[2], annulusRadius))  # produce outputAnalytics string and write into file
 
             debug("Write file %s", target)
 
     return [midPtTop[0], midPtTop[1], midPtTop[2], annulusRadius]
 
 
-# TODOs:
-# - delete double function arguments transformation into function variables;
-# - delete print outputs and transform into debug information;
-
-def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, target="output.vtk"):
+def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvBCdataInfo.txt"): # before: ring, annulus_point_ids=16, target="mvBCdataInfo.txt"):
     """Given the following input data w.r.t. a mitral valve setup:
      - a 3D volume mesh (vtu),
      - a 2D surface mesh representation of the MV segmentation (vtp), and
@@ -134,12 +130,12 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, targe
     kDTree.SetDataSet(valve3dSurface_)
     kDTree.BuildLocator()
     
-    annulus_point_ids = 16
+    number_annulus_point_ids = 16
 
     # ======================================================================
     # arrays for storage of coordinates of annulus points (and interpolated points) on the MV surface and on the ring -----------------
-    ringPoints_ = np.zeros((2 * annulus_point_ids, 3))
-    valvePoints_ = np.zeros((2 * annulus_point_ids, 3))
+    ringPoints_ = np.zeros((2 * number_annulus_point_ids, 3))
+    valvePoints_ = np.zeros((2 * number_annulus_point_ids, 3))
 
     # Store coordiantes in arrays ---------------------------------------------------------------------------
     # NOTE: Alternatively, instead of a loop over all points and looking for their IDs,
@@ -147,29 +143,29 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, targe
     # find coordinates of points of ring_
     for i in range(ring_.GetNumberOfPoints()):
         pos = int(ringVertexIds_.GetTuple1(i))
-        if 0 <= pos < annulus_point_ids:
+        if 0 <= pos < number_annulus_point_ids:
             ringPoints_[pos] = np.array(ring_.GetPoint(i))
 
     # find coordinates of points of valve2d_
     for i in range(valve2d_.GetNumberOfPoints()):
         pos = int(valve2dVertexIds_.GetTuple1(i))
-        if 0 <= pos < annulus_point_ids:
+        if 0 <= pos < number_annulus_point_ids:
             valvePoints_[pos] = np.array(valve2d_.GetPoint(i))
 
     # find closest points to points stored in valvePoints_ on valve3dSurface_ and store (i.e. overwrite) them in valvePoints_
-    for i in range(annulus_point_ids):
+    for i in range(number_annulus_point_ids):
         iD = kDTree.FindClosestPoint(valvePoints_[i])
         kDTree.GetDataSet().GetPoint(iD, valvePoints_[i])
 
     # ======================================================================
     # add additional boundary conditions by linear interpolation -------------------------------------------
     # NOTE: this requires the IDs to be ordered and going around annulus once!!!
-    for i in range(annulus_point_ids):
-        valve_point = 0.5 * (valvePoints_[i] + valvePoints_[(i + 1) % annulus_point_ids])
-        valvePoints_[annulus_point_ids + i] = valve_point
+    for i in range(number_annulus_point_ids):
+        valve_point = 0.5 * (valvePoints_[i] + valvePoints_[(i + 1) % number_annulus_point_ids])
+        valvePoints_[number_annulus_point_ids + i] = valve_point
 
-        ring_point = 0.5 * (ringPoints_[i] + ringPoints_[(i + 1) % annulus_point_ids])
-        ringPoints_[annulus_point_ids + i] = ring_point
+        ring_point = 0.5 * (ringPoints_[i] + ringPoints_[(i + 1) % number_annulus_point_ids])
+        ringPoints_[number_annulus_point_ids + i] = ring_point
 
     # ======================================================================
     # Compute displacements ------------------------------------------------
@@ -189,12 +185,12 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, targe
     # convert arrays to strings --------------------------------------------
     valvePointString_ = ""
     displacementString_ = ""
-    for i in range(2 * annulus_point_ids):
+    for i in range(2 * number_annulus_point_ids):
         for j in range(3):
             valvePointString_ += str(valvePoints_[i][j])
             displacementString_ += str(displacement_[i][j])
             if j == 2:
-                if i < 2 * annulus_point_ids - 1:
+                if i < 2 * number_annulus_point_ids - 1:
                     valvePointString_ += ";"
                     displacementString_ += ";"
             else:
@@ -209,7 +205,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, annulus_point_ids=16, targe
     DisplacementConstraintsBCs = ET.SubElement(BCData, "DisplacementConstraintsBCs")
 
     numberOfDPoints = ET.SubElement(DisplacementConstraintsBCs, "NumberOfDisplacedDirichletPoints")
-    numberOfDPoints.text = str(2 * annulus_point_ids)
+    numberOfDPoints.text = str(2 * number_annulus_point_ids)
 
     dDPoints = ET.SubElement(DisplacementConstraintsBCs, "dDPoints")
     dDPoints.text = valvePointString_
@@ -388,7 +384,7 @@ def get_surface_normals(surface):
     return normals_surface.GetOutput().GetCellData().GetNormals()  # adapt here.
 
 
-def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3inputvalues.inp"):
+def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf3InpInfo.txt"):
     """Given `volume_mesh` and `surface_mesh`
 
     The coordinates of the vertices, the connectivity information of the
@@ -416,7 +412,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
 
     :type surface_mesh: vtk.vtkPolyData
 
-    :return: i do not know what the fuck blah
+    :return: (facets, facet_matIDs, tets, tet_matIDs) # actually not correct yet...?!
 
     ..note::
         The result of this script is NOT DETERMINISTIC! This means that it requires
@@ -433,7 +429,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
 
     .. author::
             Nicolai Schoch, EMCL; 2015-04-12.
-            Alexander Weigl, KIT; 2015-04-19
+            Alexander Weigl, KIT; 2015-04-19.
+            Nicolai Schoch, EMCL; 2015-05-05.
 
     """
 
@@ -460,12 +457,26 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
     # get cell normals
     normalsSurfaceRetrieved_ = get_surface_normals(valve3dSurface_)
 
-
     # read in 2d valve
     valve2d_ = read_polydata(surface_mesh)
 
     # get cell normals
-    normalsValve2dRetrieved_ = get_surface_normals(valve2d_)
+    normalsValve2d_ = vtk.vtkPolyDataNormals()
+    if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+        normalsValve2d_.SetInputData(valve2d_)
+    else:
+        normalsValve2d_.SetInput(valve2d_)
+    normalsValve2d_.SplittingOn()
+    normalsValve2d_.ConsistencyOn()
+    normalsValve2d_.ComputePointNormalsOff() # adapt here.
+    normalsValve2d_.ComputeCellNormalsOn()
+    normalsValve2d_.FlipNormalsOff()
+    normalsValve2d_.NonManifoldTraversalOn()
+    normalsValve2d_.Update()
+    
+    normalsValve2dRetrieved_ = normalsValve2d_.GetOutput().GetCellData().GetNormals() # adapt here.
+    
+    # normalsValve2dRetrieved_ = get_surface_normals(valve2d_) # by Alexander.
 
     # ======================================================================
     # initialize cell locator for closest cell search ----------------------
@@ -477,7 +488,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
 
     # ======================================================================
     # allocate memory for cell_udlr_list_ (up-down-left-right) -------------
-    cell_udlr_list_ = [0] * valve3dSurface_.GetNumberOfCells()
+    # cell_udlr_list_ = [0] * valve3dSurface_.GetNumberOfCells() # by Alexander
+    cell_udlr_list_ = [0 for i in range(valve3dSurface_.GetNumberOfCells())] # by Nico
 
     # ======================================================================
     # iterate over the cells of the surface and compare normals ------------
@@ -535,8 +547,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
     # ======================================================================
     # region write results to inp file
 
-    material_ids = list()
-    points = list()
+    material_ids = list() # NOT NEEDED.
+    points = list() # WRONG! # This actually is facets !!!!!
 
     with  open(target, 'w') as f:
         # write first line
@@ -547,10 +559,13 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
         # write point coordinates
         for i in range(valve3d_.GetNumberOfPoints()):
             pt = valve3d_.GetPoint(i)
-            f.write(' '.join(str(pt)))
-            f.write("\n")
+            f.write(str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2])) # NEW BY NICO.
+            # f.write(' '.join(str(pt)))                                             # changed by Alexander, but does not work? or does it?
+            f.write("\n") # changed by Alexander # NEW BY NICO.
+            # s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'  # old by Nico.
+            # f.write(s)                                                                  # old by Nico.
 
-        point_material = list()
+        point_material = list() # WRONG! # This actually is facet_material !!!!!!!!!
 
         # write connectivity information of triangles
         # integer, material id, vertex point ids
@@ -564,13 +579,18 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
             else:  # NOTE: "cell_udlr_list_[i] = 0" means "cell on downside".
                 matId = ID_DOWN
 
-            f.write("0 %d tri %d %d %d\n" % (
-                matId, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2)))
+            f.write("%d %d tri %d %d %d\n" % (
+                i, matId, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2))) # new by Alexander; corrected by Nico.
 
-            point_material.append(matId)
-            points += (iDs.GetId(0), iDs.GetId(1), iDs.GetId(2))
+            point_material.append(matId) # WRONG!!! - This actually is facet_material !!!!!!!!
+            points += (iDs.GetId(0), iDs.GetId(1), iDs.GetId(2)) # and these are the 3 points on those triangular facets !!!
+            
+            # Old code below here:
+            # s = str(0) + ' ' + str(matId) + ' tri ' + str(iDs.GetId(0)) + ' ' + str(iDs.GetId(1)) + ' ' + str(iDs.GetId(2)) + '\n'
+            # list_of_matIDints+=[matID, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2)]
+            # f.write(s)
 
-        tet_material = list()
+        tet_material = list() # CORRECT!
         tets = list()
 
         # write connectivity information of tetrahedrons
@@ -580,15 +600,20 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="hf3i
             iDs = cell.GetPointIds()
             matId = 10
 
-            f.write("0 %d tri %d %d %d\b" % (
-                matId, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2)))
+            f.write("%d %d tet %d %d %d %d\n" % (
+                i, matId, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2), iDs.GetId(3))) # new by Alexander, corrected by Nico.
 
             tet_material.append(10)
             tets += [iDs.GetId(0), iDs.GetId(1), iDs.GetId(2), iDs.GetId(3)]
+            
+            # Old code below here:
+            # s = str(0) + ' ' + str(matId) + ' tet ' + str(iDs.GetId(0)) + ' ' + str(iDs.GetId(1)) + ' ' + str(iDs.GetId(2)) + ' ' + str(iDs.GetId(3)) + '\n'
+            # list_of_point_matIDints+=[10, iDs.GetId(0), iDs.GetId(1), iDs.GetId(2), iDs.GetId(3)]
+            # f.write(s)
 
         debug("Writing HiFlow3 inp output file (incl. MV matIDs): DONE.")
 
-    return points, tets, point_material, tet_material
+    return points, tets, point_material, tet_material # WRONG names/representations; actually it is (facets, tets, facet_matIDs, tet_matIDs)
 
 
 def vtu_To_Hf3inpWithBdyFacetMatID_Producer(mesh, target, behaviour = 0):
