@@ -53,11 +53,10 @@ void ConvertFEBToVTK(const std::string modelFilename,
 		MSML::IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str());
 
 	vtkGrid->DeepCopy(referenceGrid);
-
 	fstream f;
 	char cstring[256];
 	f.open(modelFilename.c_str(), ios::in);
-	std::string prefix = "*";
+	char prefix ='*';
 	bool start = false;
 	bool started = false;
 
@@ -68,7 +67,7 @@ void ConvertFEBToVTK(const std::string modelFilename,
         int i = 0;
 		stringstream ssin(cstring);
 		std::string temp;
-		if(cstring[0] == '*'){
+		if(cstring[0] == prefix){
 			if(started == true){
 				break;
 			}
@@ -107,7 +106,6 @@ void ConvertFEBToVTK(const std::string modelFilename,
 #if VTK_MAJOR_VERSION < 6
 	vtkGrid->Update();
 #endif
-
 	MSML::IOHelper::VTKWriteUnstructuredGrid(vtkFile.c_str(), vtkGrid);
 }
 

@@ -81,25 +81,15 @@ class FeBioExporter(XMLExporter):
             rootelement.write(febfile, pretty_print=True, encoding='iso-8859-1', xml_declaration=True)
 
     def execute(self):
-        cmd = "febio -i " + self.export_file
+        import msml.envconfig
+        cmd = msml.envconfig.FEBIO_EXECUTABLE + " -i " + self.export_file
         print(os.getcwd());
         print cmd
         print("Executing FeBio.")
         os.system(cmd)
-        print("Converting FeBio to VTK.")
-        self.convertToVTK(str(self.meshFile))
-        #self.postProcessing()
-        cmd = "postview.exe " + self.file_name + ".xplt"
+        xplt = self.file_name + ".xplt"
+        cmd = "%s  %s" % (msml.envconfig.FEBIO_POSTVIEW_EXECUTABLE, xplt)
         os.system(cmd)
-
-    def postProcessing(self):
-        print("Extract all surfaces by material.")
-        extractedVolumeName = "feb_surface.vtk"
-        ExtractAllSurfacesByMaterial(str(self.file_name + ".vtk"), str(extractedVolumeName), False)
-        print("Bladder last step:")
-        bladderVTK = str(extractedVolumeName + "-volume1.vtk")
-        ComputeOrganVolume(bladderVTK)
-        ComputeOrganCrossSectionArea(bladderVTK);
 
     def write_feb(self):
         self.node_root = self.createScene()

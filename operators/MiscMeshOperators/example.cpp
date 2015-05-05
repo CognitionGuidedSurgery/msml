@@ -22,7 +22,7 @@ int main( int argc, char * argv[])
 {
 
   //MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
-	FeBioSupport::ConvertFEBToVTK("C:/MSML/msml/examples/CGALi2vLungs/out_Lungs_new/Lungs_new.txt", "100","C:/MSML/msml/examples/CGALi2vLungs/out_Lungs_new/case1_T00_mesh_combo.vtk");
+  FeBioSupport::ConvertFEBToVTK("C:/Program Files/FEBio2p0/bin/Lungs_new.txt", "100","C:/MSML/msml/examples/CGALi2vLungs/out_Lungs_new/case1_T00_mesh_combo.vtk");
    
 	return EXIT_SUCCESS;
 }
