@@ -51,12 +51,6 @@ class FeBioExporter(XMLExporter):
           Args:
            executor (Executer)
         """
-        task = msml_file.workflow.lookup("bonesToIndexGroup")
-        op = task.operator
-        print(op)
-        args = op.parameters
-        num = args.values()[0]
-        print(args.values()[0].sort)
         self.name = 'FeBioExporter'
         self.id = 'FeBioExporter'
         Exporter.__init__(self, msml_file)
@@ -133,7 +127,6 @@ class FeBioExporter(XMLExporter):
         assert isinstance(msmlObject, SceneObject)
         
         theInpString = ConvertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, self.materialList)
-        #print(theInpString);
         self.node_root.append(etree.fromstring(theInpString))
 
     def createMaterialRegions(self, objectNode, msmlObject):
@@ -146,12 +139,9 @@ class FeBioExporter(XMLExporter):
             matregionId = msmlObject.material[k].id
 
             indices_vec = self.get_value_from_memory(msmlObject.material[k])
-            print(indices_vec)
             max_vec = max(indices_vec)
-            print(max_vec)
             if max_vec >= maxLength:
                 maxLength = max_vec
-            print(maxLength)
             
             #Get all materials
             for i in range(len(msmlObject.material[k])):
@@ -203,7 +193,6 @@ class FeBioExporter(XMLExporter):
                     count += 1
                     pressureArg = self.get_value_from_memory(constraint, 'pressure');
                     pressure = - float(pressureArg[0])
-                    print(pressure)
                     pressureString = createFeBioPressureOutput(meshFilename, indices_vec, str(count),
                                                                      str(pressure))
                     loadNode.append(etree.fromstring(pressureString))

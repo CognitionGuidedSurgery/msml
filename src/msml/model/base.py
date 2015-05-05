@@ -302,7 +302,6 @@ class Workflow(object):
         self._tasks[task.id] = task
 
     def lookup(self, id):
-        self._tasks.get(id, None)
         return self._tasks.get(id, None)
 
     def bind_operators(self, alphabet):
