@@ -94,7 +94,7 @@ class FeBioExporter(XMLExporter):
         os.system(cmd)
         print("Converting FeBio to VTK.")
         self.convertToVTK(str(self.meshFile))
-        self.postProcessing()
+        #self.postProcessing()
         cmd = "postview.exe " + self.file_name + ".xplt"
         os.system(cmd)
 
@@ -131,14 +131,14 @@ class FeBioExporter(XMLExporter):
 
     def createMeshTopology(self, meshFilename, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-        print(meshFilename);
-        theInpString = ConvertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id)
+        
+        theInpString = ConvertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, self.materialList)
         #print(theInpString);
         self.node_root.append(etree.fromstring(theInpString))
 
     def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-
+        maxLength = 0
         materialNode = self.sub("Material", self.node_root)
         for k in range(len(msmlObject.material)):
             assert isinstance(msmlObject.material[k], MaterialRegion)
@@ -146,7 +146,13 @@ class FeBioExporter(XMLExporter):
             matregionId = msmlObject.material[k].id
 
             indices_vec = self.get_value_from_memory(msmlObject.material[k])
-
+            print(indices_vec)
+            max_vec = max(indices_vec)
+            print(max_vec)
+            if max_vec >= maxLength:
+                maxLength = max_vec
+            print(maxLength)
+            
             #Get all materials
             for i in range(len(msmlObject.material[k])):
                 assert isinstance(msmlObject.material[k][i], ObjectElement)
@@ -162,12 +168,21 @@ class FeBioExporter(XMLExporter):
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
             materialRegionNode = self.sub("material", materialNode, id=k + 1, name=matregionId,
-                                          type="isotropic elastic")
+                                          type="neo-Hookean")
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
-
-
+        
+        self.createMaterialLookupTable(maxLength, msmlObject)
+        
+    
+    def createMaterialLookupTable(self, maxLength, msmlObject):
+        self.materialList = [0] * (maxLength + 1)
+        for k in range(len(msmlObject.material)):
+            material_vec = self.get_value_from_memory(msmlObject.material[k])
+            for material in material_vec:
+                self.materialList[material]= k+1
+        
     def createConstraintRegions(self, msmlObject, meshFilename):
         assert isinstance(msmlObject, SceneObject)
         boundaryNode = self.sub("Boundary", self.node_root)
@@ -250,6 +265,7 @@ class FeBioExporter(XMLExporter):
         iterations = str(self._msml_file.env.simulation[0].iterations)
         dt = self._msml_file.env.simulation[0].dt
         logfile = str(self.file_name + ".txt");
+        print(meshFilename)
         ConvertFEBToVTK(logfile, iterations, meshFilename)
 
     def createScene(self):

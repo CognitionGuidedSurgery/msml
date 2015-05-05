@@ -39,9 +39,8 @@ namespace MSML {
     namespace FeBioSupport
     {
         LIBRARY_API void ConvertFEBToVTK(const std::string modelFilename, const std::string lastStep, std::string inputMesh);
-		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName);
-		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshString(std::string inputMesh,  std::string partName);
-
+		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::vector<int> indices);
+		LIBRARY_API std::string ConvertVTKMeshToFeBioMeshString(std::string inputMesh,  std::string partName, std::vector<int> indices);
 		LIBRARY_API std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vector<double> indices, std::string id, std::string pressure);
 		LIBRARY_API std::string createFeBioPressureOutput(std::string inputMesh, std::vector<double> indices, std::string id, std::string pressure);
     }
