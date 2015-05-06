@@ -21,10 +21,10 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-MeshQuality::MeasureGeometricalAccuracy(INPUT("bunny_tets.vtk"),INPUT("bunnyVolumeMeshCGAL.vtk"), true);
+MeshQuality::measureMeshQuality(INPUT("bunny_tets.vtk"),INPUT("bunnyVolumeMeshCGAL.vtk"));
 //MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
-   
-return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
+
 }
 
 

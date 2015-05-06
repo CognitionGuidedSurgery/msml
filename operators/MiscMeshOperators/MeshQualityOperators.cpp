@@ -138,14 +138,64 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
     return results;
 }
 
-void MeasureGeometricalAccuracy(string originalFile, string compareFile, bool points) {
+void measureMeshQuality(std::string infile, std::string source){
+	vtkSmartPointer<vtkXMLImageDataReader> reader =
+    vtkSmartPointer<vtkXMLImageDataReader>::New();
+    reader->SetFileName(infile.c_str());
+    reader->Update();
 
-	log_debug() << "MeasureTetrahedricMeshQuality" << endl;
+    vtkSmartPointer<vtkImageData> imageData = reader->GetOutput();
+
+	/*vtkSmartPointer<vtkCellCenters> cellCentersFilterOriginalMesh = 
+    vtkSmartPointer<vtkCellCenters>::New();
+#if VTK_MAJOR_VERSION <= 5
+  cellCentersFilterOriginalMesh->SetInputConnection(imageData->GetProducerPort());
+#else
+	cellCentersFilterOriginalMesh->SetInputData(imageData);
+#endif
+  cellCentersFilterOriginalMesh->VertexCellsOn();
+  cellCentersFilterOriginalMesh->Update();
+
+  vtkSmartPointer<vtkCellCenters> cellCentersFilterCompareMesh = 
+    vtkSmartPointer<vtkCellCenters>::New();
+#if VTK_MAJOR_VERSION <= 5
+  cellCentersFilterCompareMesh->SetInputConnection(imageData->GetProducerPort());
+#else
+	cellCentersFilterCompareMesh->SetInputData(imageData);
+#endif
+  cellCentersFilterCompareMesh->VertexCellsOn();
+  cellCentersFilterCompareMesh->Update();*/
+
+	double center[3] = {0,0,0};
+	for(vtkIdType cellId = 0; cellId < imageData->GetNumberOfCells(); ++cellId)
+	{
+	GetCellCenter(imageData, cellId, center);
+ 
+	std::cout << "Cell " << cellId << " center: " << center[0] << " " 
+				<< center[1] << " " << center[2] << std::endl;
+	}
+
+
+
+}
+
+void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3])
+{
+  double pcoords[3] = {0,0,0};
+  double *weights = new double [imageData->GetMaxCellSize()];
+  vtkCell* cell = imageData->GetCell(cellId);
+  int subId = cell->GetParametricCenter(pcoords);
+  cell->EvaluateLocation(subId, pcoords, center, weights);
+}
+
+void  calculateHausdorffDistance(string originalFile, string compareFile, bool points) {
+
+	log_debug() << "calculateHausdorffDistance" << endl;
 	
 	double relativeDistance0 =0.0;
 	double relativeDistance1 =0.0;
 	double hausdorffDistance =0.0;
-  
+	
 	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
     reader->SetFileName(originalFile.c_str());
     reader->Update();
@@ -157,13 +207,6 @@ void MeasureGeometricalAccuracy(string originalFile, string compareFile, bool po
     reader2->Update();
 
     vtkUnstructuredGrid* compareMesh = reader2->GetOutput();
-
-	/*vtkSmartPointer<vtkXMLImageDataReader> reader2 =
-    vtkSmartPointer<vtkXMLImageDataReader>::New();
-    reader2->SetFileName(infile.c_str());
-    reader2->Update();
-
-    vtkSmartPointer<vtkImageData> imageData = reader2->GetOutput();*/
 
 	vtkSmartPointer<vtkCellLocator> cellLocatorOriginalMesh = 
 	vtkSmartPointer<vtkCellLocator>::New();
@@ -192,26 +235,6 @@ void MeasureGeometricalAccuracy(string originalFile, string compareFile, bool po
 	pointLocatorOriginal->BuildLocator();
 	pointLocatorCompare->SetDataSet(compareMesh);
 	pointLocatorCompare->BuildLocator();
-	
-	/*vtkSmartPointer<vtkCellCenters> cellCentersFilterOriginalMesh = 
-    vtkSmartPointer<vtkCellCenters>::New();
-#if VTK_MAJOR_VERSION <= 5
-  cellCentersFilterOriginalMesh->SetInputConnection(imageData->GetProducerPort());
-#else
-	cellCentersFilterOriginalMesh->SetInputData(compareMesh);
-#endif
-  cellCentersFilterOriginalMesh->VertexCellsOn();
-  cellCentersFilterOriginalMesh->Update();
-
-  vtkSmartPointer<vtkCellCenters> cellCentersFilterCompareMesh = 
-    vtkSmartPointer<vtkCellCenters>::New();
-#if VTK_MAJOR_VERSION <= 5
-  cellCentersFilterCompareMesh->SetInputConnection(imageData->GetProducerPort());
-#else
-	cellCentersFilterCompareMesh->SetInputData(compareMesh);
-#endif
-  cellCentersFilterCompareMesh->VertexCellsOn();
-  cellCentersFilterCompareMesh->Update();*/
 
 	  double p[3];
 	  double closestPoint[3];
