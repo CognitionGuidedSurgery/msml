@@ -73,6 +73,8 @@
 
         <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/>
         <!-- convertVTKbinaryToVTU probably not needed, since automatic conversion takes place if needed -->
+        <!-- currently two (double) files are in the out-folder -->
+        <!-- later update "volume"-tag in the below vtuToHf3inpIncMVmatIDsProducer/mvGeometryAnalytics/mvrBCdataProducer with "${aVolumeMesher}" -->
 
 
         <!-- <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer" inputfilename="${vtuConverter}" 

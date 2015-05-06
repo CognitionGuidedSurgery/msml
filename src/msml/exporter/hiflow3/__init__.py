@@ -267,9 +267,9 @@ class HiFlow3Exporter(Exporter):
 
                     if 'mass' == material.attributes['__tag__']:
                         hiflow_model.density = material.attributes['massDensity']
-
-                    if 'mvGeometry' == material.attributes['__tag__']:
-                        hiflow_model.mvgeometry = material.attributes['mvGeometry']
+                    #
+                    #if 'mvGeometry' == material.attributes['__tag__']:
+                    #    hiflow_model.mvgeometry = material.attributes['mvGeometry']
 
             maxtimestep = self._msml_file.env.simulation[0].iterations
 
@@ -297,7 +297,7 @@ class HiFlow3Exporter(Exporter):
                               RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
                               RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
                               #
-                              # TODO: include mvGeometryAnalytics-Info (computed in MSML pipeline) here.
+                              # TODO: include mvGeometryAnalytics-Info (computed in MSML pipeline) at this point of the specific mitral-hiflow3-exporter.
                               # therefore call mvGeometryAnalyzer-script from HiFlow3-exporter!!!
                               # <NeumannBC_upperMVcenterPoint>{84.0, 93.0, 160.0}</NeumannBC_upperMVcenterPoint> <!-- TODO implement this flexibly! -->
                               # <NeumannBC_avAnnulusRingRadius>23.0</NeumannBC_avAnnulusRingRadius> <!-- TODO implement this flexibly! -->
@@ -324,7 +324,7 @@ class HiFlow3Exporter(Exporter):
             for step in self._msml_file.env.simulation:
                 filename = '%s_%s_%s.bc.xml' % (self._msml_file.filename.namebase, obj.id, step.name)
                 data = self.create_bcdata(obj, step.name)
-                # add priority of mvrBCdataProducer.py here. # TODO.
+                # TODO: add priority of mvrBCdataProducer.py at this point in special mitral-hiflow-Exporter.
                 # TODO: call BCdata_for_Hf3Sim_Producer()
                 # TODO: call BCdata_for_Hf3Sim_Extender()
                 content = BCDATA_TEMPLATE.render(data=data)
@@ -385,14 +385,17 @@ class HiFlow3Exporter(Exporter):
 
 class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but newly defines create_scenes(), etc.
     """
-
+    This class specifies the standard HiFlow3-Exporter for its use for Mitral Valve simulations.
+    It therefore includes specific information on the geometry and simulation setup,
+    which is retrieved during the preprocessing workflow/pipeline.
     """
     def create_scenes(self):
 
-        # TODO: include vtu2hf3inpIncMatIDs-Producer-Script (so far part of MSML workflow) INTO exporter,
-        # in order to thus compute Index-Sets, here, too.
+        # TODO: include informatoin from vtu2hf3inp_inc_MatIDs_Producer-Script (as part of the MSML workflow)
+        # into the exporter, in order to thus compute Index-Sets, etc. here, such that they are available for 
+        # both the HiFlow3-Exporter and other Exporters, too.
 
-        # list_of_matIDints, list_of_point_matIDints # TODO include this
+        # list_of_matIDints, list_of_point_matIDints # TODO include this # TODO?!?!?!
 
         self.hf3_parameters = dict(
             hf3_chanceOfContact=True,
@@ -415,7 +418,7 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
         # (representing annuloplasty ring implantation)
         # - use BCdataNBC-Extender to find chordae-pull-force-constraints
         # (representing the pulling chordae during leaflets movement)
-        #  #### TODO TODO TODO: adapt this / implement this !!!
+        #  #### TODO TODO TODO: include and adapt this here !!!
 
         def create():
             for step in self._msml_file.env.simulation:
@@ -423,7 +426,7 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
                 data = self.create_bcdata(obj, step.name)
                 # TODO: add priority of mvrBCdataProducer.py here. # TODO.
                 # call BCdata_for_Hf3Sim_Producer()
-                points, displacements
+                points, displacements # what?!             ????????????????
                 # TODO: call BCdata_for_Hf3Sim_Extender()
                 content = BCDATA_TEMPLATE.render(data=data)
                 with open(filename, 'w') as h:
@@ -436,8 +439,9 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
     def create_bcdata(self, obj, step):
 
         for constraint in obj.constraints:
-            indices = self.get_value_from_memory(constraint, "indices")
-            points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
+            # indices = self.get_value_from_memory(constraint, "indices")
+            # points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
+            points = self.get_value_from_memory(constraint, 'points') # NEW 2015-05-05.
             count = len(points) / 3
             points_str = list_to_hf3(points)
             # TODO: adapt this for non-box-able indices/vertices/facets/cells.
