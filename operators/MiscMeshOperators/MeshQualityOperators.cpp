@@ -139,12 +139,24 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
 }
 
 void measureMeshQuality(std::string infile, std::string source){
+	
 	vtkSmartPointer<vtkXMLImageDataReader> reader =
     vtkSmartPointer<vtkXMLImageDataReader>::New();
     reader->SetFileName(infile.c_str());
     reader->Update();
 
     vtkSmartPointer<vtkImageData> imageData = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader2 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader2->SetFileName( source.c_str());
+    reader2->Update();
+
+    vtkUnstructuredGrid* compareMesh = reader2->GetOutput();
+
+	vtkSmartPointer<vtkCellLocator> cellLocatorCompareMesh = 
+	vtkSmartPointer<vtkCellLocator>::New();
+	cellLocatorCompareMesh->SetDataSet(compareMesh);
+	cellLocatorCompareMesh->BuildLocator();
 
 	/*vtkSmartPointer<vtkCellCenters> cellCentersFilterOriginalMesh = 
     vtkSmartPointer<vtkCellCenters>::New();
@@ -166,17 +178,23 @@ void measureMeshQuality(std::string infile, std::string source){
   cellCentersFilterCompareMesh->VertexCellsOn();
   cellCentersFilterCompareMesh->Update();*/
 
+	//cout<<imageData->GetNumberOfCells();
+	double closestPoint[3];
+	double closestPointDist; 
+	vtkIdType cellIdMesh; 
+	int subId; 
+	int diffCellCounter;
 	double center[3] = {0,0,0};
 	for(vtkIdType cellId = 0; cellId < imageData->GetNumberOfCells(); ++cellId)
 	{
-	GetCellCenter(imageData, cellId, center);
- 
-	std::cout << "Cell " << cellId << " center: " << center[0] << " " 
-				<< center[1] << " " << center[2] << std::endl;
+		cout<<cellId << endl;
+		GetCellCenter(imageData, cellId, center);
+		cellLocatorCompareMesh->FindClosestPoint(center,closestPoint,cellIdMesh,subId,closestPointDist);
+		if(cellId != cellIdMesh){
+			diffCellCounter++;
+		}
 	}
-
-
-
+	std::cout <<  diffCellCounter<<  std::endl;
 }
 
 void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3])
