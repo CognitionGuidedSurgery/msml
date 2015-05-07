@@ -2,13 +2,9 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TriangularSurface"
-             physical="file.vtk"/>
-    <var name="dispVar" value="0 0 0.1" logical="Displacement"
-             physical="vector.float"/>
-    <var name="indicesTest" value="1 2 3" logical="IndexSet"
-             physical="vector.int"/>
-    <var name="resultMesh" value="referenceDisp.vtu"   physical="file.vtk"/>
+        <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TetrahedralVolumeMesh" physical="file.vtk"/>
+    <var name="dispVar" value="0 0 5" logical="Displacement" physical="vector.float"/>
+    <var name="resultMesh" value="referenceDisp.vtu" physical="file.vtk"/>
     </variables>
 
 
@@ -18,19 +14,9 @@
                 <linearTet id="liver" mesh="${vol_mesh}"/>
             </mesh>
 
-            <sets>
-                <nodes>
-                    <indexgroup id="constraintRegion" indices="${rightFaceGroup}"/>
-                </nodes>
-                <elements>
-                    <indexgroup id="bodyRegion" indices="${bodyToIndexGroup}"/>
-                </elements>
-            </sets>
-
-
             <material>
                 <region id="liverMaterial" indices="${bodyToIndexGroup}">
-                    <linearElasticMaterial youngModulus="300" poissonRatio="0.49"/>
+                    <linearElasticMaterial youngModulus="300" poissonRatio="0.40"/>
                     <mass name="abc" massDensity="1"/>
                 </region>
             </material>
