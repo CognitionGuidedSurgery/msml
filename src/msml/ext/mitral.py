@@ -613,7 +613,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
 
         debug("Writing HiFlow3 inp output file (incl. MV matIDs): DONE.")
 
-    return points, tets, point_material, tet_material # WRONG names/representations; actually it is (facets, tets, facet_matIDs, tet_matIDs)
+    return target, points, tets, point_material, tet_material # WRONG names/representations; actually it is (facets, tets, facet_matIDs, tet_matIDs)
 
 
 def vtu_To_Hf3inpWithBdyFacetMatID_Producer(mesh, target, behaviour = 0):

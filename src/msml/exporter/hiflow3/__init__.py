@@ -279,10 +279,14 @@ class HiFlow3Exporter(Exporter):
                 SolveInstationary = 0
 
             # print os.path.abspath(hf3_filename), "!!!!!!"
-
+            mvgeometry = self.get_value_from_memory(msmlObject.constraints[0].constraints[0], "mvGeometry")
             with open(hf3_filename, 'w') as fp:
                 values = dict(hiflow_material_models=hiflow_material_models,
                               # template arguments
+                              mvgeometryX=mvgeometry[0],
+                              mvgeometryY=mvgeometry[1],
+                              mvgeometryZ=mvgeometry[2],
+                              mvgeometryRadius=mvgeometry[3],
                               meshfilename=meshFilename,
                               bcdatafilename=bc_filename,
                               solverPlatform=self._msml_file.env.solver.processingUnit,
@@ -426,7 +430,7 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
                 data = self.create_bcdata(obj, step.name)
                 # TODO: add priority of mvrBCdataProducer.py here. # TODO.
                 # call BCdata_for_Hf3Sim_Producer()
-                points, displacements # what?!             ????????????????
+                # points, displacements # what?!             ????????????????
                 # TODO: call BCdata_for_Hf3Sim_Extender()
                 content = BCDATA_TEMPLATE.render(data=data)
                 with open(filename, 'w') as h:
@@ -437,23 +441,16 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
 
 
     def create_bcdata(self, obj, step):
-
-        for constraint in obj.constraints:
-            # indices = self.get_value_from_memory(constraint, "indices")
-            # points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
-            points = self.get_value_from_memory(constraint, 'points') # NEW 2015-05-05.
-            count = len(points) / 3
-            points_str = list_to_hf3(points)
-            # TODO: adapt this for non-box-able indices/vertices/facets/cells.
+        bcdata = BcData()
+        
+        for constraint in obj.constraints[0]:          
+             # TODO: adapt this for non-box-able indices/vertices/facets/cells.
             # TODO: write indices-list from vtu2inp-incMatIDs-Producer script into MSML-compatible list.
-
-            if constraint.tag == "displacementConstraint":
-                disp_vector = constraint.displacement.split(" ")
-                bcdata.dc.append(count, points, disp_vector)
-            elif constraint.tag == "surfacePressure":  # TODO: do same as in displacementConstraint, as soon as mvrNBCdata-Extender is done!
-                force_vector = constraint.pressure.split(" ")
-                bcdata.fp.append(count, points, force_vector)
-
+            if constraint.tag ==  "displacedPointsConstraint":
+                points = self.get_value_from_memory(constraint, 'points') # NEW 2015-05-05.
+                count = len(points) / 3
+                disp_vector = self.get_value_from_memory(constraint, 'displacements')
+                bcdata.dc.append(count, points, disp_vector)     
         return bcdata
 
 

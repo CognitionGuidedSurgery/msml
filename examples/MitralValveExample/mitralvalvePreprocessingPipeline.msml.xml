@@ -14,15 +14,13 @@
     <scene>
         <object id="mitralvalve">
             <mesh>
-                <linearTet id="mvVolMesh" mesh="${aVolumeMesher}"/>
-                <!-- what is this needed for?! -->
+                <linearTet id="mvVolMesh" mesh="${aVtuToHf3inpIncMVmatIDsProducer.inpMeshFile}"/>
             </mesh>
 
             <material>
                 <region id="mvMaterial" indices="${aVtuToHf3inpIncMVmatIDsProducer.tet_material}">
                     <materialID matID="10"/>
                     <linearElasticMaterial youngModulus="4166" poissonRatio="0.488"/>
-                    <!-- soft tissue e.g. in heart leaflets -->
                     <mass name="stdMass" massDensity="1.000"/>
                 </region>
             </material>
@@ -33,10 +31,8 @@
                     <!-- <displacementConstraint indices="${AnnulusPointsToBeDisplacedBySewingProcedureToIndexGroup}" displacement="0.0 0.02 0.0"/> -->
                     <displacedPointsConstraint points="${aBCdataForMVRsimProducer.points}"
                                                displacements="${aBCdataForMVRsimProducer.displacements}"/>
-                    <!-- TODO
-                    Weigl disabled this, becaase leafletsDownsideToIndexGroup is not defined
-                    <surfacePressure indices="${leafletsDownsideToIndexGroup}" pressure="0.5 -0.06 -0.3"/>
-                    -->
+ 
+                    <surfacePressure indices="0" pressure="0"/>
                 </constraint>
             </constraints>
 
@@ -67,11 +63,11 @@
 
         <CGALMeshVolumeFromSurface id="aVolumeMesher" meshFilename="mvVolumeMesh3D_CGAL.vtk"
                                    surfaceMesh="${aVoxelToContourOperator}"
-                                   preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
+                                   preserveFeatures="false" facetAngle="20" facetSize="2" facetDistance="0.4"
                                    cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
                                    exude="false"/>
 
-        <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/>
+
         <!-- convertVTKbinaryToVTU probably not needed, since automatic conversion takes place if needed -->
         <!-- currently two (double) files are in the out-folder -->
         <!-- later update "volume"-tag in the below vtuToHf3inpIncMVmatIDsProducer/mvGeometryAnalytics/mvrBCdataProducer with "${aVolumeMesher}" -->
@@ -81,24 +77,24 @@
                        surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
                        outputfilename="mvVolumeMesh3D_hf3inp.inp"/> -->
         <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer"
-                                        volume="${vtuConverter}"
+                                        volume="${aVolumeMesher}"
                                         surface="${input_mv_surf_mesh}"
                                         />
         <!-- possibly update with newer stabil version of MSMLalized vtuToHf3inpIncMVmatIDsProducer-Python-Script -->
 
-        <!-- <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${vtuConverter}" 
+        <!-- <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${aVolumeMesher}" 
                        ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
                        outputfilename="mvGeometryAnalyticsData.txt"/> -->
         <mvGeometryAnalytics id="anMvGeometryAnalyzer"
-                             surface="${vtuConverter}"
+                             surface="${aVolumeMesher}"
                              ring="${input_mv_ring}"/>
 
-        <!-- <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${vtuConverter}" 
+        <!-- <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${aVolumeMesher}" 
                        surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
                        ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
                        outputfilename="mvrSimBCdata.xml"/> -->
         <mvrBCdataProducer id="aBCdataForMVRsimProducer"
-                           volumeMesh="${vtuConverter}"
+                           volumeMesh="${aVolumeMesher}"
                            surfaceMesh="${input_mv_surf_mesh}"
                            ring="${input_mv_ring}"/>
 

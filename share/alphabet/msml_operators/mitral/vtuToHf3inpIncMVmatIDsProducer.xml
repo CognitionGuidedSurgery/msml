@@ -12,7 +12,7 @@
     </input>
 
     <output>
-        <!-- <arg name="hf3inpFile" logical="object" physical="TXT"/> -->
+        <arg name="inpMeshFile" logical="object" physical="TXT"/>
         <arg name="points" logical="object" physical="vector.int"/>
         <arg name="tets" logical="object" physical="vector.int"/>
         <arg name="point_material" logical="object" physical="vector.int"/>

@@ -70,8 +70,8 @@
         <NeumannBC_Pressure_StartTime>2.0</NeumannBC_Pressure_StartTime> <!-- time when cardiac cycle (closing/opening valve) begins -->
         <NeumannBC_Pressure_EndTime>20.0</NeumannBC_Pressure_EndTime> <!-- time when cardiac cycle (closing/opening valve) ends -->
         <!-- {%for m in hiflow_material_models%} -->
-        <NeumannBC_upperMVcenterPoint>(84.0,93.0,160.0)</NeumannBC_upperMVcenterPoint> <!-- TODO implement {{m.mvgeometry[0]}},{{m.mvgeometry[1]}},{{m.mvgeometry[2]}} flexibly! -->
-        <NeumannBC_avAnnulusRingRadius>15.0</NeumannBC_avAnnulusRingRadius> <!-- TODO implement {{m.mvgeometry[3]}} flexibly! -->
+        <NeumannBC_upperMVcenterPoint>{{mvgeometryX}},{{mvgeometryY}},{{mvgeometryZ}}</NeumannBC_upperMVcenterPoint> 
+        <NeumannBC_avAnnulusRingRadius>{{mvgeometryRadius}}</NeumannBC_avAnnulusRingRadius> 
         <!-- {%endfor%} -->
         <ChordaePullStrength>2200</ChordaePullStrength> <!-- scaling factor for the strength of the chordae pulling the leaflets back -->
         {% if hf3_chanceOfContact %}
