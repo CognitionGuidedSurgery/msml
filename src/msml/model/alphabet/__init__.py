@@ -131,6 +131,7 @@ class Alphabet(object):
             return self._operators[obj]
         elif obj in self._object_attributes:
             return self._object_attributes[obj]
+        log.critical("No element with name %s found in alphabet, but was requested", obj)
         return None
 
     def validate(self):
@@ -322,7 +323,7 @@ class Slot(object):
         if 'meta' in self.__dict__ and item in self.meta:
             return self.meta[item]
         else:
-            return self.__dict__[item]
+            return super(Slot,self).__getattr__(item)
 
     def __str__(self):
         return "<Slot %s: %s>" % (self.name, self.sort)

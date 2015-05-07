@@ -1,0 +1,26 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="vtuToHf3inpIncMVmatIDsProducer">
+
+    <runtime>
+        <python module="msml.ext.mitral" function="vtu_To_hf3inp_inc_MV_matIDs_Producer"/>
+    </runtime>
+
+    <input>
+        <arg name="volume" logical="Mesh" physical="vtk"/>
+        <arg name="surface" logical="TriangularSurface" physical="vtk"/>
+    </input>
+
+    <output>
+        <!-- <arg name="hf3inpFile" logical="object" physical="TXT"/> -->
+        <arg name="points" logical="object" physical="vector.int"/>
+        <arg name="tets" logical="object" physical="vector.int"/>
+        <arg name="point_material" logical="object" physical="vector.int"/>
+        <arg name="tet_material" logical="object" physical="vector.int"/>
+    </output>
+
+    <parameters>
+        <arg name="outputFilename" target="true" physical="str" optional="true" default="bcdata.xml"/>
+    </parameters>
+
+</msml:operator>

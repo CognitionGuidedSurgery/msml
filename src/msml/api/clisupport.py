@@ -73,7 +73,7 @@ consolecatcher._overwrite_stdio()
 # loading delayed
 import jinja2, clictk
 from msml.frontend import App
-from msml.sortdef import InFile, MSMLListF, MSMLListI, Image
+from msml.sortdef import InFile, MSMLListF, MSMLListI, Image, VTI
 from msml import log
 
 PYTHON = """#!{{python}} -W ignore
@@ -273,12 +273,14 @@ def generate_cli(msmlfile, category="MSML", title=None, description=None,
         if var.name.startswith("gen_") and filter_generated_vars:
             continue
 
-        if var.name.startswith("input"):
+        if var.role == ("input"):
             ch = "input"
-        elif var.name.startswith("output"):
+        elif var.role == ("output"):
             ch = "output"
+        elif var.role == ("param"):
+            ch = "None"
         else:
-            ch = None
+            continue
 
         p = clictk.Parameter(
             var.name,
@@ -298,6 +300,7 @@ def generate_cli(msmlfile, category="MSML", title=None, description=None,
 # If a sort is missing please add here
 SORT_TO_CLI_TAG = [
     (Image, 'image'),
+    (VTI, "image"),
     (InFile, "file"),
     (int, "integer"),
     (float, "float"),
@@ -365,3 +368,147 @@ class GenerateCLIFromMSML(object):
             kwargs["python"] = sys.executable
             fp.write(template.render(**kwargs))
         make_executable(filename)
+
+OPERATOR_WRAPPER="""#!{{python}} -W ignore
+
+# Choose the right interpreter above for python dependencies
+# given by the requirements of MSML
+
+# This will load the ugly stdout hack and functionalities
+# for producing cli xml + argument parsing
+import sys
+sys.path.append("{{msml_src}}")
+from msml.api.clisupport import OperatorAsCLI
+
+from msml.frontend import App
+
+if __name__ == "__main__":
+    operator = App().alphabet.operators["{{operator.name}}"]
+    cli = OperatorAsCLI(operator)
+    cli()
+
+"""
+from itertools import chain
+import msml.env
+
+class OperatorAsCLI(object):
+    def __init__(self, operator):
+        self.operator = operator
+
+    def generate_wrapper(self, filename):
+        template = env.from_string(OPERATOR_WRAPPER)
+
+        with open(filename, 'w') as fp:
+            kwargs = dict(self.__dict__)
+            kwargs["python"] = sys.executable
+            msml_path = os.path.abspath(os.path.dirname(__file__) + "/../../")
+            kwargs["msml_src"] = msml_path
+            fp.write(template.render(**kwargs))
+
+        make_executable(filename)
+
+    def __call__(self):
+        try:
+            variables =self.get_arguments()
+
+            #TODO Test
+            memory = operator(**variables)
+            return memory
+        except SystemExit:
+            pass
+        except:
+            consolecatcher._reset_stdio()
+            raise
+
+
+    def get_arguments(self):
+        exe = self.generate_cli()
+        parser = clictk.build_argument_parser(exe)
+        ns = parser.parse_args()
+
+        if ns.__xml__:  # if `--xml` is set
+            xml = clictk.prettify(exe.as_xml())
+            # write to real stdout
+            consolecatcher._true_channels[0].write(xml)
+            sys.exit(0)
+        else:
+            # we do not need stdout sanity further more
+            consolecatcher._reset_stdio()
+
+        args = {}
+
+        for operator in chain(self.operator.input.values(),
+                          self.operator.parameters.values(),
+                          self.operator.output.values()):
+            n = operator.name
+            t = operator
+            default = "" # Try to get default value from somewhere
+                         # maybe set in argparse
+            value = getattr(ns, n)
+            if value is None:
+                value = default
+
+            try:
+                # file arguments are relative to the current working dir
+                if issubclass(t.sort.physical, InFile):
+                    value = os.path.abspath(value)
+                args[n] = conversion(str, t.sort)(value)
+            except (TypeError, ValueError) as e:
+                print("Parameter %s missing" % n)
+                log.error("Parameter %s missing: Error", n)
+                sys.exit(1)
+                raise
+
+        return args
+
+
+    def generate_cli(self, category="MSMLOperator",
+                     title=None, description=None,
+                     version=None, contributor=None, license=None,
+                     filter_generated_vars=True):
+        exe = clictk.Executable(
+            category=category,
+            title=title or self.operator.name,
+            description=description or "...",
+            version=version,
+            license=license,
+            contributor=contributor,
+            acknowledgements=None,
+            documentation_url=None)
+
+        grp = clictk.ParameterGroup(
+            label="Offered Parameters",
+            description="n/a",
+            advanced=False
+        )
+
+        def for_slot(slot, channel = None):
+            p = clictk.Parameter(
+                slot.name,
+                get_cli_tag(slot.sort.physical),
+                None,
+                description=slot.meta.get('doc', None),
+                channel=channel,
+                longflag=slot.name
+            )
+            grp.append(p)
+
+
+        for slot in self.operator.input.values():
+            for_slot(slot, "input")
+        for slot in self.operator.parameters.values():
+            for_slot(slot, "output")
+        for slot in self.operator.output.values():
+            for_slot(slot)
+
+        exe.parameter_groups.append(grp)
+
+        return exe
+
+
+    @staticmethod
+    def generate_all(alphabet, dir="."):
+        for operator in alphabet.operators.values():
+            cli = OperatorAsCLI(operator)
+            cli.generate_wrapper(os.path.join(dir, operator.name + ".py"))
+

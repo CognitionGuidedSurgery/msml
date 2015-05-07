@@ -361,6 +361,7 @@ register_conversion(int, get_sort('vector.int'), _single_int_list, 100)
 register_conversion(list, get_sort('vector.float'), _list_float, 100)
 register_conversion(list, get_sort('vector.int'), _list_float, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
+register_conversion(str, get_sort("VTP"), VTP, 100)
 register_conversion(str, get_sort("VTK"), VTK, 100)
 register_conversion(str, get_sort("bool"), _bool, 100)
 register_conversion(str, get_sort("ctx"), ctx, 100)
@@ -417,3 +418,6 @@ try:
     register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
 except:
     log.error("No Conversion VTK to VTU avaaible. Hiflow3 may not useable")
+
+    #debug
+    #register_conversion(VTK, VTU, VTU, 100)

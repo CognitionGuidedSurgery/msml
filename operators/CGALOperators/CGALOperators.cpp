@@ -42,8 +42,8 @@
 #include <CGAL/IO/Polyhedron_iostream.h>
 
 
-
 #include "../common/log.h"
+//#include "../common/stacktrace.h"
 
 
 //Polyhedral domain:
@@ -587,6 +587,9 @@ namespace MSML{
                                         bool theExuder) {
 
             std::cout<<" Calling CGAL Mesher with infile "<<infile <<" and outfile "<<outfile<<"\n";
+
+            //activate_handler();
+
 
             //read VTK Polydata
             vtkSmartPointer<vtkPolyData> inputPoly = IOHelper::VTKReadPolyData(infile);

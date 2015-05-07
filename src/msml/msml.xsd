@@ -245,6 +245,16 @@
                                     <attribute name="value" type="string"/>
                                     <attribute use="optional" name="physical" type="string"/>
                                     <attribute use="optional" name="logical" type="string"/>
+                                                                       <attribute use="optional" name="role" type="string">
+                                        <simpleType>
+                                            <restriction base="string">
+                                                <enumeration value="input"/>
+                                                <enumeration value="output"/>
+                                                <enumeration value="param"/>
+                                                <enumeration value="fix"/>
+                                            </restriction>
+                                        </simpleType>
+                                    </attribute>
                                 </complexType>
                             </element>
                             <element name="file">
@@ -253,6 +263,16 @@
                                     <attribute name="location" type="string"/>
                                     <attribute name="type" type="string"/>
                                     <attribute use="optional" name="format" type="string"/>
+                                    <attribute use="optional" name="role" type="string">
+                                        <simpleType>
+                                            <restriction base="string">
+                                                <enumeration value="input"/>
+                                                <enumeration value="output"/>
+                                                <enumeration value="param"/>
+                                                <enumeration value="fix"/>
+                                            </restriction>
+                                        </simpleType>
+                                    </attribute>
                                 </complexType>
                             </element>
                         </choice>

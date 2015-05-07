@@ -1,0 +1,22 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://sfb125.de/msml" name="CombineMeshes">
+
+    <runtime>
+        <python module="msml.ext.misc" function="CombineMeshes" />
+    </runtime>
+
+    <input>
+        <arg name="meshA" logical="VolumeMesh" physical="file.vtk"/>
+		<arg name="meshB" logical="VolumeMesh" physical="file.vtk"/>
+    </input>
+
+    <output>
+        <arg name="combined" logical="VolumeMesh" physical="file.vtk" />
+    </output>
+
+
+    <parameters>
+        <arg name="combined" physical="str" optional="true" target="true" />     
+    </parameters>
+
+</msml:operator>
