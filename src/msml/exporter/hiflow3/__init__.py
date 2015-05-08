@@ -36,6 +36,8 @@ from msml.model import *
 from msml.exceptions import *
 import msml.ext.misc
 
+from msml.log import debug
+
 
 class MSMLHiFlow3ExporterWarning(MSMLWarning): pass
 
@@ -152,8 +154,8 @@ HIFLOW_FEATURES = frozenset(
      'material_region_supported', 'env_linearsolver_iterativeCG_supported', 'env_preconditioner_None_supported',
      'object_element_linearElasticMaterial_supported', 'sets_elements_supported', 'sets_nodes_supported',
      'sets_surface_supported', 'environment_simulation_steps_supported', 'object_element_fixedConstraint_supported',
-     'env_timeintegration_dynamicImplicitEuler_supported', 'contact_simulation_supported'])
-# NOTE: ask Alexander: anything from new stuff to be added here?!
+     'env_timeintegration_dynamicImplicitEuler_supported', 'interbody_contact_simulation_supported'])
+# Note: eventually add new stuff here...
 
 class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
@@ -169,14 +171,15 @@ class HiFlow3Exporter(Exporter):
         :type msml_file: MSMLFile
         """
         self.hf3_parameters = {}
-        """a dictionary with parameters for the hf3 with higher priority
+        """a dictionary with parameters for the hf3 exporter with higher priority
         :type: dict
         """
 
         self.name = 'HiFlow3Exporter'
         self.initialize(
             msml_file=msml_file,
-            mesh_sort=('VTU', 'Mesh'),
+            mesh_sort=('VTU', 'Mesh'), # needed in HiFlow3Exporter!
+            #mesh_sort=('INP', 'Mesh'), # needed in MitralExporter!
             features=HIFLOW_FEATURES,
         )
 
@@ -197,7 +200,7 @@ class HiFlow3Exporter(Exporter):
 
 
     def execute(self):
-        """Execute `runHiFlow3`
+        """Execute `run HiFlow3 Elasticity`
 
         """
         import msml.envconfig
@@ -252,7 +255,10 @@ class HiFlow3Exporter(Exporter):
                 indices = self.get_value_from_memory(matregion)
 
                 # TODO: setup representation of hiflow_model.id for scenarios
-                # where bounding boxes cannot bound material regions.
+                # where bounding boxes cannot bound material regions,
+                # but where indices lists can define those material regions.
+                # Cp. Mitral Valve example.
+                # TODO: setup of better MSML-compatible / generic representation.
                 # TODO: build example/test inp-file with correct material region id
                 # (i.e.: hiflow_model.id for every point in indices).
 
@@ -267,7 +273,8 @@ class HiFlow3Exporter(Exporter):
 
                     if 'mass' == material.attributes['__tag__']:
                         hiflow_model.density = material.attributes['massDensity']
-                    #
+                    
+                    # Probably deprecated:
                     #if 'mvGeometry' == material.attributes['__tag__']:
                     #    hiflow_model.mvgeometry = material.attributes['mvGeometry']
 
@@ -279,42 +286,82 @@ class HiFlow3Exporter(Exporter):
                 SolveInstationary = 0
 
             # print os.path.abspath(hf3_filename), "!!!!!!"
-            mvgeometry = self.get_value_from_memory(msmlObject.constraints[0].constraints[0], "mvGeometry")
-            with open(hf3_filename, 'w') as fp:
-                values = dict(hiflow_material_models=hiflow_material_models,
-                              # template arguments
-                              mvgeometryX=mvgeometry[0],
-                              mvgeometryY=mvgeometry[1],
-                              mvgeometryZ=mvgeometry[2],
-                              mvgeometryRadius=mvgeometry[3],
-                              meshfilename=meshFilename,
-                              bcdatafilename=bc_filename,
-                              solverPlatform=self._msml_file.env.solver.processingUnit,
-                              numParaProcCPU=self._msml_file.env.solver.numParallelProcessesOnCPU,
-                              hf3_chanceOfContact=self._msml_file.env.solver.hf3_chanceOfContactBoolean,
-                              SolveInstationary=SolveInstationary,
-                              DeltaT=self._msml_file.env.simulation[0].dt,
-                              maxtimestep=maxtimestep,
-                              linsolver=self._msml_file.env.solver.linearSolver,
-                              precond=self._msml_file.env.solver.preconditioner,
-                              timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
-                              RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
-                              RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
-                              #
-                              # TODO: include mvGeometryAnalytics-Info (computed in MSML pipeline) at this point of the specific mitral-hiflow3-exporter.
-                              # therefore call mvGeometryAnalyzer-script from HiFlow3-exporter!!!
-                              # <NeumannBC_upperMVcenterPoint>{84.0, 93.0, 160.0}</NeumannBC_upperMVcenterPoint> <!-- TODO implement this flexibly! -->
-                              # <NeumannBC_avAnnulusRingRadius>23.0</NeumannBC_avAnnulusRingRadius> <!-- TODO implement this flexibly! -->
-                              #
-                              # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
-                              # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
-                              )
+            
+            hf3_MVRpipelineIndicator = self._msml_file.env.solver.hf3_chanceOfContactBoolean
+            debug("hiflow3-exporter recognized hf3_MVRpipelineIndicator from _msml_file.env.solver.hf3_chanceOfContactBoolean.")
+            
+            # In case of MVR pipeline, we have hf3_MVRpipelineIndicator = '1' (i.e. true), 
+            # and hence need to include information on the MV geometry in the hf3-scene,
+            # elsewise, we do not need to include it.
+            if hf3_MVRpipelineIndicator == "1":
+                debug("hiflow3-exporter knows: hf3_MVRpipelineIndicator = 1, and thus fills MVR-part of scene-template, too.")
+                # TODO: get this out here, and into MitralExporter...
+                mvgeometry = self.get_value_from_memory(msmlObject.constraints[0].constraints[0], "mvGeometry")
+                with open(hf3_filename, 'w') as fp:
+                    #if 1 == self._msml_file.env.solver.hf3_chanceOfContactBoolean:
+                    values = dict(hiflow_material_models=hiflow_material_models,
+                                  # template arguments
+                                  mvgeometryX=mvgeometry[0], # TODO: get this out here, and into MitralExporter
+                                  mvgeometryY=mvgeometry[1], # TODO: get this out here, and into MitralExporter
+                                  mvgeometryZ=mvgeometry[2], # TODO: get this out here, and into MitralExporter
+                                  mvgeometryRadius=mvgeometry[3], # TODO: get this out here, and into MitralExporter
+                                  meshfilename=meshFilename,
+                                  bcdatafilename=bc_filename,
+                                  solverPlatform=self._msml_file.env.solver.processingUnit,
+                                  numParaProcCPU=self._msml_file.env.solver.numParallelProcessesOnCPU,
+                                  hf3_chanceOfContact=self._msml_file.env.solver.hf3_chanceOfContactBoolean,
+                                  SolveInstationary=SolveInstationary,
+                                  DeltaT=self._msml_file.env.simulation[0].dt,
+                                  maxtimestep=maxtimestep,
+                                  linsolver=self._msml_file.env.solver.linearSolver,
+                                  precond=self._msml_file.env.solver.preconditioner,
+                                  timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
+                                  RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
+                                  RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
+                                  #
+                                  # TODO: include mvGeometryAnalytics-Info (computed in MSML pipeline)  # TODO: get this out here, and into MitralExporter
+                                  # at this point of the specific mitral-hiflow3-exporter.
+                                  # therefore call mvGeometryAnalyzer-script from HiFlow3-exporter!!!
+                                  #
+                                  # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
+                                  # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
+                                  )
 
-                values.update(self.hf3_parameters)
-                #
-                content = SCENE_TEMPLATE.render(**values)
+                    values.update(self.hf3_parameters)
+                    #
+                    content = SCENE_TEMPLATE.render(**values)
 
-                fp.write(content)
+                    fp.write(content)
+
+            else:
+                debug("hiflow3-exporter knows: hf3_MVRpipelineIndicator = 0, and thus does not fill MVR-part of scene-template.")
+                with open(hf3_filename, 'w') as fp:
+                    values = dict(hiflow_material_models=hiflow_material_models,
+                                  # template arguments
+                                  meshfilename=meshFilename,
+                                  bcdatafilename=bc_filename,
+                                  solverPlatform=self._msml_file.env.solver.processingUnit,
+                                  numParaProcCPU=self._msml_file.env.solver.numParallelProcessesOnCPU,
+                                  hf3_chanceOfContact=self._msml_file.env.solver.hf3_chanceOfContactBoolean,
+                                  SolveInstationary=SolveInstationary,
+                                  DeltaT=self._msml_file.env.simulation[0].dt,
+                                  maxtimestep=maxtimestep,
+                                  linsolver=self._msml_file.env.solver.linearSolver,
+                                  precond=self._msml_file.env.solver.preconditioner,
+                                  timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
+                                  RayleighRatioMass=self._msml_file.env.solver.dampingRayleighRatioMass,
+                                  RayleighRatioStiffness=self._msml_file.env.solver.dampingRayleighRatioStiffness
+                                  #
+                                  # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
+                                  # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
+                                  )
+
+                    values.update(self.hf3_parameters)
+                    #
+                    content = SCENE_TEMPLATE.render(**values)
+
+                    fp.write(content)
+
 
     def create_bcdata_files(self, obj):
         """creates all bcdata files for all declared steps in `msml/env/simulation`
@@ -329,8 +376,7 @@ class HiFlow3Exporter(Exporter):
                 filename = '%s_%s_%s.bc.xml' % (self._msml_file.filename.namebase, obj.id, step.name)
                 data = self.create_bcdata(obj, step.name)
                 # TODO: add priority of mvrBCdataProducer.py at this point in special mitral-hiflow-Exporter.
-                # TODO: call BCdata_for_Hf3Sim_Producer()
-                # TODO: call BCdata_for_Hf3Sim_Extender()
+                # TODO: then call BCdata_for_Hf3Sim_Producer() and BCdata_for_Hf3Sim_Extender().
                 content = BCDATA_TEMPLATE.render(data=data)
                 with open(filename, 'w') as h:
                     h.write(content)
@@ -375,12 +421,13 @@ class HiFlow3Exporter(Exporter):
                 count = len(points) / 3
                 points_str = list_to_hf3(points)
                 # TODO: adapt this for non-box-able indices/vertices/facets/cells.
+                # Cp. Mitral Valve example.
                 if constraint.tag == "fixedConstraint":
                     bcdata.fc.append(count, points, [0, 0, 0])
                 elif constraint.tag == "displacementConstraint":
                     disp_vector = constraint.displacement.split(" ")
                     bcdata.dc.append(count, points, disp_vector)
-                elif constraint.tag == "surfacePressure":  # TODO! - this will need to be adapted?!
+                elif constraint.tag == "surfacePressure":  # TODO! - this will need to be adapted!
                     force_vector = constraint.pressure.split(" ")
                     bcdata.fp.append(count, points, force_vector)
 
@@ -393,11 +440,30 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
     It therefore includes specific information on the geometry and simulation setup,
     which is retrieved during the preprocessing workflow/pipeline.
     """
+    def __init__(self, msml_file):
+        """
+        :param msml_file:
+        :type msml_file: MSMLFile
+        """
+        self.hf3_parameters = {}
+        """a dictionary with parameters for the hf3 exporter with higher priority
+        :type: dict
+        """
+
+        self.name = 'HiFlow3Exporter'
+        self.initialize(
+            msml_file=msml_file,
+            #mesh_sort=('VTU', 'Mesh'), # needed in HiFlow3Exporter!
+            mesh_sort=('INP', 'Mesh'), # needed in MitralExporter!
+            features=HIFLOW_FEATURES,
+        )
+    
+    
     def create_scenes(self):
 
-        # TODO: include informatoin from vtu2hf3inp_inc_MatIDs_Producer-Script (as part of the MSML workflow)
-        # into the exporter, in order to thus compute Index-Sets, etc. here, such that they are available for 
-        # both the HiFlow3-Exporter and other Exporters, too.
+        # TODO: include information from vtu2hf3inp_inc_MatIDs_Producer-Script (as part of the MSML workflow)
+        # into the special MVR exporter, in order to thus compute Index-Sets, etc. here,
+        # such that they are available for both the HiFlow3-Exporter and other Exporters, too.
 
         # list_of_matIDints, list_of_point_matIDints # TODO include this # TODO?!?!?!
 

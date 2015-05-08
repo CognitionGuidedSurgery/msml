@@ -191,6 +191,7 @@ DEFAULTS_SORTS = {
         (VTU, "VTU", "vtu", "file.vtu"),
         (VTI, "VTI", "vti", "file.vti"),
         (VTP, "VTP", "vtp", "file.vtp"), # TODO: add Hiflow3-InputFormat inp (including material IDs).
+        (INP, "INP", "inp"),
         DICOM,
         HDF5,
         (STL, "STL", "stl"),
@@ -417,7 +418,7 @@ try:
 
     register_conversion(VTK, VTU, convert_vtk_to_vtu, 100)
 except:
-    log.error("No Conversion VTK to VTU avaaible. Hiflow3 may not useable")
+    log.error("No Conversion VTK to VTU available. Hiflow3 may not be useable")
 
     #debug
     #register_conversion(VTK, VTU, VTU, 100)

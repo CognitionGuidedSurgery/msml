@@ -69,12 +69,12 @@
         <NeumannMaterial4Pressure>0.0</NeumannMaterial4Pressure> <!-- value 0.0 means: no opening after closing -->
         <NeumannBC_Pressure_StartTime>2.0</NeumannBC_Pressure_StartTime> <!-- time when cardiac cycle (closing/opening valve) begins -->
         <NeumannBC_Pressure_EndTime>20.0</NeumannBC_Pressure_EndTime> <!-- time when cardiac cycle (closing/opening valve) ends -->
-        <!-- {%for m in hiflow_material_models%} -->
+        {% if hf3_chanceOfContact == True %}
         <NeumannBC_upperMVcenterPoint>{{mvgeometryX}},{{mvgeometryY}},{{mvgeometryZ}}</NeumannBC_upperMVcenterPoint> 
         <NeumannBC_avAnnulusRingRadius>{{mvgeometryRadius}}</NeumannBC_avAnnulusRingRadius> 
-        <!-- {%endfor%} -->
         <ChordaePullStrength>2200</ChordaePullStrength> <!-- scaling factor for the strength of the chordae pulling the leaflets back -->
-        {% if hf3_chanceOfContact %}
+        {%endif%}
+        {% if hf3_chanceOfContact == True %}
         <ContactMaterial1>17</ContactMaterial1> <!-- left (upper) boundary subject to potential contact -->
         <ContactMaterial2>18</ContactMaterial2> <!-- right (upper) boundary subject to potential contact -->
         <ContactPenaltyFactor>1500.0</ContactPenaltyFactor> <!-- scalar for the cbc_-vector, e.g. in [1500..5000] -->

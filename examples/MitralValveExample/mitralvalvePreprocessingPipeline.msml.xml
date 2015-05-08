@@ -14,7 +14,9 @@
     <scene>
         <object id="mitralvalve">
             <mesh>
-                <linearTet id="mvVolMesh" mesh="${aVtuToHf3inpIncMVmatIDsProducer.inpMeshFile}"/>
+                <linearTet id="mvVolMesh" mesh="${aVtuToHf3inpIncMVmatIDsProducer}"/>
+                <!-- set .inpMeshFile ??? -->
+                <!-- this mesh-representation/link is used for creating the hf3-scene-file; -->
             </mesh>
 
             <material>
@@ -26,14 +28,26 @@
             </material>
 
             <constraints>
-                <constraint name="bodyConstraint" forStep="${initial_def_1}">
+                <constraint name="bodyConstraint" forStep="${initial_def_implantation_1}">
                     <mvGeometryConstraint mvGeometry="${anMvGeometryAnalyzer}"/>
-                    <!-- <displacementConstraint indices="${AnnulusPointsToBeDisplacedBySewingProcedureToIndexGroup}" displacement="0.0 0.02 0.0"/> -->
+                    <!-- Note: this is not a "real" constraint, but allows the specific HiFlow3-MVR-Simulation to setup the specific blood-flow/pressure-BC-representation -->
+                    <!-- Note: this has to be MSMLalized/standardized later -->
+                    
                     <displacedPointsConstraint points="${aBCdataForMVRsimProducer.points}"
                                                displacements="${aBCdataForMVRsimProducer.displacements}"/>
- 
+                    <!-- Note: instead of using the standard msml-displacementConstraint with "indices", the new displacedPointsConstraint allows for specifying points/displacements directly -->
+                    <!-- Note: these points/displacements (i.e. AnnulusPointsToBeDisplacedBySewingProcedure) come from the mitral-Operator "aBCdataForMVRsimProducer" -->
+                    
                     <surfacePressure indices="0" pressure="0"/>
+                    
+                    <!-- Note: this has to be replaced by a new surfacePointForces-Constraint to model the chordae pull forces-->
+                    <!-- Note: this has to be MSMLalized/standardized later -->
+                    
+                    <!-- Note: additionally, we need a time-dependent-surface-force-Constraint, acting on surface facets with specific matIDs (e.g. leafletsDownsideToIndexGroup)
+                    and in dependence of time in order to model the directed pressure/force profile on the leaflets during the cardiac cycle -->
+                    <!-- Note: this has to be MSMLalized/standardized later -->
                 </constraint>
+                <!-- <constraint name="bodyConstraint" forStep="${subsequent_def_heartcycle_2}"> ... </constraint> -->
             </constraints>
 
             <output>
@@ -46,8 +60,6 @@
         <!-- <ConvertSTLToVTK id="vtkConverter" STLMesh="mitralvalveSegmentation.stl" targetFilename="mitralvalveSegmentation.vtk"/> -->
         <!-- ConvertSTLToVTK-Operator not needed anymore -->
 
-        <!-- <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
-                       targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/> -->
         <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${input_mv_surf_mesh}"
                                     targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/>
         <!-- SurfaceToVoxelDataOperator might be replaced by DistanceMapOperator -->
@@ -63,46 +75,33 @@
 
         <CGALMeshVolumeFromSurface id="aVolumeMesher" meshFilename="mvVolumeMesh3D_CGAL.vtk"
                                    surfaceMesh="${aVoxelToContourOperator}"
-                                   preserveFeatures="false" facetAngle="20" facetSize="2" facetDistance="0.4"
+                                   preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
                                    cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
                                    exude="false"/>
 
+        <!-- <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/> -->
+        <!-- convertVTKbinaryToVTU not needed, since automatic conversion takes place if needed -->
 
-        <!-- convertVTKbinaryToVTU probably not needed, since automatic conversion takes place if needed -->
-        <!-- currently two (double) files are in the out-folder -->
-        <!-- later update "volume"-tag in the below vtuToHf3inpIncMVmatIDsProducer/mvGeometryAnalytics/mvrBCdataProducer with "${aVolumeMesher}" -->
-
-
-        <!-- <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer" inputfilename="${vtuConverter}" 
-                       surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
-                       outputfilename="mvVolumeMesh3D_hf3inp.inp"/> -->
         <vtuToHf3inpIncMVmatIDsProducer id="aVtuToHf3inpIncMVmatIDsProducer"
                                         volume="${aVolumeMesher}"
                                         surface="${input_mv_surf_mesh}"
                                         />
         <!-- possibly update with newer stabil version of MSMLalized vtuToHf3inpIncMVmatIDsProducer-Python-Script -->
 
-        <!-- <mvGeometryAnalytics id="anMvGeometryAnalyzer" inputfilename="${aVolumeMesher}" 
-                       ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
-                       outputfilename="mvGeometryAnalyticsData.txt"/> -->
         <mvGeometryAnalytics id="anMvGeometryAnalyzer"
                              surface="${aVolumeMesher}"
                              ring="${input_mv_ring}"/>
 
-        <!-- <mvrBCdataProducer id="aBCdataForMVRsimProducer" inputfilename="${aVolumeMesher}" 
-                       surfaceMesh="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp" 
-                       ringFilename="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp" 
-                       outputfilename="mvrSimBCdata.xml"/> -->
         <mvrBCdataProducer id="aBCdataForMVRsimProducer"
                            volumeMesh="${aVolumeMesher}"
                            surfaceMesh="${input_mv_surf_mesh}"
                            ring="${input_mv_ring}"/>
 
+        <!-- <mvrBCdataExtender id="aBCdataForMVRsimExtender" ... /> -->
 
-        <!-- Simulation_Mgmt_Operator to organize/distribute MV-scenarios-->
+        <!-- Simulation_Scenario_Mgmt_Operator to organize/distribute MV-scenarios-->
 
         <!-- EXECUTE_HIFLOW3_SIMULATION -->
-
 
         <!-- pvtu2vtu-Operator -->
         <!-- pvtu2vtu-Operator not needed anymore -->
@@ -120,8 +119,9 @@
                 processingUnit="CPU" numParallelProcessesOnCPU="4"
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
         <simulation>
-            <step name="initial_implantation_displacement" dt="0.05" iterations="20"/>
+            <step name="initial_def_implantation_1" dt="0.05" iterations="20"/>
             <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
+            <!-- <step name="subsequent_def_heartcycle_2" dt="0.01" iterations="500"/> -->
             <!-- <step name="subsequent_blood_pressure_and_mv_closing" dt="0.01" iterations="500"/> -->
         </simulation>
     </environment>
