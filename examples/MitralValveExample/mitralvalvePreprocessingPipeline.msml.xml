@@ -14,8 +14,8 @@
     <scene>
         <object id="mitralvalve">
             <mesh>
-                <linearTet id="mvVolMesh" mesh="${aVtuToHf3inpIncMVmatIDsProducer}"/>
-                <!-- set .inpMeshFile ??? -->
+                <linearTet id="mvVolMesh" mesh="${aVtuToHf3inpIncMVmatIDsProducer.inpMeshFile}"/>
+                <!-- Note: .inpMeshFile not needed -->
                 <!-- this mesh-representation/link is used for creating the hf3-scene-file; -->
             </mesh>
 
