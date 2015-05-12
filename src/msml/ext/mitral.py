@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 """
-
+mitral.py contains miscellaneous operators for preprocessing of 
+mitral valve geometries into simulation input;
+currently specifically for the HiFlow3Exporter-derived MitralExporter.
 """
 __author__ = 'schoch', 'weigl'
 __date__ = "2015-04-12"
@@ -73,8 +75,9 @@ def geometry_analyzer(surface, ring, target="mvGeometryInfo.txt"):
 
     if target is not None:
         with open(target, 'w') as f:
+            # produce outputAnalytics string and write into file
             f.write("midPtTop:(%s,%s,%s);\nannulusRadius:%s" % (
-                midPtTop[0], midPtTop[1], midPtTop[2], annulusRadius))  # produce outputAnalytics string and write into file
+                midPtTop[0], midPtTop[1], midPtTop[2], annulusRadius))
 
             debug("Write file %s", target)
 
@@ -384,7 +387,7 @@ def get_surface_normals(surface):
     return normals_surface.GetOutput().GetCellData().GetNormals()  # adapt here.
 
 
-def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf3InpInfo.txt"):
+def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf3InpInfo.inp"):
     """Given `volume_mesh` and `surface_mesh`
 
     The coordinates of the vertices, the connectivity information of the
@@ -613,10 +616,10 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
 
         debug("Writing HiFlow3 inp output file (incl. MV matIDs): DONE.")
 
-    return points, tets, point_material, tet_material # WRONG names/representations; actually it is (facets, tets, facet_matIDs, tet_matIDs)
+    return target, points, tets, point_material, tet_material # WRONG names/representations; actually it is (facets, tets, facet_matIDs, tet_matIDs)
 
 
-def vtu_To_Hf3inpWithBdyFacetMatID_Producer(mesh, target, behaviour = 0):
+def vtu_To_Hf3inpWithBdyFacetMatID_Producer(mesh, target, behaviour = 0): # DEPRECATED!!!!
     """Given an unstructured grid (vtu file), which only contains the
     connectivity information of 3D cells with four vertices (i.e.
     tetrahedrons) and no other cells of dimension different from three,
