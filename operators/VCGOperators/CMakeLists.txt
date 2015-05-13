@@ -37,6 +37,7 @@ ExternalProject_Add(VCG    # Name for custom target
   #GIT_REPOSITORY  http://github.com/CognitionGuidedSurgery/ACVD.git       # URL of git repo
   #GIT_TAG master              # Git branch name, commit id or tag
   SVN_REPOSITORY    http://svn.code.sf.net/p/vcg/code/trunk
+  SVN_REVISION -r 5516
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo etest
   BUILD_COMMAND ${CMAKE_COMMAND} -E echo No build necessary
   INSTALL_COMMAND ${CMAKE_COMMAND} -E echo No install necessary
