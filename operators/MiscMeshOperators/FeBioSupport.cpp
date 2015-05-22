@@ -40,7 +40,7 @@ namespace MSML {
 
 
 void ConvertFEBToVTK(const std::string modelFilename,
-					 const std::string lastStep,
+					 const std::string step,
 					 std::string inputMesh)
 {
 	vtkSmartPointer<vtkPoints> thePointsOutput =
@@ -53,11 +53,10 @@ void ConvertFEBToVTK(const std::string modelFilename,
 		MSML::IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str());
 
 	vtkGrid->DeepCopy(referenceGrid);
-
 	fstream f;
 	char cstring[256];
 	f.open(modelFilename.c_str(), ios::in);
-	std::string prefix = "*";
+	char prefix ='*';
 	bool start = false;
 	bool started = false;
 
@@ -68,12 +67,12 @@ void ConvertFEBToVTK(const std::string modelFilename,
         int i = 0;
 		stringstream ssin(cstring);
 		std::string temp;
-		if(cstring[0] == '*'){
+		if(cstring[0] == prefix){
 			if(started == true){
 				break;
 			}
 			while (ssin >> temp) {
-				if(temp == lastStep) {
+				if(temp == step) {
 					start = true;
 				}
 			}
@@ -99,7 +98,7 @@ void ConvertFEBToVTK(const std::string modelFilename,
     }
     f.close();
 	string::size_type idx = modelFilename.find('.');
-	std::string vtkFile = modelFilename.substr(0, idx) + ".vtk";
+	std::string vtkFile = modelFilename.substr(0, idx) + step + ".vtk";
 	vtkGrid->SetPoints(thePointsOutput);
 	vtkGrid->GetPoints()->Modified();
 	vtkGrid->Modified();
@@ -107,12 +106,11 @@ void ConvertFEBToVTK(const std::string modelFilename,
 #if VTK_MAJOR_VERSION < 6
 	vtkGrid->Update();
 #endif
-
 	MSML::IOHelper::VTKWriteUnstructuredGrid(vtkFile.c_str(), vtkGrid);
 }
 
 
-std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std::string partName)
+std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std::string partName, std::vector<int> indices)
 {
 	std::stringstream out;
 	//write Geometry
@@ -124,7 +122,7 @@ std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std:
 	{
 		currentPoint = inputMesh->GetPoint(i);
 		out<<"<node id=\""<<i+1<<"\">"<< std::setprecision(7) << std::scientific;
-		if(currentPoint[0] < 0 ){ //!!
+		if(currentPoint[0] < 0 ){
 			out<<currentPoint[0] << ",";
 		}else{
 			out<< " " << currentPoint[0] << ",";
@@ -151,15 +149,11 @@ std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std:
 	for(int i=0; i<inputMesh->GetNumberOfCells(); i++)
 	{
 		inputMesh->GetCellPoints(i, numberOfNodesPerElement, currentCellPoints);
-		double* key = pd->GetTuple(i);
-		if((int) *key == 100){ // !!
-			*key = 5;
-		}
 		if(numberOfNodesPerElement == 4) {
-			out<<"<tet4 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
+			out<<"<tet4 id=\""<<i+1<< "\" mat=\"" << indices[i] << "\">";
 			for(int j=0;j<numberOfNodesPerElement;j++)
 			{
-				if(j == numberOfNodesPerElement-1){ //!!
+				if(j == numberOfNodesPerElement-1){
 					out<<currentCellPoints[j]+1;
 				} else{
 					out<<currentCellPoints[j]+1<<",";
@@ -168,7 +162,7 @@ std::string ConvertVTKMeshToFeBioMeshString(vtkUnstructuredGrid* inputMesh, std:
 			out<<"</tet4>\n";
 		}
 		/*if(numberOfNodesPerElement == 3) {
-		  out<<"<tri3 id=\""<<i+1<< "\" mat=\"" << ((int) *key + 1) << "\">";
+		  out<<"<tri3 id=\""<<i+1<< "\" mat=\"" << indices[i] << "\">";
 		  for(int j=0;j<numberOfNodesPerElement;j++)
 		  {
 		  if(j == numberOfNodesPerElement-1){
@@ -216,15 +210,12 @@ std::string createFeBioPressureOutput(vtkUnstructuredGrid* inputMesh, std::vecto
 return out.str();
 }
 
-
-
-
-std::string ConvertVTKMeshToFeBioMeshString(std::string inputMesh, std::string partName)
+std::string ConvertVTKMeshToFeBioMeshString(std::string inputMesh, std::string partName, std::vector<int> indices)
 {
 	//load the vtk mesh
 	log_debug() << "Converting " << inputMesh << " part " << partName << std::endl;
 	vtkSmartPointer<vtkUnstructuredGrid> grid = MSML::IOHelper::VTKReadUnstructuredGrid(inputMesh.c_str());
-	std::string output = ConvertVTKMeshToFeBioMeshString(grid, partName);
+	std::string output = ConvertVTKMeshToFeBioMeshString(grid, partName, indices);
 	return output;
 
 }

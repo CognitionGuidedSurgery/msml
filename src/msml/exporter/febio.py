@@ -81,28 +81,22 @@ class FeBioExporter(XMLExporter):
             rootelement.write(febfile, pretty_print=True, encoding='iso-8859-1', xml_declaration=True)
 
     def execute(self):
-        cmd = "febio -i " + self.export_file
+        import msml.envconfig
+        cmd = msml.envconfig.FEBIO_EXECUTABLE + " -i " + self.export_file
         print(os.getcwd());
         print cmd
         print("Executing FeBio.")
         os.system(cmd)
         print("Converting FeBio to VTK.")
         self.convertToVTK(str(self.meshFile))
-        self.postProcessing()
-        cmd = "postview.exe " + self.file_name + ".xplt"
+        xplt = self.file_name + ".xplt"
+        cmd = "%s  %s" % (msml.envconfig.FEBIO_POSTVIEW_EXECUTABLE, xplt)
         os.system(cmd)
-
-    def postProcessing(self):
-        print("Extract all surfaces by material.")
-        extractedVolumeName = "feb_surface.vtk"
-        ExtractAllSurfacesByMaterial(str(self.file_name + ".vtk"), str(extractedVolumeName), False)
-        print("Bladder last step:")
-        bladderVTK = str(extractedVolumeName + "-volume1.vtk")
-        ComputeOrganVolume(bladderVTK)
-        ComputeOrganCrossSectionArea(bladderVTK);
 
     def write_feb(self):
         self.node_root = self.createScene()
+        print(self._msml_file.scene)
+    
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
 
@@ -123,21 +117,24 @@ class FeBioExporter(XMLExporter):
 
     def createMeshTopology(self, meshFilename, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-        theInpString = ConvertVTKMeshToFeBioMeshStringPython(meshFilename, msmlObject.id)
+        
+        theInpString = ConvertVTKMeshToFeBioMeshString(meshFilename, msmlObject.id, self.materialList)
         self.node_root.append(etree.fromstring(theInpString))
 
     def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
-
+        maxLength = 0
         materialNode = self.sub("Material", self.node_root)
-
         for k in range(len(msmlObject.material)):
             assert isinstance(msmlObject.material[k], MaterialRegion)
             indices_key = msmlObject.material[k].indices
             matregionId = msmlObject.material[k].id
 
             indices_vec = self.get_value_from_memory(msmlObject.material[k])
-
+            max_vec = max(indices_vec)
+            if max_vec >= maxLength:
+                maxLength = max_vec
+            
             #Get all materials
             for i in range(len(msmlObject.material[k])):
                 assert isinstance(msmlObject.material[k][i], ObjectElement)
@@ -153,12 +150,21 @@ class FeBioExporter(XMLExporter):
                     warn(MSMLSOFAExporterWarning, "Material Type not supported %s" % currentMaterialType)
 
             materialRegionNode = self.sub("material", materialNode, id=k + 1, name=matregionId,
-                                          type="isotropic elastic")
+                                          type="neo-Hookean")
             self.sub("density", materialRegionNode).text = str(currentDensity)
             self.sub("E", materialRegionNode).text = str(currentYoungs)
             self.sub("v", materialRegionNode).text = str(currentPoissons)
-
-
+        
+        self.createMaterialLookupTable(maxLength, msmlObject)
+        
+    
+    def createMaterialLookupTable(self, maxLength, msmlObject):
+        self.materialList = [0] * (maxLength + 1)
+        for k in range(len(msmlObject.material)):
+            material_vec = self.get_value_from_memory(msmlObject.material[k])
+            for material in material_vec:
+                self.materialList[material]= k+1
+        
     def createConstraintRegions(self, msmlObject, meshFilename):
         assert isinstance(msmlObject, SceneObject)
         boundaryNode = self.sub("Boundary", self.node_root)
@@ -177,8 +183,9 @@ class FeBioExporter(XMLExporter):
                 elif currentConstraintType == "surfacePressure":
                     loadNode = self.sub("Loads", self.node_root)
                     count += 1
-                    pressure = - float(constraint.pressure)
-                    pressureString = createFeBioPressureOutputPython(meshFilename, indices_vec, str(count),
+                    pressureArg = self.get_value_from_memory(constraint, 'pressure');
+                    pressure = - float(pressureArg[0])
+                    pressureString = createFeBioPressureOutput(meshFilename, indices_vec, str(count),
                                                                      str(pressure))
                     loadNode.append(etree.fromstring(pressureString))
                     iterations = float(self._msml_file.env.simulation[0].iterations)
@@ -239,7 +246,10 @@ class FeBioExporter(XMLExporter):
         iterations = str(self._msml_file.env.simulation[0].iterations)
         dt = self._msml_file.env.simulation[0].dt
         logfile = str(self.file_name + ".txt");
-        ConvertFEBToVTK(logfile, iterations, meshFilename)
+        print(meshFilename)
+        for x in range(1, int(self._msml_file.env.simulation[0].iterations)+ 1):
+            print("Converting Step (FEBio -> VTK): " + str(x))
+            ConvertFEBToVTK(logfile, str(x), meshFilename)
 
     def createScene(self):
         version = "1.2"
