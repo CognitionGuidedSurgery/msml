@@ -518,10 +518,10 @@ class SofaExporter(XMLExporter):
                     indices_vec = self.get_value_from_memory(constraint, 'indices')
                     indices = '%s' % ', '.join(map(str, indices_vec))
 
-                    #compute length of time stepo
+                    #compute length of time step to ensure the constraint at half-time of the the simulation.
                     timeSteps = self._msml_file.env.simulation[0].iterations
                     dt = self._msml_file.env.simulation[0].dt
-                    timestep = float(timeSteps) * float(dt)
+                    timestep = (float(timeSteps)/2) * float(dt) / 10.0 #endtime of simulation must be divided by 10 for the constraint for some reason.
                     keytimes = '0 ' + str(timestep) + ' ' + str(
                         100000)  # this is a bad hack! -> if simulation runs further, it stays stable
 
