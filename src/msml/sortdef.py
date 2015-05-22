@@ -279,6 +279,8 @@ class PNG(InFile):
 
 class TXT(InFile): pass
 
+class INP(InFile): pass
+
 class ContainerFile(InFile):
     pass
 

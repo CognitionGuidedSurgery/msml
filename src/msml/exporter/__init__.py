@@ -35,6 +35,7 @@ read/manipulate the whole and processed memory content.
 For more information: :py:class:`msml.exporter.Exporter`
 
 """
+from msml.exporter.hiflow3 import HiflowMitral
 
 __author__ = 'Alexander Weigl'
 __version__ = "0.1"
@@ -57,7 +58,9 @@ __all__ = ['register_exporter', 'get_exporter',
 __REGISTER = {'base': Exporter,
               "nabaqus": AbaqusExporter, 'nsofa': SofaExporter,
               "abaqus": AbaqusExporter, 'sofa': SofaExporter,
-              'hiflow3': HiFlow3Exporter, 'febio' : FeBioExporter,
+              'hiflow3': HiFlow3Exporter,
+              'mitral': HiflowMitral,
+              'febio' : FeBioExporter,
 }
 
 

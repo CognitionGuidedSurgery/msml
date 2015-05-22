@@ -1,4 +1,7 @@
 # encoding: utf-8
+#
+from __future__ import print_function 
+
 # region gplv3preamble
 # The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow
 #
@@ -30,12 +33,14 @@
 
 """This module provide basic logging facilities in color.
 """
+import contextlib
 
 __author__ = "Alexander Weigl"
 __date__ = "2014-05-05"
 
 import inspect
 import os.path
+import sys
 
 import logging
 import logging.config
@@ -204,24 +209,31 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
-logging.config.dictConfig(LOGGING)
+
+try:
+    logging.config.dictConfig(LOGGING)
+except:
+    print("Could not create logging facility", file=sys.stderr)
+    pass
+
 logger = logging.getLogger("root")
 
 
+try:
+    from multiprocessing import Lock
+    from functools import wraps
 
-
-from multiprocessing import Lock
-from functools import wraps
-
-logger_lock = Lock()
-def thread_safe(func):
-    @wraps(func)
-    def acrel(*args, **kwargs):
-        logger_lock.acquire()
-        r = func(*args, **kwargs)
-        logger_lock.release()
-        return r
-    return acrel
+    logger_lock = Lock()
+    def thread_safe(func):
+        @wraps(func)
+        def acrel(*args, **kwargs):
+            logger_lock.acquire()
+            r = func(*args, **kwargs)
+            logger_lock.release()
+            return r
+        return acrel
+except:
+    thread_safe = lambda x: x
 
 error     = thread_safe(logger.error)
 warn      = thread_safe(logger.warn)
@@ -230,3 +242,13 @@ debug     = thread_safe(logger.debug)
 critical  = thread_safe(logger.critical)
 exception = thread_safe(logger.exception)
 fatal     = thread_safe(logger.fatal)
+
+
+
+@contextlib.contextmanager
+def timeit(message):
+    import time
+    starttime = time.time()
+    yield starttime
+    endtime = time.time()
+    info("%s took %f s"  % (message, endtime-starttime))

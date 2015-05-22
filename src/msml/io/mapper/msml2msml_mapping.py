@@ -93,7 +93,7 @@ class Msml2MsmlMapping(BaseMapping):
             meshData.logicaltype = mbase.LinearTetrahedralMesh()
         else:
             raise MSMLError("Mesh logical type %s for mesh %s not supported by msml2msml mapping" % (element.type, element.id))
-        meshData.value = self._exporter.get_value_from_memory(mesh.id)
+        meshData.value = self._exporter.get_value_from_memory(mesh.id.strip("_mesh"))
         meshData.physicaltype = type(meshData.value)
         parent_target.add_child(mesh)
         parent_target.mesh = mesh

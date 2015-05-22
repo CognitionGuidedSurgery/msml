@@ -152,6 +152,8 @@ namespace MiscMeshOperators
 										 int baseMeshMaterial, std::vector<int> otherMeshesMaterial);
 
   LIBRARY_API std::vector<double> GradientOnSurface(const char* inFile, std::vector<double> values, int steps);
+  LIBRARY_API std::string CombineMeshes(const char* infileA, const char* infileB, const char* outfile);
+
 
 } //end namespace MiscMeshOperators
 } // end namespace MSML

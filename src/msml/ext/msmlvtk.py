@@ -4,7 +4,7 @@
 # MSML has been developed in the framework of 'SFB TRR 125 Cognition-Guided Surgery'
 #
 # If you use this software in academic work, please cite the paper:
-#   S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
+# S. Suwelack, M. Stoll, S. Schalck, N.Schoch, R. Dillmann, R. Bendl, V. Heuveline and S. Speidel,
 #   The Medical Simulation Markup Language (MSML) - Simplifying the biomechanical modeling workflow,
 #   Medicine Meets Virtual Reality (MMVR) 2014
 #
@@ -30,13 +30,15 @@ from __future__ import absolute_import
 __author__ = 'Alexander Weigl <uiduw@student.kit.edu>'
 __date__ = '2014-04-14'
 
-from msml.exceptions import MSMLWarning, warn
+from msml.exceptions import MSMLWarning
 import math
 from itertools import starmap
 from ..log import logger
 
+
 class MSMLVTKImportWarning(MSMLWarning):
     pass
+
 
 try:
     import vtk
@@ -56,6 +58,39 @@ try:
 
         return reader.GetOutput()
 
+    def read_polydata(filename):
+        """reads polydata files like VTP and VTK
+
+        :param filename:
+        :return:
+        """
+        if filename.endswith(".vtp"):
+            vtpreader = vtk.vtkXMLPolyDataReader()
+        elif filename.endswith("pvtp"):
+            vtpreader = vtk.vtkXMLPUnstructuredGridReader()
+        else:
+            vtpreader = vtk.vtkPolyDataReader()
+
+        vtpreader.SetFileName(filename)
+        vtpreader.Update()
+        return vtpreader.GetOutput()
+
+
+    def get_surface(ugrid):
+        """returns an surface created b the vtkGeometryFilter
+        :param ugrid: vtkUnstructuredGrid
+        :return:
+        :rtype:
+        """
+        # get surface mesh of valve3d_
+        geometryFilter = vtk.vtkGeometryFilter()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+            geometryFilter.SetInputData(ugrid)
+        else:
+            geometryFilter.SetInput(ugrid)
+        geometryFilter.Update()
+        return geometryFilter.GetOutput()
+
     def write_surface(ugrid, filename):
         surface_filter = vtk.vtkDataSetSurfaceFilter()
         surface_filter.SetInputData(ugrid)
@@ -67,6 +102,7 @@ try:
         writer.SetFileName(filename)
         writer.SetInputConnection(triangle_filter.GetOutputPort())
         writer.Write()
+
 
     def write_stl(ugrid, filename):
         surface_filter = vtk.vtkDataSetSurfaceFilter()
@@ -80,7 +116,8 @@ try:
         writer.SetInputConnection(triangle_filter.GetOutputPort())
         writer.Write()
 
-    def write_vtu(ugrid, filename, mode = 'ascii'):
+
+    def write_vtu(ugrid, filename, mode='ascii'):
         writer = vtk.vtkXMLUnstructuredGridWriter()
         if mode == 'ascii':
             writer.SetDataModeToAscii()
@@ -93,13 +130,15 @@ try:
         writer.SetInputData(ugrid)
         writer.Write()
 
+
     def write_vtk(ugrid, filename):
         writer = vtk.vtkUnstructuredGridWriter()
         writer.SetFileName(filename)
         writer.SetInputData(ugrid)
         writer.Write()
 
-    def closest_point(mesh, vector, radius = None):
+
+    def closest_point(mesh, vector, radius=None):
         locator = vtk.vtkPointLocator()
         ugrid = read_ugrid(mesh)
         locator.SetDataSet(ugrid)
@@ -114,18 +153,17 @@ try:
             index = locator.FindClosestPointWithinRadius(radius, vector, a)
 
         point = ugrid.GetPoint(index)
-        distance = math.sqrt(sum(starmap(lambda a, b: (b-a)**2, zip(vector, point))))
+        distance = math.sqrt(sum(starmap(lambda a, b: (b - a) ** 2, zip(vector, point))))
         return {'index': index, 'point': point, 'dist': distance}
 
 
-    def get_impact(ugrid, start, direction, factor = 1000):
+    def get_impact(ugrid, start, direction, factor=1000):
         cl = vtk.vtkCellLocator()
         ugrid = read_ugrid(ugrid)
         cl.SetDataSet(ugrid)
 
-        mult = lambda f, x: map(lambda a: f*a, x)
+        mult = lambda f, x: map(lambda a: f * a, x)
         end = mult(1000, direction)
-
 
         points = vtk.vtkPoints()
         cells = vtk.vtkIdList()
@@ -133,10 +171,6 @@ try:
         cl.intersectWithLine(start, end, points, cells)
 
         ugrid.GetCell(cells.getId(0))
-
-
-
-
 
 
     def view_stl(filename):
@@ -173,7 +207,7 @@ try:
         iren.Start()
 
 
-    def  vtp_reader(filename):
+    def vtp_reader(filename):
         reader = vtk.vtkXMLPolyDataReader()
         reader.SetFileName(filename)
         reader.Update()
@@ -184,17 +218,18 @@ try:
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
 
+
     def unstructered_grid_reader(filename):
         # Read the source file.
         reader = vtk.vtkUnstructuredGridReader()
         reader.SetFileName(filename)
-        reader.Update() # Needed because of GetScalarRange
+        reader.Update()  # Needed because of GetScalarRange
         output = reader.GetOutput()
         scalar_range = output.GetScalarRange()
 
         # Create the mapper that corresponds the objects of the vtk file
         # into graphics elements
-        mapper =vtk.vtkDataSetMapper()
+        mapper = vtk.vtkDataSetMapper()
         mapper.SetInputData(output)
         mapper.SetScalarRange(scalar_range)
 
@@ -205,7 +240,7 @@ try:
         # Create the Renderer
         renderer = vtk.vtkRenderer()
         renderer.AddActor(actor)
-        renderer.SetBackground(1, 1, 1) # Set background to white
+        renderer.SetBackground(1, 1, 1)  # Set background to white
 
         # Create the RendererWindow
         renderer_window = vtk.vtkRenderWindow()
@@ -216,5 +251,6 @@ try:
         interactor.SetRenderWindow(renderer_window)
         interactor.Initialize()
         interactor.Start()
-except:
+except ImportError as e:
     logger.fatal("Could not import vtk python module. Did you install python-vtk?")
+    logger.exception(e)

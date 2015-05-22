@@ -1,0 +1,1 @@
+This example requieres special SOFA version, using ldidetection-Plugin for contact simulation!
