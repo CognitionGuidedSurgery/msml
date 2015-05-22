@@ -111,7 +111,7 @@ class SofaExporter(XMLExporter):
 
         if (msml.envconfig.SOFA_EXECUTABLE.lower().find('runsofa') > -1): #linux: runSofa, windows: RunSofa.exe
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l /usr/lib/libSofaCUDA.so -l /usr/lib/libMediAssist.so -l SOFACuda -g batch -n ' + str(
+            callCom = '-l /opt/sofa/lib/libSofaCUDA.so -l /opt/sofa/lib/libMSML.so -l SOFACuda -g batch -n ' + str(
                 timeSteps) + ' ' + os.path.join(os.getcwd(),
                                                 self.export_file) + '\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom)
@@ -256,7 +256,7 @@ class SofaExporter(XMLExporter):
                  self._msml_file.env.solver.timeIntegration)
 
         if self._msml_file.env.solver.linearSolver == "direct":
-            self.sub("SparseMKLSolver")
+            self.sub("MumpsSolver")
         elif self._msml_file.env.solver.linearSolver == "iterativeCG":
             self.sub("CGLinearSolver",
                      iterations="100", tolerance="1e-06", threshold="1e-06")
@@ -267,6 +267,8 @@ class SofaExporter(XMLExporter):
 
     def createMaterialRegions(self, objectNode, msmlObject):
         assert isinstance(msmlObject, SceneObject)
+
+        isLinear= False
 
         youngs = {}
         poissons = {}
@@ -292,6 +294,17 @@ class SofaExporter(XMLExporter):
                     for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
                         youngs[i] = currentYoungs
                         poissons[i] = currentPoissons
+                    isLinear = True
+
+                if currentMaterialType == "corotatedElasticMaterial":
+                    currentYoungs = self.get_value_from_memory(material, "youngModulus")
+                    currentPoissons = self.get_value_from_memory(material,
+                                                                 "poissonRatio")  # not implemented in sofa yet!
+                    for i in indices_int:  #TODO Performance (maybe generator should be make more sense)
+                        youngs[i] = currentYoungs
+                        poissons[i] = currentPoissons
+
+
                 elif currentMaterialType == "mass":
                     currentDensity = self.get_value_from_memory(material, "massDensity")
                     for i in indices_int:
@@ -316,7 +329,9 @@ class SofaExporter(XMLExporter):
             elasticNode = self.sub("TetrahedronFEMForceField", objectNode,
                                    template=self._processing_unit, name="FEM",
                                    listening="true", youngModulus=youngs_str,
-                                   poissonRatio=poissons[indices_int[0]])
+                                   poissonRatio=poissons[indices_int[0]] )
+            if(isLinear):
+                elasticNode.set('method', 'small')
             self.sub("TetrahedronSetGeometryAlgorithms", objectNode,
                      name="aTetrahedronSetGeometryAlgorithm",
                      template=self._processing_unit)

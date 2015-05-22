@@ -2,7 +2,7 @@
 
 <msml:element xmlns:msml="http://sfb125.de/msml"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://sfb125.de/msml" name="linearElasticMaterial"
+              xsi:schemaLocation="http://sfb125.de/msml" name="corotatedElasticMaterial"
               category="material" quantity="single">
 
     <description>

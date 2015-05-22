@@ -38,7 +38,6 @@
             <constraints>
                 <constraint>
                     <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${leftFaceGroup}"/>
-                    <displacementConstraint name="dispConstraint" forStep="${initial}" indices="${rightFaceGroup}" displacement="${dispVar}"/>
                 </constraint>
 
             </constraints>
@@ -69,7 +68,7 @@
         <solver linearSolver="direct" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
-            <step name="initial" dt="0.05" iterations="20" gravity="0 0 0"/>
+            <step name="initial" dt="0.5" iterations="20" gravity="-9.81 0 0 "/>
         </simulation>
     </environment>
 
