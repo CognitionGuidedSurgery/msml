@@ -158,53 +158,61 @@ void measureMeshQuality(std::string infile, std::string source){
 	cellLocatorCompareMesh->SetDataSet(compareMesh);
 	cellLocatorCompareMesh->BuildLocator();
 
-	/*vtkSmartPointer<vtkCellCenters> cellCentersFilterOriginalMesh = 
-    vtkSmartPointer<vtkCellCenters>::New();
-#if VTK_MAJOR_VERSION <= 5
-  cellCentersFilterOriginalMesh->SetInputConnection(imageData->GetProducerPort());
-#else
-	cellCentersFilterOriginalMesh->SetInputData(imageData);
-#endif
-  cellCentersFilterOriginalMesh->VertexCellsOn();
-  cellCentersFilterOriginalMesh->Update();
+  //counters
+  int diffVoxelCounter = 0;
+  int totalVoxelCounter = 0;
 
-  vtkSmartPointer<vtkCellCenters> cellCentersFilterCompareMesh = 
-    vtkSmartPointer<vtkCellCenters>::New();
-#if VTK_MAJOR_VERSION <= 5
-  cellCentersFilterCompareMesh->SetInputConnection(imageData->GetProducerPort());
-#else
-	cellCentersFilterCompareMesh->SetInputData(imageData);
-#endif
-  cellCentersFilterCompareMesh->VertexCellsOn();
-  cellCentersFilterCompareMesh->Update();*/
-
-	//cout<<imageData->GetNumberOfCells();
+  //vars for cellLocatorCompareMesh->FindClosestPoint(..)
 	double closestPoint[3];
-	double closestPointDist; 
-	vtkIdType cellIdMesh; 
-	int subId; 
-	int diffCellCounter;
-	double center[3] = {0,0,0};
-	for(vtkIdType cellId = 0; cellId < imageData->GetNumberOfCells(); ++cellId)
-	{
-		cout<<cellId << endl;
-		GetCellCenter(imageData, cellId, center);
-		cellLocatorCompareMesh->FindClosestPoint(center,closestPoint,cellIdMesh,subId,closestPointDist);
-		if(cellId != cellIdMesh){
-			diffCellCounter++;
-		}
-	}
-	std::cout <<  diffCellCounter<<  std::endl;
+	double closestPointDist;  
+  int subId; 
+  vtkIdType closestCellIdMesh; 
+
+  vtkIntArray* cellMaterialArray0 = (vtkIntArray*) compareMesh->GetCellData()->GetArray("Materials");
+
+  int* dims = imageData->GetDimensions();
+  double* origin = imageData->GetOrigin();
+  double* spacing = imageData->GetSpacing();
+
+  //for each voxel in the segmentation image
+  for (int z = 0; z < dims[2]; z++)
+  {
+      for (int y = 0; y < dims[1]; y++)
+      {
+          for (int x = 0; x < dims[0]; x++)
+          {
+            totalVoxelCounter++;
+
+            //grid indices to mm coordinates
+            double pInMM[3];
+            pInMM[0] = origin[0]+x*spacing[0];
+            pInMM[1] = origin[1]+y*spacing[1];
+            pInMM[2] = origin[2]+z*spacing[2];
+
+            //get image value at position pInMM (material id)
+            float material_id_in_image = imageData->GetScalarComponentAsFloat(x,y,z, 0); 
+            
+            //find nearset tetrahedron, and get the correspondig material id
+            cellLocatorCompareMesh->FindClosestPoint(pInMM,closestPoint,closestCellIdMesh,subId,closestPointDist); 
+            double material_id_in_mesh = *cellMaterialArray0->GetTuple(closestCellIdMesh); 
+
+            //count voxel having a different material id, dont care for air-voxels (material=0)
+            if(material_id_in_image>0 && material_id_in_mesh != material_id_in_image)
+            {
+			        diffVoxelCounter++;
+              //cout<<"material_id_in_mesh:" << material_id_in_mesh <<" is not material_id_in_image:" << material_id_in_image  << endl;
+		        }
+          } //x
+          cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << 1-(double(diffVoxelCounter)/double(totalVoxelCounter)) << endl;
+      } //y
+      
+  } //z
+
+
+
+	std::cout <<  diffVoxelCounter<<  std::endl;
 }
 
-void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3])
-{
-  double pcoords[3] = {0,0,0};
-  double *weights = new double [imageData->GetMaxCellSize()];
-  vtkCell* cell = imageData->GetCell(cellId);
-  int subId = cell->GetParametricCenter(pcoords);
-  cell->EvaluateLocation(subId, pcoords, center, weights);
-}
 
 void  calculateHausdorffDistance(string originalFile, string compareFile, bool points) {
 

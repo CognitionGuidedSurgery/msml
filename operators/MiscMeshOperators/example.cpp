@@ -21,7 +21,7 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-MeshQuality::measureMeshQuality("C:/MSML/msml/examples/CGALi2vExample/3Dircadb0101Labeled.vti","C:/MSML/msml/examples/CGALi2vExample/out_CGALExample/3Dircadb0101Labeled.vtk");
+MeshQuality::measureMeshQuality(INPUT("ircad_segmentation.vti"), INPUT("ircad_tets_labled.vtk"));
 //MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
   return EXIT_SUCCESS;
 
