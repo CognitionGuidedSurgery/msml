@@ -12,7 +12,7 @@
 	</input>
 
 	<output>
-		<arg name="VTKMeshAscii" logical="VolumeMesh" physical="file.vtk" />
+		<arg name="VTKMeshAscii" logical="VolumeMesh" physical="VTU" />
 	</output>
    
    <parameters>

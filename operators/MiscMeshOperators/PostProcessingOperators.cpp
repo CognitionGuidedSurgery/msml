@@ -588,7 +588,7 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
                 if (inBoundsDVF)
                 {
                     double posInRef[3];
-
+					//TODO: Is this correct, seems to be inversed? 
                     if (!reverseDirection)
                     {
                         posInRef[0] = pos[0] - displacmentVec[0];

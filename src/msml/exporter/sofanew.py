@@ -111,7 +111,10 @@ class SofaExporter(XMLExporter):
 
         if (msml.envconfig.SOFA_EXECUTABLE.lower().find('runsofa') > -1): #linux: runSofa, windows: RunSofa.exe
             timeSteps = self._msml_file.env.simulation[0].iterations  #only one step supported
-            callCom = '-l /opt/sofa/lib/libSofaCUDA.so -l /opt/sofa/lib/libMSML.so -l SOFACuda -g batch -n ' + str(
+            #dschauba: use this for contact simulation with special SOFA version
+            #callCom = '-l C:/msmldev/sofaneu/bin2/bin/ldidetection_1_0.dll -g guiBatch -n ' + str(
+            #    timeSteps) + ' ' + os.path.join(os.getcwd(),self.export_file)
+            callCom = '-l /usr/lib/libSofaCUDA.so -l /opt/sofa/lib/libMSML.so -l SOFACuda -g batch -n ' + str(
                 timeSteps) + ' ' + os.path.join(os.getcwd(),
                                                 self.export_file) + '\n'
             cmd = "%s  %s" % (msml.envconfig.SOFA_EXECUTABLE, callCom)
@@ -530,10 +533,11 @@ class SofaExporter(XMLExporter):
                     indices_vec = self.get_value_from_memory(constraint, 'indices')
                     indices = '%s' % ', '.join(map(str, indices_vec))
 
-                    #compute length of time stepo
+                    #compute length of time step to ensure the constraint at half-time of the the simulation.
                     timeSteps = self._msml_file.env.simulation[0].iterations
                     dt = self._msml_file.env.simulation[0].dt
-                    timestep = float(timeSteps) * float(dt)
+                    timestep = (float(timeSteps)/2) * float(dt) / 10.0 #endtime of simulation must be divided by 10 for the constraint for some reason.
+                    #timestep = float(timeSteps) * float(dt)
                     keytimes = '0 ' + str(timestep) + ' ' + str(
                         100000)  # this is a bad hack! -> if simulation runs further, it stays stable
 

@@ -17,6 +17,8 @@
 
 [![Circle CI](https://circleci.com/gh/CognitionGuidedSurgery/msml.svg?style=svg)](https://circleci.com/gh/CognitionGuidedSurgery/msml)
 [![Coverage Status](https://coveralls.io/repos/CognitionGuidedSurgery/msml/badge.png)](https://coveralls.io/r/CognitionGuidedSurgery/msml)
+[![Issue Stats](http://www.issuestats.com/github/CognitionGuidedSurgery/msml/badge/pr?style=flat-square)](http://www.issuestats.com/github/CognitionGuidedSurgery/msml)
+[![Issue Stats](http://www.issuestats.com/github/CognitionGuidedSurgery/msml/badge/issue?style=flat-square)](http://www.issuestats.com/github/CognitionGuidedSurgery/msml)
 
 # About
 

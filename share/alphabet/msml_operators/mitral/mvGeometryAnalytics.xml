@@ -1,0 +1,19 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="mvGeometryAnalytics">
+
+    <runtime>
+        <python module="msml.ext.mitral" function="geometry_analyzer"/>
+    </runtime>
+
+    <input>
+        <arg name="surface" logical="Mesh" physical="vtk"/>
+        <arg name="ring" logical="object" physical="vtk"/>
+
+    </input>
+
+    <output>
+		<arg name="geometry" logical="Geometry" physical="vector.int" />
+    </output>
+
+</msml:operator>

@@ -127,6 +127,12 @@ FIND_FILE(HIFLOW_EXECUTABLE "hiflow3" NAMES "hiflow3"
 
 FIND_FILE(ABAQUS_EXECUTABLE "abaqus" NAMES "abaqus" "abaqus"
     DOC "")
+	
+FIND_FILE(FEBIO_EXECUTABLE "febio" NAMES "febio" "febio"
+    DOC "")
+
+FIND_FILE(FEBIO_POSTVIEW_EXECUTABLE "postview" NAMES "postview" "postview"
+    DOC "")
 
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.xml.in
