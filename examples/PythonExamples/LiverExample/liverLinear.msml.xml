@@ -56,7 +56,7 @@
 
 
     <environment>
-        <solver linearSolver="iterativeCG" processingUnit="CPU"
+        <solver linearSolver="direct" processingUnit="CPU"
                 timeIntegration="dynamicImplicitEuler"/>
         <simulation>
             <step name="initial" dt="0.05" iterations="150"/>

@@ -5,10 +5,10 @@ import msml.api.simulation_runner as api
 import numpy as np
 
 # define infiles and output directory
-msml_infile_Linear = os.path.abspath("liverLinear.msml.xml")
-msml_infile_nonLinear = os.path.abspath("liverCorotated.msml.xml")
-msml_outdirLinear = os.path.abspath("/tmp/MSMLResultsLiverLinear/")
-msml_outdirNonLinear = os.path.abspath("/tmp/MSMLResultsLiverCorotated/")
+msml_infile_Linear = os.path.abspath("../beamLinearGravity.msml.xml")
+msml_infile_nonLinear = os.path.abspath("../beamCorotatedGravity.msml.xml")
+msml_outdirLinear = os.path.abspath("/tmp/MSMLResultsBeamLinear/")
+msml_outdirNonLinear = os.path.abspath("/tmp/MSMLResultsBeamCorotated/")
 
 # run msml and get specified points
 myRunner = api.SimulationRunner(msml_infile_Linear, "sofa", msml_outdirLinear)
