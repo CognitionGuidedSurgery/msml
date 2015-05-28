@@ -10,13 +10,19 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellData.h>
+#include <vtkImageData.h>
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLImageDataReader.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkPolyDataReader.h>
 #include <vtkMeshQuality.h>
 #include <vtkVersion.h>
+#include <vtkCell.h>
+#include <vtkCellLocator.h>
+#include <vtkCellCenters.h>
+#include <vtkKdTreePointLocator.h>
 
 #include "../common/log.h"
 
@@ -132,5 +138,179 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
     return results;
 }
 
+void measureMeshQuality(std::string infile, std::string source){
+	
+	vtkSmartPointer<vtkXMLImageDataReader> reader =
+    vtkSmartPointer<vtkXMLImageDataReader>::New();
+    reader->SetFileName(infile.c_str());
+    reader->Update();
+
+    vtkSmartPointer<vtkImageData> imageData = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader2 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader2->SetFileName( source.c_str());
+    reader2->Update();
+
+    vtkUnstructuredGrid* compareMesh = reader2->GetOutput();
+
+	vtkSmartPointer<vtkCellLocator> cellLocatorCompareMesh = 
+	vtkSmartPointer<vtkCellLocator>::New();
+	cellLocatorCompareMesh->SetDataSet(compareMesh);
+	cellLocatorCompareMesh->BuildLocator();
+
+  //counters
+  int diffVoxelCounter = 0;
+  int totalVoxelCounter = 0;
+
+  //vars for cellLocatorCompareMesh->FindClosestPoint(..)
+	double closestPoint[3];
+	double closestPointDist;  
+  int subId; 
+  vtkIdType closestCellIdMesh; 
+
+  vtkIntArray* cellMaterialArray0 = (vtkIntArray*) compareMesh->GetCellData()->GetArray("Materials");
+
+  int* dims = imageData->GetDimensions();
+  double* origin = imageData->GetOrigin();
+  double* spacing = imageData->GetSpacing();
+
+  //for each voxel in the segmentation image
+  for (int z = 0; z < dims[2]; z++)
+  {
+      for (int y = 0; y < dims[1]; y++)
+      {
+          for (int x = 0; x < dims[0]; x++)
+          {
+            totalVoxelCounter++;
+
+            //grid indices to mm coordinates
+            double pInMM[3];
+            pInMM[0] = origin[0]+x*spacing[0];
+            pInMM[1] = origin[1]+y*spacing[1];
+            pInMM[2] = origin[2]+z*spacing[2];
+
+            //get image value at position pInMM (material id)
+            float material_id_in_image = imageData->GetScalarComponentAsFloat(x,y,z, 0); 
+            
+            //find nearset tetrahedron, and get the correspondig material id
+            cellLocatorCompareMesh->FindClosestPoint(pInMM,closestPoint,closestCellIdMesh,subId,closestPointDist); 
+            double material_id_in_mesh = *cellMaterialArray0->GetTuple(closestCellIdMesh); 
+
+            //count voxel having a different material id, dont care for air-voxels (material=0)
+            if(material_id_in_image>0 && material_id_in_mesh != material_id_in_image)
+            {
+			        diffVoxelCounter++;
+              //cout<<"material_id_in_mesh:" << material_id_in_mesh <<" is not material_id_in_image:" << material_id_in_image  << endl;
+		        }
+          } //x
+          cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << 1-(double(diffVoxelCounter)/double(totalVoxelCounter)) << endl;
+      } //y
+      
+  } //z
+
+
+
+	std::cout <<  diffVoxelCounter<<  std::endl;
 }
+
+
+void  calculateHausdorffDistance(string originalFile, string compareFile, bool points) {
+
+	log_debug() << "calculateHausdorffDistance" << endl;
+	
+	double relativeDistance0 =0.0;
+	double relativeDistance1 =0.0;
+	double hausdorffDistance =0.0;
+	
+	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader->SetFileName(originalFile.c_str());
+    reader->Update();
+
+    vtkUnstructuredGrid* originalMesh = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader2 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader2->SetFileName(compareFile.c_str());
+    reader2->Update();
+
+    vtkUnstructuredGrid* compareMesh = reader2->GetOutput();
+
+	vtkSmartPointer<vtkCellLocator> cellLocatorOriginalMesh = 
+	vtkSmartPointer<vtkCellLocator>::New();
+	cellLocatorOriginalMesh->SetDataSet(originalMesh);
+	cellLocatorOriginalMesh->BuildLocator();
+
+	vtkSmartPointer<vtkCellLocator> cellLocatorCompareMesh = 
+	vtkSmartPointer<vtkCellLocator>::New();
+	cellLocatorCompareMesh->SetDataSet(originalMesh);
+	cellLocatorCompareMesh->BuildLocator();
+
+	vtkSmartPointer<vtkKdTreePointLocator> pointLocatorOriginal = vtkSmartPointer<vtkKdTreePointLocator>::New();
+	vtkSmartPointer<vtkKdTreePointLocator> pointLocatorCompare = vtkSmartPointer<vtkKdTreePointLocator>::New();
+  
+	vtkSmartPointer<vtkDoubleArray> distanceOriginalToCompare = vtkSmartPointer<vtkDoubleArray>::New();
+	distanceOriginalToCompare->SetNumberOfComponents(1);
+	distanceOriginalToCompare->SetNumberOfTuples(originalMesh->GetNumberOfPoints());
+	distanceOriginalToCompare->SetName( "Distance" );
+      
+	vtkSmartPointer<vtkDoubleArray> distanceCompareToOriginal = vtkSmartPointer<vtkDoubleArray>::New();
+	distanceCompareToOriginal->SetNumberOfComponents(1);
+	distanceCompareToOriginal->SetNumberOfTuples(compareMesh->GetNumberOfPoints());
+	distanceCompareToOriginal->SetName( "Distance" );
+	
+	pointLocatorOriginal->SetDataSet(originalMesh);
+	pointLocatorOriginal->BuildLocator();
+	pointLocatorCompare->SetDataSet(compareMesh);
+	pointLocatorCompare->BuildLocator();
+
+	  double p[3];
+	  double closestPoint[3];
+	  double closestPointDist; 
+	  double currentPoint[3];
+	  vtkIdType cellId; 
+	  int subId; 
+
+	  // Access the cell centers
+	  for(vtkIdType i = 0; i < originalMesh->GetNumberOfPoints(); i++) {
+		//cellCentersFilterOriginalMesh->GetOutput()->GetPoint(i, p);
+		
+		originalMesh->GetPoint(i, currentPoint);
+		if(points){
+			vtkIdType closestPointId = pointLocatorCompare->FindClosestPoint(currentPoint);
+			compareMesh->GetPoint(closestPointId,closestPoint);
+			closestPointDist = sqrt(pow(currentPoint[0]-closestPoint[0],2)+pow(currentPoint[1]-closestPoint[1],2)+pow(currentPoint[2]-closestPoint[2],2));
+		} else {
+			cellLocatorCompareMesh->FindClosestPoint(currentPoint,closestPoint,cellId,subId,closestPointDist);
+		}
+		
+		distanceOriginalToCompare->SetValue(i, closestPointDist);
+		if( closestPointDist > relativeDistance0) {
+			relativeDistance0 = closestPointDist;
+		}
+	   }
+
+	   for(vtkIdType i = 0; i < compareMesh->GetNumberOfPoints(); i++) {
+		//cellCentersFilterCompareMesh->GetOutput()->GetPoint(i, p); 
+		//cellLocatorOriginalMesh->FindClosestPoint(p, closestPoint, cellId, subId, closestPointDist);
+		compareMesh->GetPoint(i, currentPoint);
+		if(points){
+			vtkIdType closestPointId = pointLocatorOriginal->FindClosestPoint(currentPoint);
+			originalMesh->GetPoint(closestPointId,closestPoint);
+			closestPointDist = sqrt(pow(currentPoint[0]-closestPoint[0],2)+pow(currentPoint[1]-closestPoint[1],2)+pow(currentPoint[2]-closestPoint[2],2));
+		} else {
+			cellLocatorOriginalMesh->FindClosestPoint(currentPoint,closestPoint,cellId,subId,closestPointDist);
+		}
+		distanceCompareToOriginal->SetValue(i, closestPointDist);
+		if( closestPointDist > relativeDistance1) {
+			relativeDistance1 = closestPointDist;
+		}
+	   }
+
+	   if(relativeDistance0 >= relativeDistance1){
+		 hausdorffDistance = relativeDistance0;
+	   } else {
+		 hausdorffDistance = relativeDistance1;
+	   }
+	  log_debug() << hausdorffDistance << endl;
+	}
+  }
 }
