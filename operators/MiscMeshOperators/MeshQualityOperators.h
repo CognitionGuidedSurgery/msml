@@ -38,7 +38,7 @@ LIBRARY_API MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, s
 LIBRARY_API std::vector<MeshQualityStats> MeasureTetrahedricMeshQuality(std::string infile, std::vector<std::string> qualityMeasureNames);
 LIBRARY_API void calculateHausdorffDistance(std::string infile, std::string source, bool points);
 LIBRARY_API void measureMeshQuality(std::string infile, std::string source);
-LIBRARY_API void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
+// not implemented, keeping it give build error on windows (and seg fault on CircleCI?): LIBRARY_API void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
 }
 }
 
