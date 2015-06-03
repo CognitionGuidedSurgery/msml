@@ -1,0 +1,29 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="vol_mesh" value="IRACD_liver_5.vtk" logical="TriangularSurface"
+             physical="file.vtk"/>
+        <var name="redVerticesCount" value="1800" />
+        <var name="redMaxEdgeRadiusRatio" value="2.0" />
+
+        <var name="outputReduceMesh" value="liverReduced1800.vtk"  physical="file.vtk"/>
+        <var name="outputMeshFile" value="liverSmallVolume_maxEdge2.0.vtk"  physical="file.vtk"/>
+    </variables>
+
+   <workflow>
+		<ACVDReduceSurfaceMesh id="FixedReduced" inputMeshFile="${vol_mesh}"
+												 outputMeshFile="${outputReduceMesh}"
+												 verticesCount="${redVerticesCount}" asciiOutput="true"/>
+       <TetgenCreateVolumeMesh id="liverVolumeMesh" surfaceMesh="${FixedReduced}" maxEdgeRadiusRatio="${redMaxEdgeRadiusRatio}" targetMeshFilename="${outputMeshFile}"/>
+
+  </workflow>
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="200"/>
+        </simulation>
+    </environment>
+</msml:msml>
