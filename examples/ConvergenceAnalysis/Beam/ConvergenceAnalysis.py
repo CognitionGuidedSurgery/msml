@@ -17,7 +17,7 @@ msml_infile_test = os.path.abspath("beamLinearGravity_test.msml.xml")
 #define reference files
 refN = "435606"
 testN = ["371","712","1810","4621","8990","19128","45418"]
-noNodes =["131, 225,487, 1074, 1996,3994,9071"]
+noNodes =["131", "225", "487", "1074", "1996", "3994", "9071"]
 refFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/Beam_Tet4_NElement={0:s}.vtk".format(refN))
 resultRefMeshFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/referenceDisp_Tet4_NElement=435606.vtu")
 
