@@ -1,12 +1,13 @@
 import os
 import sys
-sys.path.insert(0,"/MedSim2/msml/src") # to use msml imports
+import msml.envconfig as envconf
+sys.path.insert(0,envconf.MSML_ROOT) # to use msml imports
 import msml.api.simulation_runner as api
 import numpy as np
 import matplotlib.pyplot as plt
 
 # define pathes
-msmlDir = os.path.abspath("/MedSim2/msml/")
+msmlDir = os.path.abspath(envconf.MSML_ROOT)
 msml_outdir= os.path.abspath("/tmp/MSMLResultsBeamConvergenceAnalysis/")
 
 # define infiles and output directory
@@ -14,10 +15,11 @@ msml_infile_ref = os.path.abspath("beamLinearGravity_reference.msml.xml")
 msml_infile_test = os.path.abspath("beamLinearGravity_test.msml.xml")
 
 #define reference files
-refN = "219768" #"435606"
-testN = ["371","712","1810","4621","8990","19128","45418","100120"]
+refN = "435606"
+testN = ["371","712","1810","4621","8990","19128","45418"]
+noNodes =["131, 225,487, 1074, 1996,3994,9071"]
 refFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/Beam_Tet4_NElement={0:s}.vtk".format(refN))
-resultRefMeshFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/referenceDisp_Tet4_NElement=219768.vtu")
+resultRefMeshFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/referenceDisp_Tet4_NElement=435606.vtu")
 
 # run test sessions and compute mean error
 allMeanError = []
@@ -42,8 +44,8 @@ print("MeanError:" + str(allMeanError))
 
 #plot
 print("Start plotting...")
-plt.loglog(testN, allMeanError, 'ro')
-plt.xlabel('NElement')
+plt.loglog(noNodes, allMeanError, 'ro')
+plt.xlabel('NNodes')
 plt.ylabel('Root Mean Square')
 plt.title('Convergence Analysis')
 plt.show()

@@ -702,16 +702,33 @@ class SofaExporter(XMLExporter):
                     self._memory_update[self.id][request.id] = VTK("%s%s.vtu" % (filename, lastNumberStr)) 
 
                 elif objectNode.find("QuadraticMeshTopology") is not None:
-                    exportEveryNumberOfSteps = self.get_value_from_memory(request, 'timestep')
+
+                    exportEveryNumberOfSteps = request.get(
+                        'timestep')  #TODO: self.get_value_from_memory(request, 'timestep')
 
                     dispOutputNode = self.sub("ExtendedVTKExporter", objectNode,
                                               filename=filename,
                                               exportEveryNumberOfSteps=exportEveryNumberOfSteps,
+                                              edges=0,
                                               #todo export material => allows extraction of surfaces in post processing
                                               tetras=0,
                                               quadraticTetras=1,
                                               listening="true",
                                               exportAtEnd="true")
+
+                    timeSteps = self._msml_file.env.simulation[0].iterations  #TODO: self.get_value_from_memory
+
+                    #exportEveryNumberOfSteps = 1 in SOFA means export every second time step.
+                    #exportEveryNumberOfSteps = 0 in SOFA means do not export.
+                    if exportEveryNumberOfSteps == 0:
+                        lastNumber = 1
+                    else:
+                        lastNumber = int(math.floor(int(timeSteps) / ( int(exportEveryNumberOfSteps) + 1)))
+
+                    lastNumberStr = str(lastNumber)
+                    if _bool(request.useAsterisk):  #TODO: et_value_from_memory(request, 'useAsterisk')
+                        lastNumberStr = "*"
+                    self._memory_update[self.id][request.id] = VTK("%s%s.vtu" % (filename, lastNumberStr))
 
                     # untested block:
 

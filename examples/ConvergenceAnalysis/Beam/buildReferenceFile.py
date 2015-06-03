@@ -1,19 +1,24 @@
 import os
 import sys
-sys.path.insert(0,"/MedSim2/msml/src") # to use msml imports
+import msml.envconfig as envconf
+sys.path.insert(0,envconf.MSML_ROOT) # to use msml imports
 import msml.api.simulation_runner as api
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+msmlDir = os.path.abspath(envconf.MSML_ROOT)
+
 #define reference files
-refN = "435606"
+refN = "24"
 
 # define infiles and output directory
-msml_infile_ref = os.path.abspath("beamLinearGravity_reference.msml.xml")
+#msml_infile_ref = os.path.abspath("beamLinearGravity_reference.msml.xml")
+msml_infile_ref = os.path.abspath("beamQuadTetsGravity_reference.msml.xml")
 msml_outdir= os.path.abspath("/tmp/MSMLResultsBeamConvergenceAnalysis_buildReference/")
 
 
-refFile = os.path.abspath("/MedSim2/msml/examples/ConvergenceAnalysis/Beam/Beam_Tet4_NElement={0:s}.vtk".format(refN))
+refFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/Beam_Tet10_NElement={0:s}.vtk".format(refN))
 resultRefMeshFile = os.path.abspath(msml_outdir+"/referenceDisp.vtu")
 
 # run reference

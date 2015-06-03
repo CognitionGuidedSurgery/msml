@@ -16,7 +16,7 @@ alphabet.xml
 *.so
 Config.xml
 envconfg.py
-examples
+#examples
 
 share/testdata/tmp/
 
