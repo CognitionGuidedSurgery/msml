@@ -2,7 +2,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
-        <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TriangularSurface"
+        <var name="vol_mesh" value="Beam_Tet10_NElement=97.vtk" logical="TriangularSurface"
              physical="file.vtk"/>
     <var name="dispVar" value="0 0 0.1" logical="Displacement"
              physical="vector.float"/>
@@ -15,7 +15,7 @@
     <scene>
         <object id="liver">
             <mesh>
-                <linearTet id="liver" mesh="${vol_mesh}"/>
+                <quadraticTet id="liver" mesh="${vol_mesh}"/>
             </mesh>
 
             <sets>
@@ -30,7 +30,7 @@
 
             <material>
                 <region id="liverMaterial" indices="${bodyToIndexGroup}">
-                    <linearElasticMaterial youngModulus="100000" poissonRatio="0.49"/>
+                    <corotatedElasticMaterial youngModulus="100000" poissonRatio="0.49"/>
                     <mass name="abc" massDensity="1000"/>
                 </region>
             </material>
