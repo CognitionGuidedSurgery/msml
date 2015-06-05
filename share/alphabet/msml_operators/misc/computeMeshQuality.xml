@@ -1,0 +1,32 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://sfb125.de/msml" name="measureMeshQuality">
+    <meta key="doc">
+        Compute mesh quality depending on the matching count of material ids between original image(vti)
+        and generated mesh.  
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="measureMeshQuality" />
+    </runtime>
+
+  	<output>
+        <arg name="quality"  physical="float"/>
+    </output>
+
+
+    <input>
+        <arg name="input_image" logical="SegmentationImage3D" physical="file.vti">
+			<meta key="doc">
+                Filename of image.
+            </meta>
+		</arg>
+        <arg name="input_mesh" logical="SurfaceMesh" physical="file.vtk">		
+			<meta key="doc">
+                Filename of generated Mesh.
+            </meta>
+		</arg>		
+    </input>
+	
+
+	
+
+</msml:operator>

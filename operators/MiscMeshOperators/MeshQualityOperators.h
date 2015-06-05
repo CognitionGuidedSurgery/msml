@@ -37,8 +37,7 @@ LIBRARY_API std::vector<std::string> FillTetQualityMeasureTypeNames(); //alterna
 LIBRARY_API MeshQualityStats MeasureTetrahedricMeshQuality(std::string infile, std::string qualityMeasureName);
 LIBRARY_API std::vector<MeshQualityStats> MeasureTetrahedricMeshQuality(std::string infile, std::vector<std::string> qualityMeasureNames);
 LIBRARY_API void calculateHausdorffDistance(std::string infile, std::string source, bool points);
-LIBRARY_API void measureMeshQuality(std::string infile, std::string source);
-LIBRARY_API void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
+LIBRARY_API double measureMeshQuality(std::string infile, std::string source);
 }
 }
 

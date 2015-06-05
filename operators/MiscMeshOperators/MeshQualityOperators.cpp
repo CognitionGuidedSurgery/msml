@@ -138,7 +138,7 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
     return results;
 }
 
-void measureMeshQuality(std::string infile, std::string source){
+double measureMeshQuality(std::string infile, std::string source){
 	
 	vtkSmartPointer<vtkXMLImageDataReader> reader =
     vtkSmartPointer<vtkXMLImageDataReader>::New();
@@ -173,6 +173,7 @@ void measureMeshQuality(std::string infile, std::string source){
   int* dims = imageData->GetDimensions();
   double* origin = imageData->GetOrigin();
   double* spacing = imageData->GetSpacing();
+  double quality =0.0;
 
   //for each voxel in the segmentation image
   for (int z = 0; z < dims[2]; z++)
@@ -203,7 +204,8 @@ void measureMeshQuality(std::string infile, std::string source){
               //cout<<"material_id_in_mesh:" << material_id_in_mesh <<" is not material_id_in_image:" << material_id_in_image  << endl;
 		        }
           } //x
-          cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << 1-(double(diffVoxelCounter)/double(totalVoxelCounter)) << endl;
+          quality = 1-(double(diffVoxelCounter)/double(totalVoxelCounter));
+		  cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << quality << endl;
       } //y
       
   } //z
@@ -211,6 +213,8 @@ void measureMeshQuality(std::string infile, std::string source){
 
 
 	std::cout <<  diffVoxelCounter<<  std::endl;
+	std::cout <<  quality<<  std::endl;
+	return quality;
 }
 
 
