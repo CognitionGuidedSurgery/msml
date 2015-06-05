@@ -205,14 +205,14 @@ double measureMeshQuality(std::string infile, std::string source){
 		        }
           } //x
           quality = 1-(double(diffVoxelCounter)/double(totalVoxelCounter));
-		  cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << quality << endl;
+		  //cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << quality << endl;
       } //y
       
   } //z
 
 
 
-	std::cout <<  diffVoxelCounter<<  std::endl;
+	//std::cout <<  diffVoxelCounter<<  std::endl;
 	std::cout <<  quality<<  std::endl;
 	return quality;
 }
