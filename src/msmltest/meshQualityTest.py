@@ -36,15 +36,9 @@ class MeshQualityTest(TestCase):
     def test_quality(self):
         msml_file = test_common.SCENARIOS_DIR / "MeshQuality/MeshQuality.msml.xml"
         print("Test %s" % msml_file)
-        for i in range(2,6):
-            print(i)
-            q1 = MeshQuality(msml_file, 10, 5, i, 30)
-            q1()
-        for i in range(1,31):
-            print(i)
-            q1 = MeshQuality(msml_file, i, i, 3, i)
-            q1()
+        q1 = MeshQuality(msml_file, 8, 8, 3, 8)
+        q2 = MeshQuality(msml_file, 30, 30, 3, 30)
+        quality1 = q1()
+        quality2 = q2()
+        self.assertTrue( quality1 > quality2)
         
-        
-        
-        #self.assertTrue( quality2 > quality2) 

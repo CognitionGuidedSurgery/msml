@@ -201,19 +201,13 @@ double measureMeshQuality(std::string infile, std::string source){
             if(material_id_in_image>0 && material_id_in_mesh != material_id_in_image)
             {
 			        diffVoxelCounter++;
-              //cout<<"material_id_in_mesh:" << material_id_in_mesh <<" is not material_id_in_image:" << material_id_in_image  << endl;
-		        }
+		    }
           } //x
           quality = 1-(double(diffVoxelCounter)/double(totalVoxelCounter));
-		  //cout<<"process: z=" << z <<" of " << dims[2] << "y=" << y <<" of " << dims[1] <<".  Quality :" << quality << endl;
       } //y
       
   } //z
-
-
-
-	//std::cout <<  diffVoxelCounter<<  std::endl;
-	std::cout <<  quality<<  std::endl;
+	log_debug() <<  quality <<  std::endl;
 	return quality;
 }
 
