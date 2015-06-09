@@ -1,4 +1,0 @@
-<Node dt="0.05" name="root" gravity="0.000 0.000 -9.810">
-  <EulerImplicitSolver name="odesolver"/>
-  <CGLinearSolver iterations="100" threshold="1e-06" tolerance="1e-06"/>
-</Node>
