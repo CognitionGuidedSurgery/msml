@@ -21,7 +21,7 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-MeshQuality::calculateHausdorffDistance(INPUT("vertebra1.vtk"), INPUT("vertebra9.vtk"), true);
+MeshQuality::calculateHausdorffDistance(INPUT("vertebra1.vtk"), INPUT("vertebraGenerated.vtk"), true);
 //MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
   return EXIT_SUCCESS;
 
