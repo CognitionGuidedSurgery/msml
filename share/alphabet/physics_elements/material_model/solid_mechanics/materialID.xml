@@ -1,0 +1,18 @@
+<!-- Material ID -->
+
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="materialID"
+              category="material" quantity="single">
+
+    <description>
+        Material ID for tet elements
+    </description>
+
+    <parameters>
+        <arg name="matID" physical="vector.int" default="-1" logical="vector.matID">
+            <meta key="doc" value="Set the matID of a surface (triangular) element"/>
+        </arg>
+    </parameters>
+
+</msml:element>

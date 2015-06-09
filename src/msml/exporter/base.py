@@ -182,6 +182,8 @@ class Exporter(object):
 
                 for material in mr:
                     assert isinstance(material, ObjectElement)
+
+                    
                     for para in material.meta.parameters.values():
                         assert isinstance(para, Slot)
                         name = self.get_input_objectelement_name(material, para)
@@ -205,9 +207,9 @@ class Exporter(object):
                             #look for default value, if it is an optional argument, there should be a default value
                             if(para.default is not None):
                                 value = para.default
-                            #non optional argument or no default value => error
+                                #non optional argument or no default value => error
                             else:
-                                raise MSMLError("parameter %s of constraint %s has not proper value" % (para.name, const.id))
+                                raise MSMLError("parameter %s of constraint %s (type %s) has not proper value" % (para.name, const.id, const.tag))
 
                         name = self.get_input_objectelement_name(const, para)
                         self._input[name] = Slot(name, para.physical_type, parent=self)

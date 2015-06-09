@@ -1,0 +1,63 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+    <variables>
+        <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TetrahedralVolumeMesh" physical="file.vtk"/>
+    <var name="dispVar" value="0 0 5" logical="Displacement" physical="vector.float"/>
+    <var name="resultMesh" value="referenceDisp.vtu" physical="file.vtk"/>
+    </variables>
+
+
+    <scene>
+        <object id="liver">
+            <mesh>
+                <linearTet id="liver" mesh="${vol_mesh}"/>
+            </mesh>
+
+            <material>
+                <region id="liverMaterial" indices="${bodyToIndexGroup}">
+                    <linearElasticMaterial youngModulus="300" poissonRatio="0.40"/>
+                    <mass name="abc" massDensity="0.00000000000001"/>
+                </region>
+            </material>
+
+            <constraints>
+                <constraint>
+                    <fixedConstraint name="bodyConstraint" forStep="${initial}" indices="${leftFaceGroup}"/>
+                    <displacementConstraint name="dispConstraint" forStep="${initial}" indices="${rightFaceGroup}" displacement="${dispVar}"/>
+                </constraint>
+
+            </constraints>
+
+            <output>
+                <displacement id="disp" timestep="1"/>
+            </output>
+        </object>
+    </scene>
+
+    <workflow>
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="-0.1 -0.1 -0.1 0.04 0.07  0.21" mesh="${vol_mesh}"
+                               select="points"/>
+        <ComputeIndicesFromBoxROI id="rightFaceGroup" box="0 0 0.19999 0.03 0.06 0.21" mesh="${vol_mesh}"
+                               select="points"/>
+
+        <ComputeIndicesFromBoxROI id="leftFaceGroup" box="0 0 -0.000000001 0.03 0.06 0.00000001" mesh="${vol_mesh}"
+                               select="points"/>
+
+        <ExtractPointPositions id="finalPointDisp" mesh="${disp}" indices="${bodyToIndexGroup}"/>
+
+        <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" />
+
+    </workflow>
+
+
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.5" iterations="100" gravity="0 0 0"/>
+        </simulation>
+    </environment>
+
+</msml:msml>
+

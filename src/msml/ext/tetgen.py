@@ -31,15 +31,10 @@ __author__ = 'Alexander Weigl'
 
 #print(os.environ['LD_LIBRARY_PATH'])
 
-from warnings import warn
-
-from msml.exceptions import MSMLUnknownModuleWarning
-
+from msml.log import warn
 
 try:
     from  TetgenOperatorsPython import *
 except ImportError, e:
     warn("Could not load TetgenOperatorsPython. "
-         "This is the C++-Modul. Have you successfully compiled and installed it? "
-         "Error is %s" % e,
-         MSMLUnknownModuleWarning, 0)
+         "Error is %s", e)

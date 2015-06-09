@@ -61,21 +61,25 @@
         <DirichletMaterial3>12345</DirichletMaterial3> <!-- displaced boundary -->
         <NeumannMaterial1>20</NeumannMaterial1> <!-- (lower) left boundary under pressure -->
         <NeumannMaterial1Pressure>1.5</NeumannMaterial1Pressure> <!-- blood pressure which affects the closing of the MV -->
-        <NeumannMaterial2>31</NeumannMaterial2> <!-- (upper) left boundary under pressure -->
+        <NeumannMaterial2>17</NeumannMaterial2> <!-- (upper) left boundary under pressure -->
         <NeumannMaterial2Pressure>0.0</NeumannMaterial2Pressure> <!-- value 0.0 means: no opening after closing -->
         <NeumannMaterial3>1234</NeumannMaterial3> <!-- (lower!) right boundary under pressure -->
         <NeumannMaterial3Pressure>1234.5</NeumannMaterial3Pressure> <!-- no differentiation between left/right lower leaflet needed -->
-        <NeumannMaterial4>32</NeumannMaterial4> <!-- (upper!) right boundary under pressure -->
+        <NeumannMaterial4>18</NeumannMaterial4> <!-- (upper!) right boundary under pressure -->
         <NeumannMaterial4Pressure>0.0</NeumannMaterial4Pressure> <!-- value 0.0 means: no opening after closing -->
         <NeumannBC_Pressure_StartTime>2.0</NeumannBC_Pressure_StartTime> <!-- time when cardiac cycle (closing/opening valve) begins -->
         <NeumannBC_Pressure_EndTime>20.0</NeumannBC_Pressure_EndTime> <!-- time when cardiac cycle (closing/opening valve) ends -->
-        <NeumannBC_upperMVcenterPoint>{84.0, 93.0, 160.0}</NeumannBC_upperMVcenterPoint> <!-- TODO implement this flexibly! -->
-        <NeumannBC_avAnnulusRingRadius>23.0</NeumannBC_avAnnulusRingRadius> <!-- TODO implement this flexibly! -->
+        {% if hf3_chanceOfContact == True %}
+        <NeumannBC_upperMVcenterPoint>{{mvgeometryX}},{{mvgeometryY}},{{mvgeometryZ}}</NeumannBC_upperMVcenterPoint> 
+        <NeumannBC_avAnnulusRingRadius>{{mvgeometryRadius}}</NeumannBC_avAnnulusRingRadius> 
         <ChordaePullStrength>2200</ChordaePullStrength> <!-- scaling factor for the strength of the chordae pulling the leaflets back -->
-        <ContactMaterial1>31</ContactMaterial1> <!-- left (upper) boundary subject to potential contact -->
-        <ContactMaterial2>32</ContactMaterial2> <!-- right (upper) boundary subject to potential contact -->
+        {%endif%}
+        {% if hf3_chanceOfContact == True %}
+        <ContactMaterial1>17</ContactMaterial1> <!-- left (upper) boundary subject to potential contact -->
+        <ContactMaterial2>18</ContactMaterial2> <!-- right (upper) boundary subject to potential contact -->
         <ContactPenaltyFactor>1500.0</ContactPenaltyFactor> <!-- scalar for the cbc_-vector, e.g. in [1500..5000] -->
         <ContactToleranceThreshold>1.0</ContactToleranceThreshold> <!-- this threshold should approx. be of the size of a cell diameter, e.g. in [1.0...1.5] -->
+        {%endif%}
     </Boundary>
 
     <LinearSolver>

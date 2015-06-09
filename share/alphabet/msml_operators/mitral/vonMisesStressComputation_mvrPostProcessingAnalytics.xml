@@ -1,9 +1,9 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://sfb125.de/msml" name="vtuToHf3inpIncMVmatIDsProducer">
+               xsi:schemaLocation="http://sfb125.de/msml" name="vonMisesStressComputation_mvrPostProcessingAnalytics">
 
     <runtime>
-        <python module="msml.ext.vtuToHf3inpIncMVmatIDsProducer" function="vtu_To_hf3inp_inc_MV_matIDs_Producer"/>
+        <python module="msml.ext.mitral" function="von_misses_stress"/>
     </runtime>
 
     <input>
@@ -11,12 +11,10 @@
     </input>
 
     <output>
-		<arg name="hf3inpFile" logical="object" physical="file" />
+		<arg name="mvMeshWithExtendedVonMisesStressData" logical="object" physical="file" />
     </output>
 
     <parameters>
-	    <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk">
-	       </arg>
         <arg name="outputfilename" logical="object" physical="string">
 	       </arg>
     </parameters>

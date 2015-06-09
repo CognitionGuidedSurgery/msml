@@ -790,6 +790,27 @@ vector<double> BoundsFromMaterialID(const char* infile, int materialID)
 	return vecBounds;
 }
 
+string CombineMeshes(const char* infileA, const char* infileB, const char* outfile)
+{
+	vtkSmartPointer<vtkUnstructuredGrid> meshA = IOHelper::VTKReadUnstructuredGrid(infileA);
+	vtkSmartPointer<vtkUnstructuredGrid> meshB = IOHelper::VTKReadUnstructuredGrid(infileB);
+
+	vtkSmartPointer<vtkUnstructuredGrid> unionMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();	
+	vtkSmartPointer<vtkMergeCells> merger = vtkSmartPointer<vtkMergeCells>::New();
+	merger->SetUnstructuredGrid(unionMesh);
+	merger->MergeDuplicatePointsOn();
+	merger->SetPointMergeTolerance(0.00001);	
+	merger->SetTotalNumberOfCells(meshA->GetNumberOfCells()+meshB->GetNumberOfCells());
+	merger->SetTotalNumberOfPoints(meshA->GetNumberOfPoints()+meshB->GetNumberOfPoints());
+	merger->SetTotalNumberOfDataSets(2);
+	merger->MergeDataSet(meshA);
+	merger->MergeDataSet(meshB);
+	merger->Finish();
+
+	IOHelper::VTKWriteUnstructuredGrid(outfile,unionMesh);
+	return outfile;
+	
+}
 
 
 /*

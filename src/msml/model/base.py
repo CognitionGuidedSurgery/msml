@@ -776,8 +776,9 @@ def link_algorithm(msmlfile, attributes, node, slots):
         try:
             slot = slots[key]
         except KeyError as e:
-            log.fatal("%s is not a valid slot for %s" % (key, node))
-            raise BaseException()
+            msg = "%s is not a valid slot of %s" % (key, node)
+            log.fatal(msg)
+            raise BaseException(msg)
 
         if isinstance(value, Constant):
             # get type and format from input/parameter
