@@ -214,7 +214,7 @@ double measureMeshQuality(std::string infile, std::string source){
 }
 
 
-void  calculateHausdorffDistance(string originalFile, string compareFile, bool points) {
+double calculateHausdorffDistance(string fileMesh1, string fileMesh2, bool points) {
 
 	log_debug() << "calculateHausdorffDistance" << endl;
 	
@@ -223,44 +223,34 @@ void  calculateHausdorffDistance(string originalFile, string compareFile, bool p
 	double hausdorffDistance =0.0;
 	
 	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader->SetFileName(originalFile.c_str());
+    reader->SetFileName(fileMesh1.c_str());
     reader->Update();
 
-    vtkUnstructuredGrid* originalMesh = reader->GetOutput();
+    vtkUnstructuredGrid* mesh1 = reader->GetOutput();
 
 	vtkSmartPointer<vtkUnstructuredGridReader> reader2 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-    reader2->SetFileName(compareFile.c_str());
+    reader2->SetFileName(fileMesh2.c_str());
     reader2->Update();
 
-    vtkUnstructuredGrid* compareMesh = reader2->GetOutput();
+    vtkUnstructuredGrid* mesh2 = reader2->GetOutput();
 
-	vtkSmartPointer<vtkCellLocator> cellLocatorOriginalMesh = 
+	vtkSmartPointer<vtkCellLocator> cellLocatorMesh1 = 
 	vtkSmartPointer<vtkCellLocator>::New();
-	cellLocatorOriginalMesh->SetDataSet(originalMesh);
-	cellLocatorOriginalMesh->BuildLocator();
+	cellLocatorMesh1->SetDataSet(mesh1);
+	cellLocatorMesh1->BuildLocator();
 
-	vtkSmartPointer<vtkCellLocator> cellLocatorCompareMesh = 
+	vtkSmartPointer<vtkCellLocator> cellLocatorMesh2 = 
 	vtkSmartPointer<vtkCellLocator>::New();
-	cellLocatorCompareMesh->SetDataSet(originalMesh);
-	cellLocatorCompareMesh->BuildLocator();
+	cellLocatorMesh2->SetDataSet(mesh2);
+	cellLocatorMesh2->BuildLocator();
 
-	vtkSmartPointer<vtkKdTreePointLocator> pointLocatorOriginal = vtkSmartPointer<vtkKdTreePointLocator>::New();
-	vtkSmartPointer<vtkKdTreePointLocator> pointLocatorCompare = vtkSmartPointer<vtkKdTreePointLocator>::New();
-  
-	vtkSmartPointer<vtkDoubleArray> distanceOriginalToCompare = vtkSmartPointer<vtkDoubleArray>::New();
-	distanceOriginalToCompare->SetNumberOfComponents(1);
-	distanceOriginalToCompare->SetNumberOfTuples(originalMesh->GetNumberOfPoints());
-	distanceOriginalToCompare->SetName( "Distance" );
-      
-	vtkSmartPointer<vtkDoubleArray> distanceCompareToOriginal = vtkSmartPointer<vtkDoubleArray>::New();
-	distanceCompareToOriginal->SetNumberOfComponents(1);
-	distanceCompareToOriginal->SetNumberOfTuples(compareMesh->GetNumberOfPoints());
-	distanceCompareToOriginal->SetName( "Distance" );
+	vtkSmartPointer<vtkKdTreePointLocator> pointLocatorMesh1 = vtkSmartPointer<vtkKdTreePointLocator>::New();
+	vtkSmartPointer<vtkKdTreePointLocator> pointLocatorMesh2 = vtkSmartPointer<vtkKdTreePointLocator>::New();
 	
-	pointLocatorOriginal->SetDataSet(originalMesh);
-	pointLocatorOriginal->BuildLocator();
-	pointLocatorCompare->SetDataSet(compareMesh);
-	pointLocatorCompare->BuildLocator();
+	pointLocatorMesh1->SetDataSet(mesh1);
+	pointLocatorMesh1->BuildLocator();
+	pointLocatorMesh2->SetDataSet(mesh2);
+	pointLocatorMesh2->BuildLocator();
 
 	  double p[3];
 	  double closestPoint[3];
@@ -270,36 +260,34 @@ void  calculateHausdorffDistance(string originalFile, string compareFile, bool p
 	  int subId; 
 
 	  // Access the cell centers
-	  for(vtkIdType i = 0; i < originalMesh->GetNumberOfPoints(); i++) {
+	  for(vtkIdType i = 0; i < mesh1->GetNumberOfPoints(); i++) {
 		//cellCentersFilterOriginalMesh->GetOutput()->GetPoint(i, p);
 		
-		originalMesh->GetPoint(i, currentPoint);
+		mesh1->GetPoint(i, currentPoint);
 		if(points){
-			vtkIdType closestPointId = pointLocatorCompare->FindClosestPoint(currentPoint);
-			compareMesh->GetPoint(closestPointId,closestPoint);
+			vtkIdType closestPointId = pointLocatorMesh2->FindClosestPoint(currentPoint);
+			mesh2->GetPoint(closestPointId,closestPoint);
 			closestPointDist = sqrt(pow(currentPoint[0]-closestPoint[0],2)+pow(currentPoint[1]-closestPoint[1],2)+pow(currentPoint[2]-closestPoint[2],2));
 		} else {
-			cellLocatorCompareMesh->FindClosestPoint(currentPoint,closestPoint,cellId,subId,closestPointDist);
+			cellLocatorMesh2->FindClosestPoint(currentPoint,closestPoint,cellId,subId,closestPointDist);
 		}
 		
-		distanceOriginalToCompare->SetValue(i, closestPointDist);
 		if( closestPointDist > relativeDistance0) {
 			relativeDistance0 = closestPointDist;
 		}
 	   }
 
-	   for(vtkIdType i = 0; i < compareMesh->GetNumberOfPoints(); i++) {
+	   for(vtkIdType i = 0; i < mesh2->GetNumberOfPoints(); i++) {
 		//cellCentersFilterCompareMesh->GetOutput()->GetPoint(i, p); 
 		//cellLocatorOriginalMesh->FindClosestPoint(p, closestPoint, cellId, subId, closestPointDist);
-		compareMesh->GetPoint(i, currentPoint);
+		mesh2->GetPoint(i, currentPoint);
 		if(points){
-			vtkIdType closestPointId = pointLocatorOriginal->FindClosestPoint(currentPoint);
-			originalMesh->GetPoint(closestPointId,closestPoint);
+			vtkIdType closestPointId = pointLocatorMesh1->FindClosestPoint(currentPoint);
+			mesh1->GetPoint(closestPointId,closestPoint);
 			closestPointDist = sqrt(pow(currentPoint[0]-closestPoint[0],2)+pow(currentPoint[1]-closestPoint[1],2)+pow(currentPoint[2]-closestPoint[2],2));
 		} else {
-			cellLocatorOriginalMesh->FindClosestPoint(currentPoint,closestPoint,cellId,subId,closestPointDist);
+			cellLocatorMesh1->FindClosestPoint(currentPoint,closestPoint,cellId,subId,closestPointDist);
 		}
-		distanceCompareToOriginal->SetValue(i, closestPointDist);
 		if( closestPointDist > relativeDistance1) {
 			relativeDistance1 = closestPointDist;
 		}
@@ -310,7 +298,9 @@ void  calculateHausdorffDistance(string originalFile, string compareFile, bool p
 	   } else {
 		 hausdorffDistance = relativeDistance1;
 	   }
-	  log_debug() << hausdorffDistance << endl;
+		log_debug() << hausdorffDistance << endl;
+	  
+	  return hausdorffDistance;
 	}
   }
 }

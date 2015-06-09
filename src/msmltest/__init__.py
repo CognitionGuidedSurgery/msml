@@ -11,7 +11,8 @@ load_envconfig()
 #from .batchPressure import *
 #from .slidingContact import *
 #from .morphCubeTest import *
-from .meshQualityTest import *
+#from .meshQualityTest import *
+from .hausdorffDistanceTest import *
 #from .mitral import *
 
 if __name__ == "__main__":
