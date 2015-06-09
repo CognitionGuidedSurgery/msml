@@ -1,7 +1,7 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://sfb125.de/msml" name="measureMeshQuality">
     <meta key="doc">
-        Compute mesh quality depending on the matching count of material ids between original image(vti)
+        Computes mesh quality depending on the matching count of material ids between original image(vti)
         and generated mesh.  
     </meta>
     <runtime>
