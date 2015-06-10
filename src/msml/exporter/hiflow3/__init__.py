@@ -509,14 +509,22 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
     def create_bcdata(self, obj, step):
         bcdata = BcData()
         
-        for constraint in obj.constraints[0]:          
-             # TODO: adapt this for non-box-able indices/vertices/facets/cells.
-            # TODO: write indices-list from vtu2inp-incMatIDs-Producer script into MSML-compatible list.
+        for constraint in obj.constraints[0]:
+            # there are no fixedDirichletBCs in the MVR scenario;
+            bcdata.fc.append(0, [], [])
+            # displacedPointsConstraint in the MVR scenario;
             if constraint.tag ==  "displacedPointsConstraint":
-                points = self.get_value_from_memory(constraint, 'points') # NEW 2015-05-05.
+                points = self.get_value_from_memory(constraint, 'points')
                 count = len(points) / 3
                 disp_vector = self.get_value_from_memory(constraint, 'displacements')
-                bcdata.dc.append(count, points, disp_vector)     
+                bcdata.dc.append(count, points, disp_vector)
+            # pointwiseForceConstraint in the MVR scenario;
+            if constraint.tag == "pointwiseForceConstraint":
+                points = self.get_value_from_memory(constraint, 'points')
+                count = len(points) / 3
+                force_vector = self.get_value_from_memory(constraint, 'forces')
+                bcdata.fp.append(count, points, force_vector)
+            # bcdata for MVR scenario done;
         return bcdata
 
 
@@ -548,6 +556,7 @@ def list_to_hf3(seq):
             s.write(",")
 
     s = s.getvalue()[:-1]
-    assert s.count(';') + 1 == len(seq) / 3
+    if len(seq) > 0: # in order to have empty BC-lists at least represented in HiFlow3-BCdata-file with numBCtype = 0;
+        assert s.count(';') + 1 == len(seq) / 3
     return s
 

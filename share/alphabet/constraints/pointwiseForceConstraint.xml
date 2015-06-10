@@ -1,0 +1,20 @@
+<msml:element xmlns:msml="http://sfb125.de/msml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://sfb125.de/msml" name="pointwiseForceConstraint" category="constraint"
+              quantity="single">
+
+
+    <description>
+        Sets the pointwise forces (direction and scaling) for specified point coordinates; pointwise Neumann BCs.
+    </description>
+
+    <parameters>
+        <arg name="points" physical="vector.float" logical="PointSet">
+            <meta key="doc" value="Set coordinates of surface points subject to pointwise forces; points separated by spaces."/>
+        </arg>
+        <arg name="forces" physical="ListF" logical="Scalar">
+            <meta key="doc" value="Set the force vector (direction and scaling) of the points."/>
+        </arg>
+    </parameters>
+    
+</msml:element>

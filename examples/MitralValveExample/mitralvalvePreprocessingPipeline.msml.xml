@@ -22,7 +22,7 @@
             <material>
                 <region id="mvMaterial" indices="${aVtuToHf3inpIncMVmatIDsProducer.tet_material}">
                     <materialID matID="10"/>
-                    <linearElasticMaterial youngModulus="4166" poissonRatio="0.488"/>
+                    <linearElasticMaterial youngModulus="2350" poissonRatio="0.488"/> <!-- YoungModulus \in {2350, 4166, 6200}. -->
                     <mass name="stdMass" massDensity="1.000"/>
                 </region>
             </material>
@@ -39,8 +39,12 @@
                     <!-- Note: these points/displacements (i.e. AnnulusPointsToBeDisplacedBySewingProcedure) come from the mitral-Operator "aBCdataForMVRsimProducer" -->
                     
                     <surfacePressure indices="0" pressure="0"/>
+                    <!-- Note: this is empty in the MVR simulation scenario, since facet- AND point-wise Neumann-BCs are needed. -->
                     
-                    <!-- Note: this has to be replaced by a new surfacePointForces-Constraint to model the chordae pull forces-->
+                    <pointwiseForceConstraint points="${aBCdataForMVRsimExtender.points}"
+                                              forces="${aBCdataForMVRsimExtender.forces}"/>
+                    <!-- Note: these points/forces (i.e. ChordaePullForces) come from the mitral-Operator "aBCdataForMVRsimExtender" -->
+                    <!-- Note: this is a new additional surfacePointForcesConstraint in order to model the MV chordae pull forces -->
                     <!-- Note: this has to be MSMLalized/standardized later -->
                     
                     <!-- Note: additionally, we need a time-dependent-surface-force-Constraint, acting on surface facets with specific matIDs (e.g. leafletsDownsideToIndexGroup)
@@ -48,6 +52,7 @@
                     <!-- Note: this has to be MSMLalized/standardized later -->
                 </constraint>
                 <!-- <constraint name="bodyConstraint" forStep="${subsequent_def_heartcycle_2}"> ... </constraint> -->
+                <!-- include pointwiseForceConstraint here then... -->
             </constraints>
 
             <output>
@@ -97,11 +102,15 @@
                            surfaceMesh="${input_mv_surf_mesh}"
                            ring="${input_mv_ring}"/>
 
-        <!-- <mvrBCdataExtender id="aBCdataForMVRsimExtender" ... /> -->
+        <mvrBCdataExtender id="aBCdataForMVRsimExtender"
+                           volumeMesh="${aVolumeMesher}"
+                           surfaceMesh="${input_mv_surf_mesh}" />
 
         <!-- Simulation_Scenario_Mgmt_Operator to organize/distribute MV-scenarios-->
 
         <!-- EXECUTE_HIFLOW3_SIMULATION -->
+        <!-- how to MSML-controlled execute simulation in parallel?! - i.e. using mpirun -np X -->
+        <!-- how to MSML-controlled execute simulation on HPC-cluster?! - i.e. send job to HPC-cluster -->
 
         <!-- pvtu2vtu-Operator -->
         <!-- pvtu2vtu-Operator not needed anymore -->
@@ -119,7 +128,8 @@
                 processingUnit="CPU" numParallelProcessesOnCPU="4"
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
         <simulation>
-            <step name="initial_def_implantation_1" dt="0.05" iterations="20"/>
+            <step name="initial_def_implantation_1" dt="0.05" iterations="300"/>
+            <!-- <step name="initial_def_implantation_1" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_def_heartcycle_2" dt="0.01" iterations="500"/> -->
             <!-- <step name="subsequent_blood_pressure_and_mv_closing" dt="0.01" iterations="500"/> -->
