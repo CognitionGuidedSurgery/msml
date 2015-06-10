@@ -1,6 +1,7 @@
 
 #include "PostProcessingOperators.h"
 #include "MiscMeshOperators.h"
+#include "MeshQualityOperators.h"
 #include "IndexRegionOperators.h"
 #include <vector>
 #include <iostream>
@@ -20,9 +21,10 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-  MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
-   
-	return EXIT_SUCCESS;
+MeshQuality::calculateHausdorffDistance(INPUT("vertebra1.vtk"), INPUT("vertebraGenerated.vtk"), true);
+//MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
+  return EXIT_SUCCESS;
+
 }
 
 
