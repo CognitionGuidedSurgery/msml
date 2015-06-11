@@ -12,7 +12,7 @@ msml_outdir= os.path.abspath("/tmp/MSMLResultsBeamConvergenceAnalysis/")
 
 # define infiles and output directory
 msml_infile_ref = os.path.abspath("beamLinearGravity_reference.msml.xml")
-msml_infile_test = os.path.abspath("beamLinearGravity_test.msml.xml")
+msml_infile_test = os.path.abspath("beamLinearGravity.msml.xml")
 
 #define reference files
 refN = "435606"
@@ -40,12 +40,13 @@ for i in testN:
     #get mean error
     allMeanError.append(myRunner.get_results('meanError', 'error'))
 
-print("MeanError:" + str(allMeanError))
+print("Node numbers:" + str(noNodes))
+print("MeanErrors:" + str(allMeanError))
 
 #plot
 print("Start plotting...")
 plt.loglog(noNodes, allMeanError, 'ro')
 plt.xlabel('NNodes')
-plt.ylabel('Root Mean Square')
+plt.ylabel('Relative mean error')
 plt.title('Convergence Analysis')
 plt.show()

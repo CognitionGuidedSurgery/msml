@@ -16,8 +16,8 @@ msml_infile_test = os.path.abspath("beamQuadTetsGravity_test.msml.xml")
 
 #define reference files
 refN = "19128"
-testN = ["24","97","371","712","1810","4621","8990"]
-noNodes =["61", "238","739", "1334", "3111", "7334", "13927"]
+testN = ["24","97","371","712","1810","4621"]
+noNodes =["61", "238","739", "1334", "3111", "7334"]
 refFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/Beam_Tet10_NElement={0:s}.vtk".format(refN))
 resultRefMeshFile = os.path.abspath(msmlDir+"/examples/ConvergenceAnalysis/Beam/referenceDisp_Tet10_NElement={0:s}.vtu".format(refN))
 

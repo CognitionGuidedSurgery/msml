@@ -728,7 +728,7 @@ class SofaExporter(XMLExporter):
                     lastNumberStr = str(lastNumber)
                     if _bool(request.useAsterisk):  #TODO: et_value_from_memory(request, 'useAsterisk')
                         lastNumberStr = "*"
-                    self._memory_update[self.id][request.id] = VTK("%s%s.vtu" % (filename, lastNumberStr))
+                    self._memory_update[self.id][request.id] = VTK("%s_%s.vtk" % (filename, lastNumberStr))
 
                     # untested block:
 

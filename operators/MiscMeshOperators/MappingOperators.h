@@ -44,6 +44,7 @@ namespace MSML {
         LIBRARY_API std::string MapMesh ( std::string meshIni, std::string meshDeformed, std::string meshToMap, std::string mappedMesh );
         LIBRARY_API bool MapMesh ( const char* meshIni, const char* meshDeformed, const char* meshToMap, const char* mappedMesh );
         LIBRARY_API bool MapMesh ( vtkUnstructuredGrid* meshIni,vtkUnstructuredGrid* meshDeformed, vtkUnstructuredGrid* meshToMap, vtkUnstructuredGrid* mappedMesh );
+        LIBRARY_API void CalculateGlobalCoords(double* localCoords, double* globalCoords, double* nodes);
     }
 } // end MSML
 

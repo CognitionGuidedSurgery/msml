@@ -61,17 +61,17 @@
         <ComputeIndicesFromBoxROI id="leftFaceGroup" box="0 0 -0.000000001 0.03 0.06 0.00000001" mesh="${vol_mesh}"
                                select="points"/>
 
-        <ExtractPointPositions id="finalPointDisp" mesh="${disp}" indices="${bodyToIndexGroup}"/>
+
 
         <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" />
 
 
-        <TransformMeshBarycentric id="transformVolumeMesh" volumeMeshToDeform="${vol_mesh_ref}" referenceVolumeMesh="${vol_mesh}" deformedVolumeMesh="${disp}" targetVolumeMesh="${resultTransformMesh}"/>
+        <MapMesh id="transformVolumeMesh" volumeMeshToDeform="${vol_mesh_ref}" referenceVolumeMesh="${vol_mesh}" deformedVolumeMesh="${disp}" targetVolumeMesh="${resultTransformMesh}"/>
 
 
         <ComputeIndicesFromBoxROI id="bodyToIndexGroup2" box="-0.1 -0.1 -0.1 0.04 0.07  0.21" mesh="${vol_mesh_ref}"
                                select="points"/>
-        <ExtractPointPositions id="finalPointDispTransform" mesh="${transformVolumeMesh}" indices="${bodyToIndexGroup2}"/>
+
 
         <ComputeMeanError id="meanError" initialMesh="${vol_mesh_ref}" referenceMesh="${outputRef}" testMesh="${transformVolumeMesh}" />
 
