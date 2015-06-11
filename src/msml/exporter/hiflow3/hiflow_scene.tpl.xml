@@ -37,7 +37,11 @@
         <density>{{m.density}}</density>
         <lambda>{{m.lamelambda}}</lambda> <!-- e.g.: 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
         <mu>{{m.lamemu}}</mu> <!-- e.g.: 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
-        <gravity>{{m.gravity}}</gravity>
+        {% if hf3_chanceOfContact == True %}
+        <gravity>0.0</gravity> <!-- do not consider gravity in the MVR scenarios -->
+        {%else%}
+        <gravity>{{m.gravity}}</gravity> <!-- use MSML-file-controlled gravity -->
+        {%endif%}
         <calcVolumeSwitch>1</calcVolumeSwitch> <!-- 0 for no, 1 for yes (default) -->
     </ElasticityModel>
     {%endfor%}
