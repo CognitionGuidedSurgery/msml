@@ -5,10 +5,10 @@
     <variables>
         <var name="input_mv_surf_mesh"
              value="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp"
-             logical="TriangularSurface" physical="vtp"/>
+             logical="TriangularSurface" physical="vtp" role="input" />
         <var name="input_mv_ring"
              value="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp"
-             logical="object" physical="vtp"/>
+             logical="object" physical="vtp" role="input" />
     </variables>
 
     <scene>
