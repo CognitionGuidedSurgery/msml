@@ -6,12 +6,19 @@
         <BCdataFilename>{{bcdatafilename}}</BCdataFilename>
         <dispDirBCsRelease>0</dispDirBCsRelease> <!-- 0 for fix-it (default), 1 for let-it-swing -->
         <InitialRefLevel>0</InitialRefLevel>
-        <chanceOfContact>{{hf3_chanceOfContact}}</chanceOfContact> <!-- 0 for no contact possible, 1 for contact possible -->
+        {% if hf3_chanceOfContact == True %}
+        <chanceOfContact>1</chanceOfContact> <!-- 0 for no contact possible, 1 for contact possible -->
+        {%else%}
+        <chanceOfContact>0</chanceOfContact> <!-- 0 for no contact possible, 1 for contact possible -->
+        {%endif%}
     </Mesh>
 
     <LinearAlgebra>
         <Platform>{{solverPlatform}}</Platform>  <!-- CPU, GPU (only for WITH_CUDA compilation), OPENCL (only for WITH_OPENCL compilation) -->
         <NumParaProcCPU>{{numParaProcCPU}}</NumParaProcCPU>
+        {% if hf3_chanceOfContact != True %}
+        <Implementation>Naive</Implementation>  <!-- for "simple RESTflow-Version" only -->
+        {%endif%}
         <MatAndVecImplementationCPU>Naive</MatAndVecImplementationCPU>
         {% if solverPlatform=="CPU" %}
         <MatrixImplementation>Naive</MatrixImplementation> <!-- Naive on CPU, or SCALAR on GPU -->
@@ -30,7 +37,11 @@
         <density>{{m.density}}</density>
         <lambda>{{m.lamelambda}}</lambda> <!-- e.g.: 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
         <mu>{{m.lamemu}}</mu> <!-- e.g.: 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
-        <gravity>{{m.gravity}}</gravity>
+        {% if hf3_chanceOfContact == True %}
+        <gravity>0.0</gravity> <!-- do not consider gravity in the MVR scenarios -->
+        {%else%}
+        <gravity>{{m.gravity}}</gravity> <!-- use MSML-file-controlled gravity -->
+        {%endif%}
         <calcVolumeSwitch>1</calcVolumeSwitch> <!-- 0 for no, 1 for yes (default) -->
     </ElasticityModel>
     {%endfor%}

@@ -22,7 +22,7 @@
 
     <parameters>
         <arg name="outputFilename" target="true" optional="true"
-             default="bcdata.xml"
+             default="dbcdata.xml"
              logical="object" physical="string">
         </arg>
     </parameters>

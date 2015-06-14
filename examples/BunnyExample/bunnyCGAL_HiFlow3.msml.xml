@@ -3,9 +3,10 @@
            xsi:schemaLocation="http://sfb125.de/msml">
 
     <variables>
-        <var name="input_vol_mesh" value="bunnyVolumeMeshCGAL.vtk" logical="Mesh" />
+        <var name="input_vol_mesh" value="bunnyVolumeMeshCGAL.vtk" logical="Mesh" 
+             role="fix" />
         <var name="input_surf_mesh" value="Bunny6000Surface.vtk" logical="TriangularSurface"
-             physical="file.vtk"/>
+             physical="file.vtk" role="input" />
     </variables>
 
     <scene>
@@ -81,6 +82,7 @@
         <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" hf3_chanceOfContactBoolean="0"
                 processingUnit="CPU" numParallelProcessesOnCPU="4" 
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.2" dampingRayleighRatioStiffness="0.4"/>
+                <!-- use numParallelProcessesOnCPU="0" in order not to run simulation but to only produce the simulation input files --> 
         <simulation>
             <step name="initial_def_1" dt="0.05" iterations="20"/>
             <step name="subsequent_def_2" dt="0.05" iterations="20"/>

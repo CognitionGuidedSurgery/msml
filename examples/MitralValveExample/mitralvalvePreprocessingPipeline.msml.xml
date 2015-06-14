@@ -5,10 +5,10 @@
     <variables>
         <var name="input_mv_surf_mesh"
              value="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp"
-             logical="TriangularSurface" physical="vtp"/>
+             logical="TriangularSurface" physical="vtp" role="input" />
         <var name="input_mv_ring"
              value="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp"
-             logical="object" physical="vtp"/>
+             logical="object" physical="vtp" role="input" />
     </variables>
 
     <scene>
@@ -22,7 +22,9 @@
             <material>
                 <region id="mvMaterial" indices="${aVtuToHf3inpIncMVmatIDsProducer.tet_material}">
                     <materialID matID="10"/>
-                    <linearElasticMaterial youngModulus="4166" poissonRatio="0.488"/>
+                    <linearElasticMaterial youngModulus="2350" poissonRatio="0.488"/>
+                    <!-- Note: for mitral valve tissue: youngModulus \in {2350, 4166, 6200} -->
+                    <!-- NOTE: Apply machine learning algorithms here?! -->
                     <mass name="stdMass" massDensity="1.000"/>
                 </region>
             </material>
@@ -30,24 +32,32 @@
             <constraints>
                 <constraint name="bodyConstraint" forStep="${initial_def_implantation_1}">
                     <mvGeometryConstraint mvGeometry="${anMvGeometryAnalyzer}"/>
-                    <!-- Note: this is not a "real" constraint, but allows the specific HiFlow3-MVR-Simulation to setup the specific blood-flow/pressure-BC-representation -->
+                    <!-- Note: this is not a "real" constraint, but allows the specific HiFlow3-MVR-Simulation to set up the specific blood-flow/pressure-BC-representation -->
                     <!-- Note: this has to be MSMLalized/standardized later -->
                     
                     <displacedPointsConstraint points="${aBCdataForMVRsimProducer.points}"
                                                displacements="${aBCdataForMVRsimProducer.displacements}"/>
-                    <!-- Note: instead of using the standard msml-displacementConstraint with "indices", the new displacedPointsConstraint allows for specifying points/displacements directly -->
-                    <!-- Note: these points/displacements (i.e. AnnulusPointsToBeDisplacedBySewingProcedure) come from the mitral-Operator "aBCdataForMVRsimProducer" -->
-                    
-                    <surfacePressure indices="0" pressure="0"/>
-                    
-                    <!-- Note: this has to be replaced by a new surfacePointForces-Constraint to model the chordae pull forces-->
+                    <!-- Note: instead of using the standard msml-displacementConstraint with "indices", this new displacedPointsConstraint allows for specifying points/displacements directly -->
+                    <!-- Note: these points/displacements (i.e. AnnulusPointsToBeDisplacedBySewingProcedure) come from the 'mitral'-Operator "aBCdataForMVRsimProducer" -->
                     <!-- Note: this has to be MSMLalized/standardized later -->
                     
-                    <!-- Note: additionally, we need a time-dependent-surface-force-Constraint, acting on surface facets with specific matIDs (e.g. leafletsDownsideToIndexGroup)
+                    <surfacePressure indices="0" pressure="0"/>
+                    <!-- Note: this is empty in the MVR simulation scenario, since facet- AND point-wise Neumann-BCs are needed, and since facetwise Neumann-BCs are fixly set to {17,18,20}. -->
+                    
+                    <pointwiseForceConstraint points="${aBCdataForMVRsimExtender.points}"
+                                              forces="${aBCdataForMVRsimExtender.forces}"/>
+                    <!-- Note: instead of using the standard msml-surfacePressureConstraint with facet-indices, this new additional surfacePointForcesConstraint allows for modeling the MV chordae pull forces -->
+                    <!-- Note: these points/forces (i.e. ChordaePullForces) come from the 'mitral'-Operator "aBCdataForMVRsimExtender" -->
+                    <!-- Note: this has to be MSMLalized/standardized later -->
+                    
+                    <!-- Note: to complete the MSML-representation of boundary constraints, we additionally need a time-dependent-surface-force-Constraint, acting on surface facets with specific matIDs (e.g. leafletsDownsideToIndexGroup)
                     and in dependence of time in order to model the directed pressure/force profile on the leaflets during the cardiac cycle -->
                     <!-- Note: this has to be MSMLalized/standardized later -->
                 </constraint>
-                <!-- <constraint name="bodyConstraint" forStep="${subsequent_def_heartcycle_2}"> ... </constraint> -->
+                
+                <!-- <constraint name="bodyConstraint" forStep="${subsequent_def_heartcycle_2}"> -->
+                <!--     ... include pointwiseForceConstraint here then ... -->
+                <!-- </constraint> -->
             </constraints>
 
             <output>
@@ -63,11 +73,13 @@
         <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${input_mv_surf_mesh}"
                                     targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/>
         <!-- SurfaceToVoxelDataOperator might be replaced by DistanceMapOperator -->
+        <!-- NOTE: Apply machine learning algorithms here?! -->
 
         <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}"
                          outFilename="mvVolumeSurface.vtk" isoValue="90"/>
         <!-- vtkMarchingCube might be replaced by Voxel2ContourOperator -->
-        <!-- maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
+        <!-- Alternative: maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
+        <!-- NOTE: Apply machine learning algorithms here?! -->
 
         <!-- <ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput) -->
         <!-- ACVD_Remeshing_Operator / MeshCellNumber_Reduction_Operator -->
@@ -78,6 +90,7 @@
                                    preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
                                    cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
                                    exude="false"/>
+        <!-- NOTE: Apply machine learning algorithms here?! -->
 
         <!-- <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/> -->
         <!-- convertVTKbinaryToVTU not needed, since automatic conversion takes place if needed -->
@@ -86,22 +99,32 @@
                                         volume="${aVolumeMesher}"
                                         surface="${input_mv_surf_mesh}"
                                         />
-        <!-- possibly update with newer stabil version of MSMLalized vtuToHf3inpIncMVmatIDsProducer-Python-Script -->
+        <!-- Note: this has to be MSMLalized/standardized later -->
 
         <mvGeometryAnalytics id="anMvGeometryAnalyzer"
                              surface="${aVolumeMesher}"
                              ring="${input_mv_ring}"/>
+        <!-- Note: this has to be MSMLalized/standardized later -->
 
         <mvrBCdataProducer id="aBCdataForMVRsimProducer"
                            volumeMesh="${aVolumeMesher}"
                            surfaceMesh="${input_mv_surf_mesh}"
                            ring="${input_mv_ring}"/>
+        <!-- Note: this has to be MSMLalized/standardized later -->
 
-        <!-- <mvrBCdataExtender id="aBCdataForMVRsimExtender" ... /> -->
+        <mvrBCdataExtender id="aBCdataForMVRsimExtender"
+                           volumeMesh="${aVolumeMesher}"
+                           surfaceMesh="${input_mv_surf_mesh}" />
+        <!-- Note: this has to be MSMLalized/standardized later -->
 
         <!-- Simulation_Scenario_Mgmt_Operator to organize/distribute MV-scenarios-->
+        <!-- Simulation_Scenario_Mgmt_Operator not needed, since scenario setup done via CogApps-Pipe-I/O -->
 
-        <!-- EXECUTE_HIFLOW3_SIMULATION -->
+        <!-- EXECUTE_HIFLOW3_SIMULATION or PREPARE_HIFLOW3_SIMULATION_INPUT_FOR_EXECUTION -->
+        <!-- Note: by using the 'hiflow3' or 'mitral' exporter, the simulation is
+             - either executed (sequentially or in parallel via 'mpirun -np X')
+             - or only prepared for execution (by writing out the input data and the exec command line into a script file),
+               e.g. for a job on a HPC-cluster). -->
 
         <!-- pvtu2vtu-Operator -->
         <!-- pvtu2vtu-Operator not needed anymore -->
@@ -116,10 +139,12 @@
 
     <environment>
         <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" hf3_chanceOfContactBoolean="1"
-                processingUnit="CPU" numParallelProcessesOnCPU="4"
+                processingUnit="CPU" numParallelProcessesOnCPU="2"
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
+                <!-- use numParallelProcessesOnCPU="0" in order not to run simulation but to only produce the simulation input files --> 
         <simulation>
-            <step name="initial_def_implantation_1" dt="0.05" iterations="20"/>
+            <step name="initial_def_implantation_1" dt="0.05" iterations="300"/>
+            <!-- <step name="initial_def_implantation_1" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_def_heartcycle_2" dt="0.01" iterations="500"/> -->
             <!-- <step name="subsequent_blood_pressure_and_mv_closing" dt="0.01" iterations="500"/> -->
