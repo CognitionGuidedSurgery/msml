@@ -73,6 +73,7 @@ class SofaExporter(XMLExporter):
         self.export_file = None
         self.working_dir = path()  #path.dirname(msml_file.filename)
         self._memory_update = {}  #cache for changes to _memory, updated after execution.
+        self.commonSolvers = True; #all nodes have the sam solvers
 
     def init_exec(self, executer):
         """initialization by the executor, sets memory and executor member
@@ -171,7 +172,8 @@ class SofaExporter(XMLExporter):
         #daniel: moved this, each node could have its own solvers, right?
         #but for now, this method generates solvers below root-node NOT below individual object-node
         #add solver
-        self.createSolvers()
+        if (self.commonSolvers == True):
+            self.createSolvers()
     
 
         return etree.ElementTree(self.node_root)
@@ -238,30 +240,31 @@ class SofaExporter(XMLExporter):
                                 filename=self.working_dir / exportFile,listening="true", tetras="1",triangles="1")
  
 
-    def createSolvers(self):
+    def createSolvers(self, objectNode=None):
         #TODO: self.get_value_from_memory
+        if objectNode is None: objectNode = self.node_root
         if self._msml_file.env.solver.timeIntegration == "Newmark":
-            self.sub("MyNewmarkImplicitSolver",
+            self.sub("MyNewmarkImplicitSolver", objectNode,
                      rayleighStiffness="0.2",
                      rayleighMass="0.02",
                      name="odesolver")
         elif self._msml_file.env.solver.timeIntegration == "NewmarkShapeMatching":
-            self.sub("ShapeMatchingNewmarkImplicitSolver",
+            self.sub("ShapeMatchingNewmarkImplicitSolver", objectNode,
                      rayleighStiffness="0.6",
                      rayleighMass="0.2",
                      name="odesolver")
 
         elif self._msml_file.env.solver.timeIntegration == "dynamicImplicitEuler":
-            self.sub("EulerImplicitSolver",
+            self.sub("EulerImplicitSolver", objectNode,
                      name="odesolver")
         else:
             warn(MSMLSOFAExporterWarning, "Error ODE solver %s not supported" %
                  self._msml_file.env.solver.timeIntegration)
 
         if self._msml_file.env.solver.linearSolver == "direct":
-            self.sub("MumpsSolver")
+            self.sub("MumpsSolver", objectNode)
         elif self._msml_file.env.solver.linearSolver == "iterativeCG":
-            self.sub("CGLinearSolver",
+            self.sub("CGLinearSolver", objectNode,
                      iterations="100", tolerance="1e-06", threshold="1e-06")
         else:
             warn(MSMLSOFAExporterWarning, "Error linear solver %s not supported" %
@@ -605,6 +608,8 @@ class SofaExporter(XMLExporter):
                                               name=constraint.id or constraint_set.name,
                                               precomputedPotentialFieldFilename = referenceMesh, charge=charge, adaptCharge=adaptCharge,
                                               samplingDistance=samplingDistance, adaptSamplingDistance=adaptSamplingDistance, adaptActiveTriangles =adaptActiveTriangles)
+                    self.createSolvers(objectNode)
+                    self.commonSolvers = False
                     for mo in self.node_root.iter('MechanicalObject'):
                         mo.set("template", "Vec3d")
 

@@ -9,7 +9,8 @@ import msml.api.simulation_runner as api
 
 msml_file = os.path.abspath('LiverShapeMatching.msml.xml')
 
-myRunner = api.SimulationRunner(msml_file, "sofa", "/homes/staff/suwelack/MedicalPhysics/MSML/Results")
+#myRunner = api.SimulationRunner(msml_file, "sofa", "/homes/staff/suwelack/MedicalPhysics/MSML/Results")
+myRunner = api.SimulationRunner(msml_file, "sofa", "/tmp/MSMLResultsLiverShapeMatching")
 
 myRunner.run()
 
