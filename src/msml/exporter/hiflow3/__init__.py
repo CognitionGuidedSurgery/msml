@@ -62,8 +62,11 @@ class BcData(object):
 
 
 class BcDataEntry(object):
-    """Holds the data for a Fixed/Displacement (Dirichlet) constraint or Pressure/Force (Neumann) constraint in the bcdata file.
-
+    """ 
+    Holds the data for 
+    - Fixed/Displacement (Dirichlet) constraints, and/or
+    - Pressure/Force (Neumann) constraints
+    in the bcdata file.
     """
 
     def __init__(self):
@@ -73,8 +76,8 @@ class BcDataEntry(object):
         self.is_valid()
 
     def is_valid(self):
-        """asserts, that the amount of points and vectors are dividable by 3
-           and correct to the given number of points
+        """asserts, that the number of point coords and vector coords are divisible by 3 (for 3D space and objects)
+           and correct to the given number of points.
 
         :raises: Assertion, if data structure is wrong.
         :return: None
@@ -89,20 +92,21 @@ class BcDataEntry(object):
 
 
     def append(self, count, points, vectors):
-        """Appends the given `points` with `vectors` to the constraint.
+        """Appends the given `points` and `vectors` to the constraint contents.
 
-        * length of points has to be dividable by 3
-        * length of vectors has to be dividable by 3
-        * if vectors just holds three components it is repeated
-          to the correct amount given by `count`
+        * length of points has to be divisible by 3.
+        * length of vectors has to be divisible by 3.
+        * if 'vectors' just holds three components, it is copied and repeated
+          to the correct amount given by `count`.
 
-        * each component of points and vectors is casted to float
+        * each component of points and vectors is casted to float.
 
         :param count: amount of points
-        :param points: a list of points (3*count == len(points)
+        :type count: int
+        :param points: a list of points (3*count == len(points))
         :type points: list
-        :param vectors: a list of points (3*count == len(points)
-        :type list: list
+        :param vectors: a list of vectors (i.e. points) (3*count == len(points))
+        :type vectors: list
 
         :return: None
         """
@@ -146,8 +150,7 @@ class BcDataEntry(object):
 # namedtuple(...) dynamically creates a class -> class constructor.
 Entry = namedtuple("Entry", "mesh bcdata")
 
-# Hiflow3-supported features
-
+# Hiflow3-supported features (frozen set, to which new features should be added in time).
 HIFLOW_FEATURES = frozenset(
     ['object_element_displacement_supported', 'output_supported', 'object_element_mass_supported',
      'scene_objects_supported', 'constraints_supported', 'env_processingunit_CPU_supported',
@@ -157,11 +160,17 @@ HIFLOW_FEATURES = frozenset(
      'env_timeintegration_dynamicImplicitEuler_supported', 'interbody_contact_simulation_supported'])
 # Note: eventually add new stuff here...
 
+
 class HiFlow3Exporter(Exporter):
     """Exporter for `hiflow3 <http://hiflow3.org>`_
+       sets up the input (simulation scene description (xml), mesh geometry (vtu or inp), and bc data (xml))
+       for the HiFlow3-Elasticity-Simulation.
 
-    .. todo::
-        What does this exporter support? - See GitHub issue n73.
+    .. features::
+        According to the idea in GitHub issue n73, this exporter supports the above mentioned HIFLOW_FEATURES.
+
+    .. note::
+        This Exporter is parent to the HiflowMitral-Exporter, see below.
 
     """
 
@@ -186,13 +195,13 @@ class HiFlow3Exporter(Exporter):
 
     def render(self):
         """
-        Builds the File (XML e.g) for the external tool
+        Builds the file(s) (e.g., XML) for the external tool.
         """
 
         filename = self._msml_file.filename.namebase
 
         log.info("Converting to HiFlow3 input formats")
-        log.info(" -- (hiflow3Scene.xml-file & vtkMesh.vtu-file & hiflow3BCdata.xml-file).")
+        log.info(" -- (hiflow3Scene.xml-file & vtkMesh.vtu/inp-file & hiflow3BCdata.xml-file).")
 
         self.create_scenes()
 
@@ -212,13 +221,34 @@ class HiFlow3Exporter(Exporter):
             pass
 
         for scenefile in self.scenes:
-            cmd = "%s %s" % (msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
-            log.info("Executing HiFlow3: %s" % cmd)
-            os.system(cmd)
+            
+            # get string 'numproc' from MSML-file:
+            numproc = self._msml_file.env.solver.numParallelProcessesOnCPU
+            
+            if numproc == "0": # Do not execute HiFlow3-Elasticity-Simulation.
+                cmd = "%s %s %s" % ('mpirun -np X', msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
+                log.info("NOT executing HiFlow3 now, but providing command for execution: %s" % cmd)
+                
+                # write command to bashscript/textfile, in order to allow for later execution e.g. on HPC cluster.
+                with open("Hf3Esim_Command_for_Exec.sh", 'w') as f:
+                    # write bash script contents into file:
+                    f.write("#!/bin/bash \n %s" % (cmd))
+                
+                debug("Command for execution of HiFlow3-Elasticity-Simulation written into file 'Hf3Esim_Command_for_Exec.sh'.")
+                
+            elif numproc == "1": # Run HiFlow3-Elasticity-Simulation sequentially:
+                cmd = "%s %s" % (msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
+                log.info("Executing HiFlow3 sequentially: %s" % cmd)
+                os.system(cmd)
+                
+            else: # if numproc > 1: # Run HiFlow3-Elasticity-Simulation in parallel with np X:
+                cmd = "%s %s %s %s" % ('mpirun -np', numproc, msml.envconfig.HIFLOW_EXECUTABLE, scenefile)
+                log.info("Executing HiFlow3 in parallel: %s" % cmd)
+                os.system(cmd)
 
 
     def create_scenes(self):
-        """
+        """Create input scene file(s) for HiFlow3-Elasticity-Simulation.
 
         :param hf3xmlfile:
         :type hf3xmlfile: file
@@ -228,12 +258,15 @@ class HiFlow3Exporter(Exporter):
 
         for msmlObject in self._msml_file.scene:
             assert isinstance(msmlObject, SceneObject)
+            # get meshFilename: from msml-file
             meshFilename = self.get_value_from_memory(msmlObject.mesh)
-
+            
+            # create hf3_scene_filename: combine "msml-file" "msmlObject.id" and "hf3.xml"
             hf3_filename = '%s_%s_hf3.xml' % (self._msml_file.filename.namebase, msmlObject.id)
-
-            # only take the first
+            
+            # get bc_data_filename: ONLY take the FIRST constraints-set in the msml-scene-description in the msml-file
             bc_filename = self.create_bcdata_files(msmlObject)[0]
+            
             self.scenes.append(hf3_filename)
 
 
@@ -242,26 +275,29 @@ class HiFlow3Exporter(Exporter):
                     self.id, self.lamelambda, self.lamemu, self.gravity, self.density = [None] * 5
 
             hiflow_material_models = []
-            # get and compute elasticity constants (i.e. material parameters):
+            # get and convert elasticity constants (i.e. material parameters):
             # therefore, iterate over "material" and "material's region"
             # (compare to: NewSofaExporter.createMaterialRegion().)
             for c, matregion in enumerate(msmlObject.material):
                 hiflow_model = HF3MaterialModel()
                 hiflow_material_models.append(hiflow_model)
                 hiflow_model.id = c
-
+                
                 assert isinstance(matregion, MaterialRegion)
-
+                
                 indices = self.get_value_from_memory(matregion)
-
-                # TODO: setup representation of hiflow_model.id for scenarios
+                
+                # NOTE: as opposed to the initial MSML-idea, an additional 
+                # representation of "hiflow_model.id" is needed for scenarios,
                 # where bounding boxes cannot bound material regions,
                 # but where indices lists can define those material regions.
-                # Cp. Mitral Valve example.
+                # This is the case, e.g., in the Mitral Valve example.
+                # Therefore, an additional inherited exporter "HiFlowMitral" 
+                # has been added below.
                 # TODO: setup of better MSML-compatible / generic representation.
                 # TODO: build example/test inp-file with correct material region id
                 # (i.e.: hiflow_model.id for every point in indices).
-
+                
                 for material in matregion:
                     if 'linearElasticMaterial' == material.attributes['__tag__']:
                         E = float(material.attributes["youngModulus"])
@@ -274,18 +310,12 @@ class HiFlow3Exporter(Exporter):
                     if 'mass' == material.attributes['__tag__']:
                         hiflow_model.density = material.attributes['massDensity']
                     
-                    # Probably deprecated:
-                    #if 'mvGeometry' == material.attributes['__tag__']:
-                    #    hiflow_model.mvgeometry = material.attributes['mvGeometry']
-
             maxtimestep = self._msml_file.env.simulation[0].iterations
-
+            
             if maxtimestep > 1:
                 SolveInstationary = 1
             else:
                 SolveInstationary = 0
-
-            # print os.path.abspath(hf3_filename), "!!!!!!"
             
             hf3_MVRpipelineIndicator = self._msml_file.env.solver.hf3_chanceOfContactBoolean
             debug("hiflow3-exporter recognized hf3_MVRpipelineIndicator from _msml_file.env.solver.hf3_chanceOfContactBoolean.")
@@ -293,6 +323,7 @@ class HiFlow3Exporter(Exporter):
             # In case of MVR pipeline, we have hf3_MVRpipelineIndicator = '1' (i.e. true), 
             # and hence need to include information on the MV geometry in the hf3-scene,
             # elsewise, we do not need to include it.
+            # TODO: put the MVR-related stuff into 'HiFlowMitral'.
             if hf3_MVRpipelineIndicator == "1":
                 debug("hiflow3-exporter knows: hf3_MVRpipelineIndicator = 1, and thus fills MVR-part of scene-template, too.")
                 # TODO: get this out here, and into MitralExporter...
@@ -326,13 +357,13 @@ class HiFlow3Exporter(Exporter):
                                   # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
                                   # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
                                   )
-
+                    
                     values.update(self.hf3_parameters)
-                    #
+                    
                     content = SCENE_TEMPLATE.render(**values)
-
+                    
                     fp.write(content)
-
+            
             else:
                 debug("hiflow3-exporter knows: hf3_MVRpipelineIndicator = 0, and thus does not fill MVR-part of scene-template.")
                 with open(hf3_filename, 'w') as fp:
@@ -355,17 +386,17 @@ class HiFlow3Exporter(Exporter):
                                   # Note: in future there may be more arguments, such as RefinementLevels, lin/quadElements, ...
                                   # The currently chosen sets of flexible and fixed parameters in HiFlow3Scene.xml-files represent a maximally general optimal setting.
                                   )
-
+                    
                     values.update(self.hf3_parameters)
-                    #
+                    
                     content = SCENE_TEMPLATE.render(**values)
-
+                    
                     fp.write(content)
 
 
     def create_bcdata_files(self, obj):
         """creates all bcdata files for all declared steps in `msml/env/simulation`
-
+        
         :param obj: scene object
         :type obj: msml.model.base.SceneObject
         :return:
@@ -375,8 +406,8 @@ class HiFlow3Exporter(Exporter):
             for step in self._msml_file.env.simulation:
                 filename = '%s_%s_%s.bc.xml' % (self._msml_file.filename.namebase, obj.id, step.name)
                 data = self.create_bcdata(obj, step.name)
-                # TODO: add priority of mvrBCdataProducer.py at this point in special mitral-hiflow-Exporter.
-                # TODO: then call BCdata_for_Hf3Sim_Producer() and BCdata_for_Hf3Sim_Extender().
+                # Note: priority of mvrBCdataProducer.py added at this point in special mitral-hiflow-Exporter.
+                # Note: then calling BCdata_for_Hf3Sim_Producer() and BCdata_for_Hf3Sim_Extender().
                 content = BCDATA_TEMPLATE.render(data=data)
                 with open(filename, 'w') as h:
                     h.write(content)
@@ -420,25 +451,26 @@ class HiFlow3Exporter(Exporter):
                 points = msml.ext.misc.PositionFromIndices(mesh_name, tuple((map(int, indices))), 'points')
                 count = len(points) / 3
                 points_str = list_to_hf3(points)
-                # TODO: adapt this for non-box-able indices/vertices/facets/cells.
-                # Cp. Mitral Valve example.
+                # NOTE: this also works for non-box-able indices/vertices/facets/cells; see HiFlowMitral.
                 if constraint.tag == "fixedConstraint":
                     bcdata.fc.append(count, points, [0, 0, 0])
                 elif constraint.tag == "displacementConstraint":
                     disp_vector = constraint.displacement.split(" ")
                     bcdata.dc.append(count, points, disp_vector)
-                elif constraint.tag == "surfacePressure":  # TODO! - this will need to be adapted!
+                elif constraint.tag == "surfacePressure":  # TODO! - this will need to be extended and adapted!
                     force_vector = constraint.pressure.split(" ")
                     bcdata.fp.append(count, points, force_vector)
 
         return bcdata
 
 
-class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but newly defines create_scenes(), etc.
+class HiflowMitral(HiFlow3Exporter):
     """
-    This class specifies the standard HiFlow3-Exporter for its use for Mitral Valve simulations.
-    It therefore includes specific information on the geometry and simulation setup,
-    which is retrieved during the preprocessing workflow/pipeline.
+    This class specifies the standard 'HiFlow3Exporter' for its use for Mitral Valve simulations.
+    It therefore inherits from class 'HiFlow3Exporter', but newly defines 
+    create_scenes(), create_bcdata(), create_bcdata_files(), and __init__().
+    It thereby includes specific information on the geometry and simulation setup,
+    which is retrieved during the respective mitral valve preprocessing workflow/pipeline.
     """
     def __init__(self, msml_file):
         """
@@ -461,17 +493,15 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
     
     def create_scenes(self):
 
-        # TODO: include information from vtu2hf3inp_inc_MatIDs_Producer-Script (as part of the MSML workflow)
-        # into the special MVR exporter, in order to thus compute Index-Sets, etc. here,
-        # such that they are available for both the HiFlow3-Exporter and other Exporters, too.
-
-        # list_of_matIDints, list_of_point_matIDints # TODO include this # TODO?!?!?!
+        # TODO: integrate information from vtu_To_hf3inp_inc_MV_matIDs_Producer-Script 
+        # (as part of the MSML workflow) into the special MVR exporter, in order to thus compute Index-Sets, etc. here,
+        # such that they are available not only for the HiFlow3-Exporter but also for other Exporters.
 
         self.hf3_parameters = dict(
             hf3_chanceOfContact=True,
         )
 
-        ## super function
+        # super function
         HiFlow3Exporter.create_scenes(self)
 
     def create_bcdata_files(self, obj):
@@ -483,21 +513,18 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
         :return:
         """
 
-        # TODO: find the constraints for the given step
+        # Find the constraints for the given step:
         # - use BCdataDBC-Producer to find displacement-constraints
         # (representing annuloplasty ring implantation)
         # - use BCdataNBC-Extender to find chordae-pull-force-constraints
         # (representing the pulling chordae during leaflets movement)
-        #  #### TODO TODO TODO: include and adapt this here !!!
-
         def create():
             for step in self._msml_file.env.simulation:
                 filename = '%s_%s_%s.bc.xml' % (self._msml_file.filename.namebase, obj.id, step.name)
+                # Priority of mvrBCdataProducer/Extender.py added here.
+                # - to call BCdata_for_Hf3Sim_Producer(), and
+                # - to call BCdata_for_Hf3Sim_Extender().
                 data = self.create_bcdata(obj, step.name)
-                # TODO: add priority of mvrBCdataProducer.py here. # TODO.
-                # call BCdata_for_Hf3Sim_Producer()
-                # points, displacements # what?!             ????????????????
-                # TODO: call BCdata_for_Hf3Sim_Extender()
                 content = BCDATA_TEMPLATE.render(data=data)
                 with open(filename, 'w') as h:
                     h.write(content)
@@ -509,14 +536,22 @@ class HiflowMitral(HiFlow3Exporter):  # inherits from class HiFlow3Exporter, but
     def create_bcdata(self, obj, step):
         bcdata = BcData()
         
-        for constraint in obj.constraints[0]:          
-             # TODO: adapt this for non-box-able indices/vertices/facets/cells.
-            # TODO: write indices-list from vtu2inp-incMatIDs-Producer script into MSML-compatible list.
+        for constraint in obj.constraints[0]:
+            # there are no fixedDirichletBCs in the MVR scenario;
+            bcdata.fc.append(0, [], [])
+            # displacedPointsConstraint in the MVR scenario;
             if constraint.tag ==  "displacedPointsConstraint":
-                points = self.get_value_from_memory(constraint, 'points') # NEW 2015-05-05.
+                points = self.get_value_from_memory(constraint, 'points')
                 count = len(points) / 3
                 disp_vector = self.get_value_from_memory(constraint, 'displacements')
-                bcdata.dc.append(count, points, disp_vector)     
+                bcdata.dc.append(count, points, disp_vector)
+            # pointwiseForceConstraint in the MVR scenario;
+            if constraint.tag == "pointwiseForceConstraint":
+                points = self.get_value_from_memory(constraint, 'points')
+                count = len(points) / 3
+                force_vector = self.get_value_from_memory(constraint, 'forces')
+                bcdata.fp.append(count, points, force_vector)
+            # bcdata for MVR scenario done;
         return bcdata
 
 
@@ -527,7 +562,7 @@ def count_vector(vec, count):
 
 
 def list_to_hf3(seq):
-    """transfers a seq of values into a string for hiflow3.
+    """transfers a seq of values into a string for HiFlow3.
     :param seq: a sequence (iterable) of value (int, float, ...)
     :rtype: str
     
@@ -548,6 +583,7 @@ def list_to_hf3(seq):
             s.write(",")
 
     s = s.getvalue()[:-1]
-    assert s.count(';') + 1 == len(seq) / 3
+    if len(seq) > 0: # in order to have empty BC-lists at least represented in HiFlow3-BCdata-file with numBCtype = 0;
+        assert s.count(';') + 1 == len(seq) / 3
     return s
 

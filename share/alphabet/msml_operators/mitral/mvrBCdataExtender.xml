@@ -1,9 +1,9 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://sfb125.de/msml" name="mvrBCdataProducer">
+               xsi:schemaLocation="http://sfb125.de/msml" name="mvrBCdataExtender">
 
     <runtime>
-        <python module="msml.ext.mitral" function="bcdata_producer"/>
+        <python module="msml.ext.mitral" function="bcdata_extender"/>
     </runtime>
 
     <input>
@@ -11,18 +11,16 @@
         </arg>
         <arg name="surfaceMesh" logical="TriangularSurface" physical="vtp">
         </arg>
-        <arg name="ring" logical="object" physical="vtp">
-        </arg>
     </input>
 
     <output>
         <arg name="points" logical="object" physical="vector.float"/>
-        <arg name="displacements" logical="object" physical="vector.float"/>
+        <arg name="forces" logical="object" physical="vector.float"/>
     </output>
 
     <parameters>
         <arg name="outputFilename" target="true" optional="true"
-             default="dbcdata.xml"
+             default="nbcdata.xml"
              logical="object" physical="string">
         </arg>
     </parameters>

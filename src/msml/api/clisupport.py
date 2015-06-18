@@ -205,11 +205,15 @@ def get_arguments(msmlfile):
     parser = clictk.build_argument_parser(exe)
     ns = parser.parse_args()
 
+
     if ns.__xml__:  # if `--xml` is set
         xml = clictk.prettify(exe.as_xml())
         # write to real stdout
         consolecatcher._true_channels[0].write(xml)
         sys.exit(0)
+    elif "--help" in sys.argv or "-h" in sys.argv:	
+	consolecatcher._reset_stdio()
+	sys.exit(0);	
     else:
         # we do not need stdout sanity further more
         consolecatcher._reset_stdio()
