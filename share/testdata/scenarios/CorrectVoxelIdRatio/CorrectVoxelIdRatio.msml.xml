@@ -18,7 +18,7 @@
          <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${input_vol_mesh}" image="${input_image}" 
 					facetAngle="20" facetSize="${facet_size}" facetDistance="${facet_distance}" cellRadiusEdgeRatio="${cell_radius}" cellSize="${cell_size}" odt="false" lloyd="false"  pertube="false" exude="false" />
 
-        <measureMeshQuality id="meshQuality" input_image="${input_image}" input_mesh="${input_vol_mesh}"/>
+        <computeCorrectVoxelIdRatio id="meshQuality" input_image="${input_image}" input_mesh="${input_vol_mesh}"/>
     </workflow>
 
 
