@@ -1,0 +1,36 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="IsoContourOperator">
+    <meta key="doc">
+        Stencil a polydata into voxel image.
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="IsoContourOperator" />
+    </runtime>
+
+    <input>
+        <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk" />
+    </input>
+
+    <output>
+        <arg name="isocontour" logical="TriangularSurface" physical="file.vtk" />
+    </output>
+
+    <parameters>
+        <arg name="targetImageFilename" physical="string" optional="false" target="true">
+            <meta key="doc">
+                filename for the output.
+            </meta>
+        </arg>
+        <arg name="accuracy_level" physical="float" optional="true" default="8">
+            <meta key="doc">
+                  the resolution of the image (affects computational costs). A reasonable range: 1 - 10 (e.g. default: 8).
+            </meta>
+        </arg>
+        <arg name="smoothing" physical="float" optional="true" default="2">
+            <meta key="doc">
+                  the smoothing of the image data. A reasonable range: 1 - 10 (e.g. default: 2).
+            </meta>
+        </arg>
+    </parameters>
+</msml:operator>
