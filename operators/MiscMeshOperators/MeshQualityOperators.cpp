@@ -140,7 +140,7 @@ vector<MeshQualityStats> MeasureTetrahedricMeshQuality(string infile, vector<str
 
 //Measures mesh quality depending on the matching count of material ids between original image(vti)
 //and generated mesh.  
-double measureMeshQuality(std::string infile, std::string source){
+double computeCorrectVoxelIdRatio(std::string infile, std::string source){
 	
 	vtkSmartPointer<vtkXMLImageDataReader> reader =
     vtkSmartPointer<vtkXMLImageDataReader>::New();

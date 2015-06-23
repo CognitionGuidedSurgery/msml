@@ -1,11 +1,11 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-xsi:schemaLocation="http://sfb125.de/msml" name="measureMeshQuality">
+xsi:schemaLocation="http://sfb125.de/msml" name="computeCorrectVoxelIdRatio">
     <meta key="doc">
         Computes mesh quality depending on the matching count of material ids between original image(vti)
         and generated mesh.  
     </meta>
     <runtime>
-        <python module="msml.ext.misc" function="measureMeshQuality" />
+        <python module="msml.ext.misc" function="computeCorrectVoxelIdRatio" />
     </runtime>
 
   	<output>
