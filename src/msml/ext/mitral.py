@@ -110,7 +110,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
          18 - Posteriores Segel
 
     .. authors::
-        * Nicolai Schoch, EMCL; 2015-04-12.
+        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-04-12.
 
     :param volume_mesh:
     :param surface_mesh:
@@ -186,6 +186,38 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
     # ======================================================================
     # Compute displacements ------------------------------------------------
     displacement_ = ringPoints_ - valvePoints_
+    
+    # ======================================================================
+    # write 'displacement lines' -------------------------------------------
+    # (from the sewing points on the natural annulus to the artificial ring)
+    f = open('aBCdataProducer_annuloplastyDisplacementLines.inp', 'w')
+    
+    # write inp-format-header-line
+    s = str(valvePoints_.shape[0]+ringPoints_.shape[0]) + ' ' + str(displacement_.shape[0]) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    # first, write valve points
+    for i in range(valvePoints_.shape[0]):
+        pt = valvePoints_[i]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # then, second, write ring points
+    for i in range(valvePoints_.shape[0], valvePoints_.shape[0]+ringPoints_.shape[0]):
+        pt = ringPoints_[i-valvePoints_.shape[0]]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # write "lines" into inp file
+    for i in range(displacement_.shape[0]):
+        s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(i+valvePoints_.shape[0]) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Producer-Operator into file: aBCdataProducer_annuloplastyDisplacementLines.inp .")
 
     # ======================================================================
     # Transform points and displacements for HiFlow3-Exporter --------------
@@ -195,7 +227,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
     points = flatten(valvePoints_)
     displacements = flatten(displacement_)
 
-    debug("Computing Dirichlet displacement BC datac")
+    debug("Computing Dirichlet displacement BC data.")
 
     # ======================================================================
     # convert arrays to strings --------------------------------------------
@@ -532,6 +564,32 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     myCenterSet = kCenterCluster(numberOfNeumannPoints, pointsInComponent, valve3Dsurface_)
     
     debug("Solving k-center clustering problem and finding k-center-Set: DONE.")
+    
+    
+    # --------------------------------
+    # write the center set to inp file
+    # --------------------------------
+    
+    f = open('aBCdataExtender_chordaeAttachmentPointsAndChordaeDirections.inp', 'w')
+    
+    # write inp-format-header-line
+    s = str(myCenterSet.GetNumberOfIds()) + ' ' + str(myCenterSet.GetNumberOfIds()) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    for i in range(myCenterSet.GetNumberOfIds()):
+        pt = valve3Dsurface_.GetPoint(myCenterSet.GetId(i))
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    for i in range(myCenterSet.GetNumberOfIds()):
+        s = '0' + ' ' + '10' + ' pt ' + str(i) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeAttachmentPointsAndChordaeDirections.inp .")
     
     
     # ---------------------
