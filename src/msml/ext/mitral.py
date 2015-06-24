@@ -570,7 +570,7 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     # write the center set to inp file
     # --------------------------------
     
-    f = open('aBCdataExtender_chordaeAttachmentPointsAndChordaeDirections.inp', 'w')
+    f = open('aBCdataExtender_chordaeAttachmentPoints.inp', 'w')
     
     # write inp-format-header-line
     s = str(myCenterSet.GetNumberOfIds()) + ' ' + str(myCenterSet.GetNumberOfIds()) + ' 0 0 0\n'
@@ -589,7 +589,7 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     # close stream
     f.close()
     
-    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeAttachmentPointsAndChordaeDirections.inp .")
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeAttachmentPoints.inp .")
     
     
     # ---------------------
@@ -640,6 +640,41 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     forces = flatten(nBCDirection)
     
     debug("Transforming nBCPoints and nBCDirection for HiFlow3-Exporter: DONE.")
+    
+    
+    # ======================================================================
+    # the coordinates of the Neumann points are stored in nBCPoints, and the 
+    # distinguished point under the valve is called NeumannPoint;
+    # allow for visualization of the Neumann-Force-Vectors (representing the Chordae):
+    # therefore write lines from the 'Neumann points' to the point under the valve
+    
+    f = open('aBCdataExtender_chordaeDirectionLines.inp', 'w')
+    
+    # write first line
+    s = str(numberOfNeumannPoints+1) + ' ' + str(numberOfNeumannPoints) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    # first, write Neumann points on valve
+    for i in range(numberOfNeumannPoints):
+        pt = nBCPoints[i]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # then, write coordinates of point under the valve
+    pt = NeumannPoint
+    s = str(numberOfNeumannPoints) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+    f.write(s)
+    
+    # write lines
+    for i in range(numberOfNeumannPoints):
+        s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(numberOfNeumannPoints) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLines.inp .")
     
     
     # ======================================================================
