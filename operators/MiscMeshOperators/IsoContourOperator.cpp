@@ -2,10 +2,10 @@
 #include "IsoContourOperator.h"
 
 namespace MSML
-{
+	{
 	namespace IsoContourOperator
 	{
-		void IsoContourOperator(const std::string data_directory, const std::string initial_position, const string final_position, const string weight_table)
+			std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const string final_position, const string weight_table)
 		{
 			//print information about the inputs
 			std::cout << "data directory : " << data_directory << std::endl;			
@@ -250,8 +250,14 @@ namespace MSML
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
+			
+			std::vector<std::string> output_file_name;
+			output_file_name.push_back(("contour_outer.vtp");
+			output_file_name.push_back(("contour_inner.vtp");
+
+			return output_file_name;
 
 		}	
 
 	}
-}
+	}

@@ -2,35 +2,33 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="IsoContourOperator">
     <meta key="doc">
-        Stencil a polydata into voxel image.
+        Generating isocontour based numerical results and weight of sampling.
     </meta>
     <runtime>
         <python module="msml.ext.misc" function="IsoContourOperator" />
     </runtime>
 
     <input>
-        <arg name="surfaceMesh" logical="TriangularSurface" physical="file.vtk" />
+        <arg name="file_path" logical="string" physical="path" />
+
+        <arg name="initial_position" logical="VolumeMesh" physical="file.vtk">
+
+	<arg name="vtu_table" logical="table" physical="file.txt">
+
+	<arg name="weight_table" logical="table" physical="file.txt">
     </input>
 
     <output>
-        <arg name="isocontour" logical="TriangularSurface" physical="file.vtk" />
+        <arg name="isocontours" logical="twoisocontours" physical="string" />
     </output>
 
     <parameters>
-        <arg name="targetImageFilename" physical="string" optional="false" target="true">
-            <meta key="doc">
-                filename for the output.
-            </meta>
-        </arg>
-        <arg name="accuracy_level" physical="float" optional="true" default="8">
-            <meta key="doc">
-                  the resolution of the image (affects computational costs). A reasonable range: 1 - 10 (e.g. default: 8).
-            </meta>
-        </arg>
-        <arg name="smoothing" physical="float" optional="true" default="2">
-            <meta key="doc">
-                  the smoothing of the image data. A reasonable range: 1 - 10 (e.g. default: 2).
-            </meta>
-        </arg>
+        <arg name="file_path" physical="string" optional="true" target="true" />
+
+	<arg name="initial_position" pysical="file.vtk" optional="true" default=""/>
+
+	<arg name="vtu_table" physical="string" optional="true" target="true" />
+
+	<arg name="weight_table" physical="string" optional="true" target="true" />
     </parameters>
 </msml:operator>

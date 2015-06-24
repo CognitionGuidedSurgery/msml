@@ -62,6 +62,7 @@
 
         <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" />
 
+        <!--<IsoContourOperator id = "aIsoContourOperator" file_path=>-->
     </workflow>
 
 
