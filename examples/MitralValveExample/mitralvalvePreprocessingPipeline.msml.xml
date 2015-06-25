@@ -129,8 +129,8 @@
         <!-- pvtu2vtu-Operator -->
         <!-- pvtu2vtu-Operator not needed anymore -->
 
-        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" inputfilename="${hf3Simulation}"
-                       outputfilename="mvr_esim_extendedData.vtu"/> -->
+        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" path_to_sim_results="${hf3Simulation/SimResults}"
+                       matParam_Lambda="284666" matParam_Mu="700" /> -->
         <!-- How to include simulation results in MSML pipeline?! -->
         <!-- How to execute script for simulation results of all timesteps (and set according naming w.r.t. ts_)?! -->
         <!-- VonMisesStressVisualization_PostProcessing_Operator -->
