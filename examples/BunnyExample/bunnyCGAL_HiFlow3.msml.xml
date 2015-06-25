@@ -84,9 +84,9 @@
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.2" dampingRayleighRatioStiffness="0.4"/>
                 <!-- use numParallelProcessesOnCPU="0" in order not to run simulation but to only produce the simulation input files --> 
         <simulation>
-            <step name="initial_def_1" dt="0.05" iterations="20"/>
-            <step name="subsequent_def_2" dt="0.05" iterations="20"/>
-            <step name="subsequent_pressure_3" dt="0.05" iterations="20"/>
+            <step name="initial_def_1" dt="0.05" iterations="20" visualizeSimResultsEvery1inXtimesteps="5" />
+            <step name="subsequent_def_2" dt="0.05" iterations="20" visualizeSimResultsEvery1inXtimesteps="5" />
+            <step name="subsequent_pressure_3" dt="0.05" iterations="20" visualizeSimResultsEvery1inXtimesteps="5" />
         </simulation>
     </environment>
 

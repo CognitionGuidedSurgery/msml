@@ -387,9 +387,9 @@ def msml_file_factory(msml_node):
         env = MSMLEnvironment()
 
         solver_node = env_node.find('solver')
-        env.solver.processingUnit = solver_node.get('processingUnit') # NEW.
+        env.solver.processingUnit = solver_node.get('processingUnit')
         env.solver.numParallelProcessesOnCPU = solver_node.get('numParallelProcessesOnCPU')
-        env.solver.hf3_chanceOfContactBoolean = solver_node.get('hf3_chanceOfContactBoolean') # NEW.
+        env.solver.hf3_chanceOfContactBoolean = solver_node.get('hf3_chanceOfContactBoolean')
         env.solver.linearSolver = solver_node.get('linearSolver')
         env.solver.preconditioner = solver_node.get('preconditioner')
         env.solver.timeIntegration = solver_node.get('timeIntegration')
@@ -407,6 +407,7 @@ def msml_file_factory(msml_node):
             env.simulation.add_step(name=s.get('name'),
                                     dt=s.get('dt'),
                                     iterations=s.get('iterations'),
+                                    visualizeSimResultsEvery1inXtimesteps=s.get('visualizeSimResultsEvery1inXtimesteps'),
                                     gravity=gravity)
 
         return env

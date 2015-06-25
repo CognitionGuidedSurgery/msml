@@ -143,7 +143,7 @@
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
                 <!-- use numParallelProcessesOnCPU="0" in order not to run simulation but to only produce the simulation input files --> 
         <simulation>
-            <step name="initial_def_implantation_1" dt="0.05" iterations="300"/>
+            <step name="initial_def_implantation_1" dt="0.05" iterations="300" visualizeSimResultsEvery1inXtimesteps="5" />
             <!-- <step name="initial_def_implantation_1" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_def_heartcycle_2" dt="0.01" iterations="500"/> -->
