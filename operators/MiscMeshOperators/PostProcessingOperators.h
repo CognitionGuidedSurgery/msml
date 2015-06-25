@@ -58,6 +58,7 @@ LIBRARY_API void ColorMesh(const char* modelFilename, const char* coloredModelFi
 LIBRARY_API void ColorMesh(vtkUnstructuredGrid* inputMesh, vtkPolyData* outputMesh);
 
 //Returns 4-tuple: RMS Volume, Max Volume, RMS Surface, Max Surface
+LIBRARY_API std::vector<double> CompareMeshesPython(const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(std::vector<double> & errorVec, vtkUnstructuredGrid* referenceMesh, vtkUnstructuredGrid* testMesh, bool surfaceOnly);
 LIBRARY_API void CompareMeshes(double& errorRMS, double& errorMax, const char* referenceFilename, const char* testFilename, bool surfaceOnly);

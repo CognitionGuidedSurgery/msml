@@ -1,0 +1,23 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sfb125.de/msml" name="CompareMeshes">
+    <meta key="doc">
+        Compares meshes..
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="CompareMeshesPython" />
+    </runtime>
+
+    <input>
+        <arg name="referenceMesh" logical="TetrahedralVolume" physical="file.vtk" />
+        <arg name="testMesh" logical="TetrahedralVolume" physical="file.vtk" />
+    </input>
+
+    <output>
+        <arg name="errorVec" physical="vector.float" />
+    </output>
+
+
+    <parameters>
+        <arg name="surfaceOnly" physical="bool" optional="true" default="false" />
+    </parameters>
+
+</msml:operator>

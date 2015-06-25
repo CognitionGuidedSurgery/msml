@@ -3,7 +3,10 @@
            xsi:schemaLocation="http://sfb125.de/msml">
     <variables>
         <var name="vol_mesh" value="Liver5Low.vtk" logical="TriangularSurface"
-             physical="file.vtk"/>      
+             physical="file.vtk"/>
+        <var name="msml_mesh_shape" value="Liver5Def.stl" />
+        <var name="msml_mesh_shape_ref" value="Liver5LowReferenceSurface.vtk" />
+        <var name="chargeNum" value="1000" />
     </variables>
 
 
@@ -27,7 +30,7 @@
 
             <constraints>
                 <constraint>
-                   <shapeMatchingConstraint id="shapeConstraint" referenceMesh="Liver5Def.stl" charge="1000" adaptCharge="1" samplingDistance="2" adaptSamplingDistance="0" adaptActiveTriangles="1" />
+                   <shapeMatchingConstraint id="shapeConstraint" referenceMesh="${msml_mesh_shape}" charge="${chargeNum}" adaptCharge="1" samplingDistance="2" adaptSamplingDistance="0" adaptActiveTriangles="1" />
                 </constraint>
 
             </constraints>
@@ -41,6 +44,10 @@
     <workflow>
                <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="60 60 30 273 273 223" mesh="${vol_mesh}"
                                select="points"/>
+
+                <ComputeMeanError id="meanError" initialMesh="${vol_mesh}" referenceMesh="${msml_mesh_shape_ref}" testMesh="${disp}" />
+                <CompareMeshes id="compMesh" referenceMesh="${msml_mesh_shape_ref}" testMesh="${disp}" surfaceOnly="false" />
+                <CompareMeshes id="compMeshDisp" referenceMesh="${msml_mesh_shape_ref}" testMesh="${vol_mesh}" surfaceOnly="false" />
 
     </workflow>
 

@@ -96,6 +96,13 @@ using namespace boost;
 namespace MSML {
 namespace PostProcessingOperators {
 
+std::vector<double> CompareMeshesPython(const char* referenceFilename, const char* testFilename, bool surfaceOnly)
+{
+    std::vector<double> errorVec;
+    CompareMeshes(errorVec, referenceFilename, testFilename, surfaceOnly);
+    return errorVec;
+}
+
 void CompareMeshes(std::vector<double>& errorVec, const char* referenceFilename, const char* testFilename, bool surfaceOnly)
 {
     vtkSmartPointer<vtkUnstructuredGrid> referenceGrid = IOHelper::VTKReadUnstructuredGrid(referenceFilename);
