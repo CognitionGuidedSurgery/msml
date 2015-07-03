@@ -18,7 +18,8 @@
         <arg name="meshFilename" physical="str" optional="true" target="true" />
         <arg name="size" physical="float"/> 
         <arg name="voxelIdRatio" physical="float" />
-        <arg name="tolerance" physical="float" />
+        <arg name="xtol" physical="float" />
+        <arg name="ftol" physical="float" />
         <arg name="maxIterations" physical="float" />
     </parameters>
 
