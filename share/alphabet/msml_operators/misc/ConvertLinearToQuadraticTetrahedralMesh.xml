@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ConvertLinearToQuadraticTetrahedralMesh">
+
+	<runtime>
+		<python module="msml.ext.misc" function="ConvertLinearToQuadraticTetrahedralMeshPython" />
+	</runtime>
+
+	<input>
+		<arg name="linearMesh" logical="VolumeMesh" physical="file.vtk" />
+	</input>
+
+	<output>
+		<arg name="quadMesh" logical="VolumeMesh" physical="file.vtk" />
+	</output>
+   
+   <parameters>
+		<arg name="outQuadMesh" physical="str" optional="true" target="true"/>
+	</parameters>
+</msml:operator>

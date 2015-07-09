@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="ProjectVolumeMesh">
+
+	<runtime>
+		<python module="msml.ext.misc" function="ProjectVolumeMeshPython" />
+	</runtime>
+
+	<input>
+		<arg name="inputMesh" logical="VolumeMesh" physical="file.vtk" />
+		<arg name="referenceMesh" logical="VolumeMesh" physical="file.vtk" />
+	</input>
+
+	<output>
+		<arg name="outputMesh" logical="VolumeMesh" physical="file.vtk" />
+	</output>
+
+   <parameters>
+		 <arg name="projectedMesh" physical="str" optional="true" target="true"/>
+	</parameters>
+</msml:operator>

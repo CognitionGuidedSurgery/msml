@@ -89,10 +89,10 @@ namespace MiscMeshOperators
   LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshString( vtkUnstructuredGrid* inputMesh,  std::string partName, std::string materialName);
   LIBRARY_API  std::string ConvertVTKMeshToAbaqusMeshString(std::string inputMesh,  std::string partName, std::string materialName);
 
-  LIBRARY_API  std::string ProjectSurfaceMesh(std::string infile, std::string outfile, std::string referenceMesh);
   LIBRARY_API  bool ProjectSurfaceMesh(const char* infile, const char* outfile, const char* referenceMesh );
   LIBRARY_API  bool ProjectSurfaceMesh(vtkPolyData* inputMesh, vtkPolyData* referenceMesh);
-  
+
+  LIBRARY_API  std::string ProjectVolumeMeshPython(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
   LIBRARY_API  bool ProjectVolumeMesh(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
   LIBRARY_API  bool ProjectVolumeMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh);
 
@@ -111,6 +111,7 @@ namespace MiscMeshOperators
   LIBRARY_API  bool ConvertVTKToGenericMesh( std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity,  const char* infile);
   LIBRARY_API  bool ConvertVTKToGenericMesh( std::vector<double> &vertices , std::vector<unsigned int> &cellSizes, std::vector<unsigned int> &connectivity,  vtkUnstructuredGrid* inputMesh);
 
+  LIBRARY_API  std::string ConvertLinearToQuadraticTetrahedralMeshPython(std::string infile, std::string outfile);
   LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile);
   LIBRARY_API  bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh);
 

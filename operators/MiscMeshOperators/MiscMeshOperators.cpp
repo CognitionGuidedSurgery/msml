@@ -1503,6 +1503,12 @@ std::vector<double> ExtractPointPositions( std::vector<int> indices, vtkUnstruct
 
 }
 
+std::string ConvertLinearToQuadraticTetrahedralMeshPython(std::string infile, std::string outfile)
+{
+    ConvertLinearToQuadraticTetrahedralMesh(infile, outfile);
+    return outfile;
+}
+
 bool ConvertLinearToQuadraticTetrahedralMesh(std::string infile, std::string outfile)
 {
 	vtkSmartPointer<vtkUnstructuredGrid> outputMesh =
@@ -1637,6 +1643,12 @@ bool ConvertLinearToQuadraticTetrahedralMesh( vtkUnstructuredGrid* inputMesh, vt
 
 
 	return true;
+}
+
+std::string ProjectVolumeMeshPython(std::string inputVolumeMesh, std::string referenceMesh, std::string outputSurfaceMesh)
+{
+    ProjectVolumeMesh(inputVolumeMesh, outputSurfaceMesh, referenceMesh);
+    return outputSurfaceMesh;
 }
 
  bool ProjectVolumeMesh(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
