@@ -10,6 +10,7 @@ try:
     import numpy as np
     from scipy import interpolate
     from scipy import optimize
+    import matplotlib.pyplot as plt
     #from scipy.optimize import leastsq,root,minimize,curve_fit
 
 
@@ -27,20 +28,37 @@ try:
         #print(filename_out)
         
       
-    def f_to_minimize(size_array, infile, outfile, voxelIdRatio, wrtr):
+    def f_to_minimize(size_array, infile, outfile, voxelIdRatio, wrtr, x, y):
         size = size_array[0]
         if (size < 1 or size > 35):  
             return 1 - (abs(size)/100)
         
         CGALMeshVolumeFromVoxels(infile, outfile, 20, size, size*0.1, 3, size*3, False, False, False, False)
         quality = computeCorrectVoxelIdRatio(infile, outfile)
+        value =  abs(round(quality, 2) - voxelIdRatio);
+        x.append(size)
+        y.append(value) 
+        print x
+        print y
         print size
         print quality 
-        f = abs(round(quality, 2) - voxelIdRatio)
-        print f
-        wrtr.writerow([str(size).replace(".",","), str(quality).replace(".",","), str(f).replace(".",",")])
-        return f
+        #f = abs(round(quality, 2) - voxelIdRatio)
+        if(len(x)>= 2 and len(y)>= 2):
+            X = np.array(x)
+            Y = np.array(y)
+            print X
+            print Y 
+            f = interpolate.interp1d(X, Y)
+            print f(size)
+            wrtr.writerow([str(size).replace(".",","), str(quality).replace(".",","), str(f).replace(".",",")])
+            return f
 
+    def fill_Arrays(size, infile, outfile, x, y,voxelIdRatio):
+        CGALMeshVolumeFromVoxels(infile, outfile, 20, size, size*0.1, 3, size*3, False, False, False, False)
+        quality = computeCorrectVoxelIdRatio(infile, outfile)
+        value =  abs(round(quality, 2) - voxelIdRatio);
+        x.append(size)
+        y.append(value) 
     
     def meshCGALAutoByCorrectVoxelIdRatio(infile, outfile, size, voxelIdRatio, xtol, ftol, maxIterations):
         myfile = open('optimizeCorrectVoxelIdRatio.csv','ab')
@@ -54,7 +72,25 @@ try:
         wrtr.writerow(['Optimization'])
         wrtr.writerow(['opt. Size', 'calc. voxelIdRatio', 'f'])
         q0 = x0 = np.asarray((size))
-        qn = optimize.fmin_powell(f_to_minimize, x0, args=(infile, outfile, voxelIdRatio, wrtr), full_output=True, xtol= xtol, ftol= ftol, maxiter= maxIterations)
+        x = []
+        y = []
+        for i in xrange(1, 40, 5):
+           fill_Arrays(i, infile, outfile, x, y, voxelIdRatio) 
+        X = np.array(x)
+        Y = np.array(y)
+        print X
+        print Y 
+        f = interpolate.interp1d(X, Y)
+        #qn = optimize.fmin_powell(f, x0, full_output=True, xtol= xtol, ftol= ftol, maxiter= maxIterations)
+        bnds = ((1, 35),)
+        qn = optimize.minimize(f, x0, method='TNC', bounds=bnds, tol=1e-10) 
+        print qn.x[0]
+        print qn
+        CGALMeshVolumeFromVoxels(infile, outfile, 20, qn.x[0], qn.x[0]*0.1, 3, qn.x[0]*3, False, False, False, False)
+        quality = computeCorrectVoxelIdRatio(infile, outfile)
+        print quality
+        line, = plt.plot(X, f(X), '--', linewidth=2)
+        plt.show()
         wrtr.writerow([])
         myfile.flush()
         myfile.close()
