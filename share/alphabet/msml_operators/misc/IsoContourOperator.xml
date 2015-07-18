@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <msml:operator xmlns:msml="http://sfb125.de/msml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://sfb125.de/msml" name="IsoContourOperator">
@@ -9,13 +10,10 @@
     </runtime>
 
     <input>
-        <arg name="file_path" logical="string" physical="path" />
-
-        <arg name="initial_position" logical="VolumeMesh" physical="file.vtk">
-
-	<arg name="vtu_table" logical="table" physical="file.txt">
-
-	<arg name="weight_table" logical="table" physical="file.txt">
+        <arg name="file_path" logical="string" physical="string" />
+        <arg name="initial_position" logical="VolumeMesh" physical="file.vtk" />
+	<arg name="vtu_table" logical="table" physical="string" />
+	<arg name="weight_table" logical="table" physical="string" />
     </input>
 
     <output>
@@ -24,11 +22,8 @@
 
     <parameters>
         <arg name="file_path" physical="string" optional="true" target="true" />
-
 	<arg name="initial_position" pysical="file.vtk" optional="true" default=""/>
-
 	<arg name="vtu_table" physical="string" optional="true" target="true" />
-
 	<arg name="weight_table" physical="string" optional="true" target="true" />
     </parameters>
 </msml:operator>

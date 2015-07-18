@@ -1,11 +1,10 @@
-#include "../vtk6_compact.h"
 #include "IsoContourOperator.h"
 
 namespace MSML
 	{
 	namespace IsoContourOperator
 	{
-			std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const string final_position, const string weight_table)
+			std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::string final_position, const std::string weight_table)
 		{
 			//print information about the inputs
 			std::cout << "data directory : " << data_directory << std::endl;			
@@ -16,8 +15,8 @@ namespace MSML
 			//geting the dirctory and name of files
 			std::string file_dir = data_directory;
 			std::string file_init = std::string(data_directory) + std::string(initial_position);
-			str::string file_deform = std::string(data_directory) + std::string(final_position);
-			str::string file_weight = std::string(data_directory) + std::string(weight_table);
+			std::string file_deform = std::string(data_directory) + std::string(final_position);
+			std::string file_weight = std::string(data_directory) + std::string(weight_table);
 
 			//define vtufile and weightfile for reading stream
 			ifstream vtufile(file_deform.c_str());
@@ -140,7 +139,7 @@ namespace MSML
 				vtkSmartPointer<vtkDataSetSurfaceFilter> surfacefilter_deform = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
 
 				//create the path + name for vtu file	
-				std::string name = std::string(argv[1]) + std::string(vtulist[i]);
+				std::string name = std::string(data_directory) + std::string(vtulist[i]);
 
 				//read vtu file into unstructuredgrid
 				reader_deform->SetFileName(name.c_str());
@@ -252,8 +251,8 @@ namespace MSML
 
 			
 			std::vector<std::string> output_file_name;
-			output_file_name.push_back(("contour_outer.vtp");
-			output_file_name.push_back(("contour_inner.vtp");
+			output_file_name.push_back("contour_outer.vtp");
+			output_file_name.push_back("contour_inner.vtp");
 
 			return output_file_name;
 

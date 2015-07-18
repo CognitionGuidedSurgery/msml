@@ -21,6 +21,6 @@ namespace MSML
 {
 	namespace IsoContourOperator
 	{
-		LIBRARY_API std::vector<std::string> IsoContourOperator(const char* data_directory, const char* initial_position, const char* final_position, const char* weight_table);
+		LIBRARY_API std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::string final_position, const std::string weight_table);
 	}
 }
