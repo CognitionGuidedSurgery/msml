@@ -19,7 +19,7 @@
 												 verticesCount="${redVerticesCount}" asciiOutput="true"/>
        <TetgenCreateVolumeMesh id="linearVolumeMesh" surfaceMesh="${FixedReduced}" maxEdgeRadiusRatio="${redMaxEdgeRadiusRatio}" targetMeshFilename="${outputLinVolumeMesh}"/>
        <ConvertLinearToQuadraticTetrahedralMesh id="quadVolumeMesh" linearMesh="${linearVolumeMesh}" outQuadMesh="${outputQuadVolumeMesh}" />
-       <ProjectVolumeMesh id="projection" inputMesh="${quadVolumeMesh}" referenceMesh="${refVolumeMesh}"  projectedMesh="${outputProjection}" />
+       <ProjectVolumeMeshDisplacement id="projection" inputMesh="${quadVolumeMesh}" outputMesh="${outputProjection}" referenceMesh="${refVolumeMesh}" />
 
   </workflow>
     <environment>

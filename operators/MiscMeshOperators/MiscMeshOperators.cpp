@@ -1774,14 +1774,46 @@ bool ProjectVolumeMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* out
 	outputMesh->GetPointData()->SetScalars(regionIds);
 	outputMesh->GetPointData()->SetVectors(displacements);
 
-
-
-
-
-
-
-
 	return true;
+}
+
+Projection ProjectVolumeMeshDisp(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile)
+{
+    Projection result;
+    vtkSmartPointer<vtkPolyData> referenceMesh = IOHelper::VTKReadPolyData(referenceMeshFile.c_str());
+    vtkSmartPointer<vtkUnstructuredGrid> inputMesh = IOHelper::VTKReadUnstructuredGrid(inputVolumeMeshFile.c_str());
+
+    vtkSmartPointer<vtkUnstructuredGrid> outputMesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    ProjectVolumeMesh(inputMesh, outputMesh, referenceMesh);
+    IOHelper::VTKWriteUnstructuredGrid(outputMeshFile.c_str(), outputMesh);
+
+    vtkSmartPointer<vtkDataArray> regionIds = outputMesh->GetPointData()->GetScalars();
+    vtkSmartPointer<vtkDataArray> displacements = outputMesh->GetPointData()->GetVectors();
+
+    // convert vtkDataArrays to std::vectors and filter surface points
+    std::vector<double> displacementVector;
+    std::vector<int> surfacePointsIdsVector;
+
+    int n_rows = regionIds->GetNumberOfTuples();
+    std::vector<double> curTupleDist(3);
+    std::vector<double> curTupleIds(1);
+
+    for (int i=0; i<n_rows; i++) {
+        // fill vector of surface point ids
+        regionIds->GetTuple(i, curTupleIds.data());
+        if (curTupleIds[0] == 1.0) {
+            surfacePointsIdsVector.push_back(i);
+            // fill distance vector with current node
+            displacements->GetTuple(i, curTupleDist.data());
+            displacementVector.push_back(curTupleDist[0]);
+            displacementVector.push_back(curTupleDist[1]);
+            displacementVector.push_back(curTupleDist[2]);
+        }
+    }
+    result.surfacePointsIds = surfacePointsIdsVector;
+    result.displacements = displacementVector;
+
+    return result;
 }
 
 std::vector<unsigned int> ExtractNodeSet(std::string inputVolumeMeshFile, std::string nodeSetName)

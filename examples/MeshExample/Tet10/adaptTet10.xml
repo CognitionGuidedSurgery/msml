@@ -1,0 +1,62 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+    <variables>
+        <var name="vol_mesh" value="IRACD_liver_5.vtk" logical="TriangularSurface"  physical="file.vtk"/>
+        <var name="dispVar" value="0 0 0.1" logical="Displacement" physical="vector.float"/>
+        <var name="surfacePointsIds" value="1 2 3" logical="IndexSet" physical="vector.int"/>
+        <var name="resultMesh" value="tet10Mesh.vtu"   physical="file.vtk"/>
+    </variables>
+
+
+    <scene>
+        <object id="liver">
+            <mesh>
+                <quadraticTet id="liver" mesh="${vol_mesh}"/>
+            </mesh>
+
+            <sets>
+
+            </sets>
+
+
+            <material>
+                <region id="liverMaterial" indices="${bodyToIndexGroup}">
+                    <corotatedElasticMaterial youngModulus="3000" poissonRatio="0.49"/>
+                    <mass name="abc" massDensity="100"/>
+                </region>
+            </material>
+
+            <constraints>
+                <constraint>
+                    <displacementConstraint name="dispConstraint" forStep="${initial}" indices="${surfacePointsIds}" displacement="${dispVar}"/>
+                </constraint>
+
+            </constraints>
+
+            <output>
+                <displacement id="disp" timestep="1"/>
+            </output>
+        </object>
+    </scene>
+
+    <workflow>
+        <ComputeIndicesFromBoxROI id="bodyToIndexGroup" box="60 60 30 273 273 223" mesh="${vol_mesh}" select="points"/>
+
+        <!--ExtractPointPositions id="finalPointDisp" mesh="${disp}" indices="${bodyToIndexGroup}"/-->
+
+        <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" />
+
+    </workflow>
+
+
+    <environment>
+        <solver linearSolver="direct" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="5" iterations="20" gravity="0 0 0"/>
+        </simulation>
+    </environment>
+
+</msml:msml>
+

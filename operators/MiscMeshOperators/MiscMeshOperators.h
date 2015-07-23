@@ -42,6 +42,11 @@
 
 using namespace std;
 
+struct Projection {
+    std::vector<double> displacements;
+    std::vector<int> surfacePointsIds;
+};
+
 namespace MSML {
 namespace MiscMeshOperators
 {
@@ -95,6 +100,7 @@ namespace MiscMeshOperators
   LIBRARY_API  std::string ProjectVolumeMeshPython(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
   LIBRARY_API  bool ProjectVolumeMesh(std::string inputVolumeMesh, std::string outputSurfaceMesh, std::string referenceMesh);
   LIBRARY_API  bool ProjectVolumeMesh( vtkUnstructuredGrid* inputMesh, vtkUnstructuredGrid* outputMesh, vtkPolyData* referenceMesh);
+  LIBRARY_API  Projection ProjectVolumeMeshDisp(std::string inputVolumeMeshFile, std::string outputMeshFile, std::string referenceMeshFile);
 
   LIBRARY_API   std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
   LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
