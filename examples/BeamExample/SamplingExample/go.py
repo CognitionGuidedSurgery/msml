@@ -37,16 +37,18 @@ class headneck(object):
         self.app = App(seq_parallel=True, exporter='nsofa', output_dir= NAME + str(id), executor='sequential')
         self.mf = self.app._load_msml_file(msml_filename)
         self._scenarioDisp = scenarioDisp
+        self._scenarioResultMesh = '../' + NAME + str(id) + '.vtu'
    
     def __call__(self):
         self.app.memory_init_file = {
-            "dispVar":self._scenarioDisp, 
+            "dispVar":self._scenarioDisp,
+			"resultMesh":self._scenarioResultMesh
         }
         mem = self.app.execute_msml(self.mf, )
         return #mem._internal['volumeMeasure']['volume']
  
  
-NAME = "OUT___"
+NAME = "OUT_MC__"
 if __name__ == '__main__': #for parallel processing compatibility
    
     
@@ -56,16 +58,19 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "mc_values.csv"
+    csv_file_name = "stdnorm_mc_10k.csv"
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
 
     #collect parameters for all simulation runs
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': scenarioRow } 
+            vec = [0,0, scenarioRow[0]]
+            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec } 
             args_list.append(dict(args)) #copy            
         i=i+1
+        if i>1000:
+            break
 
     #run simulations
     for j in range(0,i-1):  

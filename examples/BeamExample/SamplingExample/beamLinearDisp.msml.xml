@@ -4,7 +4,7 @@
     <variables>
         <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TetrahedralVolumeMesh" physical="file.vtk"/>
     <var name="dispVar" value="0 0 5" logical="Displacement" physical="vector.float"/>
-    <var name="resultMesh" value="referenceDisp.vtu" physical="file.vtk"/>
+    <var name="resultMesh" value="referenceDisp.vtu" physical="str"/>
     </variables>
 
 
@@ -46,7 +46,7 @@
 
         <ExtractPointPositions id="finalPointDisp" mesh="${disp}" indices="${bodyToIndexGroup}"/>
 
-        <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" />
+        <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" working_directory="false" />
 
     </workflow>
 
