@@ -65,7 +65,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [0,0, scenarioRow[0]]
+            vec = [0,0, float(scenarioRow[0])*0.01]
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec } 
             args_list.append(dict(args)) #copy            
         i=i+1
