@@ -1,0 +1,22 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://sfb125.de/msml" name="convertToQuadraticTetra">
+
+    <runtime>
+        <python module="msml.ext.quadTetConverter" function="convertToQuadraticTetra"/>
+    </runtime>
+
+    <input>
+        <arg name="linearGrid" logical="Mesh" physical="vtk"/>
+        <arg name="quadraticGrid" logical="Mesh" physical="vtk"/>
+    </input>
+
+    <output>
+
+    </output>
+
+    <parameters>
+     <arg name="highResSurface"  physical="int" optional="true" default="100"> </arg>
+    </parameters>
+
+</msml:operator>
