@@ -1,0 +1,21 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="linVolumeMesh" value="IRACD_liver_5.vtk" logical="TriangularSurface" physical="file.vtk"/>
+        <var name="quadVolumeMesh" value="IRACD_liver_5.vtk" logical="TriangularSurface" physical="file.vtk"/>
+    </variables>
+
+   <workflow>
+       <convertToQuadraticTetra id="convQuadMesh" linearGrid="${linVolumeMesh}" quadraticGrid="${quadVolumeMesh}" highResSurface="100" />
+  </workflow>
+
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="200"/>
+        </simulation>
+    </environment>
+</msml:msml>
