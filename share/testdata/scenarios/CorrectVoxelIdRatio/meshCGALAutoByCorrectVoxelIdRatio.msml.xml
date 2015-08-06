@@ -10,7 +10,7 @@
     </variables>
 
     <workflow>   
-    	<meshCGALAutoByCorrectVoxelIdRatio meshFilename="${input_vol_mesh}" image="${input_image}" size="20" voxelIdRatio="0.98"/>
+    	<meshCGALAutoByCorrectVoxelIdRatio meshFilename="${input_vol_mesh}" image="${input_image}" size="20" voxelIdRatio="0.98" tolerance="1e-10"/>
     </workflow>
 
 
