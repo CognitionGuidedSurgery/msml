@@ -10,7 +10,7 @@ try:
     import numpy as np
     from scipy import interpolate
     from scipy import optimize
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
     #from scipy.optimize import leastsq,root,minimize,curve_fit
 
 
@@ -58,8 +58,8 @@ try:
         
         print qn.x[0]
         print qn
-        line, = plt.plot(X, f(X), '--', linewidth=2)
-        plt.show()
+        #line, = plt.plot(X, f(X), '--', linewidth=2)
+        #plt.show()
         if qn.fun[0] > tol:
             intervalSize = 6
             value1 = int(qn.x[0] - intervalSize/2)
@@ -68,7 +68,7 @@ try:
             bnd2 = qn.x[0] + (intervalSize/2 - 1)
             x0 = np.asarray((qn.x[0]))
             step = 1/interpolateAndOptimizeMeshQuality.count
-            return interpolateAndOptimizeMeshQuality(x0, value1, value2, step, bnd1, bnd2, infile, outfile, voxelIdRatio )
+            return interpolateAndOptimizeMeshQuality(x0, value1, value2, step, bnd1, bnd2, infile, outfile, voxelIdRatio, tol )
         else:
             return qn.x[0]
     interpolateAndOptimizeMeshQuality.count = 0
