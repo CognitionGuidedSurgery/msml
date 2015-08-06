@@ -6,12 +6,12 @@
 # This will load the ugly stdout hack and functionalities
 # for producing cli xml + argument parsing
 import sys
-sys.path.append("/home/nschoch/HiFlow3_Project/MSML/msml/src")
+sys.path.append("/home/nschoch/Workspace/MSML/msml/src")
 from msml.api.clisupport import *
 
 
 # absolute path to MSMLFILE
-MSMLFILE = '/home/nschoch/HiFlow3_Project/MSML/msml/examples/BunnyExample/bunnyCGAL_HiFlow3.msml.xml'
+MSMLFILE = '/home/nschoch/Workspace/MSML/msml/examples/BunnyExample/bunnyCGAL_HiFlow3.msml.xml'
 
 def main():
     cli_app(MSMLFILE,

@@ -129,8 +129,8 @@
         <!-- pvtu2vtu-Operator -->
         <!-- pvtu2vtu-Operator not needed anymore -->
 
-        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" inputfilename="${hf3Simulation}"
-                       outputfilename="mvr_esim_extendedData.vtu"/> -->
+        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" path_to_sim_results="${hf3Simulation/SimResults}"
+                       matParam_Lambda="284666" matParam_Mu="700" /> -->
         <!-- How to include simulation results in MSML pipeline?! -->
         <!-- How to execute script for simulation results of all timesteps (and set according naming w.r.t. ts_)?! -->
         <!-- VonMisesStressVisualization_PostProcessing_Operator -->
@@ -143,7 +143,7 @@
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
                 <!-- use numParallelProcessesOnCPU="0" in order not to run simulation but to only produce the simulation input files --> 
         <simulation>
-            <step name="initial_def_implantation_1" dt="0.05" iterations="300"/>
+            <step name="initial_def_implantation_1" dt="0.05" iterations="300" visualizeSimResultsEvery1inXtimesteps="5" />
             <!-- <step name="initial_def_implantation_1" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_def_heartcycle_2" dt="0.01" iterations="500"/> -->

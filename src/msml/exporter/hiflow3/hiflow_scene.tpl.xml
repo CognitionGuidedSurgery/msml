@@ -33,7 +33,7 @@
 
     {%for m in hiflow_material_models%}
     <ElasticityModel> <!-- e.g.: average soft tissue (CJP-2012), MV-tissue (Mansi-2012), brain-tissue (Miller) -->
-<!--        <materialid>{{m.c}}</materialid> -->
+        <!-- <materialid>{{m.c}}</materialid> -->
         <density>{{m.density}}</density>
         <lambda>{{m.lamelambda}}</lambda> <!-- e.g.: 259259(PR=.35), 28466-40666-56933(PR=.488), 49329(PR=.49) -->
         <mu>{{m.lamemu}}</mu> <!-- e.g.: 111111(PR=.35), 700-1000-1400(PR=.488), 1007(PR=.49) -->
@@ -61,6 +61,7 @@
         <Method>{{timeIntegrationMethod}}</Method>
         <DeltaT>{{DeltaT}}</DeltaT>
         <MaxTimeStepIts>{{maxtimestep}}</MaxTimeStepIts>
+        <VisPerXTs>{{Vis1perXtimesteps}}</VisPerXTs>
         {%else%}
         <SolveInstationary>0</SolveInstationary>
         {%endif%}
@@ -71,7 +72,7 @@
         <DirichletMaterial2>12345</DirichletMaterial2> <!-- displaced boundary -->
         <DirichletMaterial3>12345</DirichletMaterial3> <!-- displaced boundary -->
         <NeumannMaterial1>20</NeumannMaterial1> <!-- (lower) left boundary under pressure -->
-        <NeumannMaterial1Pressure>1.5</NeumannMaterial1Pressure> <!-- blood pressure which affects the closing of the MV -->
+        <NeumannMaterial1Pressure>3.0</NeumannMaterial1Pressure> <!-- blood pressure which affects the closing of the MV -->
         <NeumannMaterial2>17</NeumannMaterial2> <!-- (upper) left boundary under pressure -->
         <NeumannMaterial2Pressure>0.0</NeumannMaterial2Pressure> <!-- value 0.0 means: no opening after closing -->
         <NeumannMaterial3>1234</NeumannMaterial3> <!-- (lower!) right boundary under pressure -->
@@ -83,13 +84,13 @@
         {% if hf3_chanceOfContact == True %}
         <NeumannBC_upperMVcenterPoint>{{mvgeometryX}},{{mvgeometryY}},{{mvgeometryZ}}</NeumannBC_upperMVcenterPoint> 
         <NeumannBC_avAnnulusRingRadius>{{mvgeometryRadius}}</NeumannBC_avAnnulusRingRadius> 
-        <ChordaePullStrength>2200</ChordaePullStrength> <!-- scaling factor for the strength of the chordae pulling the leaflets back -->
+        <ChordaePullStrength>120</ChordaePullStrength> <!-- scaling factor for the strength of the chordae pulling the leaflets back -->
         {%endif%}
         {% if hf3_chanceOfContact == True %}
         <ContactMaterial1>17</ContactMaterial1> <!-- left (upper) boundary subject to potential contact -->
         <ContactMaterial2>18</ContactMaterial2> <!-- right (upper) boundary subject to potential contact -->
-        <ContactPenaltyFactor>1500.0</ContactPenaltyFactor> <!-- scalar for the cbc_-vector, e.g. in [1500..5000] -->
-        <ContactToleranceThreshold>1.0</ContactToleranceThreshold> <!-- this threshold should approx. be of the size of a cell diameter, e.g. in [1.0...1.5] -->
+        <ContactPenaltyFactor>1700.0</ContactPenaltyFactor> <!-- scalar for the cbc_-vector, e.g. in [1500..5000] -->
+        <ContactToleranceThreshold>0.7</ContactToleranceThreshold> <!-- this threshold should approx. be of the size of a cell diameter, e.g. in [1.0...1.5] -->
         {%endif%}
     </Boundary>
 

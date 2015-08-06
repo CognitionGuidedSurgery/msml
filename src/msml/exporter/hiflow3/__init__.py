@@ -153,11 +153,12 @@ Entry = namedtuple("Entry", "mesh bcdata")
 # Hiflow3-supported features (frozen set, to which new features should be added in time).
 HIFLOW_FEATURES = frozenset(
     ['object_element_displacement_supported', 'output_supported', 'object_element_mass_supported',
-     'scene_objects_supported', 'constraints_supported', 'env_processingunit_CPU_supported',
-     'material_region_supported', 'env_linearsolver_iterativeCG_supported', 'env_preconditioner_None_supported',
+     'scene_objects_supported', 'constraints_supported', 'env_processingunit_CPU_supported', 'env_processingunit_GPU_supported', 
+     'material_region_supported', 'env_linearsolver_iterativeCG_supported', 'env_linearsolver_GMRES_supported', 
+     'env_preconditioner_None_supported', 'env_preconditioner_Jacobi_supported', 'env_preconditioner_GaussSeidel_supported', 'env_preconditioner_SymmetricGaussSeidel_supported', 
      'object_element_linearElasticMaterial_supported', 'sets_elements_supported', 'sets_nodes_supported',
      'sets_surface_supported', 'environment_simulation_steps_supported', 'object_element_fixedConstraint_supported',
-     'env_timeintegration_dynamicImplicitEuler_supported', 'interbody_contact_simulation_supported'])
+     'env_timeintegration_dynamicImplicitNewmark_supported', 'interbody_contact_simulation_supported'])
 # Note: eventually add new stuff here...
 
 
@@ -344,6 +345,7 @@ class HiFlow3Exporter(Exporter):
                                   SolveInstationary=SolveInstationary,
                                   DeltaT=self._msml_file.env.simulation[0].dt,
                                   maxtimestep=maxtimestep,
+                                  Vis1perXtimesteps=self._msml_file.env.simulation[0].visualizeSimResultsEvery1inXtimesteps,
                                   linsolver=self._msml_file.env.solver.linearSolver,
                                   precond=self._msml_file.env.solver.preconditioner,
                                   timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,
@@ -377,6 +379,7 @@ class HiFlow3Exporter(Exporter):
                                   SolveInstationary=SolveInstationary,
                                   DeltaT=self._msml_file.env.simulation[0].dt,
                                   maxtimestep=maxtimestep,
+                                  Vis1perXtimesteps=self._msml_file.env.simulation[0].visualizeSimResultsEvery1inXtimesteps,
                                   linsolver=self._msml_file.env.solver.linearSolver,
                                   precond=self._msml_file.env.solver.preconditioner,
                                   timeIntegrationMethod=self._msml_file.env.solver.timeIntegration,

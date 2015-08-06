@@ -3,11 +3,11 @@
                xsi:schemaLocation="http://sfb125.de/msml" name="vonMisesStressComputation_mvrPostProcessingAnalytics">
 
     <runtime>
-        <python module="msml.ext.mitral" function="von_misses_stress"/>
+        <python module="msml.ext.mitral" function="von_mises_stress_evaluator"/>
     </runtime>
 
     <input>
-        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+        <arg name="path_to_sim_results" logical="object" physical="string"/>
     </input>
 
     <output>
@@ -15,6 +15,10 @@
     </output>
 
     <parameters>
+        <arg name="matParam_Lambda" optional="true" default="28466" logical="object" physical="string">
+	       </arg>
+	    <arg name="matParam_Mu" optional="true" default="700" logical="object" physical="string">
+	       </arg>
         <arg name="outputfilename" logical="object" physical="string">
 	       </arg>
     </parameters>

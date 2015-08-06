@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 """
-mitral.py contains miscellaneous operators for preprocessing of 
+mitral.py contains miscellaneous operators for pre- and post-processing of 
 mitral valve geometries into simulation input;
 currently specifically for the HiFlow3Exporter-derived MitralExporter.
 """
@@ -14,6 +14,7 @@ import numpy as np
 import vtk
 from .msmlvtk import *
 from msml.log import debug
+import glob
 
 
 def geometry_analyzer(surface, ring, target="mvGeometryInfo.txt"):
@@ -110,7 +111,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
          18 - Posteriores Segel
 
     .. authors::
-        * Nicolai Schoch, EMCL; 2015-04-12.
+        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-04-12.
 
     :param volume_mesh:
     :param surface_mesh:
@@ -186,6 +187,38 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
     # ======================================================================
     # Compute displacements ------------------------------------------------
     displacement_ = ringPoints_ - valvePoints_
+    
+    # ======================================================================
+    # write 'displacement lines' -------------------------------------------
+    # (from the sewing points on the natural annulus to the artificial ring)
+    f = open('aBCdataProducer_annuloplastyDisplacementLines.inp', 'w')
+    
+    # write inp-format-header-line
+    s = str(valvePoints_.shape[0]+ringPoints_.shape[0]) + ' ' + str(displacement_.shape[0]) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    # first, write valve points
+    for i in range(valvePoints_.shape[0]):
+        pt = valvePoints_[i]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # then, second, write ring points
+    for i in range(valvePoints_.shape[0], valvePoints_.shape[0]+ringPoints_.shape[0]):
+        pt = ringPoints_[i-valvePoints_.shape[0]]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # write "lines" into inp file
+    for i in range(displacement_.shape[0]):
+        s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(i+valvePoints_.shape[0]) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Producer-Operator into file: aBCdataProducer_annuloplastyDisplacementLines.inp .")
 
     # ======================================================================
     # Transform points and displacements for HiFlow3-Exporter --------------
@@ -195,7 +228,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
     points = flatten(valvePoints_)
     displacements = flatten(displacement_)
 
-    debug("Computing Dirichlet displacement BC datac")
+    debug("Computing Dirichlet displacement BC data.")
 
     # ======================================================================
     # convert arrays to strings --------------------------------------------
@@ -534,6 +567,32 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     debug("Solving k-center clustering problem and finding k-center-Set: DONE.")
     
     
+    # --------------------------------
+    # write the center set to inp file
+    # --------------------------------
+    
+    f = open('aBCdataExtender_chordaeAttachmentPoints.inp', 'w')
+    
+    # write inp-format-header-line
+    s = str(myCenterSet.GetNumberOfIds()) + ' ' + str(myCenterSet.GetNumberOfIds()) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    for i in range(myCenterSet.GetNumberOfIds()):
+        pt = valve3Dsurface_.GetPoint(myCenterSet.GetId(i))
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    for i in range(myCenterSet.GetNumberOfIds()):
+        s = '0' + ' ' + '10' + ' pt ' + str(i) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeAttachmentPoints.inp .")
+    
+    
     # ---------------------
     # find the bounding box
     # ---------------------
@@ -585,6 +644,41 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     
     
     # ======================================================================
+    # the coordinates of the Neumann points are stored in nBCPoints, and the 
+    # distinguished point under the valve is called NeumannPoint;
+    # allow for visualization of the Neumann-Force-Vectors (representing the Chordae):
+    # therefore write lines from the 'Neumann points' to the point under the valve
+    
+    f = open('aBCdataExtender_chordaeDirectionLines.inp', 'w')
+    
+    # write first line
+    s = str(numberOfNeumannPoints+1) + ' ' + str(numberOfNeumannPoints) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    # first, write Neumann points on valve
+    for i in range(numberOfNeumannPoints):
+        pt = nBCPoints[i]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # then, write coordinates of point under the valve
+    pt = NeumannPoint
+    s = str(numberOfNeumannPoints) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+    f.write(s)
+    
+    # write lines
+    for i in range(numberOfNeumannPoints):
+        s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(numberOfNeumannPoints) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLines.inp .")
+    
+    
+    # ======================================================================
     # Write XML-File
     
     # convert arrays to strings --------------------------------------------
@@ -630,138 +724,326 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     return points, forces
 
 
-def von_misses_stress(surface, target):
-    """Given vtu/pvtu file(s) resulting from an MVR elasticity simulation
-    (the solution files hence contain three scalar valued arrays named
-    'u0', 'u1' and 'u2' as PointData), this vtk-based python script
-    warps the initial/original mesh geometry by means of the displacement
-    vector, and computes the Cauchy strain tensor and the von Mises stress.
-
-    The script's output is the following:
-    - vtu file that contains all the data of the
-       original file with modified coordinates of the points and the
-       displacement vector as additional PointData and the strain tensor
-       along with the von Mises stress (w.r.t. the Lame parameters
-       lambda = 28466, mu = 700 for mitral valve tissue, according to
-       [Mansi-2012]) as additional CellData.
-
-    Author: Nicolai Schoch, EMCL; 2015-04-12.
-            Alexander Weigl, KIT; 2015-04-19
-
-    :param surface: a polydata surface
-    :param target: a unstructured grid
-    :return:
+def von_mises_stress_evaluator(path_to_sim_results, matParam_Lambda, matParam_Mu, target="SimResults_with_vMstressVis"):
     """
+    .. explanations::
+    This python script evaluates the von Mises stress distribution
+    preferably for mitral valve leaflets tissue:
+    
+    The script needs the following input:
+    - a (series of) vtu/pvtu file(s), which contains 3 scalar-valued arrays 
+      named {'u0', 'u1', 'u2'} as PointData.
+     
+    Using the arrays specified above, the program computes the 
+    displacement vector, the strain tensor and the von Mises stress 
+    for material parameters \lambda={28466-40666-56933} and \mu={700-1000-1400}, 
+    which corresponds to mitral valve leaflets tissue (according to [Mansi-2012]).
+    Furthermore, the displacement vector will be added to the given 
+    coordinates of the points.
+     
+    The output is the following:
+     - a (series of) vtu file(s) that contains all the data of the
+       original file, however with modified coordinates of the points and the 
+       displacement vector as additional PointData and the strain tensor 
+       along with the von Mises stress distribution as additional CellData.
+    
+    .. execution command::
+        To run the script outside the MSML, call:
+        $ python vMStress.py <path_to_(series_of)_inputfile(s)> <lambda> <mu>
+    
+    .. authors::
+        * Nicolai Schoch, EMCL; 2015-06-26.
+
+    :param path_to_sim_results: the path to the directory containing the HiFlow3 MVR simulation results (pvtu and vtu files).
+    :param matParam_Lambda: Lame constant \lambda
+    :param matParam_Mu: Lame constant \mu
+    :param target: SimResults_with_vMstressVis
+    :return: new set of files containing the HiFlow3 MVR simulation results (vtu files) including the von Mises Stress distribution data.
+    """
+    
     # ======================================================================
-    # get system arguments -------------------------------------------------
-    # Path to input file and name of the output file
-    debug("=== Execute Python script to analyze MV geometry in order for the HiFlow3-based MVR-Simulation ===")
-
+    debug("=== Execute Python script to evaluate the von Mises Stress distribution on the HiFlow3 MVR Simulation results. ===")
+    
     # ======================================================================
-    # Read file
-
-    polydata = read_polydata(surface)
-
+    # Get path/directory of simulation results, and set path combined with datatype:
+    path = path_to_sim_results
+    path_and_datatype = path + '*.pvtu'
+    
+    # Get set of files to be processed by vMStress-Evaluator-Script:
+    files_to_be_iterated_over = glob.glob(path_and_datatype)
+    
+    debug("The following list contains the files to be iterated over by the vonMisesStressEvaluator-Operator: %s", files_to_be_iterated_over)
+    
+    # Get material parameters:
+    matParamMVtissue_Lambda = float(matParam_Lambda)
+    matParamMVtissue_Mu = float(matParam_Mu)
+    
     # ======================================================================
-    # Compute displacement vector
-    calc = vtk.vtkArrayCalculator()
-    calc.SetInput(polydata)
-    calc.SetAttributeModeToUsePointData()
-    calc.AddScalarVariable('x', 'u0', 0)
-    calc.AddScalarVariable('y', 'u1', 0)
-    calc.AddScalarVariable('z', 'u2', 0)
-    calc.SetFunction('x*iHat+y*jHat+z*kHat')
-    calc.SetResultArrayName('DisplacementSolutionVector')
-    calc.Update()
-
+    # Iterate over all pvtu-files in SimResults-directory and evaluate vonMises-Stress:
+    for i in range(0,len(files_to_be_iterated_over)):
+        
+        # Get path and name of inputfile:
+        inputfilename = files_to_be_iterated_over[i]
+        
+        # Get path and name of outputfile:
+        if inputfilename[-4] == 'p':
+          outputfilename = inputfilename[:-5] + '_outVis.vtu'
+        else:
+          #outputfilename = 'outVis_' + inputfilename
+          print ('ERROR: THIS CASE IS NOT ALLOWED! PLEASE PROVIDE PVTU-FILES INSTEAD OF VTU-FILES.')
+        
+        debug("  - vMstress-iteration: - current outputfilename: %s", outputfilename)
+        
+        # Read (p)vtu file
+        if inputfilename[-4] == 'p':
+          reader = vtk.vtkXMLPUnstructuredGridReader()
+          reader.SetFileName(inputfilename)
+          reader.Update()
+        else:
+          print ('ERROR: THIS CASE IS NOT ALLOWED! PLEASE PROVIDE PVTU-FILES.')
+          reader = vtk.vtkXMLUnstructuredGridReader()
+          reader.SetFileName(inputfilename)
+          reader.Update()
+        
+        grid = reader.GetOutput()
+        
+        
+        # Get point data arrays u0, u1 and u2
+        u0 = grid.GetPointData().GetArray('u0')
+        u1 = grid.GetPointData().GetArray('u1')
+        u2 = grid.GetPointData().GetArray('u2')
+        
+        # Set scalars
+        grid.GetPointData().SetScalars(u0)
+        
+        # Warp by scalar u0
+        warpScalar = vtk.vtkWarpScalar()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          warpScalar.SetInputData(grid)
+        else:
+          warpScalar.SetInput(grid)
+        warpScalar.SetNormal(1.0,0.0,0.0)
+        warpScalar.SetScaleFactor(1.0)
+        warpScalar.SetUseNormal(1)
+        warpScalar.Update()
+        
+        # Get output and set scalars
+        grid = warpScalar.GetOutput()
+        grid.GetPointData().SetScalars(u1)
+        
+        # Warp by scalar u1
+        warpScalar = vtk.vtkWarpScalar()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          warpScalar.SetInputData(grid)
+        else:
+          warpScalar.SetInput(grid)
+        warpScalar.SetNormal(0.0,1.0,0.0)
+        warpScalar.SetScaleFactor(1.0)
+        warpScalar.SetUseNormal(1)
+        warpScalar.Update()
+        
+        # Get output and set scalars
+        grid = warpScalar.GetOutput()
+        grid.GetPointData().SetScalars(u2)
+        
+        # Warp by scalar u2
+        warpScalar = vtk.vtkWarpScalar()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          warpScalar.SetInputData(grid)
+        else:
+          warpScalar.SetInput(grid)
+        warpScalar.SetNormal(0.0,0.0,1.0)
+        warpScalar.SetScaleFactor(1.0)
+        warpScalar.SetUseNormal(1)
+        warpScalar.Update()
+        
+        # Get ouput and add point data arrays that were deleted before
+        grid = warpScalar.GetOutput()
+        grid.GetPointData().AddArray(u0)
+        grid.GetPointData().AddArray(u1)
+        grid.GetPointData().AddArray(u2)
+        
+        debug("  - vMstress-iteration: - Warping of simulation results for current file: DONE.")
+        
+        # Compute displacement vector
+        calc = vtk.vtkArrayCalculator()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          calc.SetInputData(grid)
+        else:
+          calc.SetInput(grid)
+        calc.SetAttributeModeToUsePointData()
+        calc.AddScalarVariable('x', 'u0', 0)
+        calc.AddScalarVariable('y', 'u1', 0)
+        calc.AddScalarVariable('z', 'u2', 0)
+        calc.SetFunction('x*iHat+y*jHat+z*kHat')
+        calc.SetResultArrayName('DisplacementSolutionVector')
+        calc.Update()
+        
+        
+        # Compute strain tensor
+        derivative = vtk.vtkCellDerivatives()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          derivative.SetInputData(calc.GetOutput())
+        else:
+          derivative.SetInput(calc.GetOutput())
+        derivative.SetTensorModeToComputeStrain()
+        derivative.Update()
+        
+        
+        # Compute von Mises stress
+        calc = vtk.vtkArrayCalculator()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          calc.SetInputData(derivative.GetOutput())
+        else:
+          calc.SetInput(derivative.GetOutput())
+        calc.SetAttributeModeToUseCellData()
+        calc.AddScalarVariable('Strain_0', 'Strain', 0)
+        calc.AddScalarVariable('Strain_1', 'Strain', 1)
+        calc.AddScalarVariable('Strain_2', 'Strain', 2)
+        calc.AddScalarVariable('Strain_3', 'Strain', 3)
+        calc.AddScalarVariable('Strain_4', 'Strain', 4)
+        calc.AddScalarVariable('Strain_5', 'Strain', 5)
+        calc.AddScalarVariable('Strain_6', 'Strain', 6)
+        calc.AddScalarVariable('Strain_7', 'Strain', 7)
+        calc.AddScalarVariable('Strain_8', 'Strain', 8)
+        
+        #calc.SetFunction('sqrt( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))^2 + (2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8))^2 + (2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8))^2 - ( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8)) ) - ( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8)) ) - ( (2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*1400*Strain_3)^2 + (2*1400*Strain_6)^2 + (2*1400*Strain_7)^2) )') # DEPRECATED.
+        vMstressFunction_string = 'sqrt( (2*' + matParamMVtissue_Mu_string + '*Strain_0 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_4 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_8 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))^2 - ( (2*' + matParamMVtissue_Mu_string + '*Strain_0 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))*(2*' + matParamMVtissue_Mu_string + '*Strain_4 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8)) ) - ( (2*' + matParamMVtissue_Mu_string + '*Strain_0 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))*(2*' + matParamMVtissue_Mu_string + '*Strain_8 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8)) ) - ( (2*' + matParamMVtissue_Mu_string + '*Strain_4 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))*(2*' + matParamMVtissue_Mu_string + '*Strain_8 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*' + matParamMVtissue_Mu_string + '*Strain_3)^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_6)^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_7)^2) )'
+        calc.SetFunction(vMstressFunction_string)
+        
+        #calc.SetResultArrayName('vonMisesStress_forMV_mu1400_lambda56933') # DEPRECATED.
+        vMstressArrayName_string = 'vonMisesStress_forMV_lambda' + matParamMVtissue_Lambda_string + '_mu' + matParamMVtissue_Mu_string
+        calc.SetResultArrayName(vMstressArrayName_string)
+        
+        calc.Update()
+        
+        grid = calc.GetOutput()
+        
+        debug("  - vMstress-iteration: - Computation of displacement vectors, Cauchy strain and vom Mises stress for current file: DONE.")
+        
+        # Write output to vtu
+        writer = vtk.vtkXMLUnstructuredGridWriter()
+        writer.SetDataModeToAscii()
+        writer.SetFileName(outputfilename)
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          writer.SetInputData(grid)
+        else:
+          writer.SetInput(grid)
+        writer.Write()
+        
+        debug("  - vMstress-iteration: - Writing Extended VTU incl. von Mises Stress information for current file: DONE.")
+        # ----------------------------------------------------------------------
+    
     # ======================================================================
-    # Compute strain tensor
-    derivative = vtk.vtkCellDerivatives()
-    derivative.SetInput(calc.GetOutput())
-    derivative.SetTensorModeToComputeStrain()
-    derivative.Update()
-
+    debug("Von Mises Stress computation: DONE for all files.")
+    
+#    # ======================================================================
+#    # Read file
+#    polydata = read_polydata(volume_mesh)
+#
+#    # ======================================================================
+#    # Compute displacement vector
+#    calc = vtk.vtkArrayCalculator()
+#    calc.SetInput(polydata)
+#    calc.SetAttributeModeToUsePointData()
+#    calc.AddScalarVariable('x', 'u0', 0)
+#    calc.AddScalarVariable('y', 'u1', 0)
+#    calc.AddScalarVariable('z', 'u2', 0)
+#    calc.SetFunction('x*iHat+y*jHat+z*kHat')
+#    calc.SetResultArrayName('DisplacementSolutionVector')
+#    calc.Update()
+#
+#    # ======================================================================
+#    # Compute strain tensor
+#    derivative = vtk.vtkCellDerivatives()
+#    derivative.SetInput(calc.GetOutput())
+#    derivative.SetTensorModeToComputeStrain()
+#    derivative.Update()
+#
+#    # ======================================================================
+#    # Compute von Mises stress
+#    calc = vtk.vtkArrayCalculator()
+#    calc.SetInput(derivative.GetOutput())
+#    calc.SetAttributeModeToUseCellData()
+#    calc.AddScalarVariable('Strain_0', 'Strain', 0)
+#    calc.AddScalarVariable('Strain_1', 'Strain', 1)
+#    calc.AddScalarVariable('Strain_2', 'Strain', 2)
+#    calc.AddScalarVariable('Strain_3', 'Strain', 3)
+#    calc.AddScalarVariable('Strain_4', 'Strain', 4)
+#    calc.AddScalarVariable('Strain_5', 'Strain', 5)
+#    calc.AddScalarVariable('Strain_6', 'Strain', 6)
+#    calc.AddScalarVariable('Strain_7', 'Strain', 7)
+#    calc.AddScalarVariable('Strain_8', 'Strain', 8)
+#    calc.SetFunction(
+#        'sqrt( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8))^2 - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*700*Strain_3)^2 + (2*700*Strain_6)^2 + (2*700*Strain_7)^2) )')
+#    calc.SetResultArrayName('vonMisesStress_forMV_mu700_lambda28466')
+#    calc.Update()
+#
+#    debug("Computation of displacement vectors, Cauchy strain and vom Mises stress")
+#
+#    # ======================================================================
+#    # Define dummy variable; get output of calc filter
+#    dummy = calc.GetOutput()
+#
+#    # Get point data arrays u0, u1 and u2
+#    pointData_u0 = dummy.GetPointData().GetArray('u0')
+#    pointData_u1 = dummy.GetPointData().GetArray('u1')
+#    pointData_u2 = dummy.GetPointData().GetArray('u2')
+#
+#    # Set scalars
+#    dummy.GetPointData().SetScalars(pointData_u0)
+#
+#    # ======================================================================
+#    # Warp by scalar u0
+#    warpScalar = vtk.vtkWarpScalar()
+#    warpScalar.SetInput(dummy)
+#    warpScalar.SetNormal(1.0, 0.0, 0.0)
+#    warpScalar.SetScaleFactor(1.0)
+#    warpScalar.SetUseNormal(1)
+#    warpScalar.Update()
+#
+#    # Get output and set scalars
+#    dummy = warpScalar.GetOutput()
+#    dummy.GetPointData().SetScalars(pointData_u1)
+#
+#    # ======================================================================
+#    # Warp by scalar u1
+#    warpScalar = vtk.vtkWarpScalar()
+#    warpScalar.SetInput(dummy)
+#    warpScalar.SetNormal(0.0, 1.0, 0.0)
+#    warpScalar.SetScaleFactor(1.0)
+#    warpScalar.SetUseNormal(1)
+#    warpScalar.Update()
+#
+#    # Get output and set scalars
+#    dummy = warpScalar.GetOutput()
+#    dummy.GetPointData().SetScalars(pointData_u2)
+#
+#    # ======================================================================
+#    # Warp by scalar u2
+#    warpScalar = vtk.vtkWarpScalar()
+#    warpScalar.SetInput(dummy)
+#    warpScalar.SetNormal(0.0, 0.0, 1.0)
+#    warpScalar.SetScaleFactor(1.0)
+#    warpScalar.SetUseNormal(1)
+#    warpScalar.Update()
+#
+#    # Get ouput and add point data arrays that got deleted earlier
+#    dummy = warpScalar.GetOutput()
+#    dummy.GetPointData().AddArray(pointData_u0)
+#    dummy.GetPointData().AddArray(pointData_u1)
+#
+#    # ======================================================================
+#    # Write output to vtu
+#
+#    write_vtu(dummy, target)
+#
+#    # ======================================================================
+#    debug("Writing Extended VTU incl. von Mises Stress information")
+    
     # ======================================================================
-    # Compute von Mises stress
-    calc = vtk.vtkArrayCalculator()
-    calc.SetInput(derivative.GetOutput())
-    calc.SetAttributeModeToUseCellData()
-    calc.AddScalarVariable('Strain_0', 'Strain', 0)
-    calc.AddScalarVariable('Strain_1', 'Strain', 1)
-    calc.AddScalarVariable('Strain_2', 'Strain', 2)
-    calc.AddScalarVariable('Strain_3', 'Strain', 3)
-    calc.AddScalarVariable('Strain_4', 'Strain', 4)
-    calc.AddScalarVariable('Strain_5', 'Strain', 5)
-    calc.AddScalarVariable('Strain_6', 'Strain', 6)
-    calc.AddScalarVariable('Strain_7', 'Strain', 7)
-    calc.AddScalarVariable('Strain_8', 'Strain', 8)
-    calc.SetFunction(
-        'sqrt( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8))^2 - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*700*Strain_3)^2 + (2*700*Strain_6)^2 + (2*700*Strain_7)^2) )')
-    calc.SetResultArrayName('vonMisesStress_forMV_mu700_lambda28466')
-    calc.Update()
-
-    debug("Computation of displacement vectors, Cauchy strain and vom Mises stress")
-
+    debug("Von Mises Stress computation: DONE for all files.")
     # ======================================================================
-    # Define dummy variable; get output of calc filter
-    dummy = calc.GetOutput()
-
-    # Get point data arrays u0, u1 and u2
-    pointData_u0 = dummy.GetPointData().GetArray('u0')
-    pointData_u1 = dummy.GetPointData().GetArray('u1')
-    pointData_u2 = dummy.GetPointData().GetArray('u2')
-
-    # Set scalars
-    dummy.GetPointData().SetScalars(pointData_u0)
-
-    # ======================================================================
-    # Warp by scalar u0
-    warpScalar = vtk.vtkWarpScalar()
-    warpScalar.SetInput(dummy)
-    warpScalar.SetNormal(1.0, 0.0, 0.0)
-    warpScalar.SetScaleFactor(1.0)
-    warpScalar.SetUseNormal(1)
-    warpScalar.Update()
-
-    # Get output and set scalars
-    dummy = warpScalar.GetOutput()
-    dummy.GetPointData().SetScalars(pointData_u1)
-
-    # ======================================================================
-    # Warp by scalar u1
-    warpScalar = vtk.vtkWarpScalar()
-    warpScalar.SetInput(dummy)
-    warpScalar.SetNormal(0.0, 1.0, 0.0)
-    warpScalar.SetScaleFactor(1.0)
-    warpScalar.SetUseNormal(1)
-    warpScalar.Update()
-
-    # Get output and set scalars
-    dummy = warpScalar.GetOutput()
-    dummy.GetPointData().SetScalars(pointData_u2)
-
-    # ======================================================================
-    # Warp by scalar u2
-    warpScalar = vtk.vtkWarpScalar()
-    warpScalar.SetInput(dummy)
-    warpScalar.SetNormal(0.0, 0.0, 1.0)
-    warpScalar.SetScaleFactor(1.0)
-    warpScalar.SetUseNormal(1)
-    warpScalar.Update()
-
-    # Get ouput and add point data arrays that got deleted earlier
-    dummy = warpScalar.GetOutput()
-    dummy.GetPointData().AddArray(pointData_u0)
-    dummy.GetPointData().AddArray(pointData_u1)
-
-    # ======================================================================
-    # Write output to vtu
-
-    write_vtu(dummy, target)
-
-    # ======================================================================
-    debug("Writing Extended VTU incl. von Mises Stress information")
-
 
 
 def isElementOfList(a, myList):

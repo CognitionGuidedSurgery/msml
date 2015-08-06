@@ -55,6 +55,8 @@
 
 #include "../vtk6_compat.h"
 
+#include "../common/log.h"
+
 namespace MSML
 {
   namespace SurfaceToVoxelDataOperator
@@ -62,6 +64,8 @@ namespace MSML
 	  
   std::string SurfaceToVoxelDataOperator(const char* infile, const char* outfile, float accuracy_level, float smoothing)
   {
+    std::cout << " Calling SurfaceToVoxelDataOperator with infile " <<  infile << "." << std::endl;
+    
     vtkSmartPointer<vtkPolyData> pd = IOHelper::VTKReadPolyData(infile);
     // Note: vtp (PolyData) as input required; if necessary use MSML STL2VTK-Converter.
     
@@ -127,7 +131,7 @@ namespace MSML
 			                  << " x [" << iBounds[4] << ","  << iBounds[5] << "]"  << std::endl;
 	std::cout << "Spacing:       "  << ispacing   << std::endl;
 	std::cout << "Dimensions     "  << iDim[0]    << ", " << iDim[1] << ", " << iDim[2] << std::endl;
-    std::cout << std::endl;
+    //std::cout << std::endl;
     
   // ************************************************
   // Map poly data into image
