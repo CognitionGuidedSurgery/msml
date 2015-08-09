@@ -4,46 +4,17 @@ namespace MSML
 	{
 	namespace IsoContourOperator
 	{
-			std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::string final_position, const std::string weight_table)
+			std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::vector<std::string> vtulist, const std::vector<float> weightlist)
 		{
 			//print information about the inputs
 			std::cout << "data directory : " << data_directory << std::endl;			
 			std::cout << "initial position : " << initial_position << std::endl;
-			std::cout << "final positions : " << final_position << std::endl;
-			std::cout << "weight table : " << weight_table << std::endl;
+			std::cout << "vut list size : " << vtulist.size() << std::endl;
+			std::cout << "weigth list size : " << weightlist.size() << std::endl;
 
 			//geting the dirctory and name of files
 			std::string file_dir = data_directory;
 			std::string file_init = std::string(data_directory) + std::string(initial_position);
-			std::string file_deform = std::string(data_directory) + std::string(final_position);
-			std::string file_weight = std::string(data_directory) + std::string(weight_table);
-
-			//define vtufile and weightfile for reading stream
-			ifstream vtufile(file_deform.c_str());
-			ifstream weightfile(file_weight.c_str());
-
-			//vtulist and weightlist for store the name and weight for vtu files
-			std::vector<std::string> vtulist;
-			std::vector<float> weightlist;
-
-			//reading stream helper
-			std::string line;
-
-			//read the names of vtu files from vtufile into vtulist
-			if (vtufile.is_open()) {
-				while(getline(vtufile, line)) {
-					vtulist.push_back(line);
-				}
-				vtufile.close();
-			}
-
-			//read the weights from weightfile into weightlist	
-			if (weightfile.is_open()) {
-				while(getline(weightfile, line)) {
-					weightlist.push_back(atof(line.c_str()));
-				}
-				weightfile.close();
-			}	
 
 			//checking the size of vtulist and wegithlist is equal
 			if (vtulist.size() != weightlist.size()) {
