@@ -305,6 +305,13 @@ class MSMLInt(PhysicalType):
 class MSMLListUI(PhysicalType):
     pass
 
+	
+	
+	
+	
+	
+class MSMLListS(PhysicalType):
+    pass
 
 
 

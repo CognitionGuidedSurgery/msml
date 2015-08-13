@@ -24,6 +24,6 @@
         <arg name="file_path" physical="string" optional="true" target="true" />
 	<arg name="initial_position" pysical="file.vtk" optional="true" default=""/>
 	<arg name="vtu_table" physical="vector.string" optional="true" target="true" />
-	<arg name="weight_table" physical="vecotr.float" optional="true" target="true" />
+	<arg name="weight_table" physical="vector.float" optional="true" target="true" />
     </parameters>
 </msml:operator>

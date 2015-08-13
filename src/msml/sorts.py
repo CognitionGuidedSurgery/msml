@@ -187,6 +187,7 @@ DEFAULTS_SORTS = {
         (MSMLListF, "ListF", "vector.float"),
         (MSMLListUI, "ListUI", "vector.uint"),
         (MSMLListI, "ListI", "vector.int"),
+        (MSMLListS, "ListI", "vector.string"),
         (VTK, "VTK", "vtk", "file.vtk"),
         (VTU, "VTU", "vtu", "file.vtu"),
         (VTI, "VTI", "vti", "file.vti"),
@@ -338,7 +339,9 @@ def _list_float(s):
 def _list_integer(s):
     return _list_of_type(s, lambda x: MSMLInt(float(x)))
 
-
+def _list_string(s):
+    return _list_of_type(s, lambda x: MSMLString(str(x)))
+	
 def _list_uinteger(s):
     return _list_of_type(s, lambda x: MSMLUInt(float(x)))
 
@@ -360,6 +363,7 @@ register_conversion(get_sort('vector.float'), get_sort('vector.int'), _list_inte
 register_conversion(get_sort('vector.int'), get_sort('vector.float'), _list_float, 100)
 register_conversion(int, get_sort('vector.int'), _single_int_list, 100)
 register_conversion(list, get_sort('vector.float'), _list_float, 100)
+register_conversion(list, get_sort('vector.string'), _list_string, 100)
 register_conversion(list, get_sort('vector.int'), _list_float, 100)
 register_conversion(str, get_sort("STL"), STL, 100)
 register_conversion(str, get_sort("VTP"), VTP, 100)
