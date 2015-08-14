@@ -5,6 +5,7 @@
         <var name="vol_mesh" value="Beam_Tet4_NElement=1810.vtk" logical="TetrahedralVolumeMesh" physical="file.vtk"/>
     <var name="dispVar" value="0 0 5" logical="Displacement" physical="vector.float"/>
     <var name="resultMesh" value="referenceDisp.vtu" physical="str"/>
+	<var name="resultImage" value="referenceDispImage.vti" physical="str"/>
     </variables>
 
 
@@ -45,8 +46,16 @@
                                select="points"/>
 
         <ExtractPointPositions id="finalPointDisp" mesh="${disp}" indices="${bodyToIndexGroup}"/>
-
+		
+		<ExtractSurfaceMesh id="surfaceExtract1" mesh="${vol_mesh}" targetSurfaceMeshFilename="initSurface.vtp"/>
+		<VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh1" surfaceMesh="${surfaceExtract1}"  isotropicVoxelSize="0.001" targetImageFilename="initSurfaceVoxelized.vti" disableFillHoles="true"/>
+		
+		
+        <ExtractSurfaceMesh id="surfaceExtract2" mesh="${disp}" targetSurfaceMeshFilename="dispSurface.vtp"/>
+		<VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh2" surfaceMesh="${surfaceExtract2}" referenceCoordinateGrid="initSurfaceVoxelized.vti" additionalIsotropicMargin="0.1" targetImageFilename="dispSurfaceVoxelized.vti" disableFillHoles="true"/>
+		
         <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" working_directory="false" />
+		<copyFile id="fileCopy2" filename_in="${VoxelizeSurfaceMesh2}" filename_out="${resultImage}" working_directory="false" />
 
     </workflow>
 
