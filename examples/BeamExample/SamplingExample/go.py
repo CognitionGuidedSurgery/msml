@@ -29,23 +29,21 @@ import multiprocessing
  
  
 def createAndRunHnnSimulation(args_list): #create a simulation instance with given parameter and run it.
-    aHeadneck_simulation = headneck(args_list['msml_file'], args_list['i'], args_list['scenarioDisp'], args_list['scenarioResultMesh'], args_list['resultImage'])
+    aHeadneck_simulation = headneck(args_list['msml_file'], args_list['i'], args_list['scenarioDisp'], args_list['scenarioResultMesh'])
     return aHeadneck_simulation()
    
 class headneck(object): 
-    def __init__(self, msml_filename, id, scenarioDisp, scenarioResultMesh, resultImage):
+    def __init__(self, msml_filename, id, scenarioDisp, scenarioResultMesh):
         self.id = id
         self.app = App(seq_parallel=True, exporter='nsofa', output_dir= NAME + str(id), executor='sequential')
         self.mf = self.app._load_msml_file(msml_filename)
         self._scenarioDisp = scenarioDisp
         self._scenarioResultMesh = scenarioResultMesh
-        self.resultImage = resultImage
    
     def __call__(self):
         self.app.memory_init_file = {
             "dispVar":self._scenarioDisp,
-			"resultMesh":self._scenarioResultMesh,
-            "resultImage":self.resultImage            
+			"resultMesh":self._scenarioResultMesh
         }
         mem = self.app.execute_msml(self.mf, )
         return self._scenarioResultMesh
@@ -61,22 +59,21 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "stdnorm_mc_10k.csv"
+    #csv_file_name = "stdnorm_mc_10k.csv"
+    csv_file_name = "test_mc_100.csv"
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
-    result_vtis = list()
     
     #collect parameters for all simulation runs
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [0,0, float(scenarioRow[0])*0.01]
-            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + NAME + str(i) + '.vtu', 'resultImage': '../' + NAME + str(i) + '.vti'} 
+            vec = [0,0, float(scenarioRow[0])*0.0001]
+            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + NAME + str(i) + '.vtu' } 
             result_vtus.append( NAME + str(i) + '.vtu' )
-            result_vtis.append( NAME + str(i) + '.vti' )
             args_list.append(dict(args)) #copy            
         i=i+1
-        if i>10:
+        if i>100:
             break
 
     #run simulations
@@ -87,11 +84,13 @@ if __name__ == '__main__': #for parallel processing compatibility
     
     os.chdir( startDir )
     vtus = ['vtus', 'vtus2']
-    weights =  [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+    #weights =  [0.5, 0.5]
+
+    weights = []
+    for i in range(0,100):
+	weights.append(0.01)
+
     MiscOps.IsoContourOperator('', 'init.vtu', result_vtus, weights)
-    
-    MiscOps.ImageSum(NAME+'*' + '.vti', True, 'imgSum.vti');
-    
         
 		
    
