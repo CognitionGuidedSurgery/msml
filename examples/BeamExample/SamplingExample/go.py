@@ -61,7 +61,9 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "stdnorm_mc_10k.csv"
+    #csv_file_name = "stdnorm_mc_10k.csv"
+    csv_file_name = "test_mc_100.csv"
+
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
     result_vtis = list()
@@ -76,7 +78,7 @@ if __name__ == '__main__': #for parallel processing compatibility
             result_vtis.append( NAME + str(i) + '.vti' )
             args_list.append(dict(args)) #copy            
         i=i+1
-        if i>10:
+        if i>100:
             break
 
     #run simulations
@@ -87,7 +89,12 @@ if __name__ == '__main__': #for parallel processing compatibility
     
     os.chdir( startDir )
     vtus = ['vtus', 'vtus2']
-    weights =  [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+    #weights =  [0.5, 0.5]
+
+    weights = []
+    for i in range(0,100):
+        weights.append(0.01)
+
     MiscOps.IsoContourOperator('', 'init.vtu', result_vtus, weights)
     
     MiscOps.ImageSum(NAME+'*' + '.vti', True, 'imgSum.vti');
