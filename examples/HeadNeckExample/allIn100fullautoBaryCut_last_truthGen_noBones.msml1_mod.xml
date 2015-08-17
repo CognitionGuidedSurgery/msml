@@ -19,7 +19,7 @@
     <var name="BRAC_PLX_1_voxel_nearPTV" value="preprocessing_auto_vtk_1mm_CTV2union/BRAC_PLX_1_voxel_nearPTV.vti" logical="image" physical="file.vti"/>
     <var name="Spinal_1_voxel_nearPTV" value="preprocessing_auto_vtk_1mm_CTV2union/Spinal_1_voxel_nearPTV.vti" logical="image" physical="file.vti"/>
     
-    <var name="patient_CT" value="ct.vtk" logical="image" physical="file.vti" />
+    <var name="patient_CT" value="CTs from rtog conversion.3.6.1.4.1.22213.2.26555.2.vtk" logical="image" physical="file.vti" />
 
     <var name="disp_name" value="disp_name.vtu" physical="str" />
 
