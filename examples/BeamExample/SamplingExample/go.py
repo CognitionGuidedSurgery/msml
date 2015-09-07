@@ -51,7 +51,7 @@ class headneck(object):
         return self._scenarioResultMesh
  
  
-NAME = "OUT_MC__"
+NAME = "OUT_MC_DIRNEW_"
 if __name__ == '__main__': #for parallel processing compatibility
    
     
@@ -72,7 +72,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [0,0, float(scenarioRow[0])*0.01]
+            vec = [0,0, float(scenarioRow[0])*0.0001]
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + NAME + str(i) + '.vtu', 'resultImage': '../' + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
