@@ -19,7 +19,6 @@
         <arg name="size" physical="float"/> 
         <arg name="voxelIdRatio" physical="float" />
         <arg name="tolerance" physical="float" />
-        <arg name="maxIterations" physical="float" />
     </parameters>
 
 </msml:operator>
