@@ -91,9 +91,15 @@ namespace MSML
 
 			//creat vectors with dimension numberofpoinst * 3 
 			std::vector< std::vector<double> > mean_calculator(ugrid_init->GetNumberOfPoints(), std::vector<double>(3));
-			std::vector< float > mean(surface_init->GetNumberOfPoints(), 0.0);
-			std::vector< float > std_dev(surface_init->GetNumberOfPoints(), 0.0);
-			std::vector< float > std_dev_helper(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > mean_x(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > mean_y(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > mean_z(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > std_dev_x(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > std_dev_y(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > std_dev_z(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > std_dev_helper_x(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > std_dev_helper_y(surface_init->GetNumberOfPoints(), 0.0);
+			std::vector< float > std_dev_helper_z(surface_init->GetNumberOfPoints(), 0.0);
 
 			//compute the mean of the distance of the displacement , sum of u_i*w_i , and sum of u_i*u_i*w_i is defined as std_dev_helper, ps: u : displacement, w : weight
 			for (int i = 0; i < vtulist.size(); ++i) {
@@ -137,8 +143,13 @@ namespace MSML
 						x = surface_deform->GetPoint(j)[0] - surface_init->GetPoint(j)[0];
 						y = surface_deform->GetPoint(j)[1] - surface_init->GetPoint(j)[1];
 						z = surface_deform->GetPoint(j)[2] - surface_init->GetPoint(j)[2];
-						mean[j] += std::sqrt(x*x + y*y + z*z) * weightlist[i];
-						std_dev_helper[j] += (x*x + y*y + z*z) * weightlist[i];
+						mean_x[j] += x * weightlist[i];
+						mean_y[j] += y * weightlist[i];
+						mean_z[j] += z * weightlist[i];
+						std_dev_helper_x[j] += x*x * weightlist[i];
+						std_dev_helper_y[j] += y*y * weightlist[i];
+						std_dev_helper_z[j] += z*z * weightlist[i];
+
 					}
 				} else {
 					//abort program if initial vtu and deformed vtu are not same size
@@ -153,9 +164,9 @@ namespace MSML
 				float x, y, z;
 
 				x = surface_init->GetPoint(i)[0] + mean_calculator[i][0];
-				y = surface_init->GetPoint(i)[1] + mean_calculator[i][1];
-				z = surface_init->GetPoint(i)[2] + mean_calculator[i][2];
-				points_mean->SetPoint(i, x, y, z);
+			        y = surface_init->GetPoint(i)[1] + mean_calculator[i][1];
+			        z = surface_init->GetPoint(i)[2] + mean_calculator[i][2];
+		        	points_mean->SetPoint(i, x, y, z);
 
 			}
 
@@ -178,11 +189,9 @@ namespace MSML
 
 			//calculating sqrt(sum of we_i*u_i*u_i - mean*mean) -->standard deviation
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
-				if ((std_dev_helper[i] - mean[i]*mean[i]) < 0.0) {
-					std_dev[i] = 0.0;
-				} else {
-					std_dev[i] = std::sqrt(std_dev_helper[i] - mean[i]*mean[i]);
-				}
+					std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
+					std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
+					std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
 
 			}
 
@@ -191,13 +200,14 @@ namespace MSML
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
 				float x_outer, y_outer, z_outer, x_inner, y_inner, z_inner;
 
-				x_outer = contour_mean->GetPoint(i)[0] + std_dev[i] * 2 * normals->GetTuple(i)[0];
-				y_outer = contour_mean->GetPoint(i)[1] + std_dev[i] * 2 * normals->GetTuple(i)[1];
-				z_outer = contour_mean->GetPoint(i)[2] + std_dev[i] * 2 * normals->GetTuple(i)[2];
+				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 2 * normals->GetTuple(i)[0];
+				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2 * normals->GetTuple(i)[1];
+				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2 * normals->GetTuple(i)[2];
 
-				x_inner = contour_mean->GetPoint(i)[0] - std_dev[i] * 2 * normals->GetTuple(i)[0];
-				y_inner = contour_mean->GetPoint(i)[1] - std_dev[i] * 2 * normals->GetTuple(i)[1];
-				z_inner = contour_mean->GetPoint(i)[2] - std_dev[i] * 2 * normals->GetTuple(i)[2];
+				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 2 * normals->GetTuple(i)[0];
+				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 2 * normals->GetTuple(i)[1];
+				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 2 * normals->GetTuple(i)[2];
+
 
 				float test = normals->GetTuple(i)[0];
 				if (test != test) {
