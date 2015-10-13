@@ -51,9 +51,9 @@ class headneck(object):
         return self._scenarioResultMesh
  
  
-NAME = "OUT_MC100_DIRNEW_"
-COUNTER = 1
-DIR = './Reference_solution/'
+NAME = "OUT_MC200_DIRNEW_"
+COUNTER = 200
+DIR = './MC200/'
 
 try :
 	os.stat(DIR)
@@ -70,8 +70,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    #csv_file_name = "./samples/test_mc_100.csv"
-    csv_file_name = "./samples/reference.csv"
+    csv_file_name = "./samples/test_mc_200.csv"
+    #csv_file_name = "./samples/reference.csv"
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
@@ -109,7 +109,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSum.vti');
     
     shutil.move('./imgSum.vti', DIR + 'imgSum.vti')    
-    shutil.move('./isocontour_initial.vtp', DIR + 'isoncontour_initial.vtp')
+    shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial.vtp')
     shutil.move('./isocontour_mean.vtp', DIR + 'isocontour_mean.vtp')
     shutil.move('./isocontour_inner.vtp', DIR + 'isocontour_inner.vtp')
     shutil.move('./isocontour_outer.vtp', DIR + 'isocontour_outer.vtp')
