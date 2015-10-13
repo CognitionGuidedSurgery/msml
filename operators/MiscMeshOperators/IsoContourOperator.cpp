@@ -73,7 +73,7 @@ namespace MSML
 			surface_init = surfacefilter->GetOutput();
 
 			//writing the initial surface
-			polywriter->SetFileName("initial_countour.vtp");
+			polywriter->SetFileName("isocontour_initial.vtp");
 			polywriter->SetInputData(surface_init);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
@@ -179,7 +179,7 @@ namespace MSML
 			//contour_mean = normal_generator->GetOutput();
 
 			//writing the mean surface
-			polywriter->SetFileName("countour_mean.vtp");
+			polywriter->SetFileName("isocontour_mean.vtp");
 			polywriter->SetInputData(contour_mean);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
@@ -219,21 +219,21 @@ namespace MSML
 			}
 
 			//writing outer contour
-			polywriter->SetFileName("contour_outer.vtp");
+			polywriter->SetFileName("isocontour_outer.vtp");
 			polywriter->SetInputData(contour_outer);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
 			//writing inner contour
-			polywriter->SetFileName("contour_inner.vtp");
+			polywriter->SetFileName("isocontour_inner.vtp");
 			polywriter->SetInputData(contour_inner);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
 			
 			std::vector<std::string> output_file_name;
-			output_file_name.push_back("contour_outer.vtp");
-			output_file_name.push_back("contour_inner.vtp");
+			output_file_name.push_back("isocontour_outer.vtp");
+			output_file_name.push_back("isocontour__inner.vtp");
 
 			return output_file_name;
 
