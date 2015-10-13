@@ -52,9 +52,13 @@ class headneck(object):
  
  
 NAME = "OUT_MC100_DIRNEW_"
-COUNTER = 100
-DIR = './MC100/'
-os.mkdir(DIR)
+COUNTER = 1
+DIR = './Reference_solution/'
+
+try :
+	os.stat(DIR)
+except:
+	os.mkdir(DIR)
 
 if __name__ == '__main__': #for parallel processing compatibility
    
@@ -66,8 +70,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "./samples/test_mc_100.csv"
-    #csv_file_name = "./samples/reference.csv"
+    #csv_file_name = "./samples/test_mc_100.csv"
+    csv_file_name = "./samples/reference.csv"
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
