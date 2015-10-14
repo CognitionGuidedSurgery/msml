@@ -51,9 +51,9 @@ class headneck(object):
         return self._scenarioResultMesh
  
  
-NAME = "OUT_MC400_DIRNEW_"
-COUNTER = 400
-DIR = './MC400/'
+NAME = "OUT_COLLOC6_DIRNEW_"
+COUNTER = 6
+DIR = './COLLOC6/'
 #DIR = './Reference_solution/'
 
 try :
@@ -71,8 +71,14 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "./samples/monte_carlo/test_mc_400.csv"
+    csv_file_name = "./samples/collocation/gqu6_sample.csv"
     #csv_file_name = "./samples/reference/reference.csv"
+
+    weight_name = './samples/collocation/gqu6_weight.csv'
+    weights = []
+    weights_reader = reader(open(weight_name, "rb"), delimiter=',', dialect='excel')
+    for i in weights_reader :
+        weights.append(float(i[0]))
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
@@ -82,7 +88,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [0,0, float(scenarioRow[0])*0.01]
+	    # scaling is separated in two parts. "*0.01" is same as in monte-carlo case, and "(-0.5)*2" is rescale the samples in interval [-1,1]
+            vec = [0,0, (float(scenarioRow[0])-0.5)*2.0*0.01]
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
@@ -98,18 +105,9 @@ if __name__ == '__main__': #for parallel processing compatibility
         createAndRunHnnSimulation(args_list[j])
     
     os.chdir( startDir )
-    #vtus = ['vtus', 'vtus2']
-    #weights =  [0.5, 0.5]
-
-    weights = []
-    for i in range(0, COUNTER):
-        weights.append(1.0/COUNTER)
 
     MiscOps.IsoContourOperator(DIR, 'init.vtu', result_vtus, weights)
     
-    MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSum.vti');
-    
-    shutil.move('./imgSum.vti', DIR + 'imgSum.vti')    
     shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial.vtp')
     shutil.move('./isocontour_mean.vtp', DIR + 'isocontour_mean.vtp')
     shutil.move('./isocontour_inner.vtp', DIR + 'isocontour_inner.vtp')

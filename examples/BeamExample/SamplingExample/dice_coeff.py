@@ -29,7 +29,8 @@ import multiprocessing
  
  
 DIR_ref = './Reference_solution/'
-DIR = './MC100/'
+#DIR = './MC400/'
+DIR = './COLLOC6/'
 
 reference = DIR_ref + 'isocontour_mean.vtp'
 outfilename = DIR + 'isocontour_outer.vtp'
