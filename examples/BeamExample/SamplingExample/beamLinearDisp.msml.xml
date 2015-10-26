@@ -17,7 +17,7 @@
 
             <material>
                 <region id="liverMaterial" indices="${bodyToIndexGroup}">
-                    <linearElasticMaterial youngModulus="300" poissonRatio="0.40"/>
+                    <linearElasticMaterial youngModulus="300" poissonRatio="0.0"/>
                     <mass name="abc" massDensity="0.00000000000001"/>
                 </region>
             </material>
