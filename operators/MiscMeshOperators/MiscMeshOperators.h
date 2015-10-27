@@ -154,6 +154,8 @@ namespace MiscMeshOperators
   LIBRARY_API std::vector<double> GradientOnSurface(const char* inFile, std::vector<double> values, int steps);
   LIBRARY_API std::string CombineMeshes(const char* infileA, const char* infileB, const char* outfile);
 
+  LIBRARY_API int CountVoxelsAbove(const char* inputImage, float threshold);
+
 
 } //end namespace MiscMeshOperators
 } // end namespace MSML

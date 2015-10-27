@@ -85,6 +85,8 @@
 #include "vtkCellLocator.h"
 #include "vtkPolyDataConnectivityFilter.h"
 
+#include "vtkImageAccumulate.h"
+
 
 
 #include <vtkThreshold.h>
@@ -1968,6 +1970,39 @@ vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* aUnstruct
   } //z
   return image;
 }
+
+int CountVoxelsAbove(const char* inputImage, float threshold)
+{
+  log_error() <<  inputImage ;
+  vtkSmartPointer<vtkImageAccumulate> histogram =  vtkSmartPointer<vtkImageAccumulate>::New();
+  vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(inputImage);
+  histogram->SetInputData(image);
+  histogram->SetComponentExtent(0,1,0,0,0,0);
+  histogram->SetComponentOrigin(-99999,0,0);
+  histogram->SetComponentSpacing(99999+threshold,0,0);
+  histogram->IgnoreZeroOn();
+  histogram->Update();
+
+  vtkSmartPointer<vtkIntArray> frequencies = 
+  vtkSmartPointer<vtkIntArray>::New();
+
+  frequencies->SetNumberOfComponents(1);
+  frequencies->SetNumberOfTuples(2);
+  int* output = static_cast<int*>(histogram->GetOutput()->GetScalarPointer());
+ 
+  for(int j = 0; j < 2; ++j)
+  {
+  frequencies->SetTuple1(j, *output++);
+  }
+ 
+  vtkSmartPointer<vtkDataObject> dataObject = 
+  vtkSmartPointer<vtkDataObject>::New();
+ 
+  dataObject->GetFieldData()->AddArray( frequencies );
+
+  return (int) frequencies->GetTuple1(1);
+}
+
 
 vtkSmartPointer<vtkImageData> ImageCreateGeneric(vtkPointSet* grid, double resolution, float isotropicVoxelSize, const char* referenceCoordinateGrid, float additionalIsotropicMargin)
 {

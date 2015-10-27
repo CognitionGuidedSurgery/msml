@@ -54,7 +54,7 @@ class headneck(object):
  
 results_file_name = 'results_' + str(time.time()) + '.csv'
 
-for COUNTER in range(2,11):
+for COUNTER in range(2,500):
   NAME = "BATCH_OUT_MC" + str(COUNTER) + "_DIRNEW_"
 
   DIR = './BATCH_MC' + str(COUNTER) + '/'
@@ -110,22 +110,35 @@ for COUNTER in range(2,11):
           weights.append(1.0/COUNTER)
 
       MiscOps.IsoContourOperator(DIR, 'init.vtu', result_vtus, weights);
-      MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSum.vti');
-      MiscOps.vtkMarchingCube('./imgSum.vti', './imgSumIsoSurface.vtp', 12.75);
-      dice = MiscOps.ComputeDiceCoefficientPolydata('./dispSurfaceRefZeroPoisson.vtp', './imgSumIsoSurface.vtp', 'dice_intersection.vtp') 
+      MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumVox.vti');
+      MiscOps.vtkMarchingCube('./imgSumVox.vti', './imgSumIsoSurface.vtp', 12.75);
+      count_result = float(MiscOps.CountVoxelsAbove('./imgSumVox.vti', 12.75));
+      
+      
+      MiscOps.VoxelizeSurfaceMesh('./dispSurfaceRefZeroPoisson.vtp', './dispSurfaceRefZeroPoissonVox.vti', 0, 0.000, 'initSurfaceVoxelized.vti', True, 0.1) #use to recreate reference image data
+      count_ref = float(MiscOps.CountVoxelsAbove('./dispSurfaceRefZeroPoissonVox.vti', 127.5));
+      
+      MiscOps.ImageSum('*' + 'Vox.vti', True, 'SumResultAndRef.vti');
+      count_intersect = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 127.5+12.75));
+      MiscOps.vtkMarchingCube('./SumResultAndRef.vti', './SumResultAndRefMarching.vtp', 127.5);
+      
+
+      
+      dice = (2 * count_intersect) / (count_result+count_ref)
+      
+      
       
       results_file = open(results_file_name, 'a')
       csv_writer = csv.writer(results_file)
-      csv_writer.writerow( (COUNTER, dice, NAME) )
+      csv_writer.writerow( (COUNTER, NAME, dice, count_result, count_ref, count_intersect) )
       results_file.close()
     
-      shutil.move('./imgSum.vti', DIR + 'imgSum.vti')    
+      shutil.move('./imgSumVox.vti', DIR + 'imgSumVox.vti')    
       shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial.vtp')
       shutil.move('./isocontour_mean.vtp', DIR + 'isocontour_mean.vtp')
       shutil.move('./isocontour_inner.vtp', DIR + 'isocontour_inner.vtp')
       shutil.move('./isocontour_outer.vtp', DIR + 'isocontour_outer.vtp')
       shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface.vtp')
-      shutil.move('./dice_intersection.vtp', DIR + 'dice_intersection.vtp')
       
       #delet intermediate results folders
       for i in range(1, COUNTER+1) :

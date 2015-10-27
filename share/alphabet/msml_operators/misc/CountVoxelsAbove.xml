@@ -1,0 +1,24 @@
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="CountVoxelsAbove">
+    <runtime>
+        <python module="msml.ext.misc" function="CountVoxelsAbove" />
+    </runtime>
+    <meta key="doc">
+        Sum images - all images must have the same dimensions!
+    </meta>
+    <input>
+        <arg name="image" logical="Image3D" physical="str">
+            <meta key="doc">
+                A file name pattern like MyImage1*.vti
+            </meta>
+        </arg>
+    </input>  
+
+    <parameters>	
+        <arg name="threshold" physical="float" optional="false" />
+    </parameters>
+    <output>
+        <arg name="voxelCount" logical="float" physical="float" />
+    </output>
+</msml:operator>
