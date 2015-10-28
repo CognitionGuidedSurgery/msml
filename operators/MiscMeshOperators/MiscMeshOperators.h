@@ -99,6 +99,9 @@ namespace MiscMeshOperators
   LIBRARY_API   std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
   LIBRARY_API   bool VoxelizeSurfaceMesh(vtkPolyData* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
 
+  LIBRARY_API   bool VoxelizeVolumeMesh(vtkUnstructuredGrid* inputMesh, vtkImageData* outputImage, int spacing, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHole, double additionalIsotropicMargin);
+  LIBRARY_API   std::string VoxelizeVolumeMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin);
+
   LIBRARY_API   std::string ConvertVTKPolydataToUnstructuredGrid(std::string infile, std::string outfile);
   LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(const char* infile, const char* outfile );
   LIBRARY_API   bool ConvertVTKPolydataToUnstructuredGrid(vtkPolyData* inputPolyData, vtkUnstructuredGrid* outputMesh);
