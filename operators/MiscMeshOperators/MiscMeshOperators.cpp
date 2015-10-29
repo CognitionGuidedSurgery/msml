@@ -2074,7 +2074,7 @@ int CountVoxelsAbove(const char* inputImage, float threshold)
  
   for(int j = 0; j < 2; ++j)
   {
-  frequencies->SetTuple1(j, *output++);
+    frequencies->SetTuple1(j, *output++);
   }
  
   vtkSmartPointer<vtkDataObject> dataObject = 

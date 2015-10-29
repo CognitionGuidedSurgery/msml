@@ -52,7 +52,7 @@
 		
 		
         <ExtractSurfaceMesh id="surfaceExtract2" mesh="${disp}" targetSurfaceMeshFilename="dispSurface.vtp"/>
-		<VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh2" surfaceMesh="${surfaceExtract2}" referenceCoordinateGrid="initSurfaceVoxelized.vti" additionalIsotropicMargin="0.1" targetImageFilename="dispSurfaceVoxelized.vti" disableFillHoles="true"/>
+		<VoxelizeSurfaceMesh id="VoxelizeSurfaceMesh2" surfaceMesh="${surfaceExtract2}" referenceCoordinateGrid="initSurfaceVoxelized.vti" additionalIsotropicMargin="0.015" targetImageFilename="dispSurfaceVoxelized.vti" disableFillHoles="true"/>
 		
         <copyFile id="fileCopy" filename_in="${disp}" filename_out="${resultMesh}" working_directory="false" />
 		<copyFile id="fileCopy2" filename_in="${VoxelizeSurfaceMesh2}" filename_out="${resultImage}" working_directory="false" />
