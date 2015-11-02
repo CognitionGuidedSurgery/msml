@@ -12,6 +12,7 @@
 #include "FeBioSupport.h"
 #include "SurfaceToVoxelDataOperator.h"
 #include "Sources.h"
+#include "IsoContourOperator.h"
 %}
 
 %include "../std.i"
@@ -32,5 +33,6 @@ namespace std {
 %include "FeBioSupport.h"
 %include "SurfaceToVoxelDataOperator.h"
 %include "Sources.h"
+%include "IsoContourOperator.h"
 
  

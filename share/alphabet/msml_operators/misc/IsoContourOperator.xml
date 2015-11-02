@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msml:operator xmlns:msml="http://sfb125.de/msml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://sfb125.de/msml" name="IsoContourOperator">
+    <meta key="doc">
+        Generating isocontour based numerical results and weight of sampling.
+    </meta>
+    <runtime>
+        <python module="msml.ext.misc" function="IsoContourOperator" />
+    </runtime>
+
+    <input>
+        <arg name="file_path" logical="string" physical="string" />
+        <arg name="initial_position" logical="VolumeMesh" physical="file.vtk" />
+	<arg name="vtu_table" logical="table" physical="string" />
+	<arg name="weight_table" logical="table" physical="string" />
+    </input>
+
+    <output>
+        <arg name="isocontours" logical="twoisocontours" physical="string" />
+    </output>
+
+    <parameters>
+        <arg name="file_path" physical="string" optional="true" target="true" />
+	<arg name="initial_position" pysical="file.vtk" optional="true" default=""/>
+	<arg name="vtu_table" physical="vector.string" optional="true" target="true" />
+	<arg name="weight_table" physical="vector.float" optional="true" target="true" />
+    </parameters>
+</msml:operator>

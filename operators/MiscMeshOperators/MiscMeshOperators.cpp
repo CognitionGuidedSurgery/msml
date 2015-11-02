@@ -85,6 +85,8 @@
 #include "vtkCellLocator.h"
 #include "vtkPolyDataConnectivityFilter.h"
 
+#include "vtkImageAccumulate.h"
+
 
 
 #include <vtkThreshold.h>
@@ -1288,6 +1290,88 @@ bool ProjectSurfaceMesh(vtkPolyData* inputMesh,  vtkPolyData* referenceMesh )
     return true;
 }
 
+std::string VoxelizeVolumeMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
+{
+      log_debug() << "Creating image from volume mesh (voxelization). "<<  std::endl;
+
+    vtkSmartPointer<vtkUnstructuredGrid> inputMesh = IOHelper::VTKReadUnstructuredGrid(infile);
+
+    vtkSmartPointer<vtkImageData> outputImage =
+        vtkSmartPointer<vtkImageData>::New();
+
+    bool result = VoxelizeVolumeMesh(inputMesh, outputImage, resolution, isotropicVoxelSize, referenceCoordinateGrid, disableFillHoles, additionalIsotropicMargin);
+
+    IOHelper::VTKWriteImage(outfile, outputImage);
+
+    return string(outfile);
+
+
+}
+
+bool VoxelizeVolumeMesh(vtkUnstructuredGrid* inputMesh, vtkImageData* outputImage, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
+{
+
+  vtkSmartPointer<vtkImageData> whiteImage = ImageCreateGeneric(inputMesh, resolution, isotropicVoxelSize, referenceCoordinateGrid, additionalIsotropicMargin);
+
+#if VTK_MAJOR_VERSION <= 5
+  whiteImage->SetScalarTypeToUnsignedChar();
+  whiteImage->AllocateScalars();
+#else
+  whiteImage->AllocateScalars(VTK_UNSIGNED_CHAR,1); //one value per 3d coordinate
+#endif
+
+
+  //octree
+  vtkSmartPointer<vtkCellLocator> cellLocatorRef = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocatorRef->SetDataSet(inputMesh);
+  cellLocatorRef->BuildLocator();
+  //locate closest cell.
+  vtkIdType containingCellRefId;
+  vtkSmartPointer<vtkGenericCell> containingCell = vtkSmartPointer<vtkGenericCell>::New();
+  double closestPointInCell[3];
+  int subId=0;
+  double dist=0;
+
+
+
+  log_debug() <<"Performing voxelization (this might take while)..." << std::endl;
+  // fill the image:
+  unsigned char inval = 255;
+  unsigned char outval = 0;
+  vtkIdType count = whiteImage->GetNumberOfPoints();
+
+
+  int* dims = whiteImage->GetDimensions();
+  double* origin = whiteImage->GetOrigin();
+  double* spacing = whiteImage->GetSpacing();
+
+  for (int z = 0; z < dims[2]; z++)
+  {
+    //log_debug() << z << " of " << dims[2] <<  std::endl;
+    for (int y = 0; y < dims[1]; y++)
+    {
+      for (int x = 0; x < dims[0]; x++)
+      {
+        double pInMM[3];
+        double pcoords[3];
+        double weigths[3];
+        pInMM[0] = origin[0]+x*spacing[0];
+        pInMM[1] = origin[1]+y*spacing[1];
+        pInMM[2] = origin[2]+z*spacing[2];
+        //containingCellRefId = cellLocatorRef->FindCell(pInMM, 2*spacing[0], containingCell, pcoords, weigths); //borders too large
+        cellLocatorRef->FindClosestPointWithinRadius(pInMM,  dims[0]*2,closestPointInCell, containingCellRefId, subId, dist);
+        unsigned char* vec = static_cast<unsigned char*>(whiteImage->GetScalarPointer(x,y,z));
+        if(dist<0.0000001)
+          vec[0] = inval;
+        else
+          vec[0] = outval;
+      }
+    }
+  }
+  outputImage->DeepCopy(whiteImage);
+  return true;
+}
+
 std::string VoxelizeSurfaceMesh(const char* infile, const char* outfile, int resolution, double isotropicVoxelSize, const char* referenceCoordinateGrid, bool disableFillHoles, double additionalIsotropicMargin)
 {
     log_debug() << "Creating image from surface mesh (voxelization). "
@@ -1968,6 +2052,39 @@ vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* aUnstruct
   } //z
   return image;
 }
+
+int CountVoxelsAbove(const char* inputImage, float threshold)
+{
+  log_error() <<  inputImage ;
+  vtkSmartPointer<vtkImageAccumulate> histogram =  vtkSmartPointer<vtkImageAccumulate>::New();
+  vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(inputImage);
+  histogram->SetInputData(image);
+  histogram->SetComponentExtent(0,1,0,0,0,0);
+  histogram->SetComponentOrigin(-99999,0,0);
+  histogram->SetComponentSpacing(99999+threshold,0,0);
+  histogram->IgnoreZeroOn();
+  histogram->Update();
+
+  vtkSmartPointer<vtkIntArray> frequencies = 
+  vtkSmartPointer<vtkIntArray>::New();
+
+  frequencies->SetNumberOfComponents(1);
+  frequencies->SetNumberOfTuples(2);
+  int* output = static_cast<int*>(histogram->GetOutput()->GetScalarPointer());
+ 
+  for(int j = 0; j < 2; ++j)
+  {
+    frequencies->SetTuple1(j, *output++);
+  }
+ 
+  vtkSmartPointer<vtkDataObject> dataObject = 
+  vtkSmartPointer<vtkDataObject>::New();
+ 
+  dataObject->GetFieldData()->AddArray( frequencies );
+
+  return (int) frequencies->GetTuple1(1);
+}
+
 
 vtkSmartPointer<vtkImageData> ImageCreateGeneric(vtkPointSet* grid, double resolution, float isotropicVoxelSize, const char* referenceCoordinateGrid, float additionalIsotropicMargin)
 {

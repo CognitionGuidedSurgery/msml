@@ -233,6 +233,8 @@ class MSMLString(str, MSMLPhysicalTop): pass
 
 class MSMLListUI(list, MSMLPhysicalTop): pass
 
+class MSMLListS(list, MSMLPhysicalTop): pass
+
 
 class MSMLListI(list, MSMLPhysicalTop): pass
 
