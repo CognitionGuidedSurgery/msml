@@ -53,12 +53,12 @@ class headneck(object):
         return self._scenarioResultMesh
 if __name__ == '__main__': #for parallel processing compatibility
 
-  results_file_name = 'results_' + str(time.time()) + '.csv'
+  results_file_name = 'results__NORMRND_' + str(time.time()) + '.csv'
 
-  for COUNTER in range(160, 170, 10):
-    NAME = "BATCH_OUT_MC" + str(COUNTER) + "_DIRNEW_"
+  for COUNTER in range(2, 500, 1):
+    NAME = "BATCH_OUT_MC_NORMRND" + str(COUNTER) + "_DIRNEW_"
 
-    DIR = './BATCH_MC' + str(COUNTER) + '/'
+    DIR = './BATCH_MC_NORMRND' + str(COUNTER) + '/'
     #DIR = './Reference_solution/'
 
     try :
@@ -77,6 +77,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     headneck_simulations = []
     
     csv_file_name = "./samples/monte_carlo/test_mc_400.csv"
+    csv_file_name = "./samples/monte_carlo/normal_mc_400.csv"
     #csv_file_name = "./samples/reference/reference.csv"
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
@@ -99,8 +100,8 @@ if __name__ == '__main__': #for parallel processing compatibility
 
     #reference preprocessing
     #MiscOps.VoxelizeVolumeMesh('./init.vtu', './initSurfaceVoxelized.vti', 0, 0.001, '', False, 0)
-    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson.vtu', './dispSurfaceRefZeroPoissonVox.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.015)
-    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson.vtu', './dispSurfaceRefZeroPoissonVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.015)
+    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson.vtu', './dispSurfaceRefZeroPoissonVox.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.025)
+    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson.vtu', './dispSurfaceRefZeroPoissonVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.025)
     
     #run simulations
     results = []
@@ -124,19 +125,19 @@ if __name__ == '__main__': #for parallel processing compatibility
 
     #Chens IsoContour method with monte carlo
     MiscOps.IsoContourOperator(DIR, 'init.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.015)
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.025)
     
     count_result_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerVoxIsoContour.vti', 127));
     MiscOps.ImageSum('*' + 'VoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');
     count_intersect_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./SumIsoContourAndRef.vti', 127+127));
     dice_mc_IsoContour = (2 * count_intersect_mc_IsoContour) / (count_result_mc_IsoContour+count_ref)
     
-    shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial.vtp')
-    shutil.move('./isocontour_mean.vtp', DIR + 'isocontour_mean.vtp')
-    shutil.move('./isocontour_inner.vtp', DIR + 'isocontour_inner.vtp')
-    shutil.move('./isocontour_outer.vtp', DIR + 'isocontour_outer.vtp')
-    shutil.move('./isocontour_outerVoxIsoContour.vti', DIR + 'isocontour_outerVoxIsoContour.vti')
-    shutil.move('./SumIsoContourAndRef.vti', DIR + 'SumIsoContourAndRef.vti')
+    shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial' + str(COUNTER) +'.vtp')
+    shutil.move('./isocontour_mean.vtp', DIR + 'isocontour_mean' + str(COUNTER) +'.vtp')
+    shutil.move('./isocontour_inner.vtp', DIR + 'isocontour_inner' + str(COUNTER) +'.vtp')
+    shutil.move('./isocontour_outer.vtp', DIR + 'isocontour_outer' + str(COUNTER) +'.vtp')
+    shutil.move('./isocontour_outerVoxIsoContour.vti', DIR + 'isocontour_outerVoxIsoContour' + str(COUNTER) +'.vti')
+    shutil.move('./SumIsoContourAndRef.vti', DIR + 'SumIsoContourAndRef' + str(COUNTER) +'.vti')
 
 
     #Markus Image sum method (works only with monte carlo) 
@@ -147,9 +148,9 @@ if __name__ == '__main__': #for parallel processing compatibility
     count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 134)); #127 + 6 + 1
     dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref)
     
-    shutil.move('./imgSumVox.vti', DIR + 'imgSumVox.vti')
-    shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface.vtp')
-    shutil.move('./SumResultAndRef.vti', DIR + 'SumResultAndRef.vti')
+    shutil.move('./imgSumVox.vti', DIR + 'imgSumVox' + str(COUNTER) +'.vti')
+    shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
+    shutil.move('./SumResultAndRef.vti', DIR + 'SumResultAndRef' + str(COUNTER) +'.vti')
     
     
     results_file = open(results_file_name, 'a')
