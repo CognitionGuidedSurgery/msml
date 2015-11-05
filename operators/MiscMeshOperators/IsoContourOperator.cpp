@@ -200,13 +200,14 @@ namespace MSML
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
 				float x_outer, y_outer, z_outer, x_inner, y_inner, z_inner;
 
-				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 2 * normals->GetTuple(i)[0];
-				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2 * normals->GetTuple(i)[1];
-				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2 * normals->GetTuple(i)[2];
+				//normals->GetTuple(i)[0] temporary save
+				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 2;
+				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2;
+				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2;
 
-				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 2 * normals->GetTuple(i)[0];
-				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 2 * normals->GetTuple(i)[1];
-				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 2 * normals->GetTuple(i)[2];
+				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 2;
+				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 2;
+				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 2;
 
 
 				float test = normals->GetTuple(i)[0];
