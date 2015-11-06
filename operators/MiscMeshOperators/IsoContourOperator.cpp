@@ -201,7 +201,7 @@ namespace MSML
 				float x_outer, y_outer, z_outer, x_inner, y_inner, z_inner;
 
 				//normals->GetTuple(i)[0] temporary save
-				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 2;
+				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96;
 				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2;
 				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2;
 

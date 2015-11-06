@@ -55,11 +55,11 @@ if __name__ == '__main__': #for parallel processing compatibility
 
   results_file_name = 'results__NORMRND_' + str(time.time()) + '.csv'
 
-  for COUNTER in range(2, 500, 1):
-    NAME = "BATCH_OUT_MC_NORMRND" + str(COUNTER) + "_DIRNEW_"
+  for COUNTER in range(400, 401, 1):
+    NAME = "BATCH_OUT_MC_NORMRND_tmpfix" + str(COUNTER) + "_DIRNEW_"
 
-    DIR = './BATCH_MC_NORMRND' + str(COUNTER) + '/'
-    #DIR = './Reference_solution/'
+    DIR = './BATCH_MC_NORMRND_tmpfix' + str(COUNTER) + '/'
+
 
     try :
       os.stat(DIR)
@@ -76,9 +76,10 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "./samples/monte_carlo/test_mc_400.csv"
+    #csv_file_name = "./samples/monte_carlo/test_mc_400.csv"
     csv_file_name = "./samples/monte_carlo/normal_mc_400.csv"
     #csv_file_name = "./samples/reference/reference.csv"
+    #csv_file_name = "./samples/reference/referenceNorm.csv"
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
