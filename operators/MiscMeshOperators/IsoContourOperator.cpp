@@ -1,10 +1,10 @@
 #include "IsoContourOperator.h"
 
 namespace MSML
-	{
+{
 	namespace IsoContourOperator
 	{
-			std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::vector<std::string> vtulist, const std::vector<float> weightlist)
+		std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::vector<std::string> vtulist, const std::vector<float> weightlist)
 		{
 			//print information about the inputs
 			std::cout << "data directory : " << data_directory << std::endl;			
@@ -164,9 +164,9 @@ namespace MSML
 				float x, y, z;
 
 				x = surface_init->GetPoint(i)[0] + mean_calculator[i][0];
-			        y = surface_init->GetPoint(i)[1] + mean_calculator[i][1];
-			        z = surface_init->GetPoint(i)[2] + mean_calculator[i][2];
-		        	points_mean->SetPoint(i, x, y, z);
+				y = surface_init->GetPoint(i)[1] + mean_calculator[i][1];
+				z = surface_init->GetPoint(i)[2] + mean_calculator[i][2];
+				points_mean->SetPoint(i, x, y, z);
 
 			}
 
@@ -189,9 +189,9 @@ namespace MSML
 
 			//calculating sqrt(sum of we_i*u_i*u_i - mean*mean) -->standard deviation
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
-					std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
-					std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
-					std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
+				std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
+				std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
+				std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
 
 			}
 
@@ -201,13 +201,17 @@ namespace MSML
 				float x_outer, y_outer, z_outer, x_inner, y_inner, z_inner;
 
 				//normals->GetTuple(i)[0] temporary save
-				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96;
-				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2;
-				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2;
+				int sign_x = normals->GetTuple(i)[0] == 0.0 ? 0 : (normals->GetTuple(i)[0] / normals->GetTuple(i)[0]);
+				int sign_y = normals->GetTuple(i)[1] == 0.0 ? 0 : (normals->GetTuple(i)[1] / normals->GetTuple(i)[1]);
+				int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0 : (normals->GetTuple(i)[2] / normals->GetTuple(i)[2]);
+			
+				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96 * sign_x;
+				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2 * sign_y;
+				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2 * sign_z;
 
-				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 2;
-				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 2;
-				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 2;
+				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 2 * (-sign_x);
+				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 2 * (-sign_y);
+				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 2 * (-sign_z);
 
 
 				float test = normals->GetTuple(i)[0];
@@ -231,7 +235,7 @@ namespace MSML
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
-			
+
 			std::vector<std::string> output_file_name;
 			output_file_name.push_back("isocontour_outer.vtp");
 			output_file_name.push_back("isocontour__inner.vtp");
@@ -241,4 +245,4 @@ namespace MSML
 		}	
 
 	}
-	}
+}
