@@ -206,12 +206,12 @@ namespace MSML
 				int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0 : (normals->GetTuple(i)[2] / normals->GetTuple(i)[2]);
 			
 				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96 * sign_x;
-				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 2 * sign_y;
-				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 2 * sign_z;
+				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 1.96 * sign_y;
+				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 1.96 * sign_z;
 
-				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 2 * (-sign_x);
-				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 2 * (-sign_y);
-				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 2 * (-sign_z);
+				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 1.96 * (-sign_x);
+				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 1.96 * (-sign_y);
+				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 1.96 * (-sign_z);
 
 
 				float test = normals->GetTuple(i)[0];
