@@ -21,6 +21,7 @@
 
 #include "IndexRegionOperators.h"
 
+#include <set>
 #include <iostream>
 #include <sstream>
 #include <vtkUnstructuredGridReader.h>
@@ -49,6 +50,7 @@ namespace MSML {
             //get points
             vtkPoints* thePoints = theMesh->GetPoints();
             vector<unsigned int> indices;
+            
             double* currentPoint = new double[3];
 
 
@@ -138,20 +140,34 @@ namespace MSML {
 
         vector<unsigned int> ComputeIndicesFromMaterialId(string filename, int id, string type)
         {
-            vector<unsigned int> indices;
-			vtkSmartPointer<vtkUnstructuredGrid> theMesh = IOHelper::VTKReadUnstructuredGrid(filename.c_str());
+            std::set<unsigned int> indicesSet;
+            std::vector<unsigned int> indices;
+			      vtkSmartPointer<vtkUnstructuredGrid> theMesh = IOHelper::VTKReadUnstructuredGrid(filename.c_str());
 
             if(type.compare("points_experimental") == 0)
             {
-                vtkDataArray* pointData = theMesh->GetPointData()->GetScalars();
-				int numPoints = theMesh->GetNumberOfPoints();
-                for(unsigned int i=0; i< numPoints; i++)
+                vtkCell* currentCell;
+                vtkDataArray* cellsData = theMesh->GetCellData()->GetScalars();
+                vtkUnsignedCharArray* cellsTypes = theMesh->GetCellTypesArray();
+                vtkIdType numberOfPoints;
+                vtkIdList* pointIds; 
+				        int numCells = theMesh->GetNumberOfCells();
+				        for(unsigned int i=0; i< numCells; i++)
                 {
-                    if(*pointData->GetTuple(i) == id)
-                    {
-                        indices.push_back(i);
-                    }
+                    if (*cellsTypes->GetTuple(i) == VTK_TETRA || *cellsTypes->GetTuple(i) == VTK_HEXAHEDRON ||
+                            *cellsTypes->GetTuple(i) == VTK_QUADRATIC_TETRA || *cellsTypes->GetTuple(i) == VTK_QUADRATIC_HEXAHEDRON)
+                        if((*cellsData->GetTuple(i)) == id)
+                        {
+                            vtkSmartPointer<vtkIdList> pointIds = vtkIdList::New(); 
+                            theMesh->GetCellPoints(i, pointIds);
+                            for (int j =0; j <pointIds->GetNumberOfIds();j++)
+                            {
+                              indicesSet.insert(pointIds->GetId(j));
+                            }
+                            
+                        }
                 }
+                indices.assign(indicesSet.begin(), indicesSet.end());
             }
 
             else if(type.compare("faces") == 0)
