@@ -71,10 +71,10 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "./samples/collocation/gqu6_sample.csv"
+    csv_file_name = "./samples/1d/collocation/gqu6_sample.csv"
     #csv_file_name = "./samples/reference/reference.csv"
 
-    weight_name = './samples/collocation/gqu6_weight.csv'
+    weight_name = './samples/1d/collocation/gqu6_weight.csv'
     weights = []
     weights_reader = reader(open(weight_name, "rb"), delimiter=',', dialect='excel')
     for i in weights_reader :

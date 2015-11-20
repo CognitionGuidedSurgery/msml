@@ -171,12 +171,9 @@ namespace MSML
 			}
 
 			//compute normal
-			normal_generator->SetInputData(surface_init);
+			normal_generator->SetInputData(contour_mean);
 			normal_generator->ComputePointNormalsOn();
-			normal_generator->ComputeCellNormalsOn();
-			normal_generator->SetConsistency(1);
-			normal_generator->SetFlipNormals(0);
-			normal_generator->SetAutoOrientNormals(1);
+			normal_generator->ComputeCellNormalsOff();
 			normal_generator->SetSplitting(0);
 			normal_generator->Update();
 			//contour_mean = normal_generator->GetOutput();
@@ -188,8 +185,7 @@ namespace MSML
 			polywriter->Write();
 
 			//get normals
-			//normals = vtkFloatArray::SafeDownCast(normal_generator->GetOutput()->GetPointData()->GetArray("Normals"));
-			normals = vtkFloatArray::SafeDownCast(normal_generator->GetOutput()->GetPointData()->GetNormals());
+			normals = vtkFloatArray::SafeDownCast(normal_generator->GetOutput()->GetPointData()->GetArray("Normals"));
 
 			//calculating sqrt(sum of we_i*u_i*u_i - mean*mean) -->standard deviation
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
@@ -204,28 +200,18 @@ namespace MSML
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
 				float x_outer, y_outer, z_outer, x_inner, y_inner, z_inner;
 
-				//int sign_x = normals->GetTuple(i)[0] == 0.0 ? 0.0 : (normals->GetTuple(i)[0] / std::abs(normals->GetTuple(i)[0]));
-				//int sign_y = normals->GetTuple(i)[1] == 0.0 ? 0.0 : (normals->GetTuple(i)[1] / std::abs(normals->GetTuple(i)[1]));
-				//int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0.0 : (normals->GetTuple(i)[2] / std::abs(normals->GetTuple(i)[2]));
-				
-				//int sign_x = normals->GetTuple(i)[0] == 0.0 ? 0.0 : copysign(1, normals->GetTuple(i)[0]);
-				//int sign_y = normals->GetTuple(i)[1] == 0.0 ? 0.0 : copysign(1, normals->GetTuple(i)[1]);
-				//int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0.0 : copysign(1, normals->GetTuple(i)[2]);
-				
-				int sign_x = copysign(1, normals->GetTuple(i)[0]);
-				int sign_y = copysign(1, normals->GetTuple(i)[1]);
-				int sign_z = copysign(1, normals->GetTuple(i)[2]);
-				
-				//std::cout << normals->GetTuple(i)[0] << " " << sign_x << " " << normals->GetTuple(i)[1] << " " << sign_y << " " << normals->GetTuple(i)[2] << " " << sign_z << std::endl;
-				std::cout << normals->GetTuple(i)[0] << " " << normals->GetTuple(i)[1] << " " << normals->GetTuple(i)[2] << std::endl;
+				//normals->GetTuple(i)[0] temporary save
+				int sign_x = normals->GetTuple(i)[0] == 0.0 ? 0 : (normals->GetTuple(i)[0] / std::abs(normals->GetTuple(i)[0]));
+				int sign_y = normals->GetTuple(i)[1] == 0.0 ? 0 : (normals->GetTuple(i)[1] / std::abs(normals->GetTuple(i)[1]));
+				int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0 : (normals->GetTuple(i)[2] / std::abs(normals->GetTuple(i)[2]));
 			
 				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96 * sign_x;
 				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 1.96 * sign_y;
 				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 1.96 * sign_z;
 
-				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 1.96 * sign_x;
-				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 1.96 * sign_y;
-				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 1.96 * sign_z;
+				x_inner = contour_mean->GetPoint(i)[0] - std_dev_x[i] * 1.96 * (sign_x);
+				y_inner = contour_mean->GetPoint(i)[1] - std_dev_y[i] * 1.96 * (sign_y);
+				z_inner = contour_mean->GetPoint(i)[2] - std_dev_z[i] * 1.96 * (sign_z);
 
 
 				float test = normals->GetTuple(i)[0];
