@@ -621,6 +621,28 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
     }
 }
 
+std::string ConvertVTKImage(const char* infputFile, const char* outputfile)
+{
+  vtkSmartPointer<vtkImageData> img = IOHelper::VTKReadImage(infputFile);
+  IOHelper::VTKWriteImage(outputfile, img);
+  return outputfile;
+}
+
+std::string ConvertVTKPolyData(const char* infputFile, const char* outputfile)
+{
+  vtkSmartPointer<vtkPolyData> polydata = IOHelper::VTKReadPolyData(infputFile);
+  IOHelper::VTKWritePolyData(outputfile, polydata);
+  return outputfile;
+}
+
+std::string ConvertVTKUnstructuredGrid(const char* infputFile, const char* outputfile)
+{
+  vtkSmartPointer<vtkUnstructuredGrid> grid = IOHelper::VTKReadUnstructuredGrid(infputFile);
+  IOHelper::VTKWriteUnstructuredGrid(outputfile, grid);
+  return outputfile;
+}
+
+
 std::string GenerateDVF(const char* referenceGridFilename, const char* deformedGridFilename, const char* outputDVFFilename, float spacingParam, const char* referenceCoordinateGrid, float interpolateOutsideDistance)
 {
 
