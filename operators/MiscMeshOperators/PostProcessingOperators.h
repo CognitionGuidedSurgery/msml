@@ -87,6 +87,11 @@ LIBRARY_API std::string ImageSum(const char* imagedataFilePattern, bool normaliz
 
 LIBRARY_API void CalcVecBarycentric(double* pInMM, vtkUnstructuredGrid* referenceGrid, vtkCellLocator* cellLocatorRef, vtkUnstructuredGrid* deformedGrid, float interpolateOutsideDistance, float* vecOut);
 
+LIBRARY_API std::string ConvertVTKImage(const char* infputFile, const char* outputfile);
+LIBRARY_API std::string ConvertVTKPolyData(const char* infputFile, const char* outputfile);
+LIBRARY_API std::string ConvertVTKUnstructuredGrid(const char* infputFile, const char* outputfile);
+
+
 } //end namespace PostProcessingOperators
 } // end namespace MediAssist
 
