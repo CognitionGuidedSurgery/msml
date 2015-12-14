@@ -54,12 +54,12 @@ class headneck(object):
         return self._scenarioResultMesh
 if __name__ == '__main__': #for parallel processing compatibility
 
-  results_file_name = 'results__NORMRND_' + str(time.time()) + '.csv'
+  results_file_name = 'results__2d_ref_NORMRND_' + str(time.time()) + '.csv'
 
   for COUNTER in range(2, 3, 1):
-    NAME = "BATCH_OUT_MC_NORMRND_tmpfix" + str(COUNTER) + "_DIRNEW_"
+    NAME = "BATCH_OUT_MC_NORMRND_2d_ref_" + str(COUNTER) + "_DIRNEW_"
 
-    DIR = './BATCH_MC_NORMRND_tmpfix' + str(COUNTER) + '/'
+    DIR = './BATCH_MC_NORMRND_2d_ref_' + str(COUNTER) + '/'
 
 
     try :
@@ -78,7 +78,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    csv_file_name = "./samples/2d/test1.csv"
+    csv_file_name = "./samples/2d/ref_095.csv"
+    #csv_file_name = "./samples/2d/test1.csv"
     #csv_file_name = "./samples/2d/test2.csv"
     #csv_file_name = "./samples/2d/monte_carlo/mc_uniform_100.csv"
 
@@ -101,9 +102,9 @@ if __name__ == '__main__': #for parallel processing compatibility
             
 
     #reference preprocessing
-    #MiscOps.VoxelizeVolumeMesh('./init.vtu', './initSurfaceVoxelized.vti', 0, 0.001, '', False, 0)
-    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson.vtu', './dispSurfaceRefZeroPoissonVox.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.025)
-    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson.vtu', './dispSurfaceRefZeroPoissonVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.025)
+    #MiscOps.VoxelizeVolumeMesh('./init.vtu', './initSurfaceVoxelized2D.vti', 0, 0.001, '', False, 0)
+    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson2D.vtu', './dispSurfaceRefZeroPoisson2DVox.vti', 0, 0.000, 'initSurfaceVoxelized2D.vti', False, 0.025)
+    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson2D.vtu', './dispSurfaceRefZeroPoisson2DVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized2D.vti', False, 0.025)
     
     #run simulations
     results = []
@@ -123,7 +124,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     ####DICE evaluation (voxel based)
 
     #reference 
-    count_ref = float(MiscOps.CountVoxelsAbove('./dispSurfaceRefZeroPoissonVox.vti', 127));
+    count_ref = float(MiscOps.CountVoxelsAbove('./dispSurfaceRefZeroPoissonVox2D.vti', 127));
 
     #Chens IsoContour method with monte carlo
     MiscOps.IsoContourOperator(DIR, 'init.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
