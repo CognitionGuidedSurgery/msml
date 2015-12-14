@@ -4,6 +4,15 @@ namespace MSML
 {
 	namespace IsoContourOperator
 	{
+    double copysign(double magnitude, double sign)
+    {
+      if (sign>0) 
+        return magnitude;
+      if (sign<0) 
+        return -magnitude;
+      return 0;
+    }
+
 		std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::vector<std::string> vtulist, const std::vector<float> weightlist)
 		{
 			//print information about the inputs
