@@ -56,11 +56,11 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 800
-    NAME = "BATCH_OUT_MC_UNIFORM_2d_test1_" + str(COUNTER) + "_DIRNEW_"
-    DIR = './BATCH_MC_UNIFORM_2d_test1_' + str(COUNTER) + '/'
+    ORDER = 5
+    NAME = "BATCH_OUT_COLLOCATION_2d_ORDER_" + str(ORDER) + "_DIRNEW_"
+    DIR = './BATCH_COLLOCATION_2d_ORDER_' + str(ORDER) + '/'
     
-    results_file_name = 'results__2d_MC_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
+    results_file_name = 'results__2d_COLLOCATION_' + str(ORDER) + '_' + str(time.time()) + '.csv'
     
     try :
         os.stat(DIR)
@@ -78,17 +78,28 @@ if __name__ == '__main__': #for parallel processing compatibility
     headneck_simulations = []
 
     #csv_file_name = "./samples/2d/ref_095.csv"
-    csv_file_name = "./samples/2d/monte_carlo/mc_uniform_" + str(COUNTER) + ".csv"
+    csv_file_name = "./samples/2d/collocation/kpu" + str(ORDER) + "_sample.csv"
+    weight_name = './samples/2d/collocation/kpu'+ str(ORDER) + '_weight.csv'
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
     result_vtis = list()
+    
+    weights = []
+    weights_reader = reader(open(weight_name, "rb"), delimiter=',', dialect='excel')
+    for i in weights_reader :
+        weights.append(float(i[0]))
+
+    #obtain number of element in collocatin csv file
+    COUNTER = sum(1 for row in weights)
+    
+    
 
     #collect parameters for all simulation runs
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [ [0,0, float(scenarioRow[0])*0.01], [0,0,float(scenarioRow[1])*0.01] ]
+            vec = [ [0,0, (float(scenarioRow[0])-0.5 ) * 2.0 *0.01], [0,0,(float(scenarioRow[1]) - 0.5) * 2.0 *0.01] ]
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
@@ -112,10 +123,6 @@ if __name__ == '__main__': #for parallel processing compatibility
     os.chdir( startDir )
     #vtus = ['vtus', 'vtus2']
     #weights =  [0.5, 0.5]
-
-    weights = []
-    for i in range(0, COUNTER):
-        weights.append(1.0/COUNTER)
 
 
     #DICE evaluation (voxel based)
