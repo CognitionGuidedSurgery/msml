@@ -76,8 +76,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     startDir = os.getcwd()
     headneck_simulations = []
     
-    #csv_file_name = "./samples/monte_carlo/test_mc_400.csv"
-    csv_file_name = "./samples/monte_carlo/normal_mc_400.csv"
+    #csv_file_name = "./samples/1d/monte_carlo/test_mc_400.csv"
+    csv_file_name = "./samples/1d/monte_carlo/normal_mc_400.csv"
     #csv_file_name = "./samples/reference/reference.csv"
     #csv_file_name = "./samples/reference/referenceNorm.csv"
 
