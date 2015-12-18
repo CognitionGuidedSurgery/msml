@@ -225,9 +225,6 @@ namespace MSML
 				int sign_y = copysign(1, normals->GetTuple(i)[1]);
 				int sign_z = copysign(1, normals->GetTuple(i)[2]);
 				
-				//std::cout << normals->GetTuple(i)[0] << " " << sign_x << " " << normals->GetTuple(i)[1] << " " << sign_y << " " << normals->GetTuple(i)[2] << " " << sign_z << std::endl;
-				std::cout << normals->GetTuple(i)[0] << " " << normals->GetTuple(i)[1] << " " << normals->GetTuple(i)[2] << std::endl;
-			
 				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96 * sign_x;
 				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 1.96 * sign_y;
 				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 1.96 * sign_z;
