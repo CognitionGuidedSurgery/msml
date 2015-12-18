@@ -4,14 +4,14 @@ namespace MSML
 {
 	namespace IsoContourOperator
 	{
-    double copysign(double magnitude, double sign)
-    {
-      if (sign>0) 
-        return magnitude;
-      if (sign<0) 
-        return -magnitude;
-      return 0;
-    }
+		double copysign(double magnitude, double sign)
+		{
+			if (sign>0) 
+				return magnitude;
+			if (sign<0) 
+				return -magnitude;
+			return 0;
+		}
 
 		std::vector<std::string> IsoContourOperator(const std::string data_directory, const std::string initial_position, const std::vector<std::string> vtulist, const std::vector<float> weightlist)
 		{
@@ -202,11 +202,27 @@ namespace MSML
 
 			//calculating sqrt(sum of we_i*u_i*u_i - mean*mean) -->standard deviation
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
-				std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
-				std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
-				std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
+				std::setprecision(2 * sizeof(float));
 
-			}
+						if (trunc(std_dev_helper_x[i] - mean_x[i]*mean_x[i]) == 0.) {
+						std_dev_x[i] = 0.;
+						} else {
+						std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
+						}
+
+						if (trunc(std_dev_helper_y[i] - mean_y[i]*mean_y[i]) == 0.) {
+						std_dev_y[i] = 0.;
+						} else {
+						std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
+						}
+
+						if (trunc(std_dev_helper_z[i] - mean_z[i]*mean_z[i]) == 0.) {
+						std_dev_z[i] = 0.;
+						} else {
+						std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
+						}		
+
+						}
 
 
 			//+/- 2*std_dev to each point for 95% probability
@@ -216,15 +232,15 @@ namespace MSML
 				//int sign_x = normals->GetTuple(i)[0] == 0.0 ? 0.0 : (normals->GetTuple(i)[0] / std::abs(normals->GetTuple(i)[0]));
 				//int sign_y = normals->GetTuple(i)[1] == 0.0 ? 0.0 : (normals->GetTuple(i)[1] / std::abs(normals->GetTuple(i)[1]));
 				//int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0.0 : (normals->GetTuple(i)[2] / std::abs(normals->GetTuple(i)[2]));
-				
+
 				//int sign_x = normals->GetTuple(i)[0] == 0.0 ? 0.0 : copysign(1, normals->GetTuple(i)[0]);
 				//int sign_y = normals->GetTuple(i)[1] == 0.0 ? 0.0 : copysign(1, normals->GetTuple(i)[1]);
 				//int sign_z = normals->GetTuple(i)[2] == 0.0 ? 0.0 : copysign(1, normals->GetTuple(i)[2]);
-				
+
 				int sign_x = copysign(1, normals->GetTuple(i)[0]);
 				int sign_y = copysign(1, normals->GetTuple(i)[1]);
 				int sign_z = copysign(1, normals->GetTuple(i)[2]);
-				
+
 				x_outer = contour_mean->GetPoint(i)[0] + std_dev_x[i] * 1.96 * sign_x;
 				y_outer = contour_mean->GetPoint(i)[1] + std_dev_y[i] * 1.96 * sign_y;
 				z_outer = contour_mean->GetPoint(i)[2] + std_dev_z[i] * 1.96 * sign_z;
