@@ -78,8 +78,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     headneck_simulations = []
 
     #csv_file_name = "./samples/2d/ref_095.csv"
-    csv_file_name = "./samples/2d/collocation/kpu" + str(ORDER) + "_sample.csv"
-    weight_name = './samples/2d/collocation/kpu'+ str(ORDER) + '_weight.csv'
+    csv_file_name = "./samples/2d/collocation/kpn" + str(ORDER) + "_sample.csv"
+    weight_name = './samples/2d/collocation/kpn'+ str(ORDER) + '_weight.csv'
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
@@ -99,7 +99,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [ [0,0, (float(scenarioRow[0])-0.5 ) * 2.0 *0.01], [0,0,(float(scenarioRow[1]) - 0.5) * 2.0 *0.01] ]
+            vec = [ [0,0, float(scenarioRow[0])*0.01], [0,0,float(scenarioRow[1]) *0.01] ]
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
@@ -121,9 +121,6 @@ if __name__ == '__main__': #for parallel processing compatibility
         createAndRunHnnSimulation(args_list[j])
 
     os.chdir( startDir )
-    #vtus = ['vtus', 'vtus2']
-    #weights =  [0.5, 0.5]
-
 
     #DICE evaluation (voxel based)
 
@@ -147,22 +144,9 @@ if __name__ == '__main__': #for parallel processing compatibility
     shutil.move('./SumIsoContourAndRef.vti', DIR + 'SumIsoContourAndRef' + str(COUNTER) +'.vti')
 
 
-    #Markus Image sum method (works only with monte carlo) 
-    MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumTwoDVox.vti');
-    MiscOps.vtkMarchingCube('./imgSumTwoDVox.vti', './imgSumIsoSurface.vtp', 12);    
-    count_result_mc_imgsum = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox.vti', 12));
-    MiscOps.ImageSum('*' + 'TwoDVox.vti', True, 'SumResultAndRef.vti');
-    count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 134)); #127 + 6 + 1
-    dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref)
-
-    shutil.move('./imgSumTwoDVox.vti', DIR + 'imgSumTwoDVox' + str(COUNTER) +'.vti')
-    shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
-    shutil.move('./SumResultAndRef.vti', DIR + 'SumResultAndRef' + str(COUNTER) +'.vti')
-
-
     results_file = open(results_file_name, 'a')
     csv_writer = csv.writer(results_file)
-    csv_writer.writerow( (COUNTER, NAME, count_ref, count_result_mc_IsoContour, count_intersect_mc_IsoContour, dice_mc_IsoContour, count_ref, count_result_mc_imgsum, count_intersect_mc_imgsum, dice_mc_imgsum) )
+    csv_writer.writerow( (COUNTER, NAME, count_ref, count_result_mc_IsoContour, count_intersect_mc_IsoContour, dice_mc_IsoContour, count_ref) )
     results_file.close()
 
 
