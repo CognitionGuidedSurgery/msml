@@ -56,7 +56,7 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 800
+    COUNTER = 100
     NAME = "BATCH_OUT_MC_UNIFORM_2d_test1_" + str(COUNTER) + "_DIRNEW_"
     DIR = './BATCH_MC_UNIFORM_2d_test1_' + str(COUNTER) + '/'
     
@@ -70,8 +70,8 @@ if __name__ == '__main__': #for parallel processing compatibility
 
     shutil.copy('./init.vtu', DIR + 'init.vtu')   
 
-    #msml_file_name ='beamLinearDisp.msml.xml'
-    msml_file_name ='beamLinearDisp_2d.msml.xml'
+    msml_file_name ='beamLinearDisp.msml.xml'
+    #msml_file_name ='beamLinearDisp_2d.msml.xml'
 
     args_list = []
     startDir = os.getcwd()
@@ -88,7 +88,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [ [0,0, float(scenarioRow[0])*0.01], [0,0,float(scenarioRow[1])*0.01] ]
+            vec = [ [0,0, float(scenarioRow[0])*0.005], [0,0,float(scenarioRow[1])*0.005] ]
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
