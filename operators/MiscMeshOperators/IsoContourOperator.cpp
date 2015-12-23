@@ -274,7 +274,7 @@ namespace MSML
 
 			std::vector<std::string> output_file_name;
 			output_file_name.push_back("isocontour_outer.vtp");
-			output_file_name.push_back("isocontour__inner.vtp");
+			output_file_name.push_back("isocontour_inner.vtp");
 
 			return output_file_name;
 
