@@ -5,12 +5,13 @@ mitral.py contains miscellaneous operators for pre- and post-processing of
 mitral valve geometries into simulation input;
 currently specifically for the HiFlow3Exporter-derived MitralExporter.
 """
-__author__ = 'schoch', 'weigl'
-__date__ = "2015-04-12"
+__author__ = 'schoch', 'weigl', 'kissler'
+__date__ = "2016-01-10"
 
 import xml.etree.ElementTree as ET
 
 import numpy as np
+from numpy import linalg as LA
 import vtk
 from .msmlvtk import *
 from msml.log import debug
@@ -93,8 +94,11 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
      this script computes and sets the Dirichlet Boundary Conditions (BCs) data
      for the HiFlow3-based MVR-Simulation.
 
-    .. note:: Adding additional BC-points by means of linear interpolation
-              requires the input IDs to be ordered and going around annulus once!!!
+    .. note:: Adding additional (suture) BC-points by means of linear interpolation and depending on the distance to neighboring points: 
+              - firstly, requires the input IDs to be ordered and going around annulus once!!!
+              - secondly, requires a tolerance(float) value to be prescribed (manually!!!)
+                (this tolerance value represents the percentage for the deviation of the distance of two consecutive suture points 
+                 on the upper rim of the valve from the mutual average distance between the suture points)
     
     .. note:: The vertex IDs on annulus and ring have the following meanings and encodings:
          0 - Anterolaterale Kommissur
@@ -111,11 +115,12 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
          18 - Posteriores Segel
 
     .. authors::
-        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-04-12.
+        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-04-12, 2015-11-01, 2016-01-10.
 
     :param volume_mesh:
     :param surface_mesh:
     :param ring:
+    :param tolerance: fixed value tol = 10 (percent)
     :param annulus_point_ids: DEPRECATED.
     :return: DBC-points and DBC-displacements.
     """
@@ -148,6 +153,11 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
     # define number of given annulus point IDs -----------------------------
     # (see notation/representation of Annuloplasty Rings by DKFZ and corresponding addInfo)
     number_annulus_point_ids = 16
+    
+    # define the tolerance value, which represents the percentage for the deviation of the distance 
+    # of two consecutive suture points on the upper rim of the valve from the mutual average distance
+    # between the suture points:
+    tol = 0.75
 
     # ======================================================================
     # arrays for storage of coordinates of annulus points (and interpolated points) on the MV surface and on the ring -----------------
@@ -184,6 +194,67 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
         ring_point = 0.5 * (ringPoints_[i] + ringPoints_[(i + 1) % number_annulus_point_ids])
         ringPoints_[number_annulus_point_ids + i] = ring_point
 
+    # ======================================================================
+    # compute the distance between consecutive points -------------------------------- NEW
+    # in order to do that, we need to reorder the valve points and ring points
+    
+    # first, reorder valve points:
+    # therefore, create a copy of valve points
+    dummyPointArray = np.zeros((valvePoints_.shape[0], valvePoints_.shape[1]))
+    
+    for n in range(valvePoints_.shape[0]):
+      dummyPointArray[n] = valvePoints_[n]
+    
+    for n in range(dummyPointArray.shape[0]/2):
+      valvePoints_[2*n] = dummyPointArray[n]
+      valvePoints_[2*n+1] = dummyPointArray[n+dummyPointArray.shape[0]/2]
+    
+    # second, reorder ring points:
+    # therefore create a copy of ring points
+    dummyPointArray = np.zeros((ringPoints_.shape[0],ringPoints_.shape[1]))
+      
+    for n in range(ringPoints_.shape[0]):
+      dummyPointArray[n] = ringPoints_[n]
+    
+    for n in range(dummyPointArray.shape[0]/2):
+      ringPoints_[2*n] = dummyPointArray[n]
+      ringPoints_[2*n+1] = dummyPointArray[n+dummyPointArray.shape[0]/2]
+    
+    # Now, compute average distance of two consecutive points
+    
+    # init vtk math object
+    math = vtk.vtkMath()
+    
+    avgDistance = 0.0
+    
+    for n in range(valvePoints_.shape[0]):
+      avgDistance += math.Distance2BetweenPoints(valvePoints_[n], valvePoints_[(n+1)%valvePoints_.shape[0]])
+    
+    avgDistance *= 1.0/float(valvePoints_.shape[0])
+    
+    # init tolerated deviation
+    tolDeviation = tol * avgDistance
+    
+    N = valvePoints_.shape[0]
+    
+    for n in range(N):
+      currentDistance = math.Distance2BetweenPoints(valvePoints_[n], valvePoints_[(n+1)%N])
+      # add points if and only if the current distance between two consequtive points is greater than 
+      # the average distance PLUS the tolerated deviation
+      if currentDistance - avgDistance > tolDeviation:
+        dummyArray = np.zeros((1,3))
+        dummyArray[0] = (valvePoints_[n] + valvePoints_[(n+1)%N])/2.0
+        
+        valvePoints_ = np.append(valvePoints_, dummyArray, axis=0)
+        
+        dummyArray = np.zeros((1,3))
+        dummyArray[0] = (ringPoints_[n] + ringPoints_[(n+1)%N])/2.0
+        
+        ringPoints_ = np.append(ringPoints_, dummyArray, axis=0)
+    
+    # -------------------------------------------------- END OF NEW.
+    
+    
     # ======================================================================
     # Compute displacements ------------------------------------------------
     displacement_ = ringPoints_ - valvePoints_
@@ -228,7 +299,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt
     points = flatten(valvePoints_)
     displacements = flatten(displacement_)
 
-    debug("Computing Dirichlet displacement BC data.")
+    debug("Computing Dirichlet displacement BC data for future usage in HiFlow3-Exporter: DONE.")
 
     # ======================================================================
     # convert arrays to strings --------------------------------------------
@@ -282,10 +353,10 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
      for the HiFlow3-based MVR-Simulation.
      --> Neumann-BCs-Producer-Script to set Chordae Attachment Points and corresponding Forces on the MV leaflets.
 
-    .. note:: ...
+    .. note:: ... new version available to include secondary chordae (2016-01-07)...
     
     .. authors::
-        * Nicolai Schoch, EMCL; 2015-06-10.
+        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-06-10, 2015-11-01, 2016-01-10;
 
     :param volume_mesh:
         a 3D unstructured grid (vtu file) representation of the MV segmentation (e.g. by CGAL meshing operator,
@@ -315,8 +386,12 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     debug("=== Execute Python script to extend BCdata (Neumann BCs) for the  HiFlow3-based MVR-Simulation ===")
     
     # get flexible MV-anatomy parameters (which are fixed as from then on): -------
-    numberOfNeumannPoints = 16
-    deltaZ = 15.0
+    number_of_PrimaryChordae_NeumannPoints = 16
+    deltaZ = 25.0
+    
+    # Define matIDs --------------------------------------------------------
+    ANTERIOR_ID = 17
+    POSTERIOR_ID = 18
     
     # get input mesh and surface  data: -------------------------------------------
     # we have: volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt" (where target corresponds to XMLFileName);
@@ -562,28 +637,29 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     #### AUXILIARY FUNCTION: kCenterCluster ...
     
     
-    myCenterSet = kCenterCluster(numberOfNeumannPoints, pointsInComponent, valve3Dsurface_)
+    primary_chordae_attachment_point_Ids = kCenterCluster(number_of_PrimaryChordae_NeumannPoints, pointsInComponent, valve3Dsurface_)
+    # NOTE: "myCenterSet" corresponds to "primary_chordae_attachment_point_Ids"
     
     debug("Solving k-center clustering problem and finding k-center-Set: DONE.")
     
     
-    # --------------------------------
-    # write the center set to inp file
-    # --------------------------------
+    # ------------------------------------------------------------------------------------
+    # write the center set (i.e. the set of primary chordae attachment points) to inp file
+    # ------------------------------------------------------------------------------------
     
     f = open('aBCdataExtender_chordaeAttachmentPoints.inp', 'w')
     
     # write inp-format-header-line
-    s = str(myCenterSet.GetNumberOfIds()) + ' ' + str(myCenterSet.GetNumberOfIds()) + ' 0 0 0\n'
+    s = str(primary_chordae_attachment_point_Ids.GetNumberOfIds()) + ' ' + str(primary_chordae_attachment_point_Ids.GetNumberOfIds()) + ' 0 0 0\n'
     f.write(s)
     
     # write point coordinates
-    for i in range(myCenterSet.GetNumberOfIds()):
-        pt = valve3Dsurface_.GetPoint(myCenterSet.GetId(i))
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+        pt = valve3Dsurface_.GetPoint(primary_chordae_attachment_point_Ids.GetId(i))
         s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
         f.write(s)
     
-    for i in range(myCenterSet.GetNumberOfIds()):
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
         s = '0' + ' ' + '10' + ' pt ' + str(i) + '\n'
         f.write(s)
     
@@ -593,9 +669,13 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeAttachmentPoints.inp .")
     
     
-    # ---------------------
-    # find the bounding box
-    # ---------------------
+    # ----------------------------------------------------------------------
+    # find the attachment points of the chordae on the two papillary muscles
+    # ----------------------------------------------------------------------
+    
+    # ----------------------------------------------------------------------------------------- START OF PARTLY DEPRECATED 2016-01-10.
+    # find the bounding box ------------------------  PARTLY DEPRECATED  ->  but return values still need to be adapted to the new version.
+    # -----------------------------------------------------------------------------------------
     
     # methods can be found in vtkDataSet
     
@@ -615,87 +695,275 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     
     
     # store coordinates of von Neumann points in array nBCPoints
-    nBCPoints = np.zeros((numberOfNeumannPoints, 3))
+    nBCPoints = np.zeros((number_of_PrimaryChordae_NeumannPoints, 3))   # NOTE: nBCPoints are differentiated into nBCpoints on post/ant leaflet in new version !!!!
     
-    for i in range(myCenterSet.GetNumberOfIds()):
-        currentPoint = valve3Dsurface_.GetPoint(myCenterSet.GetId(i))
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+        currentPoint = valve3Dsurface_.GetPoint(primary_chordae_attachment_point_Ids.GetId(i))
         nBCPoints[i] = currentPoint
     
     # store the direction of the von Neumann force in the array nBCDirection
-    nBCDirection = np.zeros((numberOfNeumannPoints, 3))
+    nBCDirection = np.zeros((number_of_PrimaryChordae_NeumannPoints, 3))   # NOTE: nBCDirection are differentiated for nBCDirections on post/ant leaflet in new version !!!!
     
-    for i in range(numberOfNeumannPoints):
+    for i in range(number_of_PrimaryChordae_NeumannPoints):
         nBCDirection[i] = NeumannPoint
     
     nBCDirection -= nBCPoints
     
     debug("Finding bounding box and setting up nBC-direction array: DONE.")
+    # ------------------------------------------------------------------------------------------------ END OF DEPRECATED.
     
     
-    # ======================================================================
-    # Transform nBCPoints and nBCDirection for HiFlow3-Exporter --------------
-    flatten = lambda l: [item for sublist in l
-                         for item in sublist]
-
-    points = flatten(nBCPoints)
-    forces = flatten(nBCDirection)
+    # ------------------------------------------------------------------------------------------------------- NEWLY ADDED 2016-01-10
+    # assign the set of primary chordae attachment points to the anterior or posterior leaflets 
+    # and create corresponding VTK Id Lists
+    # -------------------------------------------------------------------------------------------------------
     
-    debug("Transforming nBCPoints and nBCDirection for HiFlow3-Exporter: DONE.")
+    # build point locator for valve2Dsurface_
+    surface2PointLocator = vtk.vtkKdTreePointLocator()
+    surface2PointLocator.SetDataSet(valve2Dsurface_)
+    surface2PointLocator.BuildLocator()
+    
+    surface2vertexIds = valve2Dsurface_.GetPointData().GetArray('VertexIDs')
+    
+    # for all primary chordae attachment points (i.e. Neumann BC points) decide whether they belong to the anterior or posterior leaflet
+    # and store them in corresponding arrays 
+    # and store the corresponding Ids in VTK Id Lists
+    antPrimaryAttachmentIds = vtk.vtkIdList()
+    postPrimaryAttachmentIds = vtk.vtkIdList()
+    
+    # iterate over all primary chordae attachment points
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+      # get the coordinates of the point from the surface
+      Id = primary_chordae_attachment_point_Ids.GetId(i)
+      point = valve3Dsurface_.GetPoint(Id)
+      
+      # find a closest point on surface2 to the point
+      closestPointId = surface2PointLocator.FindClosestPoint(point)
+      
+      if int(surface2vertexIds.GetTuple1(closestPointId)) == ANTERIOR_ID:
+        antPrimaryAttachmentIds.InsertUniqueId(Id)
+      else:
+        postPrimaryAttachmentIds.InsertUniqueId(Id)
     
     
-    # ======================================================================
-    # the coordinates of the Neumann points are stored in nBCPoints, and the 
-    # distinguished point under the valve is called NeumannPoint;
-    # allow for visualization of the Neumann-Force-Vectors (representing the Chordae):
-    # therefore write lines from the 'Neumann points' to the point under the valve
     
-    f = open('aBCdataExtender_chordaeDirectionLines.inp', 'w')
+    # ------------------------------------------------------------------------------------------ NEWLY ADDED 2016-01-10
+    # compute the centers of mass of the attachment points of the anterior and posterior leaflets
+    # and thereon-based derive the approximate location of the papillary attachment points
+    # {antPapillaryMuscle, postPapillaryMuscle}
+    # ------------------------------------------------------------------------------------------
+    
+    antCenterOfMass = np.zeros(3)
+    postCenterOfMass = np.zeros(3)
+    
+    for i in range(antPrimaryAttachmentIds.GetNumberOfIds()):
+      # get the point coordinates from the surface
+      point = valve3Dsurface_.GetPoint(antPrimaryAttachmentIds.GetId(i))
+      antCenterOfMass += np.array(point)
+      
+    antCenterOfMass /= float(antPrimaryAttachmentIds.GetNumberOfIds())
+    
+    
+    for i in range(postPrimaryAttachmentIds.GetNumberOfIds()):
+      # get the point coordinates from the surface
+      point = valve3Dsurface_.GetPoint(postPrimaryAttachmentIds.GetId(i))
+      postCenterOfMass += np.array(point)
+      
+    postCenterOfMass /= float(postPrimaryAttachmentIds.GetNumberOfIds())
+    
+    
+    # specify the direction of the forces which act on the leaflets
+    # first, compute the midpoint of the anterior and posterior center of mass
+    #midCenterOfMass = np.zeros(3)
+    midCenterOfMass = 0.5 * (antCenterOfMass + postCenterOfMass)
+    
+    # second, compute the vector from the midpoint to the ant center of mass
+    #tempVector = np.zeros(3)
+    tempVector = antCenterOfMass - midCenterOfMass
+    tempVector *= 1.5 # NOTE: this is a scaling factor, which can be adjusted when the approximate ventricle geometry is known...
+    
+    # then, move the papillary muscle attachment point downwards (in z-direction, and with the prescribed deltaZ value)
+    midCenterOfMass[2] -= deltaZ
+    
+    # set the attachment point of the anterior and posterior papillary muscles
+    antPapillaryMuscle = midCenterOfMass + tempVector
+    postPapillaryMuscle = midCenterOfMass - tempVector
+    
+    #print antPapillaryMuscle, postPapillaryMuscle
+    
+    debug("Computing the Coordinates of antPapillaryMuscle and postPapillaryMuscle: DONE.")
+    
+    
+    
+    # ----------------------------------------------------------------------------------- NEWLY ADDED 2016-01-10.
+    # allow for visualization of the 'Neumann'-Force-Vectors (representing the Chordae):
+    # write lines from the primary chordae attachment points to the two papillary muscles
+    # -----------------------------------------------------------------------------------
+    
+    f = open('aBCdataExtender_chordaeDirectionLinesToPapillaryMuscles.inp', 'w')
     
     # write first line
-    s = str(numberOfNeumannPoints+1) + ' ' + str(numberOfNeumannPoints) + ' 0 0 0\n'
+    # number of primary chordae attachment points + number (two) of papillary muscle tips // number of lines // 0 // 0 // 0
+    s = str(number_of_PrimaryChordae_NeumannPoints+2) + ' ' + str(number_of_PrimaryChordae_NeumannPoints) + ' 0 0 0\n'
     f.write(s)
     
     # write point coordinates
-    # first, write Neumann points on valve
-    for i in range(numberOfNeumannPoints):
-        pt = nBCPoints[i]
-        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
-        f.write(s)
+    # first, write anterior attachment points and corresponding papillary muscle
+    numberOfAntPrimaryAttachmentPts = antPrimaryAttachmentIds.GetNumberOfIds()
+    numberOfPostPrimaryAttachmentPts = postPrimaryAttachmentIds.GetNumberOfIds()
     
-    # then, write coordinates of point under the valve
-    pt = NeumannPoint
-    s = str(numberOfNeumannPoints) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+    # write anterior attachment points
+    for i in range(numberOfAntPrimaryAttachmentPts):
+      pt = valve3Dsurface_.GetPoint(antPrimaryAttachmentIds.GetId(i))
+      s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+      f.write(s)
+    
+    # then, write coordinates of the anterior papillary muscle attachment point
+    currentPointIndex = numberOfAntPrimaryAttachmentPts
+    s = str(currentPointIndex) + ' ' + str(antPapillaryMuscle[0]) + ' ' + str(antPapillaryMuscle[1]) + ' ' + str(antPapillaryMuscle[2]) + '\n'
     f.write(s)
     
-    # write lines
-    for i in range(numberOfNeumannPoints):
-        s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(numberOfNeumannPoints) + '\n'
-        f.write(s)
+    # write posterior attachment points
+    for i in range(numberOfPostPrimaryAttachmentPts):
+      pt = valve3Dsurface_.GetPoint(postPrimaryAttachmentIds.GetId(i))
+      currentPointIndex = i + numberOfAntPrimaryAttachmentPts + 1
+      s = str(currentPointIndex) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+      f.write(s)
+    
+    # then, write coordinates of the posterior papillary muscle attachment point
+    currentPointIndex = numberOfAntPrimaryAttachmentPts + numberOfPostPrimaryAttachmentPts + 1
+    s = str(currentPointIndex) + ' ' + str(postPapillaryMuscle[0]) + ' ' + str(postPapillaryMuscle[1]) + ' ' + str(postPapillaryMuscle[2]) + '\n'
+    f.write(s)
+    
+    # write lines which represent the chordae
+    # write lines for the anterior leaflet
+    for i in range(numberOfAntPrimaryAttachmentPts):
+      s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(numberOfAntPrimaryAttachmentPts) + '\n'
+      f.write(s)
+      
+    # write lines for the posterior leaflet
+    beginOfInterval = numberOfAntPrimaryAttachmentPts + 1
+    endOfInterval = numberOfAntPrimaryAttachmentPts + numberOfPostPrimaryAttachmentPts + 2
+    
+    for i in range(beginOfInterval, endOfInterval):
+      s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(endOfInterval - 1) + '\n'
+      f.write(s)
     
     # close stream
     f.close()
     
-    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLines.inp .")
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLinesToPapillaryMuscles.inp .")
     
+    # ------------------------------------------------------------------------------------- END OF NEWLY ADDED 2016-01-10.
+    
+    
+    # ======================================================================
+    # Transform nBCPoints and nBCDirection for future usage in HiFlow3-Exporter -------- # NOTE @ 2016-01-10: this is still to be fully adjusted/MSMLalized.
+    flatten = lambda l: [item for sublist in l
+                         for item in sublist]
+
+    points = flatten(nBCPoints) # ATTENTION RENEW THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    forces = flatten(nBCDirection) # ATTENTION RENEW THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    debug("Transforming nBCPoints and nBCDirection for future usage in HiFlow3-Exporter: DONE.")
+    
+    
+    #~ # ====================================================================== ------------------------------- START OF DEPRECATED.
+    #~ # the coordinates of the Neumann points are stored in nBCPoints, and the 
+    #~ # distinguished point under the valve is called NeumannPoint;
+    #~ # allow for visualization of the Neumann-Force-Vectors (representing the Chordae):
+    #~ # therefore write lines from the 'Neumann points' to the point under the valve
+    #~ 
+    #~ f = open('aBCdataExtender_chordaeDirectionLines.inp', 'w')
+    #~ 
+    #~ # write first line
+    #~ s = str(number_of_PrimaryChordae_NeumannPoints+1) + ' ' + str(number_of_PrimaryChordae_NeumannPoints) + ' 0 0 0\n'
+    #~ f.write(s)
+    #~ 
+    #~ # write point coordinates
+    #~ # first, write Neumann points on valve
+    #~ for i in range(number_of_PrimaryChordae_NeumannPoints):
+        #~ pt = nBCPoints[i]
+        #~ s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        #~ f.write(s)
+    #~ 
+    #~ # then, write coordinates of point under the valve
+    #~ pt = NeumannPoint
+    #~ s = str(number_of_PrimaryChordae_NeumannPoints) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+    #~ f.write(s)
+    #~ 
+    #~ # write lines
+    #~ for i in range(number_of_PrimaryChordae_NeumannPoints):
+        #~ s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(number_of_PrimaryChordae_NeumannPoints) + '\n'
+        #~ f.write(s)
+    #~ 
+    #~ # close stream
+    #~ f.close()
+    #~ 
+    #~ debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLines.inp .")
+    # --------------------------------------------------------------------------------------------------- END OF DEPRECATED.
     
     # ======================================================================
     # Write XML-File
     
-    # convert arrays to strings --------------------------------------------
+    #~ # convert arrays to strings -------------------------------------------- --------------- START OF DEPRECATED VERSION.
+    #~ nBCPointsString = "" # i.e. the attachmentPointString.
+    #~ nBCDirectionString = "" # i.e. the direction in which the attachmentPoints are torn.
+    #~ for i in range(number_of_PrimaryChordae_NeumannPoints):
+        #~ for j in range(3):
+            #~ nBCPointsString += str(nBCPoints[i][j])
+            #~ nBCDirectionString += str(nBCDirection[i][j])
+            #~ if j == 2:
+              #~ if i < number_of_PrimaryChordae_NeumannPoints-1:
+                #~ nBCPointsString += ";"
+                #~ nBCDirectionString += ";"
+            #~ else:
+              #~ nBCPointsString += ","
+              #~ nBCDirectionString += ","
+    
+    # convert arrays to strings -------------------------------------------- --------------- START OF NEWLY ADDED VERSION.
     nBCPointsString = ""
     nBCDirectionString = ""
-    for i in range(numberOfNeumannPoints):
-        for j in range(3):
-            nBCPointsString += str(nBCPoints[i][j])
-            nBCDirectionString += str(nBCDirection[i][j])
-            if j == 2:
-              if i < numberOfNeumannPoints-1:
-                nBCPointsString += ";"
-                nBCDirectionString += ";"
-            else:
-              nBCPointsString += ","
-              nBCDirectionString += ","
     
+    # first, we set up the string for the chordae attachment points on the anterior leaflet
+    for i in range(numberOfAntPrimaryAttachmentPts):
+      # get the coordinates of the current attachment point and store them in a Numpy array
+      pt = valve3Dsurface_.GetPoint(antPrimaryAttachmentIds.GetId(i))
+      attachmentPoint = np.array(pt)
+      direction = antPapillaryMuscle - attachmentPoint
+        
+      for j in range(3):
+        nBCPointsString += str(attachmentPoint[j])
+        nBCDirectionString += str(direction[j])
+        
+        if j == 2:
+          nBCPointsString += ";"
+          nBCDirectionString += ";"
+        else:
+          nBCPointsString += ","
+          nBCDirectionString += ","
+    
+    # second, we set up the string for the chordae attachment points on the posterior leaflet
+    for i in range(numberOfPostPrimaryAttachmentPts):
+      # get the coordinates of the current attachment point and store them in a Numpy array
+      pt = valve3Dsurface_.GetPoint(postPrimaryAttachmentIds.GetId(i))
+      attachmentPoint = np.array(pt)
+      direction = postPapillaryMuscle - attachmentPoint
+      
+      for j in range(3):
+        nBCPointsString += str(attachmentPoint[j])
+        nBCDirectionString += str(direction[j])
+        
+        if j == 2:
+          if i < numberOfPostPrimaryAttachmentPts - 1:
+            nBCPointsString += ";"
+            nBCDirectionString += ";"
+        else:
+          nBCPointsString += ","
+          nBCDirectionString += ","
+    
+    debug('XML output preparation: DONE.')
+    # -------------------------------------------- --------------- END OF NEWLY ADDED VERSION.
     
     # Write BC data to XML file --------------------------------------------
     # build a tree structure
@@ -705,7 +973,7 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     NeumannForceBCs = ET.SubElement(BCData, "NeumannForceBCs")
     
     NumberOfNeumannForceBCs = ET.SubElement(NeumannForceBCs, "NumberOfNeumannForceBCs")
-    NumberOfNeumannForceBCs.text = str(numberOfNeumannPoints)
+    NumberOfNeumannForceBCs.text = str(number_of_PrimaryChordae_NeumannPoints)
     
     nBCPoints = ET.SubElement(NeumannForceBCs, "nBCPoints")
     nBCPoints.text = nBCPointsString
@@ -721,7 +989,7 @@ def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): #
     
     # ======================================================================
     
-    return points, forces
+    return points, forces   # NOTE @ 2016-01-10: this is still to be fully adjusted/MSMLalized.
 
 
 def von_mises_stress_evaluator(path_to_sim_results, matParam_Lambda, matParam_Mu, target="SimResults_with_vMstressVis"):
@@ -758,7 +1026,7 @@ def von_mises_stress_evaluator(path_to_sim_results, matParam_Lambda, matParam_Mu
     :param matParam_Lambda: Lame constant \lambda
     :param matParam_Mu: Lame constant \mu
     :param target: SimResults_with_vMstressVis
-    :return: new set of files containing the HiFlow3 MVR simulation results (vtu files) including the von Mises Stress distribution data.
+    :return: ???????? new set of files containing the HiFlow3 MVR simulation results (vtu files) including the von Mises Stress distribution data.
     """
     
     # ======================================================================
@@ -768,6 +1036,9 @@ def von_mises_stress_evaluator(path_to_sim_results, matParam_Lambda, matParam_Mu
     # Get path/directory of simulation results, and set path combined with datatype:
     path = path_to_sim_results
     path_and_datatype = path + '*.pvtu'
+    
+    debug("  - ATTENTION: output path_and_datatype in VonMisesStress-Evaluator: %s", path_and_datatype)
+    
     
     # Get set of files to be processed by vMStress-Evaluator-Script:
     files_to_be_iterated_over = glob.glob(path_and_datatype)
@@ -1043,6 +1314,8 @@ def von_mises_stress_evaluator(path_to_sim_results, matParam_Lambda, matParam_Mu
     
     # ======================================================================
     debug("Von Mises Stress computation: DONE for all files.")
+    #write_vtu(dummy, target)
+    #debug("Von Mises Stress computation: DONE. Writing target: DONE.")
     # ======================================================================
 
 
