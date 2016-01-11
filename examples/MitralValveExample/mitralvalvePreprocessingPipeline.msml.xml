@@ -4,10 +4,10 @@
 
     <variables>
         <var name="input_mv_surf_mesh"
-             value="XNAT_Segmentations/MitralValve_annotatedSegmentation_P0067_fineMesh_0.vtp"
+             value="XNAT_PatientData_SampleCases_Input/MVR_Sample_Patient2_Segmentation_P0097.vtp"
              logical="TriangularSurface" physical="vtp" role="input" />
         <var name="input_mv_ring"
-             value="XNAT_Segmentations/MitralValve_AnnuloplastyRing_OptimallyPlaced_P0067_PhysioII_34_0.vtp"
+             value="XNAT_PatientData_SampleCases_Input/MVR_Sample_Patient2_AnnuloplastyRingPhysioII32_OptimallyPlaced_P0097.vtp"
              logical="object" physical="vtp" role="input" />
     </variables>
 
@@ -42,7 +42,7 @@
                     <!-- Note: this has to be MSMLalized/standardized later -->
                     
                     <surfacePressure indices="0" pressure="0"/>
-                    <!-- Note: this is empty in the MVR simulation scenario, since facet- AND point-wise Neumann-BCs are needed, and since facetwise Neumann-BCs are fixly set to {17,18,20}. -->
+                    <!-- Note: this is empty in the MVR simulation scenario, since facet- AND point-wise Neumann-BCs are needed, and since facetwise Neumann-BCs are fixly set up on surface boundary facets with IDs in {17,18,20}. -->
                     
                     <pointwiseForceConstraint points="${aBCdataForMVRsimExtender.points}"
                                               forces="${aBCdataForMVRsimExtender.forces}"/>
@@ -61,7 +61,7 @@
             </constraints>
 
             <output>
-                <displacement id="mitralvalve" timestep="1"/>
+                <displacement id="mitralvalve_disp" timestep="1" /> <!-- cp. nsofa-exporter: boolean useAsterisk="true" /> -->
             </output>
         </object>
     </scene>
@@ -71,14 +71,15 @@
         <!-- ConvertSTLToVTK-Operator not needed anymore -->
 
         <SurfaceToVoxelDataOperator id="aSurfaceToVoxelsOperator" surfaceMesh="${input_mv_surf_mesh}"
-                                    targetImageFilename="mvImage.vti" accuracy_level="7" smoothing="1"/>
-        <!-- SurfaceToVoxelDataOperator might be replaced by DistanceMapOperator -->
+                                    targetImageFilename="mvImage.vti" accuracy_level="10" smoothing="1"/>
+        <!-- SurfaceToVoxelDataOperator could be replaced by DistanceMapOperator -->
         <!-- NOTE: Apply machine learning algorithms here?! -->
 
         <vtkMarchingCube id="aVoxelToContourOperator" image="${aSurfaceToVoxelsOperator}"
                          outFilename="mvVolumeSurface.vtk" isoValue="90"/>
-        <!-- vtkMarchingCube might be replaced by Voxel2ContourOperator -->
-        <!-- Alternative: maybe rather MSMLalize/implement own ImageToContourSurfaceMesh.py operator for this task -->
+        <!-- isoValue="90" is okay, "300" is optimal -->
+        <!-- vtkMarchingCube could be replaced by Voxel2ContourOperator -->
+        <!-- Alternative: maybe rather MSMLalize/implement own dedicated ImageToContourSurfaceMesh.py operator for this task -->
         <!-- NOTE: Apply machine learning algorithms here?! -->
 
         <!-- <ReduceSurfaceMesh(std::string infile, std::string outfile, int verticesCount, bool forceManifold, bool asciiOutput) -->
@@ -87,9 +88,10 @@
 
         <CGALMeshVolumeFromSurface id="aVolumeMesher" meshFilename="mvVolumeMesh3D_CGAL.vtk"
                                    surfaceMesh="${aVoxelToContourOperator}"
-                                   preserveFeatures="false" facetAngle="20" facetSize="0.5" facetDistance="0.4"
-                                   cellRadiusEdgeRatio="3" cellSize="0.5" odt="false" lloyd="false" pertube="false"
+                                   preserveFeatures="false" facetAngle="20" facetSize="0.4" facetDistance="0.3"
+                                   cellRadiusEdgeRatio="3" cellSize="0.4" odt="false" lloyd="false" pertube="false"
                                    exude="false"/>
+        <!-- facetSize="0.4" facetDistance="0.3" cellRadiusEdgeRatio="3" is okay, {0.2, 0.2, 0.2} is optimal -->
         <!-- NOTE: Apply machine learning algorithms here?! -->
 
         <!-- <ConvertVTKToVTU id="vtuConverter" VTKMesh="${aVolumeMesher} " targetFilename="mvVolumeMesh3D_hf3vtu.vtu"/> -->
@@ -118,7 +120,7 @@
         <!-- Note: this has to be MSMLalized/standardized later -->
 
         <!-- Simulation_Scenario_Mgmt_Operator to organize/distribute MV-scenarios-->
-        <!-- Simulation_Scenario_Mgmt_Operator not needed, since scenario setup done via CogApps-Pipe-I/O -->
+        <!-- Simulation_Scenario_Mgmt_Operator not needed anymore, since scenario-distribution is managed via CogApps-Pipe-I/O -->
 
         <!-- EXECUTE_HIFLOW3_SIMULATION or PREPARE_HIFLOW3_SIMULATION_INPUT_FOR_EXECUTION -->
         <!-- Note: by using the 'hiflow3' or 'mitral' exporter, the simulation is
@@ -127,23 +129,24 @@
                e.g. for a job on a HPC-cluster). -->
 
         <!-- pvtu2vtu-Operator -->
-        <!-- pvtu2vtu-Operator not needed anymore -->
+        <!-- pvtu2vtu-Operator not needed anymore, since pvtu2vtu-conversion is done in vonMisesStressComputation-Operator via CogApps-Pipe-I/O -->
 
-        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" path_to_sim_results="${hf3Simulation/SimResults}"
-                       matParam_Lambda="284666" matParam_Mu="700" /> -->
-        <!-- How to include simulation results in MSML pipeline?! -->
-        <!-- How to execute script for simulation results of all timesteps (and set according naming w.r.t. ts_)?! -->
         <!-- VonMisesStressVisualization_PostProcessing_Operator -->
-
+        <!-- <vonMisesStressComputation_mvrPostProcessingAnalytics id="aVonMisesStressComputingOperator" path_to_sim_results="${mitralvalve_disp}"
+                       matParam_Lambda="284666" matParam_Mu="700" mvMeshDeformedWithVonMisesStressData="_SimResults_with_vMstressVis_" /> -->
+        <!-- ${hf3Simulation/SimResults}" or "/out_mitralvalvePreprocessingPipeline.msml/SimResults" -->
+        <!-- vonMisesStressComputation_mvrPostProcessingAnalytics operator not needed anymore, since executed via CogApps-Pipe-I/O -->
+        <!-- in case of integration into MSML: include simulation results in MSML pipeline via using the msml.scene.output-tag-id -->
+        <!-- in case of integration into MSML: execute script for simulation results of all timesteps (and set according naming w.r.t. ts_) -->
     </workflow>
 
     <environment>
         <solver linearSolver="CG" preconditioner="SGAUSS_SEIDEL" hf3_chanceOfContactBoolean="1"
-                processingUnit="CPU" numParallelProcessesOnCPU="2"
+                processingUnit="CPU" numParallelProcessesOnCPU="0"
                 timeIntegration="Newmark" dampingRayleighRatioMass="0.5" dampingRayleighRatioStiffness="0.5"/>
                 <!-- use numParallelProcessesOnCPU="0" in order not to run simulation but to only produce the simulation input files --> 
         <simulation>
-            <step name="initial_def_implantation_1" dt="0.05" iterations="300" visualizeSimResultsEvery1inXtimesteps="5" />
+            <step name="initial_def_implantation_1" dt="0.05" iterations="400" visualizeSimResultsEvery1inXtimesteps="5" />
             <!-- <step name="initial_def_implantation_1" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_pause" dt="0.05" iterations="20"/> -->
             <!-- <step name="subsequent_def_heartcycle_2" dt="0.01" iterations="500"/> -->
