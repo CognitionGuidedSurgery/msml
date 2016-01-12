@@ -204,7 +204,7 @@ namespace MSML
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
 				std::setprecision(2 * sizeof(float));
 
-				const double eps = 1.0e-8;
+				const double eps = 1.0e-14;
 
 				if ((std_dev_helper_x[i] - mean_x[i]*mean_x[i]) <= eps) {
 					std_dev_x[i] = 0.;
