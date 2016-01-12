@@ -70,8 +70,8 @@ if __name__ == '__main__': #for parallel processing compatibility
 
     shutil.copy('./init.vtu', DIR + 'init.vtu')   
 
-    msml_file_name ='beamLinearDisp.msml.xml'
-    #msml_file_name ='beamLinearDisp_2d.msml.xml'
+    #msml_file_name ='beamLinearDisp.msml.xml'
+    msml_file_name ='beamLinearDisp_2d.msml.xml'
 
     args_list = []
     startDir = os.getcwd()

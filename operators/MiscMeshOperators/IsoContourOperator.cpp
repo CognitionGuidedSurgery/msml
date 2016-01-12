@@ -204,25 +204,27 @@ namespace MSML
 			for (int i = 0; i < surface_init->GetNumberOfPoints(); ++i) {
 				std::setprecision(2 * sizeof(float));
 
-						if (trunc(std_dev_helper_x[i] - mean_x[i]*mean_x[i]) == 0.) {
-						std_dev_x[i] = 0.;
-						} else {
-						std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
-						}
+				const double eps = 1.0e-8;
 
-						if (trunc(std_dev_helper_y[i] - mean_y[i]*mean_y[i]) == 0.) {
-						std_dev_y[i] = 0.;
-						} else {
-						std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
-						}
+				if ((std_dev_helper_x[i] - mean_x[i]*mean_x[i]) <= eps) {
+					std_dev_x[i] = 0.;
+				} else {
+					std_dev_x[i] = std::sqrt(std_dev_helper_x[i] - mean_x[i]*mean_x[i]);
+				}
 
-						if (trunc(std_dev_helper_z[i] - mean_z[i]*mean_z[i]) == 0.) {
-						std_dev_z[i] = 0.;
-						} else {
-						std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
-						}		
+				if ((std_dev_helper_y[i] - mean_y[i]*mean_y[i]) <= eps) {
+					std_dev_y[i] = 0.;
+				} else {
+					std_dev_y[i] = std::sqrt(std_dev_helper_y[i] - mean_y[i]*mean_y[i]);
+				}
 
-						}
+				if ((std_dev_helper_z[i] - mean_z[i]*mean_z[i]) <= eps) {
+					std_dev_z[i] = 0.;
+				} else {
+					std_dev_z[i] = std::sqrt(std_dev_helper_z[i] - mean_z[i]*mean_z[i]);
+				}		
+
+			}
 
 
 			//+/- 2*std_dev to each point for 95% probability
