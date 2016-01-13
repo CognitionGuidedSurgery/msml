@@ -56,7 +56,7 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    ORDER = 3
+    ORDER = 5
     NAME = "BATCH_OUT_COLLOCATION_2d_ORDER_" + str(ORDER) + "_DIRNEW_"
     DIR = './BATCH_COLLOCATION_2d_ORDER_' + str(ORDER) + '/'
     

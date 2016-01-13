@@ -56,11 +56,11 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 400
+    COUNTER = 800
     NAME = "BATCH_OUT_MC_UNIFORM_2d_test2016_" + str(COUNTER) + "_DIRNEW_"
     DIR = './BATCH_MC_UNIFORM_2d_test2016_' + str(COUNTER) + '/'
     
-    results_file_name = 'results__2d_MC_test2016' + str(COUNTER) + '_' + str(time.time()) + '.csv'
+    results_file_name = 'results__2d_MC_test2016_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
     
     try :
         os.stat(DIR)
@@ -80,7 +80,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     #csv_file_name = "./samples/2d/ref_095.csv"
     #csv_file_name = "./samples/2d/monte_carlo/mc_uniform_" + str(COUNTER) + ".csv"
     
-    csv_file_name = "./samples/2d/monte_carlo/mc_normal_400.csv"
+    csv_file_name = "./samples/2d/monte_carlo/mc_normal_"+ str(COUNTER) + ".csv"
     
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
