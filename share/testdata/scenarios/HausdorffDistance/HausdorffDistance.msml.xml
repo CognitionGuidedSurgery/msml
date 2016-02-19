@@ -1,0 +1,34 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+    <variables>
+        <var name="input_vol_mesh1" value="vertebra1.vtk" physical="file.vtk" />
+		<var name="input_vol_mesh2" value="vertebraGenerated.vtk" logical="VolumeMesh" />
+        <var name="input_image" value="vertebra.vti" logical="SegmentationImage3D"
+             physical="file.vti"/>
+		<var name="facet_size" value="1" physical="float" />
+		<var name="facet_distance" value="1" physical="float" />
+		<var name="cell_radius" value="3" physical="float" />
+		<var name="cell_size" value="1" physical="float" />
+		
+    </variables>
+
+    <workflow>    
+                      
+         <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${input_vol_mesh2}" image="${input_image}" 
+					facetAngle="20" facetSize="${facet_size}" facetDistance="${facet_distance}" cellRadiusEdgeRatio="${cell_radius}" cellSize="${cell_size}" odt="false" lloyd="false"  pertube="false" exude="false" />
+        
+		<calculateHausdorffDistance id="hausdorffDistance" input_mesh1="${input_vol_mesh1}" input_mesh2="${input_vol_mesh2}" points="false" />
+    </workflow>
+
+
+    <environment>
+        <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+        <simulation>
+            <step name="initial" dt="0.05" iterations="100"/>
+        </simulation>
+    </environment>
+
+</msml:msml>

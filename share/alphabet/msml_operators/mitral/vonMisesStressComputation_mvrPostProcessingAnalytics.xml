@@ -1,21 +1,32 @@
 <msml:operator xmlns:msml="http://sfb125.de/msml"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://sfb125.de/msml" name="vonMisesStressComputation_mvrPostProcessingAnalytics">
+    <meta key="doc">
+        Evaluate the von Mises stress distribution on a HiFlow3-MVR-Elasticity-Simulation-produced (p)vtu-(output-)file.
+    </meta>
 
     <runtime>
-        <python module="msml.ext.mitral" function="von_misses_stress"/>
+        <python module="msml.ext.mitral" function="von_mises_stress_evaluator"/>
     </runtime>
 
     <input>
-        <arg name="inputfilename" logical="Mesh" physical="vtk"/>
+        <!-- <arg name="path_to_sim_results" logical="object" physical="string"/> -->
+        <arg name="path_to_sim_results" logical="Mesh" physical="file.vtk"/>
     </input>
 
     <output>
-		<arg name="mvMeshWithExtendedVonMisesStressData" logical="object" physical="file" />
+		<!-- <arg name="mvMeshDeformedWithVonMisesStressData" logical="object" physical="file" /> -->
+		<arg name="mvMeshDeformedWithVonMisesStressData" logical="Mesh" physical="file.vtk" />
     </output>
 
     <parameters>
-        <arg name="outputfilename" logical="object" physical="string">
+        <arg name="matParam_Lambda" optional="true" default="28466" logical="object" physical="string">
+	       </arg>
+	    <arg name="matParam_Mu" optional="true" default="700" logical="object" physical="string">
+	       </arg>
+        <!-- <arg name="outfilename" optional="true" default="_SimResults_with_vMstressVis_" logical="object" physical="string">
+	       </arg> -->
+	    <arg name="mvMeshDeformedWithVonMisesStressData" optional="true" default="_SimResults_with_vMstressVis_" logical="Mesh" physical="file.vtk">
 	       </arg>
     </parameters>
 

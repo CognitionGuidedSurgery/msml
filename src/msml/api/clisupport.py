@@ -189,9 +189,10 @@ def get_arguments(msmlfile):
 
     1. Generate an argument parser with :py:mod:`clictk`
     2. Parses the command line
-    3. Check for `--xml`
+    3. Check for `--xml` or '--help'
         1. if `--xml` is set, abort execution and generate CLI XML
-        2. else restore stdio channels
+        2. elif `--help` is set, abort execution and show help message
+        3. else restore stdio channels
 
     ns = p.parse_args()
 
@@ -210,6 +211,9 @@ def get_arguments(msmlfile):
         # write to real stdout
         consolecatcher._true_channels[0].write(xml)
         sys.exit(0)
+    elif "--help" in sys.argv or "-h" in sys.argv:	
+	    consolecatcher._reset_stdio()
+	    sys.exit(0);	
     else:
         # we do not need stdout sanity further more
         consolecatcher._reset_stdio()

@@ -400,6 +400,13 @@
                                         </restriction>
                                     </simpleType>
                                 </attribute>
+                                <attribute use="optional" default="1" name="visualizeSimResultsEvery1inXtimesteps">
+                                    <simpleType>
+                                        <restriction base="int">
+                                            <minExclusive value="1"/>
+                                        </restriction>
+                                    </simpleType>
+                                </attribute>
                                 <attribute name="gravity">
                                 </attribute>
                             </complexType>

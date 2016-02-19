@@ -1,0 +1,106 @@
+<msml:msml xmlns:msml="http://sfb125.de/msml"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://sfb125.de/msml">
+
+  <variables>
+    <var name="fixed_points" value="320  195  300  260  190  300  290  333  229  284  270  197  237  244  225  340  244  225  287  295  175  287  275  127  288  285  113  290  291  97  293  297  79  291  308  57  305  170  215  280  170  213  105  270  35  118  285  63  257  240  45  135  297  25  194  350  40  460  295  77  389  354  40  480  280  45  444  294  37  320  240  45" physical="vector.float" />
+    <var name="moving_points" value="320.00  195.00  300.00  260.00  190.00  298.00  290.00  333.00  229.00  284.00  270.00  195.00  238.95  242.05  223.00  341.95  244.00  225.00  287.00  295.00  173.00  287.00  275.00  127.00  288.00  285.00  111.00  288.05  291.00  95.00  293.00  297.00  77.00  291.00  309.95  55.00  306.96  170.00  215.00  281.96  168.05  213.00  95.23  273.91  15.00  104.33  296.72  43.00  257.00  243.90  39.00  129.14  304.81  7.00  195.95  355.86  30.00  461.96  289.14  73.00  383.14  348.14  42.00  481.95  280.00  39.00  442.05  295.95  35.00  320.00  240.00  45.00" physical="vector.float" />
+    <var name="tet_only_mesh" value="out_preprocessing/tet_only_mesh.vtk" logical="linearMesh" physical="file.vti" />
+
+    <var name="GTV_1_mesh" value="out_preprocessing/GTV_1_mesh.vtk" logical="linearMesh" physical="file.vti" />
+    <var name="PTV_1_mesh" value="out_preprocessing/PTV_1_mesh.vtk" logical="linearMesh" physical="file.vti" />
+    <var name="BRAC_PLX_1_mesh" value="out_preprocessing/BRAC_PLX_1_mesh.vtk" logical="linearMesh" physical="file.vti" />
+    <var name="Spinal_1_mesh" value="out_preprocessing/Spinal_1_mesh.vtk" logical="linearMesh" physical="file.vti" />
+    
+    <var name="GTV_1_voxel" value="out_preprocessing/GTV_1_voxel.vti" logical="image" physical="file.vti"/>
+    <var name="PTV_1_voxel" value="out_preprocessing/PTV_1_voxel.vti" logical="image" physical="file.vti"/>
+    <var name="BRAC_PLX_1_voxel" value="out_preprocessing/BRAC_PLX_1_voxel.vti" logical="image" physical="file.vti"/>
+    <var name="Spinal_1_voxel" value="out_preprocessing/Spinal_1_voxel.vti" logical="image" physical="file.vti"/>
+    <var name="BRAC_PLX_1_voxel_nearPTV" value="out_preprocessing/BRAC_PLX_1_voxel_nearPTV.vti" logical="image" physical="file.vti"/>
+    <var name="Spinal_1_voxel_nearPTV" value="out_preprocessing/Spinal_1_voxel_nearPTV.vti" logical="image" physical="file.vti"/>
+    
+    <var name="patient_CT" value="ct.vti" logical="image" physical="file.vti" />
+
+    <var name="disp_name" value="disp_name.vtu" physical="str" />
+
+    <var name="GTV_1_mesh_deformed" value="GTV_1_mesh_mesh_deformed.vtk" logical="str" />
+    <var name="PTV_1_mesh_deformed" value="PTV_1_mesh_mesh_deformed.vtk" logical="str" />
+    <var name="BRAC_PLX_1_mesh_deformed" value="BRAC_PLX_1_mesh_deformed.vtk" logical="str" />
+    <var name="Spinal_1_mesh_deformed" value="Spinal_1_mesh_deformed.vtk" logical="str" />
+    
+    <var name="GTV_1_voxel_deformed" value="GTV_1_voxel_deformed.vtk" logical="str" />
+    <var name="PTV_1_voxel_deformed" value="PTV_1_voxel_deformed.vtk" logical="str" />
+    <var name="BRAC_PLX_1_voxel_deformed" value="BRAC_PLX_1_voxel_deformed.vtk" logical="str" />
+    <var name="Spinal_1_voxel_deformed" value="Spinal_1_voxel_deformed.vtk" logical="str" />
+    
+    <var name="patient_CT_deformed" value="patient_CT_deformed.vtk" logical="str" />
+    <var name="patient_skin_voxel_deformed" value="patient_skin_voxel_deformed.vtk" logical="str" />
+
+  </variables>
+
+  <scene gravity="0 0 0">
+
+    <object id="headneckpat">
+
+      <mesh>
+        <linearTet id="combo_mesh_in_simulation" mesh="${tet_only_mesh}"/>
+      </mesh>
+      <material>
+        <region id="homogeneousMaterial1" indices="${wholeBodyRegionBox}">
+          <linearElasticMaterial youngModulus="10" poissonRatio="0.40"/>
+          <mass name="water_kg_per_mm3" massDensity="0.000001"/>
+        </region>
+      </material>
+      <constraints>
+        <constraint forStep="${initial}" name="1">
+          <springMeshToFixed name="LandmarkInducedForces" stiffness="1000" rayleighStiffnes="100" movingPoints="${moving_points}" 
+              fixedPoints="${fixed_points}" />
+
+        </constraint>
+      </constraints>  
+      <output>
+        <displacement id="disp" timestep="50" useAsterisk="false" />
+      </output>
+    </object>
+  </scene>        
+  <workflow>
+    <copyFile id="fileCopy" filename_in="${disp}" filename_out="${disp_name}" />
+    
+    <ComputeIndicesFromBoxROI id="headBox" box="-100000 -10000 200 3000 3000 3000" mesh="${tet_only_mesh}" select="points"/>
+    <ComputeIndicesFromBoxROI id="wholeBodyRegionBox" box="-100000 -10000 -10000 3000 3000 3000" mesh="${tet_only_mesh}" select="elements"/>
+    <TransformSurfaceBarycentric id="deformed_surface" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${GTV_1_mesh_deformed}" surfaceMeshToDeform="${GTV_1_mesh}" deformedVolumeMesh="${disp}" />
+    <TransformSurfaceBarycentric id="deformed_surface2" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${PTV_1_mesh_deformed}" surfaceMeshToDeform="${PTV_1_mesh}" deformedVolumeMesh="${disp}" />
+    <TransformSurfaceBarycentric id="deformed_surface3" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${BRAC_PLX_1_mesh_deformed}" surfaceMeshToDeform="${BRAC_PLX_1_mesh}" deformedVolumeMesh="${disp}" />
+    <TransformSurfaceBarycentric id="deformed_surface4" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${Spinal_1_mesh_deformed}" surfaceMeshToDeform="${Spinal_1_mesh}" deformedVolumeMesh="${disp}" />
+
+    <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr"  surfaceMesh="${deformed_surface}" targetImageFilename="${GTV_1_voxel_deformed}" referenceCoordinateGrid="${GTV_1_voxel}" disableFillHoles="true"  />
+    <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr2" surfaceMesh="${deformed_surface2}" targetImageFilename="${PTV_1_voxel_deformed}" referenceCoordinateGrid="${PTV_1_voxel}" disableFillHoles="true" />
+    <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr3" surfaceMesh="${deformed_surface3}" targetImageFilename="${BRAC_PLX_1_voxel_deformed}" referenceCoordinateGrid="${BRAC_PLX_1_voxel}" disableFillHoles="true" />
+    <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr4" surfaceMesh="${deformed_surface4}" targetImageFilename="${Spinal_1_voxel_deformed}" referenceCoordinateGrid="${Spinal_1_voxel}" disableFillHoles="true" />
+
+    <ExtractSurfaceMesh id="surfaceExtract1" mesh="${disp}" targetSurfaceMeshFilename="dispSurface.vtp"/>
+    
+    <!--<VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr5" surfaceMesh="${surfaceExtract1}" targetImageFilename="${patient_skin_voxel_deformed}" referenceCoordinateGrid="${patient_CT}" disableFillHoles="true" additionalIsotropicMargin="50.0"/>-->
+
+    
+    <GenerateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${tet_only_mesh}" DVFFilename="dvf.vtk" spacing="5"/>
+     <ApplyDVF id="deformeImage" referenceImage="${patient_CT}" outputDefImageFilename="${patient_CT_deformed}" dvf="${dvf}" reverseDirection="true" />
+    
+    
+  </workflow>
+
+
+  <environment>
+    <solver linearSolver="iterativeCG" processingUnit="CPU"
+                timeIntegration="dynamicImplicitEuler"/>
+    <simulation>
+      <step id="initial" dt="0.05" iterations="200"/>
+    </simulation>
+  </environment>
+
+</msml:msml>
+
+
+
+
+

@@ -1,19 +1,21 @@
 # -*- encoding: utf-8 -*-
 
 """
-mitral.py contains miscellaneous operators for preprocessing of 
+mitral.py contains miscellaneous operators for pre- and post-processing of 
 mitral valve geometries into simulation input;
 currently specifically for the HiFlow3Exporter-derived MitralExporter.
 """
-__author__ = 'schoch', 'weigl'
-__date__ = "2015-04-12"
+__author__ = 'schoch', 'weigl', 'kissler'
+__date__ = "2016-01-10"
 
 import xml.etree.ElementTree as ET
 
 import numpy as np
+from numpy import linalg as LA
 import vtk
 from .msmlvtk import *
 from msml.log import debug
+import glob
 
 
 def geometry_analyzer(surface, ring, target="mvGeometryInfo.txt"):
@@ -84,32 +86,47 @@ def geometry_analyzer(surface, ring, target="mvGeometryInfo.txt"):
     return [midPtTop[0], midPtTop[1], midPtTop[2], annulusRadius]
 
 
-def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvBCdataInfo.txt"): # before: ring, annulus_point_ids=16, target="mvBCdataInfo.txt"):
+def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvDirBCdataInfo.txt"): # before: ring, annulus_point_ids=16, target="mvBCdataInfo.txt"):
     """Given the following input data w.r.t. a mitral valve setup:
      - a 3D volume mesh (vtu),
-     - a 2D surface mesh representation of the MV segmentation (vtp), and
-     - an Annuloplasty Ring representation including vertex IDs (vtp)
-     this script computes and sets the Dirichlet Boundary Conditions (BCs)
-     data for the HiFlow3-based MVR-Simulation.
+     - a 2D surface mesh representation of the MV segmentation including vertex IDs (vtp),
+     - an Annuloplasty Ring representation including (the same/corresponding) vertex IDs (vtp)
+     this script computes and sets the Dirichlet Boundary Conditions (BCs) data
+     for the HiFlow3-based MVR-Simulation.
 
-    .. note:: Adding additional BC-points by means of linear interpolation
-              requires the input IDs to be ordered and going around annulus once!!!
+    .. note:: Adding additional (suture) BC-points by means of linear interpolation and depending on the distance to neighboring points: 
+              - firstly, requires the input IDs to be ordered and going around annulus once!!!
+              - secondly, requires a tolerance(float) value to be prescribed (manually!!!)
+                (this tolerance value represents the percentage for the deviation of the distance of two consecutive suture points 
+                 on the upper rim of the valve from the mutual average distance between the suture points)
+    
+    .. note:: The vertex IDs on annulus and ring have the following meanings and encodings:
+         0 - Anterolaterale Kommissur
+         1 -3  Kontrollpunkt
+         4 - Sattelhorn
+         5 - 7 Kontrollpunkt
+         8 - Posteromediale Kommissur
+         9 - 11 Kontrollpunkt
+         12 - Posterior Annulus
+         13 - 15 Kontrollpunkt
+         16  - sonstige Annuluspunkte (zwischen den Kontrollpunkten)
+         (die IDs 0 - 15 werden im Uhrzeigersinn am Annulus gesetzt)
+         17 - Anteriores Segel
+         18 - Posteriores Segel
 
     .. authors::
-        * Nicolai Schoch, EMCL; 2015-04-12.
+        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-04-12, 2015-11-01, 2016-01-10.
 
     :param volume_mesh:
     :param surface_mesh:
     :param ring:
-    :param annulus_point_ids:
-    :return:
+    :param tolerance: fixed value tol = 10 (percent)
+    :param annulus_point_ids: DEPRECATED.
+    :return: DBC-points and DBC-displacements.
     """
 
     # ======================================================================
-    # define number of given annulus point IDs -----------------------------
-    # (see notation/representation of Annuloplasty Rings by DKFZ and corresponding addInfo)
-
-    debug("=== Execute Python script to produce BCdata for the  HiFlow3-based MVR-Simulation ===")
+    debug("=== Execute Python script to produce BCdata (Dirichlet BCs) for the  HiFlow3-based MVR-Simulation ===")
 
     valve3d_ = read_ugrid(volume_mesh)
     valve3dSurface_ = get_surface(valve3d_)
@@ -133,7 +150,14 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvBCdataInfo.txt"):
     kDTree.SetDataSet(valve3dSurface_)
     kDTree.BuildLocator()
     
+    # define number of given annulus point IDs -----------------------------
+    # (see notation/representation of Annuloplasty Rings by DKFZ and corresponding addInfo)
     number_annulus_point_ids = 16
+    
+    # define the tolerance value, which represents the percentage for the deviation of the distance 
+    # of two consecutive suture points on the upper rim of the valve from the mutual average distance
+    # between the suture points:
+    tol = 0.75
 
     # ======================================================================
     # arrays for storage of coordinates of annulus points (and interpolated points) on the MV surface and on the ring -----------------
@@ -171,8 +195,101 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvBCdataInfo.txt"):
         ringPoints_[number_annulus_point_ids + i] = ring_point
 
     # ======================================================================
+    # compute the distance between consecutive points -------------------------------- NEW
+    # in order to do that, we need to reorder the valve points and ring points
+    
+    # first, reorder valve points:
+    # therefore, create a copy of valve points
+    dummyPointArray = np.zeros((valvePoints_.shape[0], valvePoints_.shape[1]))
+    
+    for n in range(valvePoints_.shape[0]):
+      dummyPointArray[n] = valvePoints_[n]
+    
+    for n in range(dummyPointArray.shape[0]/2):
+      valvePoints_[2*n] = dummyPointArray[n]
+      valvePoints_[2*n+1] = dummyPointArray[n+dummyPointArray.shape[0]/2]
+    
+    # second, reorder ring points:
+    # therefore create a copy of ring points
+    dummyPointArray = np.zeros((ringPoints_.shape[0],ringPoints_.shape[1]))
+      
+    for n in range(ringPoints_.shape[0]):
+      dummyPointArray[n] = ringPoints_[n]
+    
+    for n in range(dummyPointArray.shape[0]/2):
+      ringPoints_[2*n] = dummyPointArray[n]
+      ringPoints_[2*n+1] = dummyPointArray[n+dummyPointArray.shape[0]/2]
+    
+    # Now, compute average distance of two consecutive points
+    
+    # init vtk math object
+    math = vtk.vtkMath()
+    
+    avgDistance = 0.0
+    
+    for n in range(valvePoints_.shape[0]):
+      avgDistance += math.Distance2BetweenPoints(valvePoints_[n], valvePoints_[(n+1)%valvePoints_.shape[0]])
+    
+    avgDistance *= 1.0/float(valvePoints_.shape[0])
+    
+    # init tolerated deviation
+    tolDeviation = tol * avgDistance
+    
+    N = valvePoints_.shape[0]
+    
+    for n in range(N):
+      currentDistance = math.Distance2BetweenPoints(valvePoints_[n], valvePoints_[(n+1)%N])
+      # add points if and only if the current distance between two consequtive points is greater than 
+      # the average distance PLUS the tolerated deviation
+      if currentDistance - avgDistance > tolDeviation:
+        dummyArray = np.zeros((1,3))
+        dummyArray[0] = (valvePoints_[n] + valvePoints_[(n+1)%N])/2.0
+        
+        valvePoints_ = np.append(valvePoints_, dummyArray, axis=0)
+        
+        dummyArray = np.zeros((1,3))
+        dummyArray[0] = (ringPoints_[n] + ringPoints_[(n+1)%N])/2.0
+        
+        ringPoints_ = np.append(ringPoints_, dummyArray, axis=0)
+    
+    # -------------------------------------------------- END OF NEW.
+    
+    
+    # ======================================================================
     # Compute displacements ------------------------------------------------
     displacement_ = ringPoints_ - valvePoints_
+    
+    # ======================================================================
+    # write 'displacement lines' -------------------------------------------
+    # (from the sewing points on the natural annulus to the artificial ring)
+    f = open('aBCdataProducer_annuloplastyDisplacementLines.inp', 'w')
+    
+    # write inp-format-header-line
+    s = str(valvePoints_.shape[0]+ringPoints_.shape[0]) + ' ' + str(displacement_.shape[0]) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    # first, write valve points
+    for i in range(valvePoints_.shape[0]):
+        pt = valvePoints_[i]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # then, second, write ring points
+    for i in range(valvePoints_.shape[0], valvePoints_.shape[0]+ringPoints_.shape[0]):
+        pt = ringPoints_[i-valvePoints_.shape[0]]
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    # write "lines" into inp file
+    for i in range(displacement_.shape[0]):
+        s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(i+valvePoints_.shape[0]) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Producer-Operator into file: aBCdataProducer_annuloplastyDisplacementLines.inp .")
 
     # ======================================================================
     # Transform points and displacements for HiFlow3-Exporter --------------
@@ -182,7 +299,7 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvBCdataInfo.txt"):
     points = flatten(valvePoints_)
     displacements = flatten(displacement_)
 
-    debug("Computing Dirichlet displacement BC datac")
+    debug("Computing Dirichlet displacement BC data for future usage in HiFlow3-Exporter: DONE.")
 
     # ======================================================================
     # convert arrays to strings --------------------------------------------
@@ -222,146 +339,1064 @@ def bcdata_producer(volume_mesh, surface_mesh, ring, target="mvBCdataInfo.txt"):
 
     # ======================================================================
 
-    debug("Writing mvrSimBCdata.xml output file")
+    debug("Writing mvrSimDirBCdata.xml output file")
 
     return points, displacements
 
 
-def von_misses_stress(surface, target):
-    """Given vtu/pvtu file(s) resulting from an MVR elasticity simulation
-    (the solution files hence contain three scalar valued arrays named
-    'u0', 'u1' and 'u2' as PointData), this vtk-based python script
-    warps the initial/original mesh geometry by means of the displacement
-    vector, and computes the Cauchy strain tensor and the von Mises stress.
+def bcdata_extender(volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt"): # before: intNumNeumPoints=16, floatDeltaZ=15.0):
+    """Given the following input data w.r.t. a mitral valve setup:
+     - a 3D volume mesh (vtu),
+     - a 2D surface mesh representation of the MV segmentation including vertex IDs (vtp),
+     this script computes and sets the pointwise Neumann Boundary Conditions (BCs) data
+     representing the mitral valve apparatus chordae's pull forces
+     for the HiFlow3-based MVR-Simulation.
+     --> Neumann-BCs-Producer-Script to set Chordae Attachment Points and corresponding Forces on the MV leaflets.
 
-    The script's output is the following:
-    - vtu file that contains all the data of the
-       original file with modified coordinates of the points and the
-       displacement vector as additional PointData and the strain tensor
-       along with the von Mises stress (w.r.t. the Lame parameters
-       lambda = 28466, mu = 700 for mitral valve tissue, according to
-       [Mansi-2012]) as additional CellData.
+    .. note:: ... new version available to include secondary chordae (2016-01-07)...
+    
+    .. authors::
+        * Nicolai Schoch, Fabian Kissler, EMCL; 2015-06-10, 2015-11-01, 2016-01-10;
 
-    Author: Nicolai Schoch, EMCL; 2015-04-12.
-            Alexander Weigl, KIT; 2015-04-19
+    :param volume_mesh:
+        a 3D unstructured grid (vtu file) representation of the MV segmentation (e.g. by CGAL meshing operator,
+        followed by vtk2vtu-Converter), which only contains the connectivity information of 3D cells with four vertices
+        (i.e. tetrahedrons) and no other cells of dimension different from three,
+    :type volume_mesh: vtk.vtkUnstructuredGrid
 
-    :param surface: a polydata surface
-    :param target: a unstructured grid
-    :return:
+    :param surface_mesh:
+        a 2D polydata surface representation of the MV segmentation, which additionally contains matID-information
+        on the MV leaflets and annulus points.
+    :type surface_mesh: vtk.vtkPolyData
+
+    :param BCDataXMLFilename: DEPRECATED. -> Default value: target="mvNeumBCdataInfo.txt"
+           Name of the BCData file containing the von Neumann BCs;
+
+    :param intNumNeumPoints: DEPRECATED. -> Default value: 16
+           Number of von Neumann BCData points (representing the Chordae-attachment-points on the leaflets);
+
+    :param floatDeltaZ: DEPRECATED. -> Default value: 15.0
+           for specifying the direction of Neumann force, 
+           i.e., this number will be subtracted from the z-coordinate of the center of the bottom of the bounding box of the valve;
+
+    :return: (NBC-points and NBC-forces).
     """
-    # ======================================================================
-    # get system arguments -------------------------------------------------
-    # Path to input file and name of the output file
-    debug("=== Execute Python script to analyze MV geometry in order for the HiFlow3-based MVR-Simulation ===")
+
+    # =====================================================================
+    debug("=== Execute Python script to extend BCdata (Neumann BCs) for the  HiFlow3-based MVR-Simulation ===")
+    
+    # get flexible MV-anatomy parameters (which are fixed as from then on): -------
+    number_of_PrimaryChordae_NeumannPoints = 16
+    deltaZ = 25.0
+    
+    # Define matIDs --------------------------------------------------------
+    ANTERIOR_ID = 17
+    POSTERIOR_ID = 18
+    
+    # get input mesh and surface  data: -------------------------------------------
+    # we have: volume_mesh, surface_mesh, target="mvNeumBCdataInfo.txt" (where target corresponds to XMLFileName);
+    
+    # read in 3d valve volume_mesh
+    valve3D_ = read_ugrid(volume_mesh)
+    valve3Dsurface_ = get_surface(valve3D_)
+
+    # read in 2d valve surface mesh
+    valve2Dsurface_ = read_polydata(surface_mesh)
+    # compute normals of valve2Dsurface_
+    normalsFilter = vtk.vtkPolyDataNormals()
+    if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+      normalsFilter.SetInputData(valve2Dsurface_)
+    else:
+      normalsFilter.SetInput(valve2Dsurface_)
+    normalsFilter.SplittingOn()
+    normalsFilter.ConsistencyOn()
+    normalsFilter.ComputePointNormalsOff() # adapt here.
+    normalsFilter.ComputeCellNormalsOn()
+    normalsFilter.FlipNormalsOff()
+    normalsFilter.NonManifoldTraversalOn()
+    normalsFilter.Update()
+    # get cell normals
+    normalsValve2DsurfaceRetrieved = normalsFilter.GetOutput().GetCellData().GetNormals() # adapt here.
+    
+    debug("Reading input files: DONE.")
 
     # ======================================================================
-    # Read file
-
-    polydata = read_polydata(surface)
-
+    # init. cell locator for closest cell search ----------------------
+    # (using vtk methods, that find the closest point in a grid for an arbitrary point in R^3)
+    cellLocator = vtk.vtkCellLocator()
+    cellLocator.SetDataSet(valve2Dsurface_)
+    cellLocator.BuildLocator()
+    
+    
+    # -------------------------------------------------------
+    # Find the cells on the lower side of the valve's surface
+    # -------------------------------------------------------
+    
+    plane = vtk.vtkPlane()
+    
+    lowerSideCells = [] # will contain ids of cells on the lower side of the surface
+    upLowCellList = [] # the length of this array will be the number of cells on the surface. If a cell is on the upper side, the corresponding entry is 1, otherwise it is 0.
+    
+    # iterate over the cells on the surface
+    for i in range(valve3Dsurface_.GetNumberOfCells()):
+        
+        cell = valve3Dsurface_.GetCell(i) # get the current cell
+        
+        upLowIndicator = 0 # if a cell's vertex is on the upper side then add 1 otherwise add -1. After the following iteration, if the indicator is negative the cell will be classified as a cell on the lower side, otherwise it will be classified as a cell on the upper side. Note that here it's important that the cells on the surface have an odd number of vertices.
+        
+        # iterate over the cell's vertices
+        for j in range(cell.GetNumberOfPoints()):
+            
+            pointId = cell.GetPointId(j) # get a vertex id of the current cell
+            point = valve3Dsurface_.GetPoint(pointId) # get the coordinates of the vertex
+            
+            closestPoint = [0., 0., 0.] # will contain coordinates of a closest point on valve2d
+            closestPointDist2 = vtk.mutable(0) # will contain the squared Euclidean distance from point to closestPoint
+            cellId = vtk.mutable(0) # will contain ID of a cell that contains closestPoint
+            subId = vtk.mutable(0) # only needed for the function, besides that it has no use
+            cellLocator.FindClosestPoint(point, closestPoint, cellId, subId, closestPointDist2) # find a closest point and a cell that contains that point
+            
+            cellNormal = [0., 0., 0.] # will be normal of cell with id cellId (defined above)
+            normalsValve2DsurfaceRetrieved.GetTuple(cellId, cellNormal) # get the normal
+            
+            # modify upLowIndicator w.r.t. the point's position
+            if plane.Evaluate(cellNormal, closestPoint, point) > 0.:
+              upLowIndicator += 1
+            else:
+              upLowIndicator -= 1
+        # update list
+        if upLowIndicator < 0:
+          lowerSideCells.append(i)
+          upLowCellList.append(0)
+        else:
+          upLowCellList.append(1)
+    
+    debug("Finding cells on lower side of MV mesh: DONE.")
+    
+    
+    # -----------------------------------------------------------------------------------------------------------------
+    # Find the cells on the boundary of the surface, i.e., cells on the lower side neighboring a cell on the upper side
+    # -----------------------------------------------------------------------------------------------------------------
+    
+    # list of cell ids on boundary
+    boundaryCells = []
+    
+    # loop over all cells on downside
+    for cellId in lowerSideCells:
+        
+        # get the point ids of the cell's vertices
+        cellPointIds = vtk.vtkIdList()
+        valve3Dsurface_.GetCellPoints(cellId, cellPointIds)
+        
+        # neighbours will contain ids of cells that share a vertex with current cell
+        neighbours = []
+        
+        # loop over the cell's vertices
+        for i in range(cellPointIds.GetNumberOfIds()):
+            
+            # list with the id of a vertex
+            idList = vtk.vtkIdList()
+            idList.InsertNextId(cellPointIds.GetId(i))
+            
+            # get the neighbours of the cell
+            neighbourCellIds = vtk.vtkIdList()
+            valve3Dsurface_.GetCellNeighbors(cellId, idList, neighbourCellIds)
+            
+            # write the neighbours' ids in a list
+            for j in range(neighbourCellIds.GetNumberOfIds()):
+                neighbours.append(int(neighbourCellIds.GetId(j)))
+        
+        # check if current cell has neighbour cells on upside
+        for neighbour in neighbours:
+            if upLowCellList[neighbour] != 0:
+              boundaryCells.append(cellId)
+              break
+    
+    
+    # list with length number of cells; entry is
+    # 0 if cell is not a boundary cell
+    # 1 otherwise
+    isOnBoundary = [0 for i in range(valve3Dsurface_.GetNumberOfCells())]
+    
+    for iD in boundaryCells:
+        isOnBoundary[iD] = 1
+    
+    debug("Finding cells on boundary of surface (i.e. where upper side meets lower side): DONE.")
+    
+    
+    # now we have the following arrays
+    # 1. boundaryCells, contains ids of cells on the boundary
+    # 2. isOnBoundary, has 0, 1 entries, 1 for cell is on boundary, 0 otherwise
+    
+    
+    # ------------------------------------------------------------------------------------------------------------------------------------
+    # Find a cell on the previously found boundary that has a vertex with a minimal z-coordinate among all cell's vertices on the boundary
+    # ------------------------------------------------------------------------------------------------------------------------------------
+    
+    # iterate through boundaryCells, to find cell that has a vertex with minimal z-coordinate
+    # save this id as minCellId
+    # initial data for the search
+    cellPointIds = vtk.vtkIdList()
+    valve3Dsurface_.GetCellPoints(boundaryCells[0], cellPointIds)
+    
+    pt = valve3Dsurface_.GetPoint(cellPointIds.GetId(0))
+    
+    currentZCoord = pt[2]
+    currentCellId = boundaryCells[0]
+    
+    for iD in boundaryCells:
+        
+        cellPointIds = vtk.vtkIdList()
+        valve3Dsurface_.GetCellPoints(iD, cellPointIds)
+        
+        for i in range(cellPointIds.GetNumberOfIds()):
+            pt = valve3Dsurface_.GetPoint(cellPointIds.GetId(i))
+            if pt[2] < currentZCoord:
+              currentZCoord = pt[2]
+              currentCellId = iD
+              break
+        
+    minCellId = currentCellId
+    
+    debug("Finding min-z-coord among all surface boundary cells: DONE.")
+    
+    # ------------------------------------------------------------------------------------
+    # Find the connected component of the boundary that contains the previously found cell
+    # ------------------------------------------------------------------------------------
+    
+    #### AUXILIARY FUNCTION: isElementOfList ...
+    
+    # find connected component
+    connectedComponent = []
+    connectedComponent.append(minCellId)
+    elementAdded = 1
+    
+    while elementAdded == 1:
+        elementAdded = 0
+        for i in range(len(connectedComponent)):
+            # for every cell in connectedComponent find neighbour cells
+            # get the point ids of the cell's vertices
+            cellPointIds = vtk.vtkIdList()
+            valve3Dsurface_.GetCellPoints(connectedComponent[i], cellPointIds)
+            
+            # neighbours will contain ids of cells that share a vertex with current cell
+            neighbours = []
+            
+            # loop over the cell's vertices
+            for j in range(cellPointIds.GetNumberOfIds()):
+                
+                # list with the id of a vertex
+                idList = vtk.vtkIdList()
+                idList.InsertNextId(cellPointIds.GetId(j))
+                
+                # get the neighbours of the cell
+                neighbourCellIds = vtk.vtkIdList()
+                valve3Dsurface_.GetCellNeighbors(cellId, idList, neighbourCellIds)
+                
+                # write the neighbours' ids in a list
+                for k in range(neighbourCellIds.GetNumberOfIds()):
+                    neighbours.append(int(neighbourCellIds.GetId(k)))
+            
+            for neighbour in neighbours:
+                if isOnBoundary[neighbour] == 1 and isElementOfList(neighbour, connectedComponent) == 0:
+                   connectedComponent.append(neighbour)
+                   elementAdded = 1
+    
+    
+    isOnConnectedComponent = [0 for i in range(valve3Dsurface_.GetNumberOfCells())]
+    
+    for iD in connectedComponent:
+        isOnConnectedComponent[iD] = 1
+    
+    # Note: at this point, the whole lower boundary is found, by means of having iterated over (connected component) neighbours, starting at min-z-value.
+    
+    debug("Finding connected component: DONE.")
+    
+    
+    # -----------------------------------------------------------------------------------------------------------------------------------------------------
+    # Solve the k-center clustering problem for the set of points in the previously defined connected component with the Farthest-First Traversal algorithm
+    # -----------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    # Note: alternatively to the k-center-algorithm, try with 3D coordinates and 2D coordinates, i.e., projection on x-y-plane;
+    
+    # create vtkidlist with ids of points in the connected component
+    pointsInComponent = vtk.vtkIdList()
+    
+    for iD in connectedComponent:
+        # get points of cell iD
+        cellPointIds = vtk.vtkIdList()
+        valve3Dsurface_.GetCellPoints(iD, cellPointIds)
+        
+        # add those points to list pointsInComponent
+        for j in range(cellPointIds.GetNumberOfIds()):
+            pointsInComponent.InsertUniqueId(cellPointIds.GetId(j))
+    
+    
+    #### AUXILIARY FUNCTION: findMaximalElement ...
+    
+    #### AUXILIARY FUNCTION: kCenterCluster ...
+    
+    
+    primary_chordae_attachment_point_Ids = kCenterCluster(number_of_PrimaryChordae_NeumannPoints, pointsInComponent, valve3Dsurface_)
+    # NOTE: "myCenterSet" corresponds to "primary_chordae_attachment_point_Ids"
+    
+    debug("Solving k-center clustering problem and finding k-center-Set: DONE.")
+    
+    
+    # ------------------------------------------------------------------------------------
+    # write the center set (i.e. the set of primary chordae attachment points) to inp file
+    # ------------------------------------------------------------------------------------
+    
+    f = open('aBCdataExtender_chordaeAttachmentPoints.inp', 'w')
+    
+    # write inp-format-header-line
+    s = str(primary_chordae_attachment_point_Ids.GetNumberOfIds()) + ' ' + str(primary_chordae_attachment_point_Ids.GetNumberOfIds()) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+        pt = valve3Dsurface_.GetPoint(primary_chordae_attachment_point_Ids.GetId(i))
+        s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        f.write(s)
+    
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+        s = '0' + ' ' + '10' + ' pt ' + str(i) + '\n'
+        f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeAttachmentPoints.inp .")
+    
+    
+    # ----------------------------------------------------------------------
+    # find the attachment points of the chordae on the two papillary muscles
+    # ----------------------------------------------------------------------
+    
+    # ----------------------------------------------------------------------------------------- START OF PARTLY DEPRECATED 2016-01-10.
+    # find the bounding box ------------------------  PARTLY DEPRECATED  ->  but return values still need to be adapted to the new version.
+    # -----------------------------------------------------------------------------------------
+    
+    # methods can be found in vtkDataSet
+    
+    # Get the center of the bounding box.
+    center = np.zeros(3)
+    valve3D_.GetCenter(center)
+    # Return a pointer to the geometry bounding box in the form (xmin,xmax, ymin,ymax, zmin,zmax).
+    bounds = np.zeros(6)
+    valve3D_.GetBounds(bounds)
+    
+    # specify point in \R^3 to compute the direction of vNeumann force
+    NeumannPoint = np.zeros(3)
+    NeumannPoint[0] = center[0]
+    NeumannPoint[1] = center[1]
+    NeumannPoint[2] = bounds[4] # this component is z_min 
+    NeumannPoint[2] -= deltaZ
+    
+    
+    # store coordinates of von Neumann points in array nBCPoints
+    nBCPoints = np.zeros((number_of_PrimaryChordae_NeumannPoints, 3))   # NOTE: nBCPoints are differentiated into nBCpoints on post/ant leaflet in new version !!!!
+    
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+        currentPoint = valve3Dsurface_.GetPoint(primary_chordae_attachment_point_Ids.GetId(i))
+        nBCPoints[i] = currentPoint
+    
+    # store the direction of the von Neumann force in the array nBCDirection
+    nBCDirection = np.zeros((number_of_PrimaryChordae_NeumannPoints, 3))   # NOTE: nBCDirection are differentiated for nBCDirections on post/ant leaflet in new version !!!!
+    
+    for i in range(number_of_PrimaryChordae_NeumannPoints):
+        nBCDirection[i] = NeumannPoint
+    
+    nBCDirection -= nBCPoints
+    
+    debug("Finding bounding box and setting up nBC-direction array: DONE.")
+    # ------------------------------------------------------------------------------------------------ END OF DEPRECATED.
+    
+    
+    # ------------------------------------------------------------------------------------------------------- NEWLY ADDED 2016-01-10
+    # assign the set of primary chordae attachment points to the anterior or posterior leaflets 
+    # and create corresponding VTK Id Lists
+    # -------------------------------------------------------------------------------------------------------
+    
+    # build point locator for valve2Dsurface_
+    surface2PointLocator = vtk.vtkKdTreePointLocator()
+    surface2PointLocator.SetDataSet(valve2Dsurface_)
+    surface2PointLocator.BuildLocator()
+    
+    surface2vertexIds = valve2Dsurface_.GetPointData().GetArray('VertexIDs')
+    
+    # for all primary chordae attachment points (i.e. Neumann BC points) decide whether they belong to the anterior or posterior leaflet
+    # and store them in corresponding arrays 
+    # and store the corresponding Ids in VTK Id Lists
+    antPrimaryAttachmentIds = vtk.vtkIdList()
+    postPrimaryAttachmentIds = vtk.vtkIdList()
+    
+    # iterate over all primary chordae attachment points
+    for i in range(primary_chordae_attachment_point_Ids.GetNumberOfIds()):
+      # get the coordinates of the point from the surface
+      Id = primary_chordae_attachment_point_Ids.GetId(i)
+      point = valve3Dsurface_.GetPoint(Id)
+      
+      # find a closest point on surface2 to the point
+      closestPointId = surface2PointLocator.FindClosestPoint(point)
+      
+      if int(surface2vertexIds.GetTuple1(closestPointId)) == ANTERIOR_ID:
+        antPrimaryAttachmentIds.InsertUniqueId(Id)
+      else:
+        postPrimaryAttachmentIds.InsertUniqueId(Id)
+    
+    
+    
+    # ------------------------------------------------------------------------------------------ NEWLY ADDED 2016-01-10
+    # compute the centers of mass of the attachment points of the anterior and posterior leaflets
+    # and thereon-based derive the approximate location of the papillary attachment points
+    # {antPapillaryMuscle, postPapillaryMuscle}
+    # ------------------------------------------------------------------------------------------
+    
+    antCenterOfMass = np.zeros(3)
+    postCenterOfMass = np.zeros(3)
+    
+    for i in range(antPrimaryAttachmentIds.GetNumberOfIds()):
+      # get the point coordinates from the surface
+      point = valve3Dsurface_.GetPoint(antPrimaryAttachmentIds.GetId(i))
+      antCenterOfMass += np.array(point)
+      
+    antCenterOfMass /= float(antPrimaryAttachmentIds.GetNumberOfIds())
+    
+    
+    for i in range(postPrimaryAttachmentIds.GetNumberOfIds()):
+      # get the point coordinates from the surface
+      point = valve3Dsurface_.GetPoint(postPrimaryAttachmentIds.GetId(i))
+      postCenterOfMass += np.array(point)
+      
+    postCenterOfMass /= float(postPrimaryAttachmentIds.GetNumberOfIds())
+    
+    
+    # specify the direction of the forces which act on the leaflets
+    # first, compute the midpoint of the anterior and posterior center of mass
+    #midCenterOfMass = np.zeros(3)
+    midCenterOfMass = 0.5 * (antCenterOfMass + postCenterOfMass)
+    
+    # second, compute the vector from the midpoint to the ant center of mass
+    #tempVector = np.zeros(3)
+    tempVector = antCenterOfMass - midCenterOfMass
+    tempVector *= 1.5 # NOTE: this is a scaling factor, which can be adjusted when the approximate ventricle geometry is known...
+    
+    # then, move the papillary muscle attachment point downwards (in z-direction, and with the prescribed deltaZ value)
+    midCenterOfMass[2] -= deltaZ
+    
+    # set the attachment point of the anterior and posterior papillary muscles
+    antPapillaryMuscle = midCenterOfMass + tempVector
+    postPapillaryMuscle = midCenterOfMass - tempVector
+    
+    #print antPapillaryMuscle, postPapillaryMuscle
+    
+    debug("Computing the Coordinates of antPapillaryMuscle and postPapillaryMuscle: DONE.")
+    
+    
+    
+    # ----------------------------------------------------------------------------------- NEWLY ADDED 2016-01-10.
+    # allow for visualization of the 'Neumann'-Force-Vectors (representing the Chordae):
+    # write lines from the primary chordae attachment points to the two papillary muscles
+    # -----------------------------------------------------------------------------------
+    
+    f = open('aBCdataExtender_chordaeDirectionLinesToPapillaryMuscles.inp', 'w')
+    
+    # write first line
+    # number of primary chordae attachment points + number (two) of papillary muscle tips // number of lines // 0 // 0 // 0
+    s = str(number_of_PrimaryChordae_NeumannPoints+2) + ' ' + str(number_of_PrimaryChordae_NeumannPoints) + ' 0 0 0\n'
+    f.write(s)
+    
+    # write point coordinates
+    # first, write anterior attachment points and corresponding papillary muscle
+    numberOfAntPrimaryAttachmentPts = antPrimaryAttachmentIds.GetNumberOfIds()
+    numberOfPostPrimaryAttachmentPts = postPrimaryAttachmentIds.GetNumberOfIds()
+    
+    # write anterior attachment points
+    for i in range(numberOfAntPrimaryAttachmentPts):
+      pt = valve3Dsurface_.GetPoint(antPrimaryAttachmentIds.GetId(i))
+      s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+      f.write(s)
+    
+    # then, write coordinates of the anterior papillary muscle attachment point
+    currentPointIndex = numberOfAntPrimaryAttachmentPts
+    s = str(currentPointIndex) + ' ' + str(antPapillaryMuscle[0]) + ' ' + str(antPapillaryMuscle[1]) + ' ' + str(antPapillaryMuscle[2]) + '\n'
+    f.write(s)
+    
+    # write posterior attachment points
+    for i in range(numberOfPostPrimaryAttachmentPts):
+      pt = valve3Dsurface_.GetPoint(postPrimaryAttachmentIds.GetId(i))
+      currentPointIndex = i + numberOfAntPrimaryAttachmentPts + 1
+      s = str(currentPointIndex) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+      f.write(s)
+    
+    # then, write coordinates of the posterior papillary muscle attachment point
+    currentPointIndex = numberOfAntPrimaryAttachmentPts + numberOfPostPrimaryAttachmentPts + 1
+    s = str(currentPointIndex) + ' ' + str(postPapillaryMuscle[0]) + ' ' + str(postPapillaryMuscle[1]) + ' ' + str(postPapillaryMuscle[2]) + '\n'
+    f.write(s)
+    
+    # write lines which represent the chordae
+    # write lines for the anterior leaflet
+    for i in range(numberOfAntPrimaryAttachmentPts):
+      s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(numberOfAntPrimaryAttachmentPts) + '\n'
+      f.write(s)
+      
+    # write lines for the posterior leaflet
+    beginOfInterval = numberOfAntPrimaryAttachmentPts + 1
+    endOfInterval = numberOfAntPrimaryAttachmentPts + numberOfPostPrimaryAttachmentPts + 2
+    
+    for i in range(beginOfInterval, endOfInterval):
+      s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(endOfInterval - 1) + '\n'
+      f.write(s)
+    
+    # close stream
+    f.close()
+    
+    debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLinesToPapillaryMuscles.inp .")
+    
+    # ------------------------------------------------------------------------------------- END OF NEWLY ADDED 2016-01-10.
+    
+    
     # ======================================================================
-    # Compute displacement vector
-    calc = vtk.vtkArrayCalculator()
-    calc.SetInput(polydata)
-    calc.SetAttributeModeToUsePointData()
-    calc.AddScalarVariable('x', 'u0', 0)
-    calc.AddScalarVariable('y', 'u1', 0)
-    calc.AddScalarVariable('z', 'u2', 0)
-    calc.SetFunction('x*iHat+y*jHat+z*kHat')
-    calc.SetResultArrayName('DisplacementSolutionVector')
-    calc.Update()
+    # Transform nBCPoints and nBCDirection for future usage in HiFlow3-Exporter -------- # NOTE @ 2016-01-10: this is still to be fully adjusted/MSMLalized.
+    flatten = lambda l: [item for sublist in l
+                         for item in sublist]
 
+    points = flatten(nBCPoints) # ATTENTION RENEW THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    forces = flatten(nBCDirection) # ATTENTION RENEW THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    debug("Transforming nBCPoints and nBCDirection for future usage in HiFlow3-Exporter: DONE.")
+    
+    
+    #~ # ====================================================================== ------------------------------- START OF DEPRECATED.
+    #~ # the coordinates of the Neumann points are stored in nBCPoints, and the 
+    #~ # distinguished point under the valve is called NeumannPoint;
+    #~ # allow for visualization of the Neumann-Force-Vectors (representing the Chordae):
+    #~ # therefore write lines from the 'Neumann points' to the point under the valve
+    #~ 
+    #~ f = open('aBCdataExtender_chordaeDirectionLines.inp', 'w')
+    #~ 
+    #~ # write first line
+    #~ s = str(number_of_PrimaryChordae_NeumannPoints+1) + ' ' + str(number_of_PrimaryChordae_NeumannPoints) + ' 0 0 0\n'
+    #~ f.write(s)
+    #~ 
+    #~ # write point coordinates
+    #~ # first, write Neumann points on valve
+    #~ for i in range(number_of_PrimaryChordae_NeumannPoints):
+        #~ pt = nBCPoints[i]
+        #~ s = str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+        #~ f.write(s)
+    #~ 
+    #~ # then, write coordinates of point under the valve
+    #~ pt = NeumannPoint
+    #~ s = str(number_of_PrimaryChordae_NeumannPoints) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2]) + '\n'
+    #~ f.write(s)
+    #~ 
+    #~ # write lines
+    #~ for i in range(number_of_PrimaryChordae_NeumannPoints):
+        #~ s = '0' + ' ' + '10' + ' line ' + str(i) + ' ' + str(number_of_PrimaryChordae_NeumannPoints) + '\n'
+        #~ f.write(s)
+    #~ 
+    #~ # close stream
+    #~ f.close()
+    #~ 
+    #~ debug("Writing Visualization-Output for Testing BCdata-Extender-Operator into file: aBCdataExtender_chordaeDirectionLines.inp .")
+    # --------------------------------------------------------------------------------------------------- END OF DEPRECATED.
+    
     # ======================================================================
-    # Compute strain tensor
-    derivative = vtk.vtkCellDerivatives()
-    derivative.SetInput(calc.GetOutput())
-    derivative.SetTensorModeToComputeStrain()
-    derivative.Update()
-
+    # Write XML-File
+    
+    #~ # convert arrays to strings -------------------------------------------- --------------- START OF DEPRECATED VERSION.
+    #~ nBCPointsString = "" # i.e. the attachmentPointString.
+    #~ nBCDirectionString = "" # i.e. the direction in which the attachmentPoints are torn.
+    #~ for i in range(number_of_PrimaryChordae_NeumannPoints):
+        #~ for j in range(3):
+            #~ nBCPointsString += str(nBCPoints[i][j])
+            #~ nBCDirectionString += str(nBCDirection[i][j])
+            #~ if j == 2:
+              #~ if i < number_of_PrimaryChordae_NeumannPoints-1:
+                #~ nBCPointsString += ";"
+                #~ nBCDirectionString += ";"
+            #~ else:
+              #~ nBCPointsString += ","
+              #~ nBCDirectionString += ","
+    
+    # convert arrays to strings -------------------------------------------- --------------- START OF NEWLY ADDED VERSION.
+    nBCPointsString = ""
+    nBCDirectionString = ""
+    
+    # first, we set up the string for the chordae attachment points on the anterior leaflet
+    for i in range(numberOfAntPrimaryAttachmentPts):
+      # get the coordinates of the current attachment point and store them in a Numpy array
+      pt = valve3Dsurface_.GetPoint(antPrimaryAttachmentIds.GetId(i))
+      attachmentPoint = np.array(pt)
+      direction = antPapillaryMuscle - attachmentPoint
+        
+      for j in range(3):
+        nBCPointsString += str(attachmentPoint[j])
+        nBCDirectionString += str(direction[j])
+        
+        if j == 2:
+          nBCPointsString += ";"
+          nBCDirectionString += ";"
+        else:
+          nBCPointsString += ","
+          nBCDirectionString += ","
+    
+    # second, we set up the string for the chordae attachment points on the posterior leaflet
+    for i in range(numberOfPostPrimaryAttachmentPts):
+      # get the coordinates of the current attachment point and store them in a Numpy array
+      pt = valve3Dsurface_.GetPoint(postPrimaryAttachmentIds.GetId(i))
+      attachmentPoint = np.array(pt)
+      direction = postPapillaryMuscle - attachmentPoint
+      
+      for j in range(3):
+        nBCPointsString += str(attachmentPoint[j])
+        nBCDirectionString += str(direction[j])
+        
+        if j == 2:
+          if i < numberOfPostPrimaryAttachmentPts - 1:
+            nBCPointsString += ";"
+            nBCDirectionString += ";"
+        else:
+          nBCPointsString += ","
+          nBCDirectionString += ","
+    
+    debug('XML output preparation: DONE.')
+    # -------------------------------------------- --------------- END OF NEWLY ADDED VERSION.
+    
+    # Write BC data to XML file --------------------------------------------
+    # build a tree structure
+    
+    root = ET.Element("Param")
+    BCData = ET.SubElement(root, "BCData")
+    NeumannForceBCs = ET.SubElement(BCData, "NeumannForceBCs")
+    
+    NumberOfNeumannForceBCs = ET.SubElement(NeumannForceBCs, "NumberOfNeumannForceBCs")
+    NumberOfNeumannForceBCs.text = str(number_of_PrimaryChordae_NeumannPoints)
+    
+    nBCPoints = ET.SubElement(NeumannForceBCs, "nBCPoints")
+    nBCPoints.text = nBCPointsString
+    
+    nBCForce_ScaleAndDirection = ET.SubElement(NeumannForceBCs, "nBCForce_ScaleAndDirection")
+    nBCForce_ScaleAndDirection.text = nBCDirectionString
+    
+    # wrap it in an ElementTree instance, and save as XML
+    tree = ET.ElementTree(root)
+    tree.write(target)
+    
+    debug("Writing mvrSimNeumBCdata.xml output file")
+    
     # ======================================================================
-    # Compute von Mises stress
-    calc = vtk.vtkArrayCalculator()
-    calc.SetInput(derivative.GetOutput())
-    calc.SetAttributeModeToUseCellData()
-    calc.AddScalarVariable('Strain_0', 'Strain', 0)
-    calc.AddScalarVariable('Strain_1', 'Strain', 1)
-    calc.AddScalarVariable('Strain_2', 'Strain', 2)
-    calc.AddScalarVariable('Strain_3', 'Strain', 3)
-    calc.AddScalarVariable('Strain_4', 'Strain', 4)
-    calc.AddScalarVariable('Strain_5', 'Strain', 5)
-    calc.AddScalarVariable('Strain_6', 'Strain', 6)
-    calc.AddScalarVariable('Strain_7', 'Strain', 7)
-    calc.AddScalarVariable('Strain_8', 'Strain', 8)
-    calc.SetFunction(
-        'sqrt( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8))^2 - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*700*Strain_3)^2 + (2*700*Strain_6)^2 + (2*700*Strain_7)^2) )')
-    calc.SetResultArrayName('vonMisesStress_forMV_mu700_lambda28466')
-    calc.Update()
+    
+    return points, forces   # NOTE @ 2016-01-10: this is still to be fully adjusted/MSMLalized.
 
-    debug("Computation of displacement vectors, Cauchy strain and vom Mises stress")
 
+def von_mises_stress_evaluator(path_to_sim_results, matParam_Lambda, matParam_Mu, target="SimResults_with_vMstressVis"):
+    """
+    .. explanations::
+    This python script evaluates the von Mises stress distribution
+    preferably for mitral valve leaflets tissue:
+    
+    The script needs the following input:
+    - a (series of) vtu/pvtu file(s), which contains 3 scalar-valued arrays 
+      named {'u0', 'u1', 'u2'} as PointData.
+     
+    Using the arrays specified above, the program computes the 
+    displacement vector, the strain tensor and the von Mises stress 
+    for material parameters \lambda={28466-40666-56933} and \mu={700-1000-1400}, 
+    which corresponds to mitral valve leaflets tissue (according to [Mansi-2012]).
+    Furthermore, the displacement vector will be added to the given 
+    coordinates of the points.
+     
+    The output is the following:
+     - a (series of) vtu file(s) that contains all the data of the
+       original file, however with modified coordinates of the points and the 
+       displacement vector as additional PointData and the strain tensor 
+       along with the von Mises stress distribution as additional CellData.
+    
+    .. execution command::
+        To run the script outside the MSML, call:
+        $ python vMStress.py <path_to_(series_of)_inputfile(s)> <lambda> <mu>
+    
+    .. authors::
+        * Nicolai Schoch, EMCL; 2015-06-26.
+
+    :param path_to_sim_results: the path to the directory containing the HiFlow3 MVR simulation results (pvtu and vtu files).
+    :param matParam_Lambda: Lame constant \lambda
+    :param matParam_Mu: Lame constant \mu
+    :param target: SimResults_with_vMstressVis
+    :return: ???????? new set of files containing the HiFlow3 MVR simulation results (vtu files) including the von Mises Stress distribution data.
+    """
+    
     # ======================================================================
-    # Define dummy variable; get output of calc filter
-    dummy = calc.GetOutput()
-
-    # Get point data arrays u0, u1 and u2
-    pointData_u0 = dummy.GetPointData().GetArray('u0')
-    pointData_u1 = dummy.GetPointData().GetArray('u1')
-    pointData_u2 = dummy.GetPointData().GetArray('u2')
-
-    # Set scalars
-    dummy.GetPointData().SetScalars(pointData_u0)
-
+    debug("=== Execute Python script to evaluate the von Mises Stress distribution on the HiFlow3 MVR Simulation results. ===")
+    
     # ======================================================================
-    # Warp by scalar u0
-    warpScalar = vtk.vtkWarpScalar()
-    warpScalar.SetInput(dummy)
-    warpScalar.SetNormal(1.0, 0.0, 0.0)
-    warpScalar.SetScaleFactor(1.0)
-    warpScalar.SetUseNormal(1)
-    warpScalar.Update()
-
-    # Get output and set scalars
-    dummy = warpScalar.GetOutput()
-    dummy.GetPointData().SetScalars(pointData_u1)
-
+    # Get path/directory of simulation results, and set path combined with datatype:
+    path = path_to_sim_results
+    path_and_datatype = path + '*.pvtu'
+    
+    debug("  - ATTENTION: output path_and_datatype in VonMisesStress-Evaluator: %s", path_and_datatype)
+    
+    
+    # Get set of files to be processed by vMStress-Evaluator-Script:
+    files_to_be_iterated_over = glob.glob(path_and_datatype)
+    
+    debug("The following list contains the files to be iterated over by the vonMisesStressEvaluator-Operator: %s", files_to_be_iterated_over)
+    
+    # Get material parameters:
+    matParamMVtissue_Lambda = float(matParam_Lambda)
+    matParamMVtissue_Mu = float(matParam_Mu)
+    
     # ======================================================================
-    # Warp by scalar u1
-    warpScalar = vtk.vtkWarpScalar()
-    warpScalar.SetInput(dummy)
-    warpScalar.SetNormal(0.0, 1.0, 0.0)
-    warpScalar.SetScaleFactor(1.0)
-    warpScalar.SetUseNormal(1)
-    warpScalar.Update()
-
-    # Get output and set scalars
-    dummy = warpScalar.GetOutput()
-    dummy.GetPointData().SetScalars(pointData_u2)
-
+    # Iterate over all pvtu-files in SimResults-directory and evaluate vonMises-Stress:
+    for i in range(0,len(files_to_be_iterated_over)):
+        
+        # Get path and name of inputfile:
+        inputfilename = files_to_be_iterated_over[i]
+        
+        # Get path and name of outputfile:
+        if inputfilename[-4] == 'p':
+          outputfilename = inputfilename[:-5] + '_outVis.vtu'
+        else:
+          #outputfilename = 'outVis_' + inputfilename
+          print ('ERROR: THIS CASE IS NOT ALLOWED! PLEASE PROVIDE PVTU-FILES INSTEAD OF VTU-FILES.')
+        
+        debug("  - vMstress-iteration: - current outputfilename: %s", outputfilename)
+        
+        # Read (p)vtu file
+        if inputfilename[-4] == 'p':
+          reader = vtk.vtkXMLPUnstructuredGridReader()
+          reader.SetFileName(inputfilename)
+          reader.Update()
+        else:
+          print ('ERROR: THIS CASE IS NOT ALLOWED! PLEASE PROVIDE PVTU-FILES.')
+          reader = vtk.vtkXMLUnstructuredGridReader()
+          reader.SetFileName(inputfilename)
+          reader.Update()
+        
+        grid = reader.GetOutput()
+        
+        
+        # Get point data arrays u0, u1 and u2
+        u0 = grid.GetPointData().GetArray('u0')
+        u1 = grid.GetPointData().GetArray('u1')
+        u2 = grid.GetPointData().GetArray('u2')
+        
+        # Set scalars
+        grid.GetPointData().SetScalars(u0)
+        
+        # Warp by scalar u0
+        warpScalar = vtk.vtkWarpScalar()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          warpScalar.SetInputData(grid)
+        else:
+          warpScalar.SetInput(grid)
+        warpScalar.SetNormal(1.0,0.0,0.0)
+        warpScalar.SetScaleFactor(1.0)
+        warpScalar.SetUseNormal(1)
+        warpScalar.Update()
+        
+        # Get output and set scalars
+        grid = warpScalar.GetOutput()
+        grid.GetPointData().SetScalars(u1)
+        
+        # Warp by scalar u1
+        warpScalar = vtk.vtkWarpScalar()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          warpScalar.SetInputData(grid)
+        else:
+          warpScalar.SetInput(grid)
+        warpScalar.SetNormal(0.0,1.0,0.0)
+        warpScalar.SetScaleFactor(1.0)
+        warpScalar.SetUseNormal(1)
+        warpScalar.Update()
+        
+        # Get output and set scalars
+        grid = warpScalar.GetOutput()
+        grid.GetPointData().SetScalars(u2)
+        
+        # Warp by scalar u2
+        warpScalar = vtk.vtkWarpScalar()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          warpScalar.SetInputData(grid)
+        else:
+          warpScalar.SetInput(grid)
+        warpScalar.SetNormal(0.0,0.0,1.0)
+        warpScalar.SetScaleFactor(1.0)
+        warpScalar.SetUseNormal(1)
+        warpScalar.Update()
+        
+        # Get ouput and add point data arrays that were deleted before
+        grid = warpScalar.GetOutput()
+        grid.GetPointData().AddArray(u0)
+        grid.GetPointData().AddArray(u1)
+        grid.GetPointData().AddArray(u2)
+        
+        debug("  - vMstress-iteration: - Warping of simulation results for current file: DONE.")
+        
+        # Compute displacement vector
+        calc = vtk.vtkArrayCalculator()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          calc.SetInputData(grid)
+        else:
+          calc.SetInput(grid)
+        calc.SetAttributeModeToUsePointData()
+        calc.AddScalarVariable('x', 'u0', 0)
+        calc.AddScalarVariable('y', 'u1', 0)
+        calc.AddScalarVariable('z', 'u2', 0)
+        calc.SetFunction('x*iHat+y*jHat+z*kHat')
+        calc.SetResultArrayName('DisplacementSolutionVector')
+        calc.Update()
+        
+        
+        # Compute strain tensor
+        derivative = vtk.vtkCellDerivatives()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          derivative.SetInputData(calc.GetOutput())
+        else:
+          derivative.SetInput(calc.GetOutput())
+        derivative.SetTensorModeToComputeStrain()
+        derivative.Update()
+        
+        
+        # Compute von Mises stress
+        calc = vtk.vtkArrayCalculator()
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          calc.SetInputData(derivative.GetOutput())
+        else:
+          calc.SetInput(derivative.GetOutput())
+        calc.SetAttributeModeToUseCellData()
+        calc.AddScalarVariable('Strain_0', 'Strain', 0)
+        calc.AddScalarVariable('Strain_1', 'Strain', 1)
+        calc.AddScalarVariable('Strain_2', 'Strain', 2)
+        calc.AddScalarVariable('Strain_3', 'Strain', 3)
+        calc.AddScalarVariable('Strain_4', 'Strain', 4)
+        calc.AddScalarVariable('Strain_5', 'Strain', 5)
+        calc.AddScalarVariable('Strain_6', 'Strain', 6)
+        calc.AddScalarVariable('Strain_7', 'Strain', 7)
+        calc.AddScalarVariable('Strain_8', 'Strain', 8)
+        
+        #calc.SetFunction('sqrt( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))^2 + (2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8))^2 + (2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8))^2 - ( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8)) ) - ( (2*1400*Strain_0 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8)) ) - ( (2*1400*Strain_4 + 56933*(Strain_0+Strain_4+Strain_8))*(2*1400*Strain_8 + 56933*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*1400*Strain_3)^2 + (2*1400*Strain_6)^2 + (2*1400*Strain_7)^2) )') # DEPRECATED.
+        vMstressFunction_string = 'sqrt( (2*' + matParamMVtissue_Mu_string + '*Strain_0 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_4 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_8 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))^2 - ( (2*' + matParamMVtissue_Mu_string + '*Strain_0 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))*(2*' + matParamMVtissue_Mu_string + '*Strain_4 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8)) ) - ( (2*' + matParamMVtissue_Mu_string + '*Strain_0 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))*(2*' + matParamMVtissue_Mu_string + '*Strain_8 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8)) ) - ( (2*' + matParamMVtissue_Mu_string + '*Strain_4 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8))*(2*' + matParamMVtissue_Mu_string + '*Strain_8 + ' + matParamMVtissue_Lambda_string + '*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*' + matParamMVtissue_Mu_string + '*Strain_3)^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_6)^2 + (2*' + matParamMVtissue_Mu_string + '*Strain_7)^2) )'
+        calc.SetFunction(vMstressFunction_string)
+        
+        #calc.SetResultArrayName('vonMisesStress_forMV_mu1400_lambda56933') # DEPRECATED.
+        vMstressArrayName_string = 'vonMisesStress_forMV_lambda' + matParamMVtissue_Lambda_string + '_mu' + matParamMVtissue_Mu_string
+        calc.SetResultArrayName(vMstressArrayName_string)
+        
+        calc.Update()
+        
+        grid = calc.GetOutput()
+        
+        debug("  - vMstress-iteration: - Computation of displacement vectors, Cauchy strain and vom Mises stress for current file: DONE.")
+        
+        # Write output to vtu
+        writer = vtk.vtkXMLUnstructuredGridWriter()
+        writer.SetDataModeToAscii()
+        writer.SetFileName(outputfilename)
+        if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
+          writer.SetInputData(grid)
+        else:
+          writer.SetInput(grid)
+        writer.Write()
+        
+        debug("  - vMstress-iteration: - Writing Extended VTU incl. von Mises Stress information for current file: DONE.")
+        # ----------------------------------------------------------------------
+    
     # ======================================================================
-    # Warp by scalar u2
-    warpScalar = vtk.vtkWarpScalar()
-    warpScalar.SetInput(dummy)
-    warpScalar.SetNormal(0.0, 0.0, 1.0)
-    warpScalar.SetScaleFactor(1.0)
-    warpScalar.SetUseNormal(1)
-    warpScalar.Update()
-
-    # Get ouput and add point data arrays that got deleted earlier
-    dummy = warpScalar.GetOutput()
-    dummy.GetPointData().AddArray(pointData_u0)
-    dummy.GetPointData().AddArray(pointData_u1)
-
+    debug("Von Mises Stress computation: DONE for all files.")
+    
+#    # ======================================================================
+#    # Read file
+#    polydata = read_polydata(volume_mesh)
+#
+#    # ======================================================================
+#    # Compute displacement vector
+#    calc = vtk.vtkArrayCalculator()
+#    calc.SetInput(polydata)
+#    calc.SetAttributeModeToUsePointData()
+#    calc.AddScalarVariable('x', 'u0', 0)
+#    calc.AddScalarVariable('y', 'u1', 0)
+#    calc.AddScalarVariable('z', 'u2', 0)
+#    calc.SetFunction('x*iHat+y*jHat+z*kHat')
+#    calc.SetResultArrayName('DisplacementSolutionVector')
+#    calc.Update()
+#
+#    # ======================================================================
+#    # Compute strain tensor
+#    derivative = vtk.vtkCellDerivatives()
+#    derivative.SetInput(calc.GetOutput())
+#    derivative.SetTensorModeToComputeStrain()
+#    derivative.Update()
+#
+#    # ======================================================================
+#    # Compute von Mises stress
+#    calc = vtk.vtkArrayCalculator()
+#    calc.SetInput(derivative.GetOutput())
+#    calc.SetAttributeModeToUseCellData()
+#    calc.AddScalarVariable('Strain_0', 'Strain', 0)
+#    calc.AddScalarVariable('Strain_1', 'Strain', 1)
+#    calc.AddScalarVariable('Strain_2', 'Strain', 2)
+#    calc.AddScalarVariable('Strain_3', 'Strain', 3)
+#    calc.AddScalarVariable('Strain_4', 'Strain', 4)
+#    calc.AddScalarVariable('Strain_5', 'Strain', 5)
+#    calc.AddScalarVariable('Strain_6', 'Strain', 6)
+#    calc.AddScalarVariable('Strain_7', 'Strain', 7)
+#    calc.AddScalarVariable('Strain_8', 'Strain', 8)
+#    calc.SetFunction(
+#        'sqrt( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))^2 + (2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8))^2 - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_0 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) - ( (2*700*Strain_4 + 28466*(Strain_0+Strain_4+Strain_8))*(2*700*Strain_8 + 28466*(Strain_0+Strain_4+Strain_8)) ) + 3 * ((2*700*Strain_3)^2 + (2*700*Strain_6)^2 + (2*700*Strain_7)^2) )')
+#    calc.SetResultArrayName('vonMisesStress_forMV_mu700_lambda28466')
+#    calc.Update()
+#
+#    debug("Computation of displacement vectors, Cauchy strain and vom Mises stress")
+#
+#    # ======================================================================
+#    # Define dummy variable; get output of calc filter
+#    dummy = calc.GetOutput()
+#
+#    # Get point data arrays u0, u1 and u2
+#    pointData_u0 = dummy.GetPointData().GetArray('u0')
+#    pointData_u1 = dummy.GetPointData().GetArray('u1')
+#    pointData_u2 = dummy.GetPointData().GetArray('u2')
+#
+#    # Set scalars
+#    dummy.GetPointData().SetScalars(pointData_u0)
+#
+#    # ======================================================================
+#    # Warp by scalar u0
+#    warpScalar = vtk.vtkWarpScalar()
+#    warpScalar.SetInput(dummy)
+#    warpScalar.SetNormal(1.0, 0.0, 0.0)
+#    warpScalar.SetScaleFactor(1.0)
+#    warpScalar.SetUseNormal(1)
+#    warpScalar.Update()
+#
+#    # Get output and set scalars
+#    dummy = warpScalar.GetOutput()
+#    dummy.GetPointData().SetScalars(pointData_u1)
+#
+#    # ======================================================================
+#    # Warp by scalar u1
+#    warpScalar = vtk.vtkWarpScalar()
+#    warpScalar.SetInput(dummy)
+#    warpScalar.SetNormal(0.0, 1.0, 0.0)
+#    warpScalar.SetScaleFactor(1.0)
+#    warpScalar.SetUseNormal(1)
+#    warpScalar.Update()
+#
+#    # Get output and set scalars
+#    dummy = warpScalar.GetOutput()
+#    dummy.GetPointData().SetScalars(pointData_u2)
+#
+#    # ======================================================================
+#    # Warp by scalar u2
+#    warpScalar = vtk.vtkWarpScalar()
+#    warpScalar.SetInput(dummy)
+#    warpScalar.SetNormal(0.0, 0.0, 1.0)
+#    warpScalar.SetScaleFactor(1.0)
+#    warpScalar.SetUseNormal(1)
+#    warpScalar.Update()
+#
+#    # Get ouput and add point data arrays that got deleted earlier
+#    dummy = warpScalar.GetOutput()
+#    dummy.GetPointData().AddArray(pointData_u0)
+#    dummy.GetPointData().AddArray(pointData_u1)
+#
+#    # ======================================================================
+#    # Write output to vtu
+#
+#    write_vtu(dummy, target)
+#
+#    # ======================================================================
+#    debug("Writing Extended VTU incl. von Mises Stress information")
+    
     # ======================================================================
-    # Write output to vtu
-
-    write_vtu(dummy, target)
-
+    debug("Von Mises Stress computation: DONE for all files.")
+    #write_vtu(dummy, target)
+    #debug("Von Mises Stress computation: DONE. Writing target: DONE.")
     # ======================================================================
-    debug("Writing Extended VTU incl. von Mises Stress information")
+
+
+def isElementOfList(a, myList):
+    """auxiliary function for BCdataExtender.
+    returns 1 if the integer a is an element of the list myList
+    returns 0 otherwise
+    """
+    for elem in myList:
+        if elem == a:
+          return 1
+    
+    return 0
+
+
+def findMaximalElement(myList):
+    """auxiliary function for BCdataExtender.
+    returns index of maximal element of myList
+    """
+    index = 0
+    maxElement = myList[index]
+    
+    for i in range(len(myList)):
+        if myList[i] > maxElement:
+          maxElement = myList[i]
+          index = i
+    
+    return index
+
+
+def kCenterCluster(k, pointSet, polydata):
+    """auxiliary function for BCdataExtender.
+    implementation:
+       k-center clustering algorithm:
+       according to lecture notes of Prof. Schnoerr, HCI, IWR, Heidelberg University.
+    input: 
+       integer k, vtkIdList of point ids, polydata that contains the points
+    output: 
+       vtkIdList centerSet, 2-approximation to the solution of the k-center clustering problem using Euclidean distance
+    """
+    
+    # init math object to compute distance of points
+    math = vtk.vtkMath()
+    
+    # initialize center set 
+    centerSet = vtk.vtkIdList()
+    
+    # pick an arbitrary point c_1 in pointSet and add c_1 to centerSet
+    centerSet.InsertNextId(pointSet.GetId(0))
+    
+    # compute the distance of all points to the center set
+    # init array that contains distance for each point in pointSet to the center set
+    distanceToCenterSet = []
+    
+    for i in range(pointSet.GetNumberOfIds()):
+        distanceToCenterSet.append(math.Distance2BetweenPoints(polydata.GetPoint(pointSet.GetId(i)), polydata.GetPoint(centerSet.GetId(0))))
+    
+    while int(centerSet.GetNumberOfIds()) < k:
+        
+        # find maximal element of list distanceToCenterSet
+        # this is a new center
+        newCenterIndex = findMaximalElement(distanceToCenterSet)
+        
+        # add the new center point to the center set
+        newCenterId = pointSet.GetId(newCenterIndex)
+        centerSet.InsertNextId(newCenterId)
+        
+        # update the list distanceToCenterSet
+        for i in range(pointSet.GetNumberOfIds()):
+            
+            currentPointId = pointSet.GetId(i)
+            currentDistance = math.Distance2BetweenPoints(polydata.GetPoint(newCenterId), polydata.GetPoint(currentPointId))
+            
+            if distanceToCenterSet[i] > currentDistance:
+              distanceToCenterSet[i] = currentDistance
+    
+    return centerSet
 
 
 def get_surface_normals(surface):
-    """returns the normal vectors for a surface
+    """returns the normal vectors for a surface (DEPRECATED VTU-2-HF3-INP-MatID-Setter HELPER FUNCTION)
 
     :param surface:
     :type surface:
@@ -388,7 +1423,8 @@ def get_surface_normals(surface):
 
 
 def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf3InpInfo.inp"):
-    """Given `volume_mesh` and `surface_mesh`
+    """Given `volume_mesh` and `surface_mesh` 
+       this script produces a hf3-inp-file suitable for a HiFlow3-based MVR-simulation.
 
     The coordinates of the vertices, the connectivity information of the
     3D cells and 2D boundary faces will be written to the hf3-inp-file.
@@ -400,7 +1436,7 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
       - downside surfaces: matID 20.
 
 
-    .. todo:: documentation
+    .. documentation:: see documentation in EMCL-Preprint No.2015.2 (in progress).
 
     :param volume_mesh:
         a 3D unstructured grid (vtu file) representation of the MV segmentation (e.g. by CGAL meshing operator,
@@ -411,18 +1447,20 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
 
     :param surface_mesh:
         a 2D polydata surface representation of the MV segmentation, which additionally contains matID-information
-        on the MV leaflets and annulus points, this script produces a hf3-inp-file suitable for a HiFlow3-based MVR-simulation.
+        on the MV leaflets and annulus points.
 
     :type surface_mesh: vtk.vtkPolyData
 
     :return: (facets, facet_matIDs, tets, tet_matIDs) # actually not correct yet...?!
 
-    ..note::
-        The result of this script is NOT DETERMINISTIC! This means that it requires
-        human assessment of the suitability of the results for the simulation algorithm.
+     ..note::
+        It is important that the surface cells (facets of boundary cells) in the vtu-file 
+        have an odd number of vertices (i.e. are triangles contained in tetrahedra),
+        and that the surface cells in the vtp-file have an odd number of vertices (i.e. are triangles).
 
     .. note::
-        This version of the script uses CellNormals (as opposed to PointNormals).
+        This version of the script uses HalfSpaces (as opposed to CellNormals or PointNormals, 
+        which produced non-deterministic results, and hence required subsequent human assessment).
 
     .. note::
         In order to avoid 'blurry' matID-distribution around the interface between
@@ -434,134 +1472,179 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
             Nicolai Schoch, EMCL; 2015-04-12.
             Alexander Weigl, KIT; 2015-04-19.
             Nicolai Schoch, EMCL; 2015-05-05.
+            Nicolai Schoch, EMCL; 2015-06-10.
 
     """
 
     # ======================================================================
     # Define matIDs --------------------------------------------------------
-
-    ID_UP = 21  # preliminary result, which gets overwritten by ID_ANT and ID_POST.
     ID_DOWN = 20
     ID_ANT = 17
     ID_POST = 18
 
-
     # ======================================================================
     # read in files: -------------------------------------------------------
     # read in 3d valve
-    # NOTE: ensure that the precedent meshing algorithm (CGAL or similar)
+    # NOTE: when using Cell/PointNormals-based script version, do ensure 
+    # that the precedent meshing algorithm (CGAL or similar)
     # produces consistent/good results w.r.t. the 'normal glyphs'.
 
-    valve3d_ = read_ugrid(volume_mesh)
+    valve3DvolumeMesh = read_ugrid(volume_mesh)
 
-    # get surface mesh of valve3d_
-    valve3dSurface_ = get_surface(valve3d_)
+    # get surface mesh of valve3DvolumeMesh
+    valve3Dsurface = get_surface(valve3DvolumeMesh)
 
     # get cell normals
-    normalsSurfaceRetrieved_ = get_surface_normals(valve3dSurface_)
+    #normalsSurfaceRetrieved_ = get_surface_normals(valve3Dsurface) # not needed in HalfSpace-based script version.
 
     # read in 2d valve
-    valve2d_ = read_polydata(surface_mesh)
+    valve2Dsurface = read_polydata(surface_mesh)
 
     # get cell normals
-    normalsValve2d_ = vtk.vtkPolyDataNormals()
+    #normalsValve2DsurfaceRetrieved = get_surface_normals(valve2Dsurface) # by Alexander. WRONG.
+    normalsFilter = vtk.vtkPolyDataNormals()
     if vtk.vtkVersion().GetVTKMajorVersion() >= 6:
-        normalsValve2d_.SetInputData(valve2d_)
+        normalsFilter.SetInputData(valve2Dsurface)
     else:
-        normalsValve2d_.SetInput(valve2d_)
-    normalsValve2d_.SplittingOn()
-    normalsValve2d_.ConsistencyOn()
-    normalsValve2d_.ComputePointNormalsOff() # adapt here.
-    normalsValve2d_.ComputeCellNormalsOn()
-    normalsValve2d_.FlipNormalsOff()
-    normalsValve2d_.NonManifoldTraversalOn()
-    normalsValve2d_.Update()
+        normalsFilter.SetInput(valve2Dsurface)
+    normalsFilter.SplittingOn()
+    normalsFilter.ConsistencyOn()  # such that on a surface the normals are oriented either 'all' outward OR 'all' inward.
+    #normalsFilter.AutoOrientNormalsOn()  # such that normals point outward or inward. WRONG.
+    normalsFilter.ComputePointNormalsOff() # adapt here.
+    normalsFilter.ComputeCellNormalsOn() # adapt here.
+    normalsFilter.FlipNormalsOff()
+    normalsFilter.NonManifoldTraversalOn()
+    normalsFilter.Update()
     
-    normalsValve2dRetrieved_ = normalsValve2d_.GetOutput().GetCellData().GetNormals() # adapt here.
+    normalsValve2DsurfaceRetrieved = normalsFilter.GetOutput().GetCellData().GetNormals() # adapt here.
     
-    # normalsValve2dRetrieved_ = get_surface_normals(valve2d_) # by Alexander.
+    # ---------------------------------------------------------------------------
+    # CLASSIFICATION OF CELLS W.R.T. UPPER AND LOWER SIDE OF THE VALVE'S SURFACE.
+    # ---------------------------------------------------------------------------
 
     # ======================================================================
     # initialize cell locator for closest cell search ----------------------
     # (using vtk methods, that find the closest point in a grid for an arbitrary point in R^3)
-
     cellLocator = vtk.vtkCellLocator()
-    cellLocator.SetDataSet(valve2d_)
+    cellLocator.SetDataSet(valve2Dsurface)
     cellLocator.BuildLocator()
-
-    # ======================================================================
-    # allocate memory for cell_udlr_list_ (up-down-left-right) -------------
-    # cell_udlr_list_ = [0] * valve3dSurface_.GetNumberOfCells() # by Alexander
-    cell_udlr_list_ = [0 for i in range(valve3dSurface_.GetNumberOfCells())] # by Nico
-
-    # ======================================================================
-    # iterate over the cells of the surface and compare normals ------------
-    for i in range(valve3dSurface_.GetNumberOfCells()):
+    
+    # init plane object
+    plane = vtk.vtkPlane()
+    
+    # allocate memory for upLowCells with the following entries:
+    # "1" if cell is on the upper side, and
+    # "0" if cell is on the lower side.
+    upLowCells = [0 for i in range(valve3Dsurface.GetNumberOfCells())]
+    
+    # find cells on upper and lower side of the valve's surface
+    # iterate over the cells of the surface and compare normals
+    for i in range(valve3Dsurface.GetNumberOfCells()):
+        
         # get cellId of closest point
-        point_id = valve3dSurface_.GetCell(i).GetPointId(0)  # NOTE: only one (test)point (0) of respective cell
-        testPoint = valve3dSurface_.GetPoint(point_id)
-        closestPoint = np.zeros(3)
-        closestPointDist2 = vtk.mutable(0)
-        cellId = vtk.mutable(0)
-        subId = vtk.mutable(0)
-        cellLocator.FindClosestPoint(testPoint, closestPoint, cellId, subId, closestPointDist2)
+        cell = valve3Dsurface.GetCell(i) # get the current cell
+        
+        upLowIndicator = 0 # if a cell's vertex is on the upper side then add 1 otherwise add -1. After the following iteration, if the indicator is negative the cell will be classified as a cell on the lower side, otherwise it will be classified as a cell on the upper side.
+        # NOTE: it is important that the cells on the surface have an odd number of vertices (i.e. are represented by triangle-facets of the tetrahedra in the vtu-file).
+        
+        # iterate over the cell's vertices
+        for j in range(cell.GetNumberOfPoints()):
+            pointId = cell.GetPointId(j) # get a vertex id of the current cell
+            point = valve3Dsurface.GetPoint(pointId) # get the coordinates of the vertex
+            
+            closestPoint = [0., 0., 0.] # will contain coordinates of a closest point on valve2d
+            closestPointDist2 = vtk.mutable(0) # will contain the squared Euclidean distance from point to closestPoint
+            cellId = vtk.mutable(0) # will contain ID of a cell that contains closestPoint
+            subId = vtk.mutable(0) # only needed for the function, besides that it has no use 
+            cellLocator.FindClosestPoint(point, closestPoint, cellId, subId, closestPointDist2) # find a closest point and a cell that contains that point
+            
+            cellNormal = [0., 0., 0.] # will be normal of cell with id cellId (defined above)
+            normalsValve2DsurfaceRetrieved.GetTuple(cellId, cellNormal) # get the normal
+            
+            # modify upLowIndicator w.r.t. the point's position
+            if plane.Evaluate(cellNormal, closestPoint, point) > 0.:
+              upLowIndicator += 1
+            else:
+              upLowIndicator -= 1
+            
+        # update list
+        if upLowIndicator > 0:
+          upLowCells[i] = 1
 
-        normalSurf_ = np.zeros(3)
-        normalsSurfaceRetrieved_.GetTuple(i, normalSurf_)
-
-        normalV2d_ = np.zeros(3)
-        normalsValve2dRetrieved_.GetTuple(cellId, normalV2d_)
-
-        # set cell_udlr_list_ entry to (preliminary) "1", if cell is on upper side of leaflet
-        if np.dot(normalSurf_, normalV2d_) > 0.0:
-            cell_udlr_list_[i] = 1  # NOTE: "cell_udlr_list_[i] = 1" means "cell on upside".
+    # ---------------------------------------------------------------------------
+    # CLASSIFICATION OF CELLS W.R.T. ANTERIOR AND POSTERIOR LEAFLET 
+    # ON UPPER SIDE OF THE VALVE'S SURFACE.
+    # ---------------------------------------------------------------------------
 
     # ======================================================================
-    # iterate over cells on the upper side of the leaflet surface, and set ids for left/right ------------------
+    # initialize search tree:
     kDTree = vtk.vtkKdTreePointLocator()
-    kDTree.SetDataSet(valve2d_)
+    kDTree.SetDataSet(valve2Dsurface)
     kDTree.BuildLocator()
 
-    VertexIDs_ = valve2d_.GetPointData().GetArray('VertexIDs')
+    valve2DsurfaceVertexIDs = valve2Dsurface.GetPointData().GetArray('VertexIDs')
 
-    # allocate memory for upCellList_ (indicating if cell is on left/right side)
-    upCellList_ = [i for i in range(valve3dSurface_.GetNumberOfCells()) if cell_udlr_list_[i]]
-
-    for i in upCellList_:
-        point_id = valve3dSurface_.GetCell(i).GetPointId(0)
-        testPoint = valve3dSurface_.GetPoint(point_id)
-        result_ = vtk.vtkIdList()
-        counter = 1
-        cond_ = True
-        while cond_:
-            kDTree.FindClosestNPoints(counter, testPoint, result_)
-            for j in range(result_.GetNumberOfIds()):
-                iD2 = result_.GetId(j)
-                if int(VertexIDs_.GetTuple1(iD2)) == ID_ANT:
-                    cond_ = False
-                    cell_udlr_list_[i] = 2  # NOTE: "cell_udlr_list_[i] = 2" means "cell on ANT upside".
-                if int(VertexIDs_.GetTuple1(iD2)) == ID_POST:
-                    cond_ = False
-                    cell_udlr_list_[i] = 3  # NOTE: "cell_udlr_list_[i] = 3" means "cell on POST upside".
-            counter += 1
+    # allocate memory for upCellList (indicating if cell is on left/right side)
+    upCellList = [i for i in range(valve3Dsurface.GetNumberOfCells()) if upLowCells[i]]
+    
+    # iterate over cells on the upper side of the leaflet surface, and set ids for anterior/posterior
+    for i in upCellList:
+        
+        cell = valve3Dsurface.GetCell(i)
+        
+        antPostIndicator = 0 # if a cell's vertex is on the anterior side then add 1 otherwise add -1. After the following iteration, if the indicator is negative the cell will be classified as a cell on the posterior side, otherwise it will be classified as a cell on the anterior side.
+        # NOTE: it is important that the cells on the surface have an odd number of vertices (i.e. are represented by triangles in the vtp-file).
+        
+        # iterate over the cell's vertices
+        for j in range(cell.GetNumberOfPoints()):
+            
+            pointId = cell.GetPointId(j)
+            point = valve3Dsurface.GetPoint(pointId)
+            
+            closestNPoints = vtk.vtkIdList() # will contain ids of the closest N points
+            N = 1 # the 'N' from above
+            pointNotClassified = True
+            
+            # iterate until point is classified
+            while pointNotClassified:
+              
+              kDTree.FindClosestNPoints(N, point, closestNPoints)
+              
+              for k in range(closestNPoints.GetNumberOfIds()):
+                closestPointId = closestNPoints.GetId(k)
+                
+                if int(valve2DsurfaceVertexIDs.GetTuple1(closestPointId)) == ID_ANT:
+                  pointNotClassified = False
+                  antPostIndicator += 1
+                
+                if int(valve2DsurfaceVertexIDs.GetTuple1(closestPointId)) == ID_POST:
+                  pointNotClassified = False
+                  antPostIndicator -= 1
+              
+              N += 1
+        
+        # update list upLowCells
+        if antPostIndicator > 0:
+          upLowCells[i] = 2 # "2" stands for 'cell is on anterior upper side'
+        else:
+          upLowCells[i] = 3 # "3" stands for 'cell is on posterior upper side'
 
     debug("Computing hf3-inp MV matID information: DONE.")
 
     # ======================================================================
     # region write results to inp file
 
-    material_ids = list() # NOT NEEDED.
     points = list() # WRONG! # This actually is facets !!!!!
 
     with  open(target, 'w') as f:
         # write first line
         f.write("%d %d 0 0 0\n" % (
-            valve3d_.GetNumberOfPoints(),
-            valve3dSurface_.GetNumberOfCells() + valve3d_.GetNumberOfCells()))
+            valve3DvolumeMesh.GetNumberOfPoints(),
+            valve3Dsurface.GetNumberOfCells() + valve3DvolumeMesh.GetNumberOfCells()))
 
         # write point coordinates
-        for i in range(valve3d_.GetNumberOfPoints()):
-            pt = valve3d_.GetPoint(i)
+        for i in range(valve3DvolumeMesh.GetNumberOfPoints()):
+            pt = valve3DvolumeMesh.GetPoint(i)
             f.write(str(i) + ' ' + str(pt[0]) + ' ' + str(pt[1]) + ' ' + str(pt[2])) # NEW BY NICO.
             # f.write(' '.join(str(pt)))                                             # changed by Alexander, but does not work? or does it?
             f.write("\n") # changed by Alexander # NEW BY NICO.
@@ -572,14 +1655,14 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
 
         # write connectivity information of triangles
         # integer, material id, vertex point ids
-        for i in range(valve3dSurface_.GetNumberOfCells()):
-            cell = valve3dSurface_.GetCell(i)
+        for i in range(valve3Dsurface.GetNumberOfCells()):
+            cell = valve3Dsurface.GetCell(i)
             iDs = cell.GetPointIds()
-            if cell_udlr_list_[i] == 2:  # NOTE: "cell_udlr_list_[i] = 2" means "cell on ANT upside".
+            if upLowCells[i] == 2:  # NOTE: "upLowCells[i] = 2" means "cell on ANT upside".
                 matId = ID_ANT
-            elif cell_udlr_list_[i] == 3:  # NOTE: "cell_udlr_list_[i] = 3" means "cell on POST upside".
+            elif upLowCells[i] == 3:  # NOTE: "upLowCells[i] = 3" means "cell on POST upside".
                 matId = ID_POST
-            else:  # NOTE: "cell_udlr_list_[i] = 0" means "cell on downside".
+            else:  # NOTE: "upLowCells[i] = 0" means "cell on downside".
                 matId = ID_DOWN
 
             f.write("%d %d tri %d %d %d\n" % (
@@ -598,8 +1681,8 @@ def vtu_To_hf3inp_inc_MV_matIDs_Producer(volume_mesh, surface_mesh, target="mvHf
 
         # write connectivity information of tetrahedrons
         # integer, material id, vertex point ids
-        for i in range(valve3d_.GetNumberOfCells()):
-            cell = valve3d_.GetCell(i)
+        for i in range(valve3DvolumeMesh.GetNumberOfCells()):
+            cell = valve3DvolumeMesh.GetCell(i)
             iDs = cell.GetPointIds()
             matId = 10
 

@@ -371,10 +371,11 @@ class MSMLEnvironment(object):
 
             """
 
-            def __init__(self, name="initial", dt=0.05, iterations=100, gravity=None):
+            def __init__(self, name="initial", dt=0.05, iterations=100, visualizeSimResultsEvery1inXtimesteps=1, gravity=None):
                 self.name = name
                 self._dt = dt
                 self._iterations = iterations
+                self._visualizeSimResultsEvery1inXtimesteps = visualizeSimResultsEvery1inXtimesteps
 
                 self._gravity = gravity or (0, 0, -9.81)
 
@@ -396,6 +397,14 @@ class MSMLEnvironment(object):
                 self._iterations = int(iterations)
 
             @property
+            def visualizeSimResultsEvery1inXtimesteps(self):
+                return self._visualizeSimResultsEvery1inXtimesteps
+
+            @visualizeSimResultsEvery1inXtimesteps.setter
+            def visualizeSimResultsEvery1inXtimesteps(self, visualizeSimResultsEvery1inXtimesteps):
+                self._visualizeSimResultsEvery1inXtimesteps = int(visualizeSimResultsEvery1inXtimesteps)
+
+            @property
             def gravity(self):
                 return self._gravity
 
@@ -406,7 +415,7 @@ class MSMLEnvironment(object):
         def __init__(self, *args):
             list.__init__(self, args)
 
-        def add_step(self, name="initial", dt=0.05, iterations=100, gravity=None):
+        def add_step(self, name="initial", dt=0.05, iterations=100, visualizeSimResultsEvery1inXtimesteps=1, gravity=None):
             """Add a new step to the Simlation
             :param name: step name
             :type str:
@@ -416,7 +425,7 @@ class MSMLEnvironment(object):
             :type iterations: int
             :return:
             """
-            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations, gravity))
+            self.append(MSMLEnvironment.Simulation.Step(name, dt, iterations, visualizeSimResultsEvery1inXtimesteps, gravity))
 
     class Solver(object):
         """Represents the solver xml tag.
