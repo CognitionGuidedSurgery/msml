@@ -78,8 +78,8 @@ if __name__ == '__main__': #for parallel processing compatibility
     headneck_simulations = []
 
     #csv_file_name = "./samples/2d/ref_095.csv"
-    csv_file_name = "./samples/2d/collocation/kpn" + str(ORDER) + "_sample.csv"
-    weight_name = './samples/2d/collocation/kpn'+ str(ORDER) + '_weight.csv'
+    csv_file_name = "./samples/2d/sparse_grid/kpn" + str(ORDER) + "_sample.csv"
+    weight_name = './samples/2d/sparse_grid/kpn'+ str(ORDER) + '_weight.csv'
 
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
@@ -90,7 +90,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     for i in weights_reader :
         weights.append(float(i[0]))
 
-    #obtain number of element in collocatin csv file
+    #obtain number of element in sparse grid csv file
     COUNTER = sum(1 for row in weights)
     
     
