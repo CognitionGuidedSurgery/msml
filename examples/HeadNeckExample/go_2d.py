@@ -2,7 +2,7 @@ __author__ = 'Markus Stoll, Chen Song'
 import sys
 import time
 import csv
-sys.path.append('../../../src/');
+sys.path.append('../../src/');
 
 
 
@@ -45,8 +45,7 @@ class headneck(object):
 
     def __call__(self):
         self.app.memory_init_file = {
-        "dispVar":self._scenarioDisp[0],
-        "dispVar2":self._scenarioDisp[1],
+        "moving_points":self._scenarioDisp,
         "resultMesh":self._scenarioResultMesh,
         "resultImage":self.resultImage
         }
@@ -56,7 +55,7 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 800
+    COUNTER = 2
     NAME = "BATCH__2d_test2016b_" + str(COUNTER) + "_DIRNEW_"
     DIR = './BATCH_2d_test2016b_' + str(COUNTER) + '/'
     
@@ -67,20 +66,15 @@ if __name__ == '__main__': #for parallel processing compatibility
     except:
         os.mkdir(DIR)
 
-
-    shutil.copy('./init.vtu', DIR + 'init.vtu')   
-
-    #msml_file_name ='beamLinearDisp.msml.xml'
-    msml_file_name ='beamLinearDisp_2d.msml.xml'
+    msml_file_name ='simulation.xml'
 
     args_list = []
     startDir = os.getcwd()
     headneck_simulations = []
 
-    #csv_file_name = "./samples/2d/ref_095.csv"
-    #csv_file_name = "./samples/2d/monte_carlo/mc_uniform_" + str(COUNTER) + ".csv"
     
-    csv_file_name = "./samples/2d/monte_carlo/mc_normal_"+ str(COUNTER) + ".csv"
+    #csv_file_name = "./samples/2d/monte_carlo/mc_normal_"+ str(COUNTER) + ".csv"
+    csv_file_name = "mc_nosys_400samples_1_5_5_17_5__18-Feb-2015__onPublicHNN.csv"
     
     scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
     result_vtus = list()
@@ -90,8 +84,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
         if (i>0):
-            vec = [ [0,0, float(scenarioRow[0])*0.005], [0,0,float(scenarioRow[1])*0.005] ]
-            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': vec, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
+            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': scenarioRow, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
             args_list.append(dict(args)) #copy            
@@ -99,11 +92,6 @@ if __name__ == '__main__': #for parallel processing compatibility
         if i>COUNTER:
             break
 
-
-    #reference preprocessing
-    #MiscOps.VoxelizeVolumeMesh('./init.vtu', './initSurfaceVoxelized2D.vti', 0, 0.001, '', False, 0)
-    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson2D.vtu', './dispSurfaceRefZeroPoissonTwoDVox.vti', 0, 0.000, 'initSurfaceVoxelized2D.vti', False, 0.025)
-    #MiscOps.VoxelizeVolumeMesh('./dispSurfaceRefZeroPoisson2D.vtu', './dispSurfaceRefZeroPoissonTwoDVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized2D.vti', False, 0.025)
 
     #run simulations
     results = []
