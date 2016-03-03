@@ -56,8 +56,8 @@ if __name__ == '__main__': #for parallel processing compatibility
 
     
     COUNTER = 2
-    NAME = "BATCH__2d_test2016b_" + str(COUNTER) + "_DIRNEW_"
-    DIR = './BATCH_2d_test2016b_' + str(COUNTER) + '/'
+    NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
+    DIR = './First_Pat_' + str(COUNTER) + '/'
     
     results_file_name = 'results__2d_test2016b_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
     
@@ -81,21 +81,21 @@ if __name__ == '__main__': #for parallel processing compatibility
     result_vtis = list()
 
     #collect parameters for all simulation runs
-    i=1
+    i=0
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
-        if (i>0):
+        if (i>0): # first row is reference data
             args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': scenarioRow, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
             result_vtus.append( NAME + str(i) + '.vtu' )
             result_vtis.append( NAME + str(i) + '.vti' )
             args_list.append(dict(args)) #copy            
-            i=i+1
-        if i>COUNTER:
+        if i>=COUNTER:
             break
+        i=i+1
 
 
     #run simulations
     results = []
-    for j in range(0,i-1):  
+    for j in range(0,i):  
         os.chdir( startDir )    
         createAndRunHnnSimulation(args_list[j])
 
@@ -108,45 +108,24 @@ if __name__ == '__main__': #for parallel processing compatibility
         weights.append(1.0/COUNTER)
 
 
-    #DICE evaluation (voxel based)
-
-    #reference 
-    count_ref = float(MiscOps.CountVoxelsAbove('./dispSurfaceRefZeroPoissonTwoDVox.vti', 127));
-
     #Chens IsoContour method with monte carlo
-    MiscOps.IsoContourOperator(DIR, 'init.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, 'initSurfaceVoxelized.vti', False, 0.025)
-    count_result_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerTwoDVoxIsoContour.vti', 127));
-    MiscOps.ImageSum('*' + 'TwoDVoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');
-    count_intersect_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./SumIsoContourAndRef.vti', 127+127));
-    
-    dice_mc_IsoContour = (2 * count_intersect_mc_IsoContour) / (count_result_mc_IsoContour+count_ref)
+    MiscOps.IsoContourOperator(DIR, '../out_preprocessing/PTV_1_volmesh.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, 'ct.vti', False, 0.025)
+
 
     shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial' + str(COUNTER) +'.vtp')
     shutil.move('./isocontour_mean.vtp', DIR + 'isocontour_mean' + str(COUNTER) +'.vtp')
     shutil.move('./isocontour_inner.vtp', DIR + 'isocontour_inner' + str(COUNTER) +'.vtp')
     shutil.move('./isocontour_outer.vtp', DIR + 'isocontour_outer' + str(COUNTER) +'.vtp')
-    shutil.move('./isocontour_outerTwoDVoxIsoContour.vti', DIR + 'isocontour_outerTwoDVoxIsoContour' + str(COUNTER) +'.vti')
-    shutil.move('./SumIsoContourAndRef.vti', DIR + 'SumIsoContourAndRef' + str(COUNTER) +'.vti')
 
 
     #Markus Image sum method (works only with monte carlo) 
     MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumTwoDVox.vti');
     MiscOps.vtkMarchingCube('./imgSumTwoDVox.vti', './imgSumIsoSurface.vtp', 12);    
-    count_result_mc_imgsum = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox.vti', 12));
-    MiscOps.ImageSum('*' + 'TwoDVox.vti', True, 'SumResultAndRef.vti');
-    count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 134)); #127 + 6 + 1
-    dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref)
+
 
     shutil.move('./imgSumTwoDVox.vti', DIR + 'imgSumTwoDVox' + str(COUNTER) +'.vti')
     shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
-    shutil.move('./SumResultAndRef.vti', DIR + 'SumResultAndRef' + str(COUNTER) +'.vti')
-
-
-    results_file = open(results_file_name, 'a')
-    csv_writer = csv.writer(results_file)
-    csv_writer.writerow( (COUNTER, NAME, count_ref, count_result_mc_IsoContour, count_intersect_mc_IsoContour, dice_mc_IsoContour, count_ref, count_result_mc_imgsum, count_intersect_mc_imgsum, dice_mc_imgsum) )
-    results_file.close()
 
 
     #delet intermediate results folders

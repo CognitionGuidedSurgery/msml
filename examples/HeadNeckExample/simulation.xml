@@ -12,6 +12,8 @@
     <var name="BRAC_PLX_1_mesh" value="out_preprocessing/BRAC_PLX_1_mesh.vtk" logical="linearMesh" physical="file.vti" />
     <var name="Spinal_1_mesh" value="out_preprocessing/Spinal_1_mesh.vtk" logical="linearMesh" physical="file.vti" />
     
+    <var name="PTV_1_vol" value="out_preprocessing/PTV_1_volmesh.vtu" physical="file.vti" />
+        
     <var name="GTV_1_voxel" value="out_preprocessing/GTV_1_voxel.vti" logical="image" physical="file.vti"/>
     <var name="PTV_1_voxel" value="out_preprocessing/PTV_1_voxel.vti" logical="image" physical="file.vti"/>
     <var name="BRAC_PLX_1_voxel" value="out_preprocessing/BRAC_PLX_1_voxel.vti" logical="image" physical="file.vti"/>
@@ -28,13 +30,18 @@
     <var name="BRAC_PLX_1_mesh_deformed" value="BRAC_PLX_1_mesh_deformed.vtk" logical="str" />
     <var name="Spinal_1_mesh_deformed" value="Spinal_1_mesh_deformed.vtk" logical="str" />
     
-    <var name="GTV_1_voxel_deformed" value="GTV_1_voxel_deformed.vtk" logical="str" />
-    <var name="PTV_1_voxel_deformed" value="PTV_1_voxel_deformed.vtk" logical="str" />
-    <var name="BRAC_PLX_1_voxel_deformed" value="BRAC_PLX_1_voxel_deformed.vtk" logical="str" />
-    <var name="Spinal_1_voxel_deformed" value="Spinal_1_voxel_deformed.vtk" logical="str" />
+    <var name="PTV_1_vol_def" value="PTV_1_volmesh_deformed.vtu" physical="str" />
+    
+    <var name="GTV_1_voxel_deformed" value="GTV_1_voxel_deformed.vti" logical="str" />
+    <var name="PTV_1_voxel_deformed" value="PTV_1_voxel_deformed.vti" logical="str" />
+    <var name="BRAC_PLX_1_voxel_deformed" value="BRAC_PLX_1_voxel_deformed.vti" logical="str" />
+    <var name="Spinal_1_voxel_deformed" value="Spinal_1_voxel_deformed.vti" logical="str" />
     
     <var name="patient_CT_deformed" value="patient_CT_deformed.vtk" logical="str" />
     <var name="patient_skin_voxel_deformed" value="patient_skin_voxel_deformed.vtk" logical="str" />
+    
+    <var name="resultMesh" value="resultDisp.vtu" physical="str"/>
+    <var name="resultImage" value="resultDispImage.vti" physical="str"/>
 
   </variables>
 
@@ -72,6 +79,8 @@
     <TransformSurfaceBarycentric id="deformed_surface2" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${PTV_1_mesh_deformed}" surfaceMeshToDeform="${PTV_1_mesh}" deformedVolumeMesh="${disp}" />
     <TransformSurfaceBarycentric id="deformed_surface3" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${BRAC_PLX_1_mesh_deformed}" surfaceMeshToDeform="${BRAC_PLX_1_mesh}" deformedVolumeMesh="${disp}" />
     <TransformSurfaceBarycentric id="deformed_surface4" referenceVolumeMesh="${tet_only_mesh}" targetSurfaceFilename="${Spinal_1_mesh_deformed}" surfaceMeshToDeform="${Spinal_1_mesh}" deformedVolumeMesh="${disp}" />
+    <TransformMeshBarycentric id="deformed_volume" referenceVolumeMesh="${tet_only_mesh}" targetVolumeMesh="${PTV_1_vol_def}" volumeMeshToDeform="${PTV_1_vol}" deformedVolumeMesh="${disp}" />
+
 
     <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr"  surfaceMesh="${deformed_surface}" targetImageFilename="${GTV_1_voxel_deformed}" referenceCoordinateGrid="${GTV_1_voxel}" disableFillHoles="true"  />
     <VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr2" surfaceMesh="${deformed_surface2}" targetImageFilename="${PTV_1_voxel_deformed}" referenceCoordinateGrid="${PTV_1_voxel}" disableFillHoles="true" />
@@ -82,9 +91,14 @@
     
     <!--<VoxelizeSurfaceMesh id="VoxelizeSurfaceMeshr5" surfaceMesh="${surfaceExtract1}" targetImageFilename="${patient_skin_voxel_deformed}" referenceCoordinateGrid="${patient_CT}" disableFillHoles="true" additionalIsotropicMargin="50.0"/>-->
 
-    
+    <!--
     <GenerateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${tet_only_mesh}" DVFFilename="dvf.vtk" spacing="5"/>
-     <ApplyDVF id="deformeImage" referenceImage="${patient_CT}" outputDefImageFilename="${patient_CT_deformed}" dvf="${dvf}" reverseDirection="true" />
+     <ApplyDVF id="deformeImage" referenceImage="${patient_CT}" outputDefImageFilename="${patient_CT_deformed}" dvf="${dvf}" reverseDirection="true" />-->
+     
+
+
+    <copyFile id="fileCopy" filename_in="${deformed_volume}" filename_out="${resultMesh}" working_directory="false" />
+    <copyFile id="fileCopy2" filename_in="${VoxelizeSurfaceMeshr2}" filename_out="${resultImage}" working_directory="false" />
     
     
   </workflow>

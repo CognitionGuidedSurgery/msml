@@ -12,10 +12,10 @@
     <var name="BRAC_PLX_1_mesh" value="BRAC_PLX_1_mesh.vtk" physical="str" />
     <var name="Spinal_1_mesh" value="Spinal_1_mesh.vtk" physical="str" />
 
-    <var name="GTV_1_volmesh" value="GTV_1_volmesh.vtk" physical="str" />
-    <var name="PTV_1_volmesh" value="PTV_1_volmesh.vtk" physical="str" />
-    <var name="BRAC_PLX_1_volmesh" value="BRAC_PLX_1_volmesh.vtk" physical="str" />
-    <var name="Spinal_1_volmesh" value="Spinal_1_volmesh.vtk" physical="str" />
+    <var name="GTV_1_volmesh" value="GTV_1_volmesh.vtu" physical="str" />
+    <var name="PTV_1_volmesh" value="PTV_1_volmesh.vtu" physical="str" />
+    <var name="BRAC_PLX_1_volmesh" value="BRAC_PLX_1_volmesh.vtu" physical="str" />
+    <var name="Spinal_1_volmesh" value="Spinal_1_volmesh.vtu" physical="str" />
     
     <var name="GTV_1_voxel" value="GTV_1_voxel.vti" logical="str" />
     <var name="PTV_1_voxel" value="PTV_1_voxel.vti" logical="str" />
