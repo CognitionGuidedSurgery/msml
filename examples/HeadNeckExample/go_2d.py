@@ -90,7 +90,7 @@ if __name__ == '__main__': #for parallel processing compatibility
             samples[i,j] = random.gauss(0,1)
     scenarios = []
     for i in range(0,COUNTER):
-        tmp = np.dot(coeff[:, [0, 1, 2, 3, 4] ], samples[i]) #sample from 10d space to 72d
+        tmp = np.dot(coeff[:, [0, 1, 2, 3, 4] ], samples[i]) #sample from 5d space to 72d
         tmp2 = np.add(tmp, ref) #center
         scenarios.append(tmp2)
         
