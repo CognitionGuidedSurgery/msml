@@ -12,6 +12,7 @@ import os
 import ntpath
 import shutil
 from path import path
+import random
 
 
 
@@ -29,10 +30,12 @@ import MiscMeshOperatorsPython as MiscOps
 from csv import reader
 import multiprocessing
 
+import numpy as np
+
 
 def createAndRunHnnSimulation(args_list): #create a simulation instance with given parameter and run it.
-	aHeadneck_simulation = headneck(args_list['msml_file'], args_list['i'], args_list['scenarioDisp'], args_list['scenarioResultMesh'], args_list['resultImage'])
-	return aHeadneck_simulation()
+    aHeadneck_simulation = headneck(args_list['msml_file'], args_list['i'], args_list['scenarioDisp'], args_list['scenarioResultMesh'], args_list['resultImage'])
+    return aHeadneck_simulation()
 
 class headneck(object):
     def __init__(self, msml_filename, id, scenarioDisp, scenarioResultMesh, resultImage):
@@ -59,7 +62,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
     DIR = './First_Pat_' + str(COUNTER) + '/'
     
-    results_file_name = 'results__2d_test2016b_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
+    results_file_name = 'results__2d_test2016c_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
     
     try :
         os.stat(DIR)
@@ -74,20 +77,33 @@ if __name__ == '__main__': #for parallel processing compatibility
 
     
     #csv_file_name = "./samples/2d/monte_carlo/mc_normal_"+ str(COUNTER) + ".csv"
-    csv_file_name = "mc_nosys_400samples_1_5_5_17_5__18-Feb-2015__onPublicHNN.csv"
+    #csv_file_name = "mc_nosys_400samples_1_5_5_17_5__18-Feb-2015__onPublicHNN.csv"
+    csv_file_name = "motionModels_separated_p1_d5.ppca.coeff.csv"
+    coeff = np.genfromtxt(csv_file_name,delimiter=',',dtype='f8')
     
-    scenarios = reader(open(csv_file_name, "rb"), delimiter=',', dialect='excel')
+    ref_csv_file_name = "ref.csv"
+    ref = np.genfromtxt(ref_csv_file_name,delimiter=',',dtype='f8')
+    
+    samples = np.ndarray(shape=(COUNTER,5), dtype='f8')
+    for i in range(0,COUNTER):
+        for j in range(0,5):
+            samples[i,j] = random.gauss(0,1)
+    scenarios = []
+    for i in range(0,COUNTER):
+        tmp = np.dot(coeff[:, [0, 1, 2, 3, 4] ], samples[i]) #sample from 10d space to 72d
+        tmp2 = np.add(tmp, ref) #center
+        scenarios.append(tmp2)
+        
     result_vtus = list()
     result_vtis = list()
 
     #collect parameters for all simulation runs
-    i=0
+    i=1
     for scenarioRow in scenarios: #one  scenario = one line in csv file = one simulation run = one simulation output folder
-        if (i>0): # first row is reference data
-            args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': scenarioRow, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
-            result_vtus.append( NAME + str(i) + '.vtu' )
-            result_vtis.append( NAME + str(i) + '.vti' )
-            args_list.append(dict(args)) #copy            
+        args = { 'i':i, 'msml_file': msml_file_name, 'scenarioDisp': scenarioRow, 'scenarioResultMesh' : '../' + DIR + NAME + str(i) + '.vtu', 'resultImage': '../' + DIR + NAME + str(i) + '.vti'} 
+        result_vtus.append( NAME + str(i) + '.vtu' )
+        result_vtis.append( NAME + str(i) + '.vti' )
+        args_list.append(dict(args)) #copy            
         if i>=COUNTER:
             break
         i=i+1
