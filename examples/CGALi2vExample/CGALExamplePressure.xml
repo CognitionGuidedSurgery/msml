@@ -5,8 +5,10 @@
     <variables>
        <var name="input_vol_surf_mesh" value="3Dircadb0101Mesh_combo.vtk" role="fix"/>
         <var name="input_vol_mesh" value="3Dircadb0101Labeled.vtk" logical="VolumeMesh" role="fix" />
-        <var name="input_image" value="3Dircadb0101Labeled.vti" logical="SegmentationImage3D"
+        <var name="input_image" value="3D-ircadb0101Labeled.vti" logical="SegmentationImage3D"
              physical="file.vti" role="input" />
+        <var name="output_image" value="3D-ircadb0101LabeledDeformed.vti" logical="SegmentationImage3D"
+             physical="file.vti" role="output" />
     </variables>
 
     <scene>
@@ -49,7 +51,7 @@
 
     <workflow>    
          <CGALMeshVolumeFromVoxels id="VolumeMesher" meshFilename="${input_vol_mesh}" image="${input_image}" 
-					facetAngle="20" facetSize="12" facetDistance="12" cellRadiusEdgeRatio="3" cellSize="30" odt="false" lloyd="false"  pertube="false" exude="false" />
+					facetAngle="20" facetSize="4" facetDistance="12" cellRadiusEdgeRatio="3" cellSize="10" odt="false" lloyd="false"  pertube="false" exude="false" />
         <ExtractAllSurfacesByMaterial id="SurfaceExtractor" meshIn="${VolumeMesher}" meshOutFilename="${input_vol_surf_mesh}" cut="false"/>      
         <ComputeIndicesFromBoxROI id="bodyToIndexGroup"
                                box="-10 -10 -10 300 300 300" mesh="${SurfaceExtractor}"
@@ -58,7 +60,10 @@
         <ComputeIndicesFromBoxROI id="bottomToIndexGroup"
                                box="-10 250 -10 300 300 300" mesh="${SurfaceExtractor}"
                                select="points"/>
-         <ComputeIndicesFromMaterialId id="pressureIndexGroup" num="193" mesh="${SurfaceExtractor}" type="faces" />
+         <ComputeIndicesFromMaterialId id="pressureIndexGroup" num="513" mesh="${SurfaceExtractor}" type="faces" />
+             <GenerateDVF id="dvf" RefMesh="${disp}" DeformedMesh="${VolumeMesher}" DVFFilename="dvf.vtk" spacing="10"/>
+    <ApplyDVF id="deformeImage" referenceImage="${input_image}" outputDefImageFilename="${output_image}" dvf="${dvf}" reverseDirection="true" voxelSize="2"/>
+    
     </workflow>
 
 
