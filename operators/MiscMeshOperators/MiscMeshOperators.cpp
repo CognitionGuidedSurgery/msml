@@ -2058,7 +2058,7 @@ int CountVoxelsAbove(const char* inputImage, float threshold)
   log_error() <<  inputImage ;
   vtkSmartPointer<vtkImageAccumulate> histogram =  vtkSmartPointer<vtkImageAccumulate>::New();
   vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(inputImage);
-  histogram->SetInputData(image);
+  __SetInput(histogram,image);
   histogram->SetComponentExtent(0,1,0,0,0,0);
   histogram->SetComponentOrigin(-99999,0,0);
   histogram->SetComponentSpacing(99999+threshold,0,0);

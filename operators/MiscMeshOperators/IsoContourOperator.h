@@ -16,6 +16,7 @@
 #include <vtkPolyDataNormals.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include "../vtk6_compat.h"
 
 namespace MSML
 {
