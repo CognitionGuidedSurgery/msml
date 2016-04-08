@@ -348,7 +348,7 @@ namespace MSML{
            Map for storage of edges to be marked as non-removable.
            Code from: https://doc.cgal.org/4.2/CGAL.CGAL.Triangulated-Surface-Mesh-Simplification/html/Surface_mesh_simplification_2edge_collapse_constrained_polyhedron_8cpp-example.html
         */
-  class Constrains_map : public boost::put_get_helper<bool,Constrains_map>
+  /*class Constrains_map : public boost::put_get_helper<bool,Constrains_map>
   {
 	public:
 		typedef boost::readable_property_map_tag category;
@@ -362,12 +362,12 @@ namespace MSML{
 	private:
 		CGAL::Unique_hash_map<key_type,bool> mConstrains ;
   };
-
+*/
   /*
   Simplificate a mesh using CGALs Triangulated Surface Mesh Simplification
   (http://doc.cgal.org/latest/Surface_mesh_simplification/index.html#Chapter_Triangulated_Surface_Mesh_Simplification)
   */
-   const char* CGALSimplificateSurface(const char* inputMeshFile,
+   /*const char* CGALSimplificateSurface(const char* inputMeshFile,
                         const char* outputMeshFile,
                         int stopnr,
                         std::vector<double> box = std::vector<double>()) {
@@ -406,7 +406,7 @@ namespace MSML{
 	  //simplificate mesh
 	  int r = CGAL::Surface_mesh_simplification::edge_collapse
 				(polyhedron,stop,
-				CGAL::vertex_index_map(boost::get(CGAL::vertex_external_index,polyhedron))
+				CGAL::parameters::vertex_index_map(boost::get(CGAL::vertex_external_index,polyhedron))
 				.edge_index_map (boost::get(CGAL::edge_external_index ,polyhedron))
 				.edge_is_border_map(constrains_map)
 				);
@@ -420,6 +420,7 @@ namespace MSML{
 	  bool result = IOHelper::VTKWritePolyData(outputMeshFile,vtkpoly);
 	  return outputMeshFile;
   }
+*/
   /*
   Calculate Subdivision Surface for given mesh.
   (http://doc.cgal.org/latest/Subdivision_method_3/index.html)

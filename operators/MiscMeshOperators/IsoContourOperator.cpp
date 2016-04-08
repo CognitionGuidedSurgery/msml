@@ -66,7 +66,8 @@ namespace MSML
 			ugrid_init = reader_init->GetOutput();
 
 			//filtering the surface
-			surfacefilter->SetInputData(ugrid_init);
+			//surfacefilter->SetInputData(ugrid_init);
+                        __SetInput(surfacefilter,ugrid_init);
 			surfacefilter->Update();
 
 			//getting extracted surface information
@@ -74,7 +75,8 @@ namespace MSML
 
 			//writing the initial surface
 			polywriter->SetFileName("isocontour_initial.vtp");
-			polywriter->SetInputData(surface_init);
+			//polywriter->SetInputData(surface_init);
+			__SetInput(polywriter,surface_init);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
@@ -126,7 +128,8 @@ namespace MSML
 				ugrid = reader_deform->GetOutput();
 
 				//filtering the surface
-				surfacefilter_deform->SetInputData(ugrid);
+				//surfacefilter_deform->SetInputData(ugrid);
+				__SetInput(surfacefilter_deform,ugrid);
 				surfacefilter_deform->Update();
 
 				//set surface info to surface deform
@@ -171,7 +174,8 @@ namespace MSML
 			}
 
 			//compute normal
-			normal_generator->SetInputData(contour_mean);
+			//normal_generator->SetInputData(contour_mean);
+			__SetInput(normal_generator,contour_mean);
 			normal_generator->ComputePointNormalsOn();
 			normal_generator->ComputeCellNormalsOff();
 			normal_generator->SetSplitting(0);
@@ -180,7 +184,8 @@ namespace MSML
 
 			//writing the mean surface
 			polywriter->SetFileName("isocontour_mean.vtp");
-			polywriter->SetInputData(contour_mean);
+			//polywriter->SetInputData(contour_mean);
+			__SetInput(polywriter,contour_mean);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
@@ -220,13 +225,15 @@ namespace MSML
 
 			//writing outer contour
 			polywriter->SetFileName("isocontour_outer.vtp");
-			polywriter->SetInputData(contour_outer);
+			//polywriter->SetInputData(contour_outer);
+			__SetInput(polywriter,contour_outer);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
 			//writing inner contour
 			polywriter->SetFileName("isocontour_inner.vtp");
-			polywriter->SetInputData(contour_inner);
+			//polywriter->SetInputData(contour_inner);
+			__SetInput(polywriter,contour_inner);
 			polywriter->SetDataModeToAscii();
 			polywriter->Write();
 
