@@ -58,7 +58,7 @@ class headneck(object):
 
 if __name__ == '__main__': #for parallel processing compatibility
 
-    samples, weights = nwspgr('GQN', 5,2, 'symmetric')   
+    samples, weights = nwspgr('GQN', 5,1, 'symmetric')   
  
     COUNTER = len(weights)
     NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
@@ -116,6 +116,11 @@ if __name__ == '__main__': #for parallel processing compatibility
     os.chdir( startDir )
     #vtus = ['vtus', 'vtus2']
     #weights =  [0.5, 0.5]
+
+
+    weights = []
+    for i in range(0, COUNTER):
+        weights.append(1.0/COUNTER)
 
 
     #Chens IsoContour method with monte carlo
