@@ -58,11 +58,11 @@ class headneck(object):
 
 if __name__ == '__main__': #for parallel processing compatibility
 
-    samples, weights = nwspgr('GQN', 5,1, 'symmetric')   
+    samples, weights = nwspgr('GQN', 5,2, 'symmetric')   
  
     COUNTER = len(weights)
-    NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
-    DIR = './First_Pat_' + str(COUNTER) + '/'
+    NAME = "First_PatSparse_" + str(COUNTER) + "_DIRNEW_"
+    DIR = './First_PatSparse_' + str(COUNTER) + '/'
     
     results_file_name = 'results__2d_test2016c_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
     

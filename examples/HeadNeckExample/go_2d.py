@@ -58,7 +58,7 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 2
+    COUNTER = 400
     NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
     DIR = './First_Pat_' + str(COUNTER) + '/'
     
