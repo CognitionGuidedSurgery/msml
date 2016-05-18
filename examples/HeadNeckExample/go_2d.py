@@ -58,7 +58,7 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 400
+    COUNTER = 10
     NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
     DIR = './First_Pat_' + str(COUNTER) + '/'
     
@@ -124,9 +124,18 @@ if __name__ == '__main__': #for parallel processing compatibility
         weights.append(1.0/COUNTER)
 
 
+    #reference for DICE coefficient
+    count_ref = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox_reference.vti', 127));
+
+
     #Chens IsoContour method with monte carlo
     MiscOps.IsoContourOperator(DIR, '../out_preprocessing/PTV_1_volmesh.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, 'ct.vti', False, 0.025)
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './ct.vti', False, 0.025)
+
+    count_result_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerTwoDVoxIsoContour.vti', 127));
+    MiscOps.ImageSum('*' + 'TwoDVoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');
+    count_intersect_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./SumIsoContourAndRef.vti', 127+127));
+    dice_mc_IsoContour = (2 * count_intersect_mc_IsoContour) / (count_result_mc_IsoContour+count_ref)
 
 
     shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial' + str(COUNTER) +'.vtp')
@@ -139,9 +148,20 @@ if __name__ == '__main__': #for parallel processing compatibility
     MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumTwoDVox.vti');
     MiscOps.vtkMarchingCube('./imgSumTwoDVox.vti', './imgSumIsoSurface.vtp', 12);    
 
+    count_result_mc_imgsum = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox.vti', 12));
+    MiscOps.ImageSum('*' + 'TwoDVox.vti', True, 'SumResultAndRef.vti');
+    count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 134)); #127 + 6 + 1
+    dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref)
+
 
     shutil.move('./imgSumTwoDVox.vti', DIR + 'imgSumTwoDVox' + str(COUNTER) +'.vti')
     shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
+
+
+    results_file = open(results_file_name, 'a')
+    csv_writer = csv.writer(results_file)
+    csv_writer.writerow( (COUNTER, NAME, count_ref, count_result_mc_IsoContour, count_intersect_mc_IsoContour, dice_mc_IsoContour, count_ref, count_result_mc_imgsum, count_intersect_mc_imgsum, dice_mc_imgsum) )
+    results_file.close()
 
 
     #delet intermediate results folders
