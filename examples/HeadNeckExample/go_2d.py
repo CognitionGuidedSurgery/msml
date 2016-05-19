@@ -140,7 +140,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     count_result_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerTwoDVoxIsoContour.vti', 127));
     MiscOps.ImageSum('*' + 'TwoDVoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');
     count_intersect_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./SumIsoContourAndRef.vti', 127+127));
-    dice_mc_IsoContour = (2 * count_intersect_mc_IsoContour) / (count_result_mc_IsoContour+count_ref)
+    dice_mc_IsoContour = (2 * count_intersect_mc_IsoContour) / (count_result_mc_IsoContour+count_ref+0.0000001) #+0.000001 against division by 0
 
 
     shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial' + str(COUNTER) +'.vtp')
@@ -155,13 +155,13 @@ if __name__ == '__main__': #for parallel processing compatibility
     MiscOps.VoxelizeSurfaceMesh('./imgSumIsoSurface.vtp', './imgSumTwoDVox.vti', 0, 0.000, './imgSumTwoDVox_referenceProbDist.vti', False, 0.025)
     
     count_result_mc_imgsum = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox.vti', 127));
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './imgSumTwoDVox_referenceProbDist.vti', False, 0.025)
     MiscOps.ImageSum('*' + 'TwoDVox.vti', True, 'SumResultAndRef.vti');
-    count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 134)); #127 + 6 + 1
-    dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref)
+    count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 127+127)); 
+    dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref+0.0000001)
 
 
-    shutil.move('./_probDist.vti', DIR + '_probDist' + str(COUNTER) +'.vti')
+    shutil.move('./imgSumTwoDVox_probDist.vti', DIR + 'imgSumTwoDVox_probDist' + str(COUNTER) +'.vti')
+    shutil.move('./imgSumTwoDVox.vti', DIR + 'imgSumTwoDVox' + str(COUNTER) +'.vti')
     shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
 
 
