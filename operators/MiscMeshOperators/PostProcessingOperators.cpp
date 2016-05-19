@@ -1023,7 +1023,8 @@ void ComputeOrganCrossSectionArea(const char* volumeFilename){
 
 string ImageSum(const char* imagedataFilePattern, bool normalize, const char* outfile)
 {
- 
+  log_error() <<  "ImageSum called with file pattern=" << imagedataFilePattern << std::endl ;
+  
   std::vector<std::string> imagedata = IOHelper::getAllFilesByMask(imagedataFilePattern);
   int numer_of_images = imagedata.size();
   std::vector<double> weights(numer_of_images);
@@ -1036,7 +1037,7 @@ string ImageSum(const char* imagedataFilePattern, bool normalize, const char* ou
   {
     curentVoxelImage = IOHelper::VTKReadImage(imagedata[i].c_str());
     __AddInput(sumFilter,curentVoxelImage);
-
+    log_error() <<  "ImageSum found: " << imagedata[i] << std::endl ;
     weights[i] = 1.0;
   }
   
@@ -1045,6 +1046,7 @@ string ImageSum(const char* imagedataFilePattern, bool normalize, const char* ou
   sumFilter->SetWeights(vtkWeights);
   sumFilter->Update();
   IOHelper::VTKWriteImage(outfile, sumFilter->GetOutput());
+  log_error() <<  "ImageSum wrote: " << outfile << std::endl ;
   return outfile;
 }
 

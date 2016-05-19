@@ -58,8 +58,8 @@ class headneck(object):
 if __name__ == '__main__': #for parallel processing compatibility
 
     
-    COUNTER = 10
-    NAME = "First_Pat_" + str(COUNTER) + "_DIRNEW_"
+    COUNTER = 3
+    NAME = "2016_05_19_1722__First_Pat_" + str(COUNTER) + "_DIRNEW_"
     DIR = './First_Pat_' + str(COUNTER) + '/'
     
     results_file_name = 'results__2d_test2016c_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
@@ -125,12 +125,15 @@ if __name__ == '__main__': #for parallel processing compatibility
 
 
     #reference for DICE coefficient
+    MiscOps.vtkMarchingCube('./imgSumTwoDVox_referenceProbDist.vti', './imgSumTwoDVox_reference.vtp', 12);
+    MiscOps.VoxelizeSurfaceMesh('./imgSumTwoDVox_reference.vtp', './imgSumTwoDVox_referenceProbDist.vti', 0, 0.00,'./imgSumTwoDVox_reference.vti', False, 0);
     count_ref = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox_reference.vti', 127));
+    
 
 
     #Chens IsoContour method with monte carlo
     MiscOps.IsoContourOperator(DIR, '../out_preprocessing/PTV_1_volmesh.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './ct.vti', False, 0.025)
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './imgSumTwoDVox_reference.vti', False, 0.025)
 
     count_result_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerTwoDVoxIsoContour.vti', 127));
     MiscOps.ImageSum('*' + 'TwoDVoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');

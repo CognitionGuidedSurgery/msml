@@ -2055,7 +2055,7 @@ vtkSmartPointer<vtkImageData> GenerateDistanceMap(vtkUnstructuredGrid* aUnstruct
 
 int CountVoxelsAbove(const char* inputImage, float threshold)
 {
-  log_error() <<  inputImage ;
+  log_error() <<  inputImage << "in "<< boost::filesystem::current_path() << std::endl ;
   vtkSmartPointer<vtkImageAccumulate> histogram =  vtkSmartPointer<vtkImageAccumulate>::New();
   vtkSmartPointer<vtkImageData> image = IOHelper::VTKReadImage(inputImage);
   histogram->SetInputData(image);
@@ -2081,8 +2081,10 @@ int CountVoxelsAbove(const char* inputImage, float threshold)
   vtkSmartPointer<vtkDataObject>::New();
  
   dataObject->GetFieldData()->AddArray( frequencies );
+  int result = (int) frequencies->GetTuple1(1);
+  log_error() <<  "voxels above " << threshold << " in " << inputImage << ":" <<result << std::endl ;
 
-  return (int) frequencies->GetTuple1(1);
+  return result ;
 }
 
 
