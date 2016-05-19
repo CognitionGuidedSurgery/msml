@@ -77,6 +77,7 @@
 #include <vtkCellLocator.h>
 
 #include <vtkImageInterpolator.h>
+#include <vtkImageReslice.h>
 
 #include "math.h"
 
@@ -623,8 +624,31 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
 
 std::string ConvertVTKImage(const char* infputFile, const char* outputfile)
 {
+  return ConvertVTKImage(infputFile, outputfile, 0);
+}
+std::string ConvertVTKImage(const char* infputFile, const char* outputfile, float isotropicVoxelSize)
+{
   vtkSmartPointer<vtkImageData> img = IOHelper::VTKReadImage(infputFile);
-  IOHelper::VTKWriteImage(outputfile, img);
+
+  if (isotropicVoxelSize>0)
+  {
+    vtkSmartPointer<vtkImageReslice> reslice =  vtkSmartPointer<vtkImageReslice>::New();
+    reslice->SetOutputExtent(0, 9, 0, 100, 0, 0);
+    
+#if VTK_MAJOR_VERSION <= 5
+    reslice->SetInputConnection(img->GetProducerPort());
+#else
+    reslice->SetInputData(img);
+#endif
+    reslice->SetInformationInput(img);
+    reslice->SetOutputSpacing(isotropicVoxelSize, isotropicVoxelSize, isotropicVoxelSize);
+    reslice->Update();
+    IOHelper::VTKWriteImage(outputfile, reslice->GetOutput());
+  }
+  else
+  {
+    IOHelper::VTKWriteImage(outputfile, img);
+  }
   return outputfile;
 }
 
@@ -1023,7 +1047,8 @@ void ComputeOrganCrossSectionArea(const char* volumeFilename){
 
 string ImageSum(const char* imagedataFilePattern, bool normalize, const char* outfile)
 {
- 
+  log_error() <<  "ImageSum called with file pattern=" << imagedataFilePattern << std::endl ;
+  
   std::vector<std::string> imagedata = IOHelper::getAllFilesByMask(imagedataFilePattern);
   int numer_of_images = imagedata.size();
   std::vector<double> weights(numer_of_images);
@@ -1036,7 +1061,7 @@ string ImageSum(const char* imagedataFilePattern, bool normalize, const char* ou
   {
     curentVoxelImage = IOHelper::VTKReadImage(imagedata[i].c_str());
     __AddInput(sumFilter,curentVoxelImage);
-
+    log_error() <<  "ImageSum found: " << imagedata[i] << std::endl ;
     weights[i] = 1.0;
   }
   
@@ -1045,6 +1070,7 @@ string ImageSum(const char* imagedataFilePattern, bool normalize, const char* ou
   sumFilter->SetWeights(vtkWeights);
   sumFilter->Update();
   IOHelper::VTKWriteImage(outfile, sumFilter->GetOutput());
+  log_error() <<  "ImageSum wrote: " << outfile << std::endl ;
   return outfile;
 }
 
