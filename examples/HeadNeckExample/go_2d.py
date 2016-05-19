@@ -125,15 +125,17 @@ if __name__ == '__main__': #for parallel processing compatibility
 
 
     #reference for DICE coefficient
-    MiscOps.vtkMarchingCube('./imgSumTwoDVox_referenceProbDist.vti', './imgSumTwoDVox_reference.vtp', 12);
-    MiscOps.VoxelizeSurfaceMesh('./imgSumTwoDVox_reference.vtp', './imgSumTwoDVox_referenceProbDist.vti', 0, 0.00,'./imgSumTwoDVox_reference.vti', False, 0);
-    count_ref = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox_reference.vti', 127));
+    MiscOps.vtkMarchingCube('./imgSumTwoDVox_referenceProbDist.vti', './imgSumTwoDVox_tmp_reference.vtp', 12);
+    MiscOps.VoxelizeSurfaceMesh('./imgSumTwoDVox_tmp_reference.vtp', './reference_tmp_imgSumTwoDVox.vti', 0, 0.00,'./imgSumTwoDVox_referenceProbDist.vti', False, 0);
+    MiscOps.VoxelizeSurfaceMesh('./imgSumTwoDVox_tmp_reference.vtp', './reference_tmp_TwoDVoxIsoContour.vti', 0, 0.00,'./imgSumTwoDVox_referenceProbDist.vti', False, 0);
+    count_ref = float(MiscOps.CountVoxelsAbove('./reference_tmp_imgSumTwoDVox.vti', 127));
+    
     
 
 
     #Chens IsoContour method with monte carlo
     MiscOps.IsoContourOperator(DIR, '../out_preprocessing/PTV_1_volmesh.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './imgSumTwoDVox_reference.vti', False, 0.025)
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './imgSumTwoDVox_referenceProbDist.vti', False, 0.025)
 
     count_result_mc_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerTwoDVoxIsoContour.vti', 127));
     MiscOps.ImageSum('*' + 'TwoDVoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');
@@ -148,16 +150,18 @@ if __name__ == '__main__': #for parallel processing compatibility
 
 
     #Markus Image sum method (works only with monte carlo) 
-    MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumTwoDVox.vti');
-    MiscOps.vtkMarchingCube('./imgSumTwoDVox.vti', './imgSumIsoSurface.vtp', 12);    
-
-    count_result_mc_imgsum = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox.vti', 12));
+    MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumTwoDVox_probDist.vti');
+    MiscOps.vtkMarchingCube('./imgSumTwoDVox_probDist.vti', './imgSumIsoSurface.vtp', 12);    
+    MiscOps.VoxelizeSurfaceMesh('./imgSumIsoSurface.vtp', './imgSumTwoDVox.vti', 0, 0.000, './imgSumTwoDVox_referenceProbDist.vti', False, 0.025)
+    
+    count_result_mc_imgsum = float(MiscOps.CountVoxelsAbove('./imgSumTwoDVox.vti', 127));
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './imgSumTwoDVox_referenceProbDist.vti', False, 0.025)
     MiscOps.ImageSum('*' + 'TwoDVox.vti', True, 'SumResultAndRef.vti');
     count_intersect_mc_imgsum = float(MiscOps.CountVoxelsAbove('./SumResultAndRef.vti', 134)); #127 + 6 + 1
     dice_mc_imgsum = (2 * count_intersect_mc_imgsum) / (count_result_mc_imgsum+count_ref)
 
 
-    shutil.move('./imgSumTwoDVox.vti', DIR + 'imgSumTwoDVox' + str(COUNTER) +'.vti')
+    shutil.move('./_probDist.vti', DIR + '_probDist' + str(COUNTER) +'.vti')
     shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
 
 
