@@ -62,7 +62,7 @@ if __name__ == '__main__': #for parallel processing compatibility
     NAME = "2016_05_19_1722__First_Pat_" + str(COUNTER) + "_DIRNEW_"
     DIR = './First_Pat_' + str(COUNTER) + '/'
     
-    results_file_name = 'results__2d_test2016c_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
+    results_file_name = 'results__2d_test2016c_mc_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
     
     try :
         os.stat(DIR)

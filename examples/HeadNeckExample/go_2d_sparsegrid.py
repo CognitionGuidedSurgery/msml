@@ -58,13 +58,13 @@ class headneck(object):
 
 if __name__ == '__main__': #for parallel processing compatibility
 
-    samples, weights = nwspgr('GQN', 5,2, 'symmetric')   
+    samples, weights = nwspgr('GQN', 5,1, 'symmetric')   
  
     COUNTER = len(weights)
     NAME = "First_PatSparse_" + str(COUNTER) + "_DIRNEW_"
     DIR = './First_PatSparse_' + str(COUNTER) + '/'
     
-    results_file_name = 'results__2d_test2016c_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
+    results_file_name = 'results__2d_test2016c_sp_' + str(COUNTER) + '_' + str(time.time()) + '.csv'
     
     try :
         os.stat(DIR)
@@ -118,14 +118,22 @@ if __name__ == '__main__': #for parallel processing compatibility
     #weights =  [0.5, 0.5]
 
 
-    weights = []
-    for i in range(0, COUNTER):
-        weights.append(1.0/COUNTER)
+    #reference for DICE coefficient
+    MiscOps.vtkMarchingCube('./imgSumTwoDVox_referenceProbDist.vti', './imgSumTwoDVox_tmp_reference.vtp', 12);
+    MiscOps.VoxelizeSurfaceMesh('./imgSumTwoDVox_tmp_reference.vtp', './reference_tmp_imgSumTwoDVox.vti', 0, 0.00,'./imgSumTwoDVox_referenceProbDist.vti', False, 0);
+    MiscOps.VoxelizeSurfaceMesh('./imgSumTwoDVox_tmp_reference.vtp', './reference_tmp_TwoDVoxIsoContour.vti', 0, 0.00,'./imgSumTwoDVox_referenceProbDist.vti', False, 0);
+    count_ref = float(MiscOps.CountVoxelsAbove('./reference_tmp_imgSumTwoDVox.vti', 127));
 
 
     #Chens IsoContour method with monte carlo
     MiscOps.IsoContourOperator(DIR, '../out_preprocessing/PTV_1_volmesh.vtu', result_vtus, weights); #creates 'isocontour_outer.vtp'
-    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, 'ct.vti', False, 0.025)
+    MiscOps.VoxelizeSurfaceMesh('./isocontour_outer.vtp', './isocontour_outerTwoDVoxIsoContour.vti', 0, 0.000, './imgSumTwoDVox_referenceProbDist.vti', False, 0.025)
+
+
+    count_result_sp_IsoContour = float(MiscOps.CountVoxelsAbove('./isocontour_outerTwoDVoxIsoContour.vti', 127));
+    MiscOps.ImageSum('*' + 'TwoDVoxIsoContour.vti', True, 'SumIsoContourAndRef.vti');
+    count_intersect_sp_IsoContour = float(MiscOps.CountVoxelsAbove('./SumIsoContourAndRef.vti', 127+127));
+    dice_sp_IsoContour = (2 * count_intersect_sp_IsoContour) / (count_result_sp_IsoContour+count_ref+0.0000001) #+0.000001 against division by 0
 
 
     shutil.move('./isocontour_initial.vtp', DIR + 'isocontour_initial' + str(COUNTER) +'.vtp')
@@ -134,13 +142,11 @@ if __name__ == '__main__': #for parallel processing compatibility
     shutil.move('./isocontour_outer.vtp', DIR + 'isocontour_outer' + str(COUNTER) +'.vtp')
 
 
-    #Markus Image sum method (works only with monte carlo) 
-    MiscOps.ImageSum(DIR + NAME+'*' + '.vti', True, 'imgSumTwoDVox.vti');
-    MiscOps.vtkMarchingCube('./imgSumTwoDVox.vti', './imgSumIsoSurface.vtp', 12);    
 
-
-    shutil.move('./imgSumTwoDVox.vti', DIR + 'imgSumTwoDVox' + str(COUNTER) +'.vti')
-    shutil.move('./imgSumIsoSurface.vtp', DIR + 'imgSumIsoSurface' + str(COUNTER) +'.vtp')
+    results_file = open(results_file_name, 'a')
+    csv_writer = csv.writer(results_file)
+    csv_writer.writerow( (COUNTER, NAME, count_ref, count_result_sp_IsoContour, count_intersect_sp_IsoContour, dice_sp_IsoContour) )
+    results_file.close()
 
 
     #delet intermediate results folders
