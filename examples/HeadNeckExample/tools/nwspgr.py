@@ -497,5 +497,5 @@ def nwspgr(distribution,dim,k,sym):
 
 	weights = weights/sum(weights)
 	
-	return nodes, weights	
+	return nodes, np.reshape(weights, len(nodes))	
 
