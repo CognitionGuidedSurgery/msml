@@ -52,9 +52,12 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkPolyDataWriter.h>
+
 #if (VTK_MAJOR_VERSION >= 6 && VTK_MINOR_VERSION >= 2) 
   #include <vtkNIFTIImageReader.h>  
 #endif
+
+#include <vtkMetaImageReader.h>
 
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
@@ -189,7 +192,31 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
     boost::filesystem::remove(filePath_without_gz);
   }
 
-  else if (filePath.extension().string() == ".vti")
+  else if (filePath.extension().string() == ".mha")
+  {
+    vtkSmartPointer<vtkMetaImageReader > reader = vtkSmartPointer<vtkMetaImageReader >::New();
+    reader->SetFileName(filename);
+    reader->Update();
+    if (!reader->GetOutput())
+    log_error() << filePath << " is not an .mha image." << endl;
+    aReturn = reader->GetOutput();
+  }
+
+
+ #if (VTK_MAJOR_VERSION >= 6 && VTK_MINOR_VERSION >= 2)  //vtkNIFTIImageReader was added in vtk 6.2
+  else if (filePath.extension().string() == ".nii")
+  {
+    vtkSmartPointer<vtkNIFTIImageReader> reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
+    reader->SetFileName(filename);
+    reader->Update();
+    if (!reader->GetOutput())
+      log_error() << filePath << " is not an .nii image." << endl;
+    aReturn = reader->GetOutput();
+  } 
+
+#endif
+
+    else
   {
     vtkSmartPointer<vtkXMLGenericDataObjectReader > reader = vtkSmartPointer<vtkXMLGenericDataObjectReader >::New();
     reader->SetFileName(filename);
@@ -198,18 +225,6 @@ vtkSmartPointer<vtkImageData> IOHelper::VTKReadImage(const char* filename)
       log_error() << filePath << " is not an .vti image." << endl;
     aReturn = reader->GetImageDataOutput();
   }
-
-#if (VTK_MAJOR_VERSION >= 6 && VTK_MINOR_VERSION >= 2)  //vtkNIFTIImageReader was added in vtk 6.2
-  else
-  {
-    vtkSmartPointer<vtkNIFTIImageReader> reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
-    reader->SetFileName(filename);
-    reader->Update();
-    if (!reader->GetOutput())
-      log_error() << filePath << " is not an NIFTI image." << endl;
-    aReturn = reader->GetOutput();
-  } 
-#endif
 
   return aReturn;
 }
