@@ -624,23 +624,29 @@ void ApplyDVF(vtkImageData* inputImage, vtkImageData* dvf, vtkImageData* outputD
 
 std::string ConvertVTKImage(const char* infputFile, const char* outputfile)
 {
-  return ConvertVTKImage(infputFile, outputfile, 0);
+  return ConvertVTKImageVoxelsize(infputFile, outputfile, 0);
 }
-std::string ConvertVTKImage(const char* infputFile, const char* outputfile, float isotropicVoxelSize)
+
+std::string ConvertVTKImageVoxelsize(const char* infputFile, const char* outputfile, float isotropicVoxelSize)
 {
   vtkSmartPointer<vtkImageData> img = IOHelper::VTKReadImage(infputFile);
 
   if (isotropicVoxelSize>0)
   {
     vtkSmartPointer<vtkImageReslice> reslice =  vtkSmartPointer<vtkImageReslice>::New();
-    reslice->SetOutputExtent(0, 9, 0, 100, 0, 0);
     
 #if VTK_MAJOR_VERSION <= 5
     reslice->SetInputConnection(img->GetProducerPort());
 #else
     reslice->SetInputData(img);
 #endif
-    reslice->SetInformationInput(img);
+    double* d = img->GetSpacing();
+    int* imgExtends = img->GetExtent();
+    imgExtends[1] = imgExtends[1] * (d[0]/isotropicVoxelSize)-1;
+    imgExtends[3] = imgExtends[3] * (d[1]/isotropicVoxelSize)-1;
+    imgExtends[5] = imgExtends[5] * (d[2]/isotropicVoxelSize)-1;
+    reslice->SetOutputExtent(imgExtends);
+    reslice->SetOutputOrigin(img->GetOrigin());
     reslice->SetOutputSpacing(isotropicVoxelSize, isotropicVoxelSize, isotropicVoxelSize);
     reslice->Update();
     IOHelper::VTKWriteImage(outputfile, reslice->GetOutput());
