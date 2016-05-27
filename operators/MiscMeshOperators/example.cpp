@@ -1,8 +1,8 @@
 
 #include "PostProcessingOperators.h"
 #include "MiscMeshOperators.h"
-#include "MeshQualityOperators.h"
 #include "IndexRegionOperators.h"
+#include "FeBioSupport.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -21,10 +21,12 @@ using namespace MSML;
 int main( int argc, char * argv[])
 {
 
-MeshQuality::calculateHausdorffDistance(INPUT("vertebra1.vtk"), INPUT("vertebraGenerated.vtk"), true);
-//MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
-  return EXIT_SUCCESS;
+  //MiscMeshOperators::GenerateDistanceMap(INPUT("bunny_tets.vtk"), OUTPUT("bunny_pdist.vti"), 100, 2.0, "", 5.0);
+  //FeBioSupport::ConvertFEBToVTK("C:/MSML/msml/examples/CGALi2vLungs/out_Lungs_new/Lungs_new2.txt", "1","C:/MSML/msml/examples/CGALi2vLungs/out_Lungs_new/case1_T00_mesh_combo.vtk");
+  const char* inputGridFile  = OUTPUT("cylinder.vtk"); //material=999   
+  IndexRegionOperators::ComputeIndicesFromMaterialId(inputGridFile, 999, "points_experimental");
 
+	return EXIT_SUCCESS;
 }
 
 

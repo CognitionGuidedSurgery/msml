@@ -322,3 +322,8 @@ BOOST_AUTO_TEST_CASE(TestGradientOnSurface)
 }
 
 
+BOOST_AUTO_TEST_CASE(TestComputeIndicesFromMaterialId)
+{
+	const char* inputGridFile  = OUTPUT("cylinder.vtk.vtk"); //material=999
+  IndexRegionOperators::ComputeIndicesFromMaterialId(inputGridFile, 999, "points_experimental");
+}
